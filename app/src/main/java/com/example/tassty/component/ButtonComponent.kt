@@ -52,6 +52,7 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
+import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Neutral80
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink200
@@ -382,17 +383,41 @@ fun RankBadge(
 @Composable
 fun TextButton(
     text : String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ){
     TextButton(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         contentPadding = PaddingValues(0.dp)
     ) {
         Text(
+            textAlign = TextAlign.Center,
             text = text,
             style = LocalCustomTypography.current.bodyMediumMedium,
             color = Orange500
+        )
+    }
+}
+
+@Composable
+fun ResetButton(
+    onClick: () -> Unit,
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.height(44.dp),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, Color(0xFFDEDEDE)),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Neutral10, // 2. Set the background color (Neutral10)
+            contentColor = Neutral70 // Set the color for the Text inside
+        ),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = "Reset",
+            style = LocalCustomTypography.current.bodySmallSemiBold
         )
     }
 }

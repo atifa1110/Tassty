@@ -19,13 +19,13 @@
       <SelectionState runConfigName="SearchDetailPreview">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="PreviewRegisterDialog">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="PreviewDetailLocationScreen">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="DetailMenuPreview">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="PreviewModalDialog">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

@@ -6,13 +6,18 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Looper
 import androidx.annotation.RequiresApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Discount
 import androidx.core.content.ContextCompat
+import com.example.tassty.component.RadioFilterItem
 import com.example.tassty.model.Category
+import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.FavoriteCollection
 import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.OperationalDay
+import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.Review
 import com.google.android.gms.location.LocationCallback
@@ -30,7 +35,15 @@ import java.util.concurrent.TimeUnit
 fun hashUrl(url: String): String {
     return url.hashCode().toString() // atau pakai MD5/SHA1 kalau mau unik banget
 }
-
+fun getSubtitle(min: Int, max: Int): String {
+    return when {
+        min == 1 && max == 1 -> "pick 1"
+        min > 1 && max > min -> "pick $min to $max"
+        min == 0 && max > 0 -> "pick up to $max"
+        min == max && min > 1 -> "pick $min"
+        else -> "select options"
+    }
+}
 fun getCurrentLocation(
     context: Context,
     onLocation: (LatLng) -> Unit
@@ -130,6 +143,33 @@ fun Int.toCleanRupiahFormat(): String {
     return formatRupiah.format(this.toLong())
 }
 
+val restoRatingsOptions = listOf(
+    ChipFilterOption("Rated 4.0+", R.drawable.star),
+    ChipFilterOption("Rated 4.5+", R.drawable.star)
+)
+val discountOptions = listOf(
+    ChipFilterOption("All type promo", R.drawable.promo),
+    ChipFilterOption("Membership", R.drawable.users),
+    ChipFilterOption("Credit card payments", R.drawable.tag)
+)
+
+val modesOptions = listOf(
+    ChipFilterOption("Delivery", R.drawable.hand),
+    ChipFilterOption("Pickup", R.drawable.hand)
+)
+
+val cuisineOptions = listOf(
+    RadioFilterOption("Beverages", "cuisine_beverages"),
+    RadioFilterOption("Snacks", "cuisine_snacks")
+)
+
+val rupiahPriceRanges = listOf(
+    RadioFilterOption("Di bawah Rp20.000", "below_20"),
+    RadioFilterOption("Rp20.000 ~ Rp50.000", "range_20_50"),
+    RadioFilterOption("Rp50.000 ~ Rp200.000", "range_50_200"),
+    RadioFilterOption("Di atas Rp200.000", "above_200")
+)
+
 var menuSections = listOf(
     MenuChoiceSection(
         title = "Choice of protein",
@@ -174,6 +214,17 @@ val collection = FavoriteCollection(
     collectionId = "1",name = "Favorite Salad",
     itemCount = 2, thumbnailUrl = "",isSelected = false
 )
+val collections = listOf(
+    FavoriteCollection(
+        collectionId = "1",name = "Favorite Salad",
+        itemCount = 2, thumbnailUrl = "",isSelected = false
+    ),
+    FavoriteCollection(
+        collectionId = "2",name = "Daily Menus",
+        itemCount = 0, thumbnailUrl = "",isSelected = true
+    )
+)
+
 val reviews = listOf(
     Review(1,
         userName = "Andrew",
@@ -191,13 +242,25 @@ val reviews = listOf(
     )
 )
 val menus = listOf(
-    Menu(1, "Fresh Salad", "food short description", "14.000", 4.9, 190,100,"https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/c8c7b731-0ad1-47d7-90a2-8525239a4b5f_Combo-Jiwa-Toast.jpg?auto=format"),
-    Menu(2, "Ramen Tomyum", "spicy noodle soup", "12.000", 4.7, 125,167, "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
-    Menu(3, "Pizza", "pepperoni pizza", "25.000", 4.8,100 ,100, "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/c8c7b731-0ad1-47d7-90a2-8525239a4b5f_Combo-Jiwa-Toast.jpg?auto=format"),
-    Menu(4, "Burger", "classic cheeseburger", "20.000", 4.6, 250 ,154, "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
+    Menu(id = 1,
+        name = "Fresh Salad", description = "food short description",
+        price = "28.000", rating= 4.9, distance = 190, sold = 154, stock = 10,
+        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
+    ),
+    Menu(id = 2, name= "Ramen Tomyum", description = "spicy noodle soup", price = "12.000",
+        rating = 4.7, distance = 125,sold = 167, stock = 4, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
+    Menu(id = 3, name = "Pizza", description = "pepperoni pizza", price="25.000",
+        rating = 4.8, distance = 100 ,sold = 100, stock =0,imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/c8c7b731-0ad1-47d7-90a2-8525239a4b5f_Combo-Jiwa-Toast.jpg?auto=format"),
+    Menu(id  = 4, name = "Burger", description = "classic cheeseburger", price="20.000", rating = 4.6, distance = 250 ,
+        sold = 154, stock = 8, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
 )
 
-val menuItem = Menu(1, "Fresh Salad", "food short description","28.000", 4.9, 190,154, "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format")
+val menuItem =
+    Menu(id = 1,
+        name = "Fresh Salad", description = "food short description",
+        price = "28.000", rating= 4.9, distance = 190, sold = 154, stock = 10,
+        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
+    )
 
 val restaurants = listOf(
     Restaurant(

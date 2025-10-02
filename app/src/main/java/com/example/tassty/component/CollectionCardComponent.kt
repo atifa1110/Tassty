@@ -28,6 +28,7 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
+import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
@@ -37,8 +38,8 @@ fun CollectionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(width=1.dp, color = Neutral30),
-        colors = CardDefaults.cardColors(containerColor = Neutral10)
+        border = BorderStroke(width=1.dp, color = if(collection.isSelected) Orange500 else Neutral30),
+        colors = CardDefaults.cardColors(containerColor = if (collection.isSelected) Orange50 else Neutral10)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -66,7 +67,7 @@ fun CollectionCard(
             }
 
             Checkbox(
-                checked = false,
+                checked = collection.isSelected,
                 onCheckedChange = {  },
                 colors = CheckboxDefaults.colors(
                     checkedColor = Orange500,

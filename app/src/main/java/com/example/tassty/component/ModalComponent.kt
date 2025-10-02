@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -17,6 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,9 +31,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.collection
+import com.example.tassty.collections
+import com.example.tassty.cuisineOptions
+import com.example.tassty.discountOptions
 import com.example.tassty.model.FavoriteCollection
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.modesOptions
 import com.example.tassty.operationalHours
+import com.example.tassty.restoRatingsOptions
+import com.example.tassty.rupiahPriceRanges
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -112,14 +121,21 @@ fun CustomBottomSheet(
 fun CollectionContent(
     collections: List<FavoriteCollection>
 ){
-    Column(modifier = Modifier.fillMaxWidth()
-        .clip(RoundedCornerShape(topStart = 24.dp,
-            topEnd = 24.dp))
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(
+            RoundedCornerShape(
+                topStart = 24.dp,
+                topEnd = 24.dp
+            )
+        )
         .background(Neutral20)
         .padding(top = 24.dp, bottom = 24.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal=24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextHeader(
@@ -146,7 +162,7 @@ fun CollectionContent(
             }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
-                enabled = false,
+                enabled = collections.any { it.isSelected==true },
                 labelResId = R.string.save,
                 onClick = {}
             )
@@ -157,14 +173,21 @@ fun CollectionContent(
 @Composable
 fun CollectionAddContent(
 ){
-    Column(modifier = Modifier.fillMaxWidth()
-        .clip(RoundedCornerShape(topStart = 24.dp,
-            topEnd = 24.dp))
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(
+            RoundedCornerShape(
+                topStart = 24.dp,
+                topEnd = 24.dp
+            )
+        )
         .background(Neutral20)
         .padding(top = 24.dp, bottom = 24.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal=24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
@@ -186,12 +209,56 @@ fun CollectionAddContent(
                 style = LocalCustomTypography.current.h5Bold,
                 color = Neutral100
             )
+            Spacer(Modifier.height(16.dp))
+            NotesBarSection(
+                value="",
+                onValueChange = {},
+                icon = R.drawable.icon,
+                placeholder = stringResource(R.string.add_collection_name)
+            )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
                 enabled = false,
                 labelResId = R.string.create,
                 onClick = {}
             )
+        }
+    }
+}
+
+@Composable
+fun CollectionSaveContent(
+    title: String,
+    subtitle: String,
+    onClick:() -> Unit,
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Color.White)
+            .padding(top = 24.dp, bottom = 46.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        ImageIcon(
+            image = R.drawable.success,
+            contentDescription = "Success Icon",
+            modifier = Modifier.size(64.dp)
+        )
+
+        StatusTextHeader(title = title,subtitle = subtitle)
+
+        HorizontalDivider()
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextButton(text = "Check collection", onClick = onClick,modifier = Modifier.weight(0.5f))
+            TextButton(text = "Confirm", onClick = onClick,modifier = Modifier.weight(0.5f))
         }
     }
 }
@@ -289,47 +356,168 @@ fun DetailScheduleContent(
     }
 }
 
+@Composable
+fun SortContent(
+){
+    var selectedOption by remember { mutableStateOf("Nearest") }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20)
+            .padding(top = 24.dp, bottom = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.sort_restos_by),
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100,
+                modifier = Modifier.weight(1f)
+            )
+            ResetButton(onClick={})
+        }
+
+        HorizontalDivider(Modifier.padding(vertical = 32.dp))
+
+        Column (Modifier.padding(horizontal = 24.dp)){
+            SortOptionItemStandard(
+                options = listOf("Recommended", "Nearest", "Popularity"),
+                selected = selectedOption,
+                onSelect = { selectedOption = it }
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            ButtonComponent(
+                enabled = true,
+                labelResId = R.string.apply,
+                onClick = {})
+        }
+    }
+}
+
+@Composable
+fun FilterContent(
+){
+    var selectedCuisineKey by remember { mutableStateOf(cuisineOptions.first().key) }
+    var selectedPriceKey by remember { mutableStateOf(rupiahPriceRanges.first().key) }
+    var selectedRating by remember { mutableStateOf(setOf("Rated 4.0+")) }
+    var selectedDiscount by remember { mutableStateOf(setOf("All type promo")) }
+    var selectedMode by remember { mutableStateOf(setOf("Delivery")) }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20)
+            .padding(top = 24.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        // 🔹 Header baris atas
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.filter_search),
+                    style = LocalCustomTypography.current.h3Bold,
+                    color = Neutral100,
+                    modifier = Modifier.weight(1f)
+                )
+                ResetButton(onClick = {})
+            }
+        }
+
+        // 🔹 Divider
+        item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
+
+        // 🔹 Price range
+        item {
+            RadioFilterSection(
+                title = "Price range",
+                options = rupiahPriceRanges,
+                selectedKey = selectedPriceKey
+            ) { selectedPriceKey = it }
+        }
+
+        item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
+
+        // 🔹 Resto ratings
+        item {
+            ChipFilterSection(
+                title = "Resto ratings",
+                options = restoRatingsOptions,
+                selectedKeys = selectedRating
+            ) { key ->
+                selectedRating = if (selectedRating.contains(key)) {
+                    selectedRating - key
+                } else {
+                    selectedRating + key
+                }
+            }
+        }
+
+        item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
+
+        // 🔹 Discounts
+        item {
+            ChipFilterSection(
+                title = "Discounts",
+                options = discountOptions,
+                selectedKeys = selectedDiscount
+            ) { key ->
+                selectedDiscount = if (selectedDiscount.contains(key)) {
+                    selectedDiscount - key
+                } else {
+                    selectedDiscount + key
+                }
+            }
+        }
+
+        item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
+
+        // 🔹 Modes
+        item {
+            ChipFilterSection(
+                title = "Modes",
+                options = modesOptions,
+                selectedKeys = selectedMode
+            ) { key ->
+                selectedMode = if (selectedMode.contains(key)) {
+                    selectedMode - key
+                } else {
+                    selectedMode + key
+                }
+            }
+        }
+
+        item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
+
+        // 🔹 Cuisines type
+        item {
+            RadioFilterSection(
+                title = "Cuisines type",
+                options = cuisineOptions,
+                selectedKey = selectedPriceKey
+            ) { selectedCuisineKey = it }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewModalDialog() {
     CustomBottomSheet(
         visible = true,
-        onDismiss = {}
-    ) {
-        CollectionAddContent()
+        dismissOnClickOutside = false,
+        onDismiss = {  }
+    ){
+        FilterContent()
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewDetailModal(){
-    CustomBottomSheet(
-        visible = true,
-        onDismiss = {}
-    ) {
-        CollectionContent(collections = listOf(collection))
-    }
-}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewSaveFavorite(){
-//    CustomBottomSheet(
-//        visible = true,
-//        dismissOnClickOutside = false,
-//        onDismiss = { }
-//    ) {
-//        ModalStatusContent(
-//            title = "Saved to my favorite restaurants!",
-//            subtitle = "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit, sed do eiusmod.",
-//            buttonTitle ="Confirm",
-//            onClick = {}
-//        ){
-//            Image(
-//                painter = painterResource(id = R.drawable.success),
-//                contentDescription = "Success Icon",
-//                modifier = Modifier.size(64.dp)
-//            )
-//        }
-//    }
-//}

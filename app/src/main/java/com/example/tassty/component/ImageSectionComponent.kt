@@ -229,7 +229,17 @@ fun BestSellerIcon(){
 @Composable
 fun LogoImage(){
     ImageIcon(image = R.drawable.logo,
-        contentDescription = "App Logo",modifier = Modifier.size(62.dp))
+        contentDescription = "App Logo",
+        modifier = Modifier.size(62.dp))
+}
+
+@Composable
+fun SuccessImage(){
+    ImageIcon(
+        image = R.drawable.success,
+        contentDescription = "Success Icon",
+        modifier = Modifier.size(64.dp)
+    )
 }
 
 @Composable

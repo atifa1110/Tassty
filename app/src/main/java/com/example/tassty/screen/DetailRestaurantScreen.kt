@@ -49,12 +49,14 @@ import com.example.tassty.component.FoodListCard
 import com.example.tassty.component.GridRow
 import com.example.tassty.component.HorizontalListOrangeSection
 import com.example.tassty.component.HorizontalListSection
+import com.example.tassty.component.ImageIcon
 import com.example.tassty.component.ItemImage
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.RankBadgeIcon
 import com.example.tassty.component.RestaurantCloseStatus
 import com.example.tassty.component.RestaurantInfoCard
 import com.example.tassty.component.ReviewCard
+import com.example.tassty.component.SuccessImage
 import com.example.tassty.component.TitleListHeader
 import com.example.tassty.component.VoucherCard
 import com.example.tassty.menus
@@ -112,11 +114,7 @@ fun RestaurantDetailScreen(
                 buttonTitle ="Confirm",
                 onClick = { isFavorite = false }
             ){
-                Image(
-                    painter = painterResource(id = R.drawable.success),
-                    contentDescription = "Success Icon",
-                    modifier = Modifier.size(64.dp)
-                )
+                SuccessImage()
             }
         }
     }

@@ -1,14 +1,24 @@
 package com.example.tassty.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ChipDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,7 +31,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
+import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.Filter
+import com.example.tassty.restoRatingsOptions
 import com.example.tassty.ui.theme.Blue400
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
@@ -30,7 +42,10 @@ import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
+import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.Orange200
+import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
@@ -94,7 +109,7 @@ fun CustomShortChip(
     modifier: Modifier = Modifier,
 ){
     Surface(
-        modifier = modifier.clip(RoundedCornerShape(99)),
+        modifier = modifier.clip(RoundedCornerShape(100.dp)),
         color = color,
     ) {
         Row(
@@ -158,12 +173,48 @@ fun CustomLongChip(
     }
 }
 
+@Composable
+fun CustomBorderChip(
+    label: String,
+    icon : Int,
+    selected:Boolean,
+    onClick : () -> Unit
+){
+    CustomShortChip(
+        image = icon,
+        color = if(selected) Orange50 else Neutral10,
+        iconColor = if(selected)Orange500 else Neutral70,
+        label = label,
+        labelColor = if(selected) Neutral100 else Neutral70,
+        modifier = Modifier.border(1.dp,if(selected) Orange200 else Neutral40,
+            RoundedCornerShape(100.dp)
+        ).clickable(onClick = onClick)
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewFilterScreen() {
-    Column(Modifier.background(Color.Gray)) {
+    Column(
+        modifier = Modifier.background(Neutral10),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         CustomFilterChip(
             filter = Filter("Sort", R.drawable.arrow_down)
         )
+        AllReviewChip()
+        Personal50Chip()
+        Personal30Chip()
+        CustomBorderChip(
+            icon = R.drawable.star,
+            label = "Rated 4.0+", selected = true,
+            onClick = {}
+        )
+
+        ChipFilterSection(
+            title = "Resto ratings",
+            options = restoRatingsOptions,
+            selectedKeys = setOf("Rated 2.0+", "tea", "juice")
+        ) { }
     }
 }

@@ -52,4 +52,9 @@
     <string name="save_your_favorite">You can save your favorite menu by adding \nthem to a new or existing collection.</string>
     <string name="save">Save</string>
     <string name="create">Create</string>
+    <string name="add_collection_name">Add collection name</string>
+    <string name="sorry">Sorry!</string>
+    <string name="apply">Apply</string>
+    <string name="sort_restos_by">Sort restos by</string>
+    <string name="filter_search">Filter search</string>
 </resources>

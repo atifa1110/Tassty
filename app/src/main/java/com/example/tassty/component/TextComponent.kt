@@ -1,13 +1,17 @@
 package com.example.tassty.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -39,6 +43,7 @@ import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink50
+import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
 
 @Composable
@@ -249,6 +254,7 @@ fun SearchBarWhiteSection(
 fun NotesBarSection(
     value: String,
     onValueChange: (String) -> Unit,
+    icon : Int = R.drawable.clipboard_list,
     placeholder: String = stringResource(R.string.places_notes_here),
     modifier: Modifier = Modifier
 ) {
@@ -279,7 +285,7 @@ fun NotesBarSection(
             modifier = Modifier.fillMaxWidth(),
             leadingIcon = {
                 Icon(
-                    painter = painterResource(R.drawable.clipboard_list),
+                    painter = painterResource(icon),
                     contentDescription = "notes",
                     tint = Neutral70,
                     modifier = Modifier.size(20.dp)
@@ -423,6 +429,48 @@ fun FoodPriceLineText(
         },
         textDecoration = TextDecoration.LineThrough
     )
+}
+
+@Composable
+fun ErrorStatus(
+    icon : Int,
+    status: String,
+    statusMessage: String
+){
+    Box(
+        modifier = Modifier
+            .background(
+                color = Pink500,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(icon),
+                    tint = Neutral10,
+                    contentDescription = "icon status"
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = status,
+                    color = Color.White,
+                    style = LocalCustomTypography.current.bodySmallSemiBold
+                )
+            }
+
+            Text(
+                text = statusMessage,
+                color = Color.White,
+                style = LocalCustomTypography.current.bodySmallMedium
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)

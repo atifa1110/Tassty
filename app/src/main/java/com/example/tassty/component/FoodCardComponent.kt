@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.tassty.R
 import com.example.tassty.menuItem
 import com.example.tassty.menuSections
 import com.example.tassty.model.Menu
@@ -20,10 +24,12 @@ import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink500
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -249,6 +255,43 @@ fun OptionCard(
                     modifier = Modifier.padding(0.dp).size(24.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun MenuStockStatus(
+    modifier: Modifier = Modifier
+){
+    Box(
+        modifier = modifier
+            .background(
+                Pink500,
+                RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.sad),
+                tint = Neutral10,
+                contentDescription = "menu stock is empty"
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.sorry),
+                color = Color.White,
+                style = LocalCustomTypography.current.bodySmallSemiBold
+            )
+            Spacer(Modifier.width(2.dp))
+            Text(
+                text = "This menu is out stock",
+                color = Color.White,
+                style = LocalCustomTypography.current.bodySmallMedium
+            )
         }
     }
 }

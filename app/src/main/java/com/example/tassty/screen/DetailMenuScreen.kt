@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,11 +37,13 @@ import com.example.tassty.component.DetailMenuTopAppBar
 import com.example.tassty.component.FoodPriceBigText
 import com.example.tassty.component.FoodPriceLineText
 import com.example.tassty.component.ItemImage
+import com.example.tassty.component.MenuStockStatus
 import com.example.tassty.component.NotesBarSection
 import com.example.tassty.component.OptionCard
 import com.example.tassty.component.QuantityButton
 import com.example.tassty.component.RestaurantMenuInfoCard
 import com.example.tassty.handleSelectionChange
+import com.example.tassty.menuItem
 import com.example.tassty.menuSections
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
@@ -54,8 +57,9 @@ import com.example.tassty.ui.theme.Orange500
 
 @Composable
 fun DetailMenuScreen() {
+    var menu by remember { mutableStateOf(menuItem) }
     var notesValue by remember { mutableStateOf("") }
-    var quantity by remember { mutableIntStateOf(5) }
+    var quantity by remember { mutableIntStateOf(1) }
     var menuSectionsList by remember {
         mutableStateOf(menuSections)
     }
@@ -81,8 +85,8 @@ fun DetailMenuScreen() {
             item {
                 Box(Modifier.height(370.dp).fillMaxWidth()) {
                     ItemImage(
-                        imageUrl = "",
-                        name = "",
+                        imageUrl = menu.imageUrl,
+                        name = menu.name,
                         status = RestaurantStatus.OPEN,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -91,6 +95,15 @@ fun DetailMenuScreen() {
                         onShareClick = {},
                         onFavoriteClick = {}
                     )
+
+                    if(menu.stock==0) {
+                        Box(modifier = Modifier.padding(horizontal = 24.dp)
+                            .align(Alignment.BottomCenter)
+                            .offset(y=20.dp)
+                        ) {
+                            MenuStockStatus()
+                        }
+                    }
                 }
             }
 
@@ -98,7 +111,7 @@ fun DetailMenuScreen() {
             item {
                 Column(
                     // Padding horizontal dan top padding untuk konten
-                    Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp),
+                    Modifier.padding(start = 24.dp, end = 24.dp, top = if(menu.stock>0) 24.dp else 40.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
@@ -107,12 +120,12 @@ fun DetailMenuScreen() {
                     ) {
                         Column {
                             Text(
-                                text = "Lamb Steak",
+                                text = menu.name,
                                 style = LocalCustomTypography.current.h3Bold,
                                 color = Neutral100
                             )
                             Text(
-                                text = "Grilled lamb, bursting with flavor",
+                                text = menu.description,
                                 style = LocalCustomTypography.current.bodyMediumRegular,
                                 color = Neutral70
                             )
@@ -122,7 +135,7 @@ fun DetailMenuScreen() {
                             verticalArrangement = Arrangement.Center
                         ) {
                             FoodPriceBigText(
-                                price = "28.000",
+                                price = menu.price,
                                 color = Orange500
                             )
                             FoodPriceLineText(
