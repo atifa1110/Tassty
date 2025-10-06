@@ -15,9 +15,14 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -79,6 +84,87 @@ fun ChipFilterSection(
                     onClick = { onToggleOption(option.label) }
                 )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ChipSearchSection(
+    title: String,
+    options: List<ChipFilterOption>,
+    selected: Boolean
+) {
+    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+        Text(
+            text = title,
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100,
+        )
+        Spacer(Modifier.height(12.dp))
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            options.forEach { option ->
+                CustomSearchChip(
+                    label = option.label,
+                    icon = option.iconId?:0,
+                    selected = selected,
+                    onClick = {}
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ChipSearchExpandSection(
+    title: String,
+    options: List<ChipFilterOption>
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val maxVisible = 5
+
+    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+        Text(
+            text = title,
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100,
+        )
+        Spacer(Modifier.height(12.dp))
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val visibleOptions = if (expanded || options.size <= 5) {
+                options
+            } else {
+                options.take(maxVisible - 1) // show 4 chip + 1 expand button
+            }
+
+            visibleOptions.forEach { option ->
+                CustomSearchChip(
+                    label = option.label,
+                    icon = option.iconId ?: 0,
+                    selected = true,
+                    onClick = {}
+                )
+            }
+
+            // Tambahkan expand button kalau belum expanded
+            if (!expanded && options.size > maxVisible) {
+                CustomSearchChip(
+                    label = "",
+                    icon = R.drawable.arrow_down, // pakai icon ▼
+                    selected = true,
+                    onClick = { expanded = true }
+                )
+            }
+
         }
     }
 }

@@ -136,6 +136,42 @@ fun FoodRatingAndDistanceRow(
 }
 
 @Composable
+fun FoodRatingAndCityRow(
+    city: String,
+    rating: Double,
+    modifier: Modifier = Modifier
+){
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.star),
+            contentDescription = "Rating",
+            tint = Orange500
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = rating.toString(),
+            style = LocalCustomTypography.current.bodyMediumMedium,
+            color = Neutral70
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            painter = painterResource(R.drawable.location),
+            contentDescription = "Distance",
+            tint = Pink500
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = city,
+            style = LocalCustomTypography.current.bodyMediumMedium,
+            color = Neutral70
+        )
+    }
+}
+
+@Composable
 fun FoodTinyGridCardContent(
     menu: Menu,
 ) {
@@ -151,6 +187,27 @@ fun FoodTinyGridCardContent(
 
         FoodPriceTinyText(
             price = menu.price
+        )
+    }
+}
+
+@Composable
+fun FoodNameGridCardContent(
+    menu: Menu,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom
+    ) {
+        Text(
+            text = menu.name,
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100
+        )
+        FloatingAddButton(
+            iconSize = 16.dp,
+            actionSize = 30.dp,
         )
     }
 }
@@ -327,24 +384,9 @@ fun FoodOrderListCardContent(
             )
         }
 
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = buildAnnotatedString {
-                withStyle(
-                    style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
-                        .copy(color = Neutral100)
-                ) {
-                    append("Notes : ")
-                }
-                withStyle(
-                    style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
-                        .copy(color = Neutral70)
-                ) {
-                    append("extra sides")
-                }
-            },
-        )
 
-        GiveRatingBoxButton(onClick = {})
+        NotesText("extra sides")
+
+        NotesBoxButton(title ="Give Rating",onClick = {})
     }
 }

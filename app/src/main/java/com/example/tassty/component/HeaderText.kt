@@ -18,11 +18,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import com.example.tassty.categoriesItem
 import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -106,37 +108,36 @@ fun HeaderWithOverlap(
     status : RestaurantStatus,
     onBackClick: () -> Unit,
     onFilterClick: () -> Unit,
+    collapseProgress: Float,
     headerContent: @Composable () -> Unit
 ) {
-    // Definisikan nilai overlap untuk konsistensi di seluruh layout
     val imageHeight = 304.dp
     val searchBarOverlapHeight = 24.dp
+
+    val currentHeight = lerp(imageHeight,100.dp, collapseProgress)
+    val contentAlpha = 1f - collapseProgress
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            // Tinggi Box hanya setinggi gambar (304.dp)
-            .height(imageHeight)
+            .height(currentHeight)
     ) {
-        // LAYER 1: Gambar Latar Belakang
         ItemImage(
             imageUrl = imageUrl,
             name = "category header image",
             status = status,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(imageHeight)
+                .height(imageHeight).alpha(contentAlpha)
                 .align(Alignment.TopCenter)
         )
 
-        // LAYER 2: Top App Bar
         CategoryTopAppBar(onBackClick = onBackClick, onFilterClick = onFilterClick)
 
-        // --- LAYER 3: Header Frame Card (Container untuk Konten Header) ---
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter),
+                .align(Alignment.BottomCenter).alpha(contentAlpha),
             shape = RectangleShape,
             colors = CardDefaults.cardColors(
                 containerColor = Neutral10.copy(0.7f)
@@ -147,19 +148,16 @@ fun HeaderWithOverlap(
                     .padding(start = 24.dp, end = 24.dp, top = 24.dp)
                     .padding(bottom = 48.dp)
             ) {
-                // SLOT DENGAN KONTEN YANG BISA BERUBAH
                 headerContent()
             }
         }
 
-        // --- LAYER 4: Search Bar (Floating & Overlap) ---
         SearchBarWhiteSection(
-            value = "", // Anda mungkin ingin SearchBar juga menjadi parameter jika nilainya berubah
-            onValueChange = {}, // Sama seperti di atas
+            value = "",
+            onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                // Offset NEGATIF untuk menarik Search Bar ke atas dan mengisi padding Card
+                .align(Alignment.BottomCenter).alpha(contentAlpha)
                 .offset(y = searchBarOverlapHeight)
                 .padding(horizontal = 24.dp)
         )
@@ -189,13 +187,15 @@ fun TextHeader(
 }
 
 @Composable
-fun CategoryAndDescriptionHeader(){
+fun CategoryAndDescriptionHeader(
+    category: String
+){
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TextHeader(title = "Ramen", subtitle = "Some lunch boosters!")
+        TextHeader(title = category, subtitle = "Some lunch boosters!")
         CategoryCard(category = categoriesItem)
     }
 }

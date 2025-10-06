@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
+import com.example.tassty.ui.theme.Neutral30
 
 @Composable
 fun WormIndicator(
@@ -93,3 +96,6 @@ fun DashedDivider(
             }
     )
 }
+
+@Composable fun Divider24() = HorizontalDivider(color = Neutral30,modifier = Modifier.padding(vertical = 24.dp))
+@Composable fun Divider32() =  HorizontalDivider(color = Neutral30,modifier = Modifier.padding(vertical = 32.dp))

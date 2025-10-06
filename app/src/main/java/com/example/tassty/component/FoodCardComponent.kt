@@ -46,7 +46,8 @@ fun FoodTinyGridCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ){
             FoodImageWithFloating(
-                menu = menu, status = status, modifier = Modifier.size(80.dp)
+                menu = menu, status = status,
+                modifier = Modifier.size(80.dp)
             )
 
             FoodTinyGridCardContent(menu = menu)
@@ -80,6 +81,36 @@ fun FoodGridCard(
             )
 
             FoodGridCardContent(menu = menu)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FoodNameGridCard(
+    menu: Menu,
+    status: RestaurantStatus,
+    isFirstItem: Boolean,
+    isWishlist: Boolean,
+) {
+    Card(
+        modifier = Modifier.width(140.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20),
+    ) {
+        Column (modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ){
+            FoodCircleImageWithOverlays(
+                menu = menu,
+                status = status,
+                isFirstItem = isFirstItem,
+                isWishlist = isWishlist,
+                onFavoriteClick = {},
+                modifier = Modifier.height(120.dp)
+            )
+
+            FoodNameGridCardContent(menu = menu)
         }
     }
 }
@@ -302,6 +333,7 @@ fun FoodGridCardPreview() {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FoodTinyGridCard(menu = menuItem, status = RestaurantStatus.OPEN)
+            FoodNameGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN,isWishlist = false)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FoodGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN,isWishlist = false)

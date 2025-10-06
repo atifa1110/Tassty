@@ -57,4 +57,15 @@
     <string name="apply">Apply</string>
     <string name="sort_restos_by">Sort restos by</string>
     <string name="filter_search">Filter search</string>
+    <string name="menus_you_ve_searched">Menus you’ve searched</string>
+    <string name="restos_you_ve_searched">Restos you’ve searched</string>
+    <string name="popular_searches">Popular searches</string>
+    <string name="your_search_history">Your search history</string>
+    <string name="explore_by_cuisine">Explore by cuisine</string>
+    <string name="refresh">Refresh</string>
+    <string name="recommended_restaurant">Recommended Restaurant</string>
+    <string name="restos_that_have">Restos that have %1$s</string>
+    <string name="see_all">See All</string>
+    <string name="continue_payment">Continue payment</string>
+    <string name="logout">Logout</string>
 </resources>

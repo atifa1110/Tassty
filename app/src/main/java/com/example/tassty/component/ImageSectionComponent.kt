@@ -37,6 +37,8 @@ import com.example.tassty.model.Menu
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.Pink200
+import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun rememberImageLoader(): ImageLoader {
@@ -51,7 +53,7 @@ fun rememberImageLoader(): ImageLoader {
             .diskCache {
                 DiskCache.Builder()
                     .directory(context.cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(300L * 1024 * 1024)
+                    .maxSizeBytes(250L * 1024 * 1024)
                     .build()
             }
             .crossfade(true)
@@ -70,7 +72,6 @@ fun ItemImage(
 ){
     val context = LocalContext.current
     val imageLoader = rememberImageLoader()
-    // 🔹 bikin request khusus per gambar
     val imageRequest = ImageRequest.Builder(context)
         .data(imageUrl)
         .diskCacheKey("image_${hashUrl(imageUrl)}")    // cache unik per kategori
@@ -215,6 +216,27 @@ fun ImageIcon(
         contentDescription = contentDescription,
         modifier = modifier
     )
+}
+
+
+@Composable
+fun CartIcon(
+    icon: Int,
+    boxColor: Color,
+    iconColor: Color
+){
+    Box(
+        modifier = Modifier.size(32.dp)
+            .clip(CircleShape).background(boxColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = "icon cart",
+            modifier = Modifier.size(16.dp),
+            tint = iconColor
+        )
+    }
 }
 
 @Composable

@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,6 +19,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.SearchUiState
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -39,10 +46,11 @@ import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun CustomBarSpaceBetween(
+    modifier : Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
 ){
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,11 +136,43 @@ fun BackTopAppBar(
 }
 
 @Composable
+fun ProfileTopAppBar(
+) {
+    CustomBarSpaceBetween {
+        Row{
+            Text(
+                text = "Profile",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100
+            )
+            Text(
+                text = ".",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Orange500
+            )
+        }
+        Row {
+            TopBarButton(
+                icon = R.drawable.pencil,
+                boxColor = Neutral20, iconColor = Neutral100
+            ) { }
+            Spacer(Modifier.width(8.dp))
+            TopBarButton(
+                icon = R.drawable.setting,
+                boxColor = Neutral20, iconColor = Neutral100
+            ) { }
+        }
+
+    }
+}
+
+@Composable
 fun CategoryTopAppBar(
+    modifier: Modifier = Modifier,
     onBackClick : () -> Unit,
     onFilterClick : () -> Unit
 ) {
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(modifier = modifier) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = Neutral10.copy(0.9f), iconColor = Neutral100
         ) { onBackClick() }
@@ -142,6 +182,31 @@ fun CategoryTopAppBar(
         ) { onFilterClick }
     }
 }
+
+@Composable
+fun CartTopAppBar(
+    modifier: Modifier = Modifier,
+) {
+    CustomBarSpaceBetween(modifier = modifier) {
+        Row {
+            Text(
+                text = "My cart",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100
+            )
+            Text(
+                text = ".",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Orange500
+            )
+        }
+
+        TopBarButton(icon = R.drawable.trash,
+            boxColor =  Pink500, iconColor = Neutral10
+        ) {  }
+    }
+}
+
 
 @Composable
 fun SetupTopAppBar(
@@ -183,27 +248,27 @@ fun MapSearchTopAppBar(
 }
 
 @Composable
-fun RecommendedRestaurantTopAppBar(
+fun TitleTopAppBar(
+    title : String,
     onBackClick:() -> Unit,
     onFilterClick:() -> Unit
 ){
     CustomBarSpaceBetween {
         TopBarButton(icon = R.drawable.arrow_left,
-            boxColor = Neutral20.copy(0.9f), iconColor = Neutral100
+            boxColor = Neutral20, iconColor = Neutral100
         ) { onBackClick() }
 
-            Text(
-                text = "Recommended Restaurant",
-                style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100,
-            )
+        Text(
+            text = title,
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100,
+        )
 
         TopBarButton(icon = R.drawable.filter,
             boxColor =  Orange500, iconColor = Neutral10
-        ) { onFilterClick }
+        ) { onFilterClick() }
     }
 }
-
 
 @Composable
 fun DetailTopAppBar(
@@ -273,7 +338,7 @@ fun TopAppBarPreview() {
         CategoryTopAppBar (onBackClick = {}, onFilterClick = {})
         SetupTopAppBar(1,2, onBackClick = {}, onSkipClick = {})
         MapSearchTopAppBar(onBackClick = {}) { }
-        RecommendedRestaurantTopAppBar(onBackClick = {}) { }
+        TitleTopAppBar(title = "Recommended Restaurant",onBackClick = {}) { }
         DetailTopAppBar(onShowSearch = {}, onShareClick = {}, onFavoriteClick = {}, onBackClick = {})
         DetailMenuTopAppBar(onShareClick = {}, onFavoriteClick = {}, onBackClick = {})
     }

@@ -32,7 +32,8 @@ import com.example.tassty.ui.theme.Neutral70
 fun FoodCategoryGrid (
     searchQuery: String,
     filteredCategories: List<Category>,
-    selectedCategoryIds: MutableList<Int>,
+    selectedCategoryIds: List<Int>,
+    onSelectedCategory: (Int) -> Unit,
     modifier : Modifier = Modifier
 ){
     Column (
@@ -54,42 +55,35 @@ fun FoodCategoryGrid (
                 val isSelected = selectedCategoryIds.contains(category.id)
                 FoodCategoryCard(
                     isSelected = isSelected,
-                    imageUrl = category.imageUrl,
-                    categoryName = category.name,
-                    onCardClick = {
-                        if(isSelected){
-                            selectedCategoryIds.remove(category.id)
-                        }else{
-                            selectedCategoryIds.add(category.id)
-                        }
-                    }
+                    category = category,
+                    onCardClick = { onSelectedCategory(category.id) }
                 )
             }
         }
     }
 }
 
-@Composable
-fun FilterList(
-    modifier: Modifier = Modifier
-) {
-    val filters = listOf(
-        Filter("Sort", R.drawable.arrow_down),
-        Filter("Near me", R.drawable.location),
-        Filter("Rated 4.5+", R.drawable.star),
-        Filter("Promo Available", R.drawable.promo)
-    )
-
-    LazyRow(
-        modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(filters) { filter ->
-            CustomFilterChip(filter)
-        }
-    }
-}
+//@Composable
+//fun FilterList(
+//    modifier: Modifier = Modifier
+//) {
+//    val filters = listOf(
+//        Filter("Sort", R.drawable.arrow_down),
+//        Filter("Near me", R.drawable.location),
+//        Filter("Rated 4.5+", R.drawable.star),
+//        Filter("Promo Available", R.drawable.promo)
+//    )
+//
+//    LazyRow(
+//        modifier = modifier.fillMaxWidth(),
+//        contentPadding = PaddingValues(horizontal = 24.dp),
+//        horizontalArrangement = Arrangement.spacedBy(8.dp)
+//    ) {
+//        items(filters) { filter ->
+//            CustomFilterChip(filter)
+//        }
+//    }
+//}
 
 @Preview(showBackground = true)
 @Composable
@@ -102,5 +96,6 @@ fun PreviewFoodCategoryGrid() {
             Category(3,"","Pizza"),
         ),
         selectedCategoryIds = arrayListOf(1,2,3),
+        onSelectedCategory = {}
     )
 }

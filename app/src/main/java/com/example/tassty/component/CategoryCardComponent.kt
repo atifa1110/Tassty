@@ -1,6 +1,5 @@
 package com.example.tassty.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,12 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.tassty.R
-import coil.compose.AsyncImage
+import com.example.tassty.categories
+import com.example.tassty.model.Category
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
@@ -28,8 +25,7 @@ import com.example.tassty.ui.theme.Orange500
 @Composable
 fun FoodCategoryCard(
     isSelected: Boolean,
-    imageUrl: String,
-    categoryName: String,
+    category: Category,
     onCardClick : () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -55,7 +51,7 @@ fun FoodCategoryCard(
                     .padding(10.dp)
             ) {
                 Text(
-                    text = categoryName,
+                    text = category.name,
                     style = LocalCustomTypography.current.h6Bold,
                     color = Neutral100
                 )
@@ -65,10 +61,9 @@ fun FoodCategoryCard(
                 modifier = Modifier.align(Alignment.TopEnd)
                 .offset(x = 10.dp, y = (-10).dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.martabak),
-                    contentDescription = "Deskripsi gambar",
-                    contentScale = ContentScale.Crop,
+                CommonImage(
+                    imageUrl = category.imageUrl,
+                    name = "Category Image",
                     modifier = Modifier.size(86.dp).clip(CircleShape)
                 )
             }
@@ -80,21 +75,18 @@ fun FoodCategoryCard(
 @Preview(showBackground = true)
 @Composable
 fun PreviewFoodCategoryCard() {
-    FoodCategoryCard(
-        imageUrl = "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format", // Contoh URL gambar
-        categoryName = "Salad",
-        isSelected = false,
-        onCardClick = {}
-    )
-}
+    Row(Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        FoodCategoryCard(
+            category = categories[0],
+            isSelected = false,
+            onCardClick = {}
+        )
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewFoodCategoryCardSelected() {
-    FoodCategoryCard(
-        imageUrl = "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format", // Contoh URL gambar
-        categoryName = "Salad",
-        isSelected = true,
-        onCardClick = {}
-    )
+        FoodCategoryCard(
+            category = categories[0],
+            isSelected = true,
+            onCardClick = {}
+        )
+    }
 }

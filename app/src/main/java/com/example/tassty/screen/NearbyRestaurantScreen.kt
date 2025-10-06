@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.example.tassty.component.CategoryTopAppBar
-import com.example.tassty.component.FilterList
 import com.example.tassty.restaurants
 import com.example.tassty.component.TitleListHeader
 import com.example.tassty.component.SearchBarWhiteSection
@@ -37,7 +36,6 @@ import com.example.tassty.model.RestaurantStatus
 
 @Composable
 fun NearbyRestaurantScreen() {
-    // Gunakan Box untuk menumpuk MapArea dan DraggableSearchBar
     Box(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -64,7 +62,6 @@ fun DraggableSearchBar(
 ) {
     var offsetY by remember { mutableStateOf(0f) }
 
-    // Konversi offsetY jadi tinggi dinamis (dibalik biar drag ke atas = tinggi tambah)
     val dynamicHeight by animateDpAsState(
         targetValue = (minHeight - offsetY.dp).coerceIn(minHeight, maxHeight),
         label = "heightAnim"
@@ -104,7 +101,7 @@ fun DraggableSearchBar(
                 end = dynamicHorizontalPadding
             )
             .fillMaxWidth()
-            .height(dynamicHeight) // ← tinggi ikut drag
+            .height(dynamicHeight)
     ) {
         Column(modifier = Modifier.fillMaxSize()
                 .background(
@@ -132,7 +129,7 @@ fun DraggableSearchBar(
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically()
             ) {
-                FilterList()
+//                FilterList()
             }
 
             if (dynamicHeight >= 400.dp) {

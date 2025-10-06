@@ -81,4 +81,6 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.compose.material)
 
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
 }

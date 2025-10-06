@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
+import com.example.tassty.component.EmptyRestaurant
 import com.example.tassty.component.FoodListCard
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.TitleListHeader
@@ -103,38 +104,6 @@ fun DetailSearchScreen(
             }
         }
     }
-}
-
-@Composable
-fun EmptyRestaurant(){
-    Column (
-        modifier = Modifier.fillMaxWidth().padding(start = 24.dp,end=24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Image(
-            painter = painterResource(R.drawable.empty_search),
-            contentDescription = "Empty Search Restaurant",
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            textAlign = TextAlign.Center,
-            text = "We couldn’t find \nthis menu.",
-            style = LocalCustomTypography.current.h2Bold,
-            color = Neutral100
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        Text(
-            textAlign = TextAlign.Center,
-            text = "Try a different search keyword or look for your \nfavorite menu at other restaurants.",
-            style = LocalCustomTypography.current.bodyMediumRegular,
-            color = Neutral70
-        )
-    }
-
 }
 
 @Composable

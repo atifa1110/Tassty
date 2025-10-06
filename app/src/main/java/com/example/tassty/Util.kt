@@ -8,10 +8,13 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Discount
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import com.example.tassty.component.RadioFilterItem
+import com.example.tassty.model.Cart
 import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
+import com.example.tassty.model.ChipOption
 import com.example.tassty.model.FavoriteCollection
 import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
@@ -20,6 +23,14 @@ import com.example.tassty.model.OperationalDay
 import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.Review
+import com.example.tassty.ui.theme.Blue500
+import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral30
+import com.example.tassty.ui.theme.Orange200
+import com.example.tassty.ui.theme.Orange50
+import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink500
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -33,7 +44,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 fun hashUrl(url: String): String {
-    return url.hashCode().toString() // atau pakai MD5/SHA1 kalau mau unik banget
+    return url.hashCode().toString()
 }
 fun getSubtitle(min: Int, max: Int): String {
     return when {
@@ -143,6 +154,51 @@ fun Int.toCleanRupiahFormat(): String {
     return formatRupiah.format(this.toLong())
 }
 
+val baseChips = listOf(
+    ChipOption(
+        key = "sort",
+        label = "Sort",
+        icon = R.drawable.arrow_down,
+        selectedColor = Orange50,
+        selectedLabelColor = Neutral100,
+        selectedIconColor = Orange500,
+        selectedBorderColor = Orange500,
+        isSelected = false // default aktif
+    ),
+    ChipOption(
+        key = "rated",
+        label = "Rating",
+        icon = R.drawable.star,
+        selectedColor = Orange500,
+        selectedLabelColor = Neutral10,
+        selectedIconColor = Neutral10,
+        selectedBorderColor = Color.Transparent,
+        isSelected = false
+    ),
+    ChipOption(
+        key = "promo",
+        label = "Promo available",
+        icon = R.drawable.promo,
+        selectedColor = Blue500,
+        selectedLabelColor = Neutral10,
+        selectedIconColor = Neutral10,
+        selectedBorderColor = Color.Transparent,
+        isSelected = false
+    ),
+    ChipOption(
+        key = "delivery",
+        label = "Delivery",
+        icon = R.drawable.hand,
+        selectedColor = Pink500,
+        selectedLabelColor = Neutral10,
+        selectedIconColor = Neutral10,
+        selectedBorderColor = Color.Transparent,
+        isSelected = false
+    )
+)
+
+
+
 val restoRatingsOptions = listOf(
     ChipFilterOption("Rated 4.0+", R.drawable.star),
     ChipFilterOption("Rated 4.5+", R.drawable.star)
@@ -151,6 +207,21 @@ val discountOptions = listOf(
     ChipFilterOption("All type promo", R.drawable.promo),
     ChipFilterOption("Membership", R.drawable.users),
     ChipFilterOption("Credit card payments", R.drawable.tag)
+)
+
+val historyOptions = listOf(
+    ChipFilterOption("Chicken", R.drawable.history),
+    ChipFilterOption("KFC", R.drawable.history),
+    ChipFilterOption("Falafel", R.drawable.history)
+)
+
+val popularOptions = listOf(
+    ChipFilterOption("Chicken", R.drawable.history),
+    ChipFilterOption("KFC", R.drawable.history),
+    ChipFilterOption("Janji Jiwa", R.drawable.history),
+    ChipFilterOption("Falafel", R.drawable.history),
+    ChipFilterOption("Banana", R.drawable.history),
+    ChipFilterOption("Flower", R.drawable.history)
 )
 
 val modesOptions = listOf(
@@ -255,6 +326,14 @@ val menus = listOf(
         sold = 154, stock = 8, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
 )
 
+val carts = listOf(
+    Cart(id = "1", name = "Fresh Salad", price = 28000, quantity = 1,
+        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
+    ),
+    Cart(id = "2", name= "Ramen Tomyum",price = 12000 ,quantity = 1,
+        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
+)
+
 val menuItem =
     Menu(id = 1,
         name = "Fresh Salad", description = "food short description",
@@ -342,7 +421,13 @@ val categories = listOf(
     Category(3,"Bakery","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/ea0db4c2-79b8-4a69-8b00-ea634e7ff3c9_cuisine-roti-banner.png?auto=format"),
     Category(4,"Chinese","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/e152cfa1-1813-4be7-aebb-62b84cd0d38f_cuisine-chinese-banner.png?auto=format"),
     Category(5,"Western","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/00847dea-ca14-4ecc-8cdf-f97a8d221d53_cuisine-burger_sandwich_steak-banner.png?auto=format"),
-    Category(6,"Fast Food","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format")
+    Category(6,"Fast Food","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format"),
+    Category(7,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"),
+    Category(8,"Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"),
+    Category(9,"Bakery","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/ea0db4c2-79b8-4a69-8b00-ea634e7ff3c9_cuisine-roti-banner.png?auto=format"),
+    Category(10,"Chinese","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/e152cfa1-1813-4be7-aebb-62b84cd0d38f_cuisine-chinese-banner.png?auto=format"),
+    Category(11,"Western","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/00847dea-ca14-4ecc-8cdf-f97a8d221d53_cuisine-burger_sandwich_steak-banner.png?auto=format"),
+    Category(12,"Fast Food","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format")
 )
 
 val categoriesItem = Category(1,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format")

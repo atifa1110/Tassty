@@ -61,6 +61,8 @@ fun TextComponent(
             .height(54.dp),
         shape = RoundedCornerShape(30.dp),
         colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Neutral10,
+            unfocusedContainerColor = Neutral10,
             focusedBorderColor = Neutral30,
             unfocusedBorderColor = Neutral30,
             focusedPlaceholderColor = Neutral100,
@@ -110,6 +112,8 @@ fun TextComponentNoIcon(
             .height(54.dp),
         shape = RoundedCornerShape(30.dp),
         colors = OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = Neutral10,
+            focusedContainerColor = Neutral10,
             focusedBorderColor = Neutral30,
             unfocusedBorderColor = Neutral30,
             focusedPlaceholderColor = Neutral100,
@@ -126,8 +130,12 @@ fun TextComponentNoIcon(
         textStyle = LocalCustomTypography.current.bodyMediumRegular,
         value = text,
         onValueChange = { onTextChanged(it) },
-        placeholder = { Text(text = placeholder,
-            style = LocalCustomTypography.current.bodyMediumRegular,) },
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = LocalCustomTypography.current.bodyMediumRegular
+            )
+        },
         singleLine = true,
         isError = textError.isNotEmpty(),
     )
@@ -309,10 +317,11 @@ fun NotesBarSection(
 @Composable
 fun TitleListHeader(
     data: Int,
-    text: String
+    text: String,
+    modifier : Modifier = Modifier
 ){
     Row(
-        modifier = Modifier.padding(horizontal = 24.dp),
+        modifier = modifier.padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -428,6 +437,29 @@ fun FoodPriceLineText(
             }
         },
         textDecoration = TextDecoration.LineThrough
+    )
+}
+
+@Composable
+fun NotesText(
+    notes: String
+){
+    Text(
+        modifier = Modifier,
+        text = buildAnnotatedString {
+            withStyle(
+                style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
+                    .copy(color = Neutral100)
+            ) {
+                append("Notes : ")
+            }
+            withStyle(
+                style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
+                    .copy(color = Neutral70)
+            ) {
+                append(notes)
+            }
+        },
     )
 }
 

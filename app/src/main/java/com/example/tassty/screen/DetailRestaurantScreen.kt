@@ -379,8 +379,7 @@ fun HeaderDetail(
             ) {
                 HorizontalListOrangeSection(
                     data = 4,
-                    headerText = "vouchers",
-                    onSeeAllClick = {}
+                    headerText = "vouchers"
                 ) {
                     items(4) {
                         VoucherCard(status = status.status)

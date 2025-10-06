@@ -1,96 +1,162 @@
 package com.example.tassty.screen
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.tassty.component.CategoryAndDescriptionHeader
-import com.example.tassty.component.FilterList
-import com.example.tassty.component.FoodTinyGridCard
-import com.example.tassty.component.HeaderWithOverlap
-import com.example.tassty.component.RestaurantLargeListCard
-import com.example.tassty.component.restaurantMenuListBlock
-import com.example.tassty.model.Restaurant
+import com.example.tassty.R
+import com.example.tassty.component.*
+import com.example.tassty.model.CategoryUiState
+import com.example.tassty.model.FilterState
 import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.restaurants
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral30
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
-    restaurants: List<Restaurant>
+    category: String,
+    uiState: CategoryUiState,
 ) {
+    val context = LocalContext.current
+
+    // Extract active filters from uiState
+    val activeFilters = when (uiState) {
+        is CategoryUiState.Success -> uiState.activeFilters
+        is CategoryUiState.Error -> uiState.activeFilters
+        is CategoryUiState.Loading -> FilterState()
+    }
+
     LazyColumn(
-        modifier = Modifier.fillMaxSize().background(Neutral10),
+        modifier = Modifier.fillMaxSize(),
     ) {
-        // 1. Header Section
         item {
-            HeaderWithOverlap(
-                imageUrl = "",
+            // 1. Header Image with Parallax effect
+            ScrollableHeaderContent(
+                imageUrl = "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format",
                 status = RestaurantStatus.OPEN,
-                onBackClick = {},
-                onFilterClick = {},
-                headerContent = {
-                    CategoryAndDescriptionHeader()
-                }
+                category = category
             )
         }
-        // 2. Filter/Sort Section
+        // Sticky search bar and filters
         item {
-            Spacer(modifier = Modifier.height(48.dp))
-            FilterList()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth().padding(horizontal = 24.dp)
+                    .offset(y=-(24).dp)
+            ) {
+                SearchBarWhiteSection(value = "", onValueChange = {})
+            }
         }
 
         item{
-            HorizontalDivider(color = Neutral30, modifier = Modifier.padding(vertical = 32.dp))
+            FilterSection(filterState = activeFilters)
+            Divider32()
         }
 
-        restaurantMenuListBlock(
-            headerText = "Restos that have martabaks",
-            restaurantItems = restaurants
-        )
-    }
-}
-
-@Composable
-fun RestaurantContentSection(
-    restaurant: Restaurant,
-    status: RestaurantStatus
-) {
-    Column (
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ){
-        Column (Modifier.padding(horizontal = 24.dp)){
-            RestaurantLargeListCard(restaurant = restaurant, status = status)
-        }
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(restaurant.menus, key = { it.id }) { menuItem ->
-                FoodTinyGridCard(menu = menuItem,status = status)
+        // Content based on uiState
+        when (uiState) {
+            is CategoryUiState.Loading -> item { LoadingScreen() }
+            is CategoryUiState.Error -> item { ErrorScreen() }
+            is CategoryUiState.Success -> {
+                if (uiState.restaurants.isNotEmpty()) {
+                    restaurantMenuListBlock(
+                        itemCount = uiState.totalCount,
+                        headerText = context.getString(R.string.restos_that_have, category),
+                        restaurantItems = uiState.restaurants
+                    )
+                } else {
+                    item {
+                        TitleListHeader(
+                            data = uiState.totalCount,
+                            text = context.getString(R.string.restos_that_have, category),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        EmptyRestaurant()
+                    }
+                }
             }
         }
     }
 }
 
+@Composable
+fun ScrollableHeaderContent(
+    imageUrl: String,
+    status: RestaurantStatus,
+    category: String,
+    modifier: Modifier = Modifier
+) {
+    val imageHeight = 304.dp
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(imageHeight)
+    ) {
+        // A. Header Image with status overlay
+        ItemImage(
+            imageUrl = imageUrl,
+            name = "category header image",
+            status = status,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(imageHeight)
+                .align(Alignment.TopCenter)
+        )
+
+        // B. Category card overlay at bottom of header
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            shape = RectangleShape,
+            colors = CardDefaults.cardColors(containerColor = Neutral10.copy(0.9f))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp,
+                        end = 24.dp, top = 24.dp,
+                        bottom = 48.dp)
+            ) {
+                CategoryAndDescriptionHeader(category = category)
+            }
+        }
+
+        CategoryTopAppBar(
+            onFilterClick = {},
+            onBackClick = {},
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-fun PreviewCategoryScreen() {
+fun PreviewCategoryScreenSuccess() {
     CategoryScreen(
-        restaurants = restaurants
+        category = "Ramen",
+        uiState = CategoryUiState.Success(
+            restaurants = restaurants,
+            totalCount = 4,
+            activeFilters = FilterState(sort = "Nearest")
+        )
     )
 }

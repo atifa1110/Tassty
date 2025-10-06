@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
+import com.example.tassty.model.ChipOption
 import com.example.tassty.model.Filter
 import com.example.tassty.restoRatingsOptions
 import com.example.tassty.ui.theme.Blue400
@@ -86,18 +87,18 @@ fun Personal50Chip(){
     )
 }
 
-@Composable
-fun CustomFilterChip(
-    filter: Filter
-) {
-    CustomShortChip(
-        image = filter.iconId,
-        color = Neutral20,
-        iconColor = Neutral70,
-        label = filter.label,
-        labelColor = Neutral70
-    )
-}
+//@Composable
+//fun CustomFilterChip(
+//    filter: Filter
+//) {
+//    CustomShortChip(
+//        image = filter.iconId,
+//        color = Neutral20,
+//        iconColor = Neutral70,
+//        label = filter.label,
+//        labelColor = Neutral70
+//    )
+//}
 
 @Composable
 fun CustomShortChip(
@@ -122,7 +123,7 @@ fun CustomShortChip(
                 tint = iconColor,
                 modifier = Modifier.size(20.dp)
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(if(label.isNotEmpty()) 8.dp else 0.dp))
             Text(
                 text = label,
                 style = LocalCustomTypography.current.bodyMediumMedium,
@@ -192,6 +193,43 @@ fun CustomBorderChip(
     )
 }
 
+@Composable
+fun CustomSearchChip(
+    label: String,
+    icon : Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    CustomShortChip(
+        image = icon,
+        color = if(selected) Orange50 else Neutral20,
+        iconColor = if(selected)Orange500 else Neutral70,
+        label = label,
+        labelColor = if(selected) Neutral100 else Neutral70,
+        modifier = Modifier.border(1.dp,if(selected) Orange200 else
+            Color.Transparent,
+            RoundedCornerShape(100.dp)
+        ).clickable(onClick = onClick)
+    )
+}
+
+@Composable
+fun CustomFilterChip(
+    option: ChipOption,
+    onClick: () -> Unit,
+) {
+    CustomShortChip(
+        image = option.icon?:0,
+        color = if(option.isSelected) option.selectedColor else Neutral20,
+        iconColor = if(option.isSelected) option.selectedIconColor else Neutral70,
+        label = option.label,
+        labelColor = if(option.isSelected) option.selectedLabelColor else Neutral70,
+        modifier = Modifier.border(1.dp,if(option.isSelected) option.selectedBorderColor else Color.Transparent,
+            RoundedCornerShape(100.dp)
+        ).clickable(onClick = onClick)
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewFilterScreen() {
@@ -199,9 +237,6 @@ fun PreviewFilterScreen() {
         modifier = Modifier.background(Neutral10),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        CustomFilterChip(
-            filter = Filter("Sort", R.drawable.arrow_down)
-        )
         AllReviewChip()
         Personal50Chip()
         Personal30Chip()

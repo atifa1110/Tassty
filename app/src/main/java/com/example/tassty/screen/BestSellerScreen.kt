@@ -37,15 +37,15 @@ fun BestSellerScreen() {
         ) {
             // 1. Header Section
             item {
-                HeaderWithOverlap(
-                    imageUrl = "",
-                    status = RestaurantStatus.OPEN,
-                    onBackClick = {},
-                    onFilterClick = {},
-                    headerContent = {
-                        BestSellerHeader()
-                    }
-                )
+//                HeaderWithOverlap(
+//                    imageUrl = "",
+//                    status = RestaurantStatus.OPEN,
+//                    onBackClick = {},
+//                    onFilterClick = {},
+//                    headerContent = {
+//                        BestSellerHeader()
+//                    }
+//                )
             }
 
             item {

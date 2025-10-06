@@ -10,6 +10,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -56,6 +57,7 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Neutral80
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink200
+import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
 
 @Composable
@@ -80,6 +82,59 @@ fun ButtonComponent(
         Text(text = stringResource(labelResId),
             style=LocalCustomTypography.current.bodyMediumSemiBold
         )
+    }
+}
+
+@Composable
+fun ButtonSmallComponent(
+    enabled : Boolean,
+    @StringRes labelResId: Int,
+    onClick:() -> Unit,
+) {
+    Button(
+        enabled = enabled,
+        onClick = onClick,
+        modifier = Modifier
+            .size(220.dp,60.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Orange500,
+            contentColor = Color.White,
+            disabledContentColor = Neutral100,
+            disabledContainerColor = Neutral40
+        )
+    ) {
+        Text(text = stringResource(labelResId),
+            style=LocalCustomTypography.current.bodyMediumSemiBold
+        )
+    }
+}
+
+@Composable
+fun ButtonLogout(
+    enabled : Boolean,
+    @StringRes labelResId: Int,
+    onClick:() -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Button(
+            enabled = enabled,
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Pink50,
+                contentColor = Pink500,
+                disabledContentColor = Neutral100,
+                disabledContainerColor = Neutral40
+            )
+        ) {
+            Text(
+                text = stringResource(labelResId),
+                style = LocalCustomTypography.current.bodyMediumSemiBold
+            )
+        }
     }
 }
 
@@ -226,6 +281,65 @@ fun QuantityButton(
     }
 }
 
+
+@Composable
+fun QuantitySmallButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    icons : ImageVector,
+    contentDescription: String
+){
+    Button(
+        onClick = onClick,
+        enabled = enabled, // Disable when quantity is 1
+        // Make it small and circular (similar to the image)
+        modifier = Modifier.size(24.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Neutral80,
+            contentColor = Color.White
+        ),
+        shape = CircleShape
+    ) {
+        Icon(imageVector = icons, contentDescription = contentDescription,
+            modifier= Modifier.size(12.dp))
+    }
+}
+
+@Composable
+fun QuantityCartContent(
+    itemCount: Int,
+    enabled: Boolean,
+    onIncrement:() -> Unit,
+    onDecrement:() -> Unit
+){
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // Decrease Button
+        QuantitySmallButton(
+            onClick = onDecrement,
+            enabled = enabled,
+            icons = Icons.Filled.Remove,
+            contentDescription = "Decrease Quantity"
+        )
+
+        // Quantity Text
+        Text(
+            text = itemCount.toString(),
+            style = LocalCustomTypography.current.h6Regular,
+            color = Neutral100,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        // Increase Button
+        QuantitySmallButton(
+            onClick = onIncrement,
+            enabled = true,
+            icons = Icons.Filled.Add,
+            contentDescription = "Increase Quantity"
+        )
+    }
+}
+
 @Composable
 fun FloatingAddButton(
     actionSize: Dp,
@@ -246,12 +360,13 @@ fun FloatingAddButton(
 }
 
 @Composable
-fun GiveRatingBoxButton(
+fun NotesBoxButton(
+    title: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.width(100.dp)
+        modifier = modifier
             .clip(RoundedCornerShape(24.dp))
             .background(Neutral10)
             .border(
@@ -259,7 +374,7 @@ fun GiveRatingBoxButton(
                 shape = RoundedCornerShape(24.dp)
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -272,7 +387,7 @@ fun GiveRatingBoxButton(
         Spacer(Modifier.width(4.dp))
 
         Text(
-            text = "Give rating",
+            text = title,
             style = LocalCustomTypography.current.h8Regular,
             color = Neutral100
         )
