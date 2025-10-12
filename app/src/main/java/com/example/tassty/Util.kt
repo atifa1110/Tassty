@@ -3,31 +3,35 @@ package com.example.tassty
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Looper
-import androidx.annotation.RequiresApi
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Discount
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
-import com.example.tassty.component.RadioFilterItem
+import com.example.tassty.model.AddressType
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
-import com.example.tassty.model.FavoriteCollection
+import com.example.tassty.model.CollectionUiItem
+import com.example.tassty.model.DiscountType
+import com.example.tassty.model.LocationDetails
 import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.OperationalDay
 import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.model.Restaurant
+import com.example.tassty.model.RestaurantDetail
+import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.RestaurantStatusResult
+import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.model.Review
+import com.example.tassty.model.UserAddress
+import com.example.tassty.model.Voucher
+import com.example.tassty.model.VoucherScope
+import com.example.tassty.model.VoucherType
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral30
-import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
@@ -38,10 +42,15 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
 import java.text.NumberFormat
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
+import org.threeten.bp.format.DateTimeFormatter
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.Calendar
 
 fun hashUrl(url: String): String {
     return url.hashCode().toString()
@@ -55,6 +64,7 @@ fun getSubtitle(min: Int, max: Int): String {
         else -> "select options"
     }
 }
+
 fun getCurrentLocation(
     context: Context,
     onLocation: (LatLng) -> Unit
@@ -106,42 +116,6 @@ fun getCurrentLocation(
     }
 }
 
-fun handleSelectionChange(
-    currentSection: MenuChoiceSection,
-    toggledOption: MenuItemOption,
-    onSectionUpdated: (MenuChoiceSection) -> Unit
-) {
-    val currentSelections = currentSection.selectedOptions.toMutableList()
-    val isSingleChoice = currentSection.maxSelection == 1
-
-    if (currentSelections.contains(toggledOption)) {
-        // 1. Jika Pilihan Tunggal (RadioButton) dan Opsional (Min=0), Hapus
-        if (isSingleChoice && currentSection.minSelection == 0) {
-            currentSelections.clear()
-        }
-        // 2. Jika Pilihan Ganda (Checkbox), hanya hapus jika tidak melanggar Min
-        else if (!isSingleChoice && currentSelections.size > currentSection.minSelection) {
-            currentSelections.remove(toggledOption)
-        }
-        // Kasus lain (RadioButton Wajib) tidak melakukan apa-apa (tidak bisa di-uncheck)
-
-    } else {
-        // --- Logika Tambah (Check) ---
-
-        if (isSingleChoice) {
-            // Jika pilihan tunggal (RadioButton), ganti langsung
-            currentSelections.clear()
-            currentSelections.add(toggledOption)
-        }
-        else if (currentSelections.size < currentSection.maxSelection) {
-            // Jika pilihan ganda (Checkbox), dan belum mencapai batas maksimum
-            currentSelections.add(toggledOption)
-        }
-    }
-
-    onSectionUpdated(currentSection.copy(selectedOptions = currentSelections))
-}
-
 fun Int.toCleanRupiahFormat(): String {
     val localeID = Locale.Builder().setLanguage("in").setRegion("ID").build()
 
@@ -153,6 +127,26 @@ fun Int.toCleanRupiahFormat(): String {
     // Perhatikan: Simbol mata uang default dari locale "in", "ID" adalah "Rp"
     return formatRupiah.format(this.toLong())
 }
+
+val addresses = listOf(
+    UserAddress(
+        id = "address_1",
+        fullStreetAddress = "Jl. Sudirman No. 12, Kebayoran Baru, Jakarta Selatan",
+        latitude = -6.2235,
+        longitude = 106.8119,
+        addressName = "Apartment 12A",
+        landmarkDetail = "Near the fountain, 3rd floor, unit 12A",
+        addressType = AddressType.PERSONAL
+    ),UserAddress(
+        id = "address_2",
+        fullStreetAddress = "Komplek Perkantoran Mega Kuningan Blok E, Jakarta Selatan",
+        latitude = -6.2274,
+        longitude = 106.8378,
+        addressName = "Head Office - Sinar Raya",
+        landmarkDetail = "Gedung Tower 3, lantai 15 (samping lift B)",
+        addressType = AddressType.BUSINESS
+    )
+)
 
 val baseChips = listOf(
     ChipOption(
@@ -196,8 +190,6 @@ val baseChips = listOf(
         isSelected = false
     )
 )
-
-
 
 val restoRatingsOptions = listOf(
     ChipFilterOption("Rated 4.0+", R.drawable.star),
@@ -243,29 +235,31 @@ val rupiahPriceRanges = listOf(
 
 var menuSections = listOf(
     MenuChoiceSection(
+        id="menu_choice_section_1",
         title = "Choice of protein",
         isRequired = true,
         minSelection = 1,
         maxSelection = 1,
         options = listOf(
-            MenuItemOption("Chicken Thigh", 2000),
-            MenuItemOption("Chicken Breast", 2300),
-            MenuItemOption("Eggs", 1000),
-            MenuItemOption("Beef", 5000),
-            MenuItemOption("Tofu", 3500)
+            MenuItemOption("1","Chicken Thigh", 2000),
+            MenuItemOption("2","Chicken Breast", 2300),
+            MenuItemOption("3","Eggs", 1000),
+            MenuItemOption("4","Beef", 5000),
+            MenuItemOption("5","Tofu", 3500)
         )
     ),
     MenuChoiceSection(
+        id="menu_choice_section_2",
         title = "Choice of dressing",
         isRequired = true,
         minSelection = 1,
         maxSelection = 2,
         options = listOf(
-            MenuItemOption("Ranch", 1200),
-            MenuItemOption("Honey Mustard", 3000),
-            MenuItemOption("Balsamic vinaigrette", 2800),
-            MenuItemOption("Blue Cheese", 5000),
-            MenuItemOption("Caesar", 1500)
+            MenuItemOption("1","Ranch", 1200),
+            MenuItemOption("2","Honey Mustard", 3000),
+            MenuItemOption("3","Balsamic vinaigrette", 2800),
+            MenuItemOption("4","Blue Cheese", 5000),
+            MenuItemOption("5","Caesar", 1500)
         )
     )
 )
@@ -274,25 +268,26 @@ var menuSections = listOf(
 val operationalHours = listOf(
     OperationalDay("Monday", "08.00 - 22.00"),
     OperationalDay("Tuesday", "08.00 - 22.00"),
-    OperationalDay("Wednesday", "08.00 - 22.00", isToday = true),
+    OperationalDay("Wednesday", "08.00 - 22.00"),
     OperationalDay("Thursday", "08.00 - 22.00"),
     OperationalDay("Friday", "08.00 - 22.00"),
     OperationalDay("Saturday", "08.00 - 22.00"),
     OperationalDay("Sunday", "Off Day")
 )
 
-val collection = FavoriteCollection(
+val collection = CollectionUiItem(
     collectionId = "1",name = "Favorite Salad",
     itemCount = 2, thumbnailUrl = "",isSelected = false
 )
+
 val collections = listOf(
-    FavoriteCollection(
+    CollectionUiItem(
         collectionId = "1",name = "Favorite Salad",
         itemCount = 2, thumbnailUrl = "",isSelected = false
     ),
-    FavoriteCollection(
+    CollectionUiItem(
         collectionId = "2",name = "Daily Menus",
-        itemCount = 0, thumbnailUrl = "",isSelected = true
+        itemCount = 0, thumbnailUrl = "",isSelected = false
     )
 )
 
@@ -313,107 +308,436 @@ val reviews = listOf(
     )
 )
 val menus = listOf(
-    Menu(id = 1,
+    Menu(id = "1",
         name = "Fresh Salad", description = "food short description",
-        price = "28.000", rating= 4.9, distance = 190, sold = 154, stock = 10,
+        originalPrice = 28000, rating= 4.9, distance = 190, sold = 154, stock = 10,
         imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
     ),
-    Menu(id = 2, name= "Ramen Tomyum", description = "spicy noodle soup", price = "12.000",
-        rating = 4.7, distance = 125,sold = 167, stock = 4, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
-    Menu(id = 3, name = "Pizza", description = "pepperoni pizza", price="25.000",
+    Menu(id = "2", name= "Ramen Tomyum", description = "spicy noodle soup", originalPrice = 28000, sellingPrice = 20000,
+        rating = 4.7, distance = 125,sold = 167, stock = 0, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
+    Menu(id = "3", name = "Pizza", description = "pepperoni pizza", originalPrice = 25000,
         rating = 4.8, distance = 100 ,sold = 100, stock =0,imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/c8c7b731-0ad1-47d7-90a2-8525239a4b5f_Combo-Jiwa-Toast.jpg?auto=format"),
-    Menu(id  = 4, name = "Burger", description = "classic cheeseburger", price="20.000", rating = 4.6, distance = 250 ,
+    Menu(id  = "4", name = "Burger", description = "classic cheeseburger", originalPrice = 20000, sellingPrice =12000, rating = 4.6, distance = 250 ,
         sold = 154, stock = 8, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
 )
 
 val carts = listOf(
-    Cart(id = "1", name = "Fresh Salad", price = 28000, quantity = 1,
+    Cart(id = "1", name = "Fresh Salad", price = 28000, quantity = 1, isChecked = false, stock=4, note = listOf("Notes: Add more cheese","Choice of protein: Beef", "Choice of dressing: Caesar, Balsamic vinaigrette"),
         imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
     ),
-    Cart(id = "2", name= "Ramen Tomyum",price = 12000 ,quantity = 1,
+    Cart(id = "2", name= "Ramen Tomyum",price = 12000 ,quantity = 1, isChecked = false, stock=1,
         imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
 )
 
 val menuItem =
-    Menu(id = 1,
+    Menu(id = "1",
         name = "Fresh Salad", description = "food short description",
-        price = "28.000", rating= 4.9, distance = 190, sold = 154, stock = 10,
+        originalPrice = 28000, rating= 4.9, distance = 190, sold = 154, stock = 10,
         imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
     )
 
-val restaurants = listOf(
-    Restaurant(
-        id = 1, name = "Indah Cafe", isVerified = true, rating = 4.9,
-        deliveryTime = "10-20", deliveryCost = "Free", city = "Jakarta", distance = 20,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format",
-        operationalHours = operationalHours,
-        menus = menus
+val restaurantDetails = listOf(
+    RestaurantDetail(
+        restaurant = Restaurant(
+            id = "1",
+            name = "Indah Cafe",
+            imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
+            category = listOf("Bakery", "Martabak", "Western"),
+            rating = 4.9,
+            reviewCount = 1250, // Nilai reviewCount diisi
+            deliveryTime = "10-20 min",
+            locationDetails = LocationDetails( // city dan koordinat dipindahkan ke sini
+                fullAddress = "Jl. Sudirman No. 10",
+                latitude = -6.2088,
+                longitude = 106.8456,
+                city = "Jakarta"
+            ),
+            operationalHours = operationalHours
+        ),
+        isVerified = true,
+        deliveryCost = "Free",
     ),
-    Restaurant(
-        id = 2, name = "Foodie Heaven", isVerified = false, rating = 4.7,
-        deliveryTime = "25-30", deliveryCost = "Rp 15.000", city = "Jakarta", distance = 20,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format",
-        operationalHours = operationalHours,
-        menus = menus
+    RestaurantDetail(
+        restaurant = Restaurant(
+            id = "2",
+            name = "Foodie Heaven",
+            imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
+            category = listOf("Fusion", "Nasi", "Seafood"),
+            rating = 4.7,
+            reviewCount = 450,
+            deliveryTime = "25-30 min",
+            locationDetails = LocationDetails(
+                fullAddress = "Jl. Raya Bogor No. 5",
+                latitude = -6.2500,
+                longitude = 106.8000,
+                city = "Jakarta"
+            ),
+            operationalHours = operationalHours
+        ),
+        isVerified = false,
+        deliveryCost = "Rp 15.000",
     ),
-    Restaurant(
-        id = 3, name = "Sushi Corner", isVerified = true, rating = 4.8,
-        deliveryTime = "15-25", deliveryCost = "Rp 10.000",city = "Jakarta", distance = 20,
-        operationalHours = operationalHours,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/aa10c62a-b967-4890-a50d-9e906bfc0f53_brand-image_1758592956515.jpg?auto=format"
+    RestaurantDetail(
+        restaurant = Restaurant(
+            id = "3",
+            name = "Sushi Corner",
+            imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format",
+            category = listOf("Japanese", "Sushi", "Dessert"),
+            rating = 4.8,
+            reviewCount = 2890,
+            deliveryTime = "15-25 min",
+            locationDetails = LocationDetails(
+                fullAddress = "Jl. Asia Afrika No. 1",
+                latitude = -6.2100,
+                longitude = 106.8200,
+                city = "Jakarta"
+            ),
+            operationalHours = operationalHours
+        ),
+        isVerified = true,
+        deliveryCost = "Rp 10.000",
     ),
-    Restaurant(
-        id = 4, name = "Healthy Bites",
-        isVerified = true, rating = 4.5,
-        deliveryTime = "20", deliveryCost = "Free",city = "Jakarta", distance = 20,
-        operationalHours = operationalHours,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format"
+    RestaurantDetail(
+        restaurant = Restaurant(
+            id = "4",
+            name = "Healthy Bites",
+            imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format",
+            category = listOf("Salad", "Vegan", "Minuman Sehat"),
+            rating = 4.5,
+            reviewCount = 980,
+            deliveryTime = "20 min",
+            locationDetails = LocationDetails(
+                fullAddress = "Jl. HR Rasuna Said Kav. 1",
+                latitude = -6.2200,
+                longitude = 106.8300,
+                city = "Jakarta"
+            ),
+            operationalHours = operationalHours
+        ),
+        isVerified = true,
+        deliveryCost = "Free"
     ),
-    Restaurant(
-        id = 5, name = "Burger Factory",
-        isVerified = false, rating = 4.6,
-        deliveryTime = "30", deliveryCost = "Rp 5.000",city = "Jakarta", distance = 20,
-        operationalHours = operationalHours,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format"
+    RestaurantDetail(
+        restaurant = Restaurant(
+            id = "5",
+            name = "Burger Factory",
+            imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
+            category = listOf("Burger", "American", "Fries"),
+            rating = 4.6,
+            reviewCount = 670,
+            deliveryTime = "30 min",
+            locationDetails = LocationDetails(
+                fullAddress = "Jl. Kebon Jeruk IX No. 3",
+                latitude = -6.2800,
+                longitude = 106.7800,
+                city = "Jakarta"
+            ),
+            operationalHours = operationalHours
+        ),
+        deliveryCost = "Rp 5.000",
+        isVerified = false,
     )
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
-private fun getOpenStatus(today: OperationalDay?): Pair<Boolean, String> {
-    if (today == null) return false to "No data"
+val userCurrentLocation = LocationDetails(
+    fullAddress = "Lokasi Pengguna",
+    latitude = -6.2150,
+    longitude = 106.8400,
+    city = "Jakarta"
+)
 
-    if (today.hours == "Off Day") return false to "Closed! Off Day"
-
-    val parts = today.hours.split(" - ")
-    val openTime = LocalTime.parse(parts[0], DateTimeFormatter.ofPattern("HH.mm"))
-    val closeTime = LocalTime.parse(parts[1], DateTimeFormatter.ofPattern("HH.mm"))
-    val now = LocalTime.now()
-
-    return when {
-        now.isBefore(openTime) -> {
-            false to "Closed! Opens at ${parts[0]} today"
-        }
-        now.isAfter(closeTime) -> {
-            false to "Closed! Opens tomorrow at ${parts[0]}"
-        }
-        else -> {
-            true to "Open until ${parts[1]}"
-        }
-    }
+fun calculateHaversine(loc1: LocationDetails, loc2: LocationDetails): Int {
+    // Logika riilnya lebih kompleks, ini hanya simulasi
+    val latDiff = (loc1.latitude - loc2.latitude) * 111000 // Konversi sederhana ke meter
+    val lonDiff = (loc1.longitude - loc2.longitude) * 111000
+    return (kotlin.math.sqrt(latDiff * latDiff + lonDiff * lonDiff) / 1.5).toInt() // Dibagi 1.5 untuk perkiraan jarak
 }
 
 
-val restaurantItem =
-    Restaurant(
-        id = 1,
-        name = "Indah Cafe",
-        isVerified = true,
-        rating = 4.9,
-        deliveryTime = "40",
-        deliveryCost = "Free",city = "Jakarta", distance = 20,
-        operationalHours = operationalHours,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/1a3b8e1e-a1a3-4a85-abfa-2c2c0ef30996_restaurant-image_1756676534805.jpg?auto=format"
-    )
+val indahCafeDomain = restaurantDetails.first { it.restaurant.id == "1" }
+
+/**
+ * Maps Java Calendar's day of week to a standardized string (e.g., "MONDAY").
+ */
+private fun getDayOfWeekString(calendarDay: Int): String {
+    return when (calendarDay) {
+        Calendar.MONDAY -> "MONDAY"
+        Calendar.TUESDAY -> "TUESDAY"
+        Calendar.WEDNESDAY -> "WEDNESDAY"
+        Calendar.THURSDAY -> "THURSDAY"
+        Calendar.FRIDAY -> "FRIDAY"
+        Calendar.SATURDAY -> "SATURDAY"
+        Calendar.SUNDAY -> "SUNDAY"
+        else -> ""
+    }
+}
+
+/**
+ * Calculates the current operational status of the restaurant using older Java/Android APIs.
+ * This function is compatible with all Android API levels.
+ *
+ * @param operationalHours The list of daily operational hours.
+ */
+
+fun Restaurant.getTodayStatus(): RestaurantStatus {
+    val today = LocalDate.now().dayOfWeek.name // e.g. "MONDAY"
+    val todayInfo = operationalHours.find {
+        it.day.equals(today, ignoreCase = true)
+    } ?: return RestaurantStatus.OFFDAY
+
+    if (todayInfo.hours.equals("CLOSED", ignoreCase = true))
+        return RestaurantStatus.CLOSED
+
+    val (openStr, closeStr) = todayInfo.hours.split("-").map { it.trim() }
+    val now = LocalTime.now()
+    val open = LocalTime.parse(openStr)
+    val close = LocalTime.parse(closeStr)
+
+    return if (now.isAfter(open) && now.isBefore(close)) {
+        RestaurantStatus.OPEN
+    } else {
+        RestaurantStatus.CLOSED
+    }
+}
+
+fun Restaurant.getTodayStatusResult(): RestaurantStatusResult {
+    val calendar = Calendar.getInstance()
+    val currentDayOfWeekInt = calendar.get(Calendar.DAY_OF_WEEK)
+    val currentDayOfWeekString = getDayOfWeekString(currentDayOfWeekInt)
+
+    val timeFormat = SimpleDateFormat("HH.mm", Locale.getDefault())
+    val currentTimeString = timeFormat.format(calendar.time)
+
+    val todayHours = operationalHours.find {
+        it.day.equals(currentDayOfWeekString, ignoreCase = true)
+    }
+
+    // Hari ini libur atau tidak ada data
+    if (todayHours == null || todayHours.hours.isBlank() || todayHours.hours.equals("CLOSED", ignoreCase = true)) {
+        return RestaurantStatusResult(
+            status = RestaurantStatus.OFFDAY,
+            message = "Closed today"
+        )
+    }
+
+    val parts = todayHours.hours.split(" - ")
+    if (parts.size != 2) {
+        return RestaurantStatusResult(RestaurantStatus.CLOSED, "Invalid time format")
+    }
+
+    return try {
+        val (openTimeString, closeTimeString) = parts.map { it.trim() }
+
+        val currentTime = timeFormat.parse(currentTimeString)
+        val openTime = timeFormat.parse(openTimeString)
+        val closeTime = timeFormat.parse(closeTimeString)
+
+        // Pastikan semua jam berhasil diparse
+        if (currentTime == null || openTime == null || closeTime == null) {
+            return RestaurantStatusResult(
+                status = RestaurantStatus.CLOSED,
+                message = "Error parsing time format"
+            )
+        }
+
+        when {
+            // ⏰ Restoran sedang buka
+            !currentTime.before(openTime) && currentTime.before(closeTime) -> {
+                RestaurantStatusResult(
+                    status = RestaurantStatus.OPEN,
+                    message = "Closes at $closeTimeString today"
+                )
+            }
+
+            // ⏱ Belum buka, tapi akan buka hari ini
+            currentTime.before(openTime) -> {
+                RestaurantStatusResult(
+                    status = RestaurantStatus.CLOSED,
+                    message = "Opens at $openTimeString today"
+                )
+            }
+
+            // 🚪 Sudah tutup untuk hari ini
+            else -> {
+                val nextOpenDayInfo = findNextOpenDayCompat(currentDayOfWeekInt, operationalHours)
+                val message = if (nextOpenDayInfo != null) {
+                    val nextOpenTime = nextOpenDayInfo.hours.split(" - ")[0]
+                    "Closed. Opens next on ${nextOpenDayInfo.day} at $nextOpenTime"
+                } else {
+                    "Closed for the day"
+                }
+
+                RestaurantStatusResult(
+                    status = RestaurantStatus.CLOSED,
+                    message = message
+                )
+            }
+        }
+    } catch (e: ParseException) {
+        RestaurantStatusResult(
+            status = RestaurantStatus.CLOSED,
+            message = "Error processing hours: ${e.message ?: "unknown"}"
+        )
+    } catch (e: Exception) {
+        RestaurantStatusResult(
+            status = RestaurantStatus.CLOSED,
+            message = "An unknown error occurred"
+        )
+    }
+}
+
+fun calculateRestaurantStatus(
+    operationalHours: List<OperationalDay>
+): RestaurantStatusResult {
+
+    val calendar = Calendar.getInstance()
+    val currentDayOfWeekInt = calendar.get(Calendar.DAY_OF_WEEK)
+    val currentDayOfWeekString = getDayOfWeekString(currentDayOfWeekInt)
+
+    // Format to extract time for comparison (e.g., "19:20")
+    val timeFormat = SimpleDateFormat("HH.mm", Locale.getDefault())
+
+    // Format to extract only the hour and minute from the current time
+    val currentTimeString = timeFormat.format(calendar.time)
+
+    val todayHours = operationalHours.find {
+        it.day.uppercase(Locale.ROOT) == currentDayOfWeekString
+    }
+
+    if (todayHours == null || todayHours.hours.isBlank() || todayHours.hours.equals("CLOSED", ignoreCase = true)) {
+        return RestaurantStatusResult(
+            status = RestaurantStatus.OFFDAY,
+            message = "Closed today"
+        )
+    }
+
+    val parts = todayHours.hours.split(" - ")
+    if (parts.size != 2) {
+        return RestaurantStatusResult(RestaurantStatus.CLOSED, "Invalid time format")
+    }
+
+    try {
+        val openTimeString = parts[0]
+        val closeTimeString = parts[1]
+
+        // Parse current, open, and close times into Date objects for comparison
+        val currentTime = timeFormat.parse(currentTimeString)!!
+        val openTime = timeFormat.parse(openTimeString)!!
+        val closeTime = timeFormat.parse(closeTimeString)!!
+
+        // 2. Check if the current time is within the operating window
+        // Note: Date.after() and Date.before() are equivalent to > and < for time comparison
+        val isOpen = !currentTime.before(openTime) && currentTime.before(closeTime)
+
+        if (isOpen) {
+            return RestaurantStatusResult(
+                status = RestaurantStatus.OPEN,
+                message = "Closes at $closeTimeString today"
+            )
+        } else if (currentTime.before(openTime)) {
+            // Closed now but will open later today
+            return RestaurantStatusResult(
+                status = RestaurantStatus.CLOSED,
+                message = "Opens at $openTimeString today"
+            )
+        } else {
+            // Past closing time for today
+            // Look for the next open day
+            val nextOpenDayInfo = findNextOpenDayCompat(currentDayOfWeekInt, operationalHours)
+
+            val message = if(nextOpenDayInfo != null) {
+                val nextOpenTime = nextOpenDayInfo.hours.split(" - ")[0]
+                "Closed. Opens next on ${nextOpenDayInfo.day} at $nextOpenTime"
+            } else {
+                "Closed for the day"
+            }
+
+            return RestaurantStatusResult(
+                status = RestaurantStatus.CLOSED,
+                message = message
+            )
+        }
+
+    } catch (e: ParseException) {
+        // Handle issues if "HH.mm" string format is incorrect
+        return RestaurantStatusResult(RestaurantStatus.CLOSED, "Error processing hours: ${e.message}")
+    } catch (e: Exception) {
+        // Catch all other exceptions
+        return RestaurantStatusResult(RestaurantStatus.CLOSED, "An unknown error occurred")
+    }
+}
+
+// Helper to find the next open day (simulating DayOfWeek.plus(i))
+private fun findNextOpenDayCompat(currentDayInt: Int, hours: List<OperationalDay>): OperationalDay? {
+    for (i in 1..7) {
+        // Calculate the next day in the cycle (1=Sunday, 7=Saturday)
+        val nextDayInt = (currentDayInt + i - 1) % 7 + 1
+        val nextDayString = getDayOfWeekString(nextDayInt)
+
+        val nextDayInfo = hours.find {
+            it.day.uppercase(Locale.ROOT) == nextDayString &&
+                    it.hours.isNotBlank() &&
+                    !it.hours.equals("CLOSED", ignoreCase = true)
+        }
+
+        if (nextDayInfo != null) {
+            return nextDayInfo
+        }
+    }
+    return null
+}
+
+/**
+ * Mencari jam operasional untuk hari saat ini dalam daftar OperationalDay.
+ *
+ * @param operationalHours Daftar jam operasional restoran.
+ * @return String jam operasional (e.g., "10.00 - 20.00") atau pesan default jika tutup.
+ */
+fun getTodayOperatingHoursString(
+    operationalHours: List<OperationalDay>
+): String {
+    val calendar = Calendar.getInstance()
+    val currentDayOfWeekInt = calendar.get(Calendar.DAY_OF_WEEK)
+    val currentDayOfWeekString = getDayOfWeekString(currentDayOfWeekInt)
+
+    // Mencari entri hari ini (misalnya, mencari "WEDNESDAY")
+    val todayHours = operationalHours.find {
+        it.day.uppercase(Locale.ROOT) == currentDayOfWeekString
+    }
+
+    // Jika entri ditemukan dan jamnya ada, kembalikan jamnya.
+    if (todayHours != null && todayHours.hours.isNotBlank()) {
+        // Karena data Anda mungkin memiliki "Off Day", kita cek lagi agar lebih aman
+        if (todayHours.hours.equals("Off Day", ignoreCase = true)) {
+            return "Closed Today"
+        }
+        return todayHours.hours
+    }
+
+    // Default jika hari ini tidak terdaftar atau datanya kosong
+    return "N/A"
+}
+
+
+/**
+ * Memproses daftar OperationalDay untuk menandai hari mana yang isToday.
+ */
+fun markToday(operationalHours: List<OperationalDay>): List<OperationalDay> {
+    val calendar = Calendar.getInstance()
+    val currentDayOfWeekInt = calendar.get(Calendar.DAY_OF_WEEK)
+    val currentDayOfWeekString = getDayOfWeekString(currentDayOfWeekInt) // e.g., "WEDNESDAY"
+
+    return operationalHours.map { day ->
+        val dayString = day.day.uppercase(Locale.ROOT)
+
+        // Cek apakah nama hari cocok
+        val isCurrentDay = dayString == currentDayOfWeekString
+
+        // Kembalikan objek OperationalDay yang sudah di-copy dengan status isToday yang benar
+        day.copy(isToday = isCurrentDay)
+    }
+}
+
 
 val categories = listOf(
     Category(1,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"),
@@ -431,3 +755,172 @@ val categories = listOf(
 )
 
 val categoriesItem = Category(1,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format")
+
+fun LocalDate.toUiDateString(): String {
+    val formatter = DateTimeFormatter.ofPattern("dd MMM yy", Locale.ENGLISH)
+    return this.format(formatter)
+}
+
+fun getSampleVouchers(): List<Voucher> {
+    val todayApiString = "2025-10-06"
+    val apiFormatter = DateTimeFormatter.ISO_DATE
+    val today: LocalDate = LocalDate.parse(todayApiString, apiFormatter)
+
+    return listOf(
+
+        // 1. GLOBAL DISCOUNT (Percentage)
+        Voucher(
+            id = "VOU-PYPL-99",
+            imageUrl = "https://assets.example.com/icons/paypal.png",
+            title = "Diskon 20% Semua Restoran",
+            description = "Use with GoPay or 7 other options, \nmax Rp15K discount.",
+            type = VoucherType.DISCOUNT,
+            discountType = DiscountType.PERCENTAGE,
+            scope = VoucherScope.GLOBAL,
+            discountValue = 20,
+            maxDiscount = 30000,
+            minOrderValue = 75000,
+            minOrderLabel = "Min. order Rp75.000",
+            expiryDate = today.plusMonths(1).withDayOfMonth(28),
+            isAvailable = true,
+            isSelected = false,
+        ),
+
+        // 2. RESTAURANT-SPECIFIC DISCOUNT (Percentage)
+        Voucher(
+            id = "VOU-RST-456",
+            imageUrl = "https://assets.example.com/icons/restaurant_exclusive.png",
+            title = "Chef's Special 15% Off",
+            description = "Valid only at 'The Spice Garden' \nrestaurant.",
+            type = VoucherType.DISCOUNT,
+            discountType = DiscountType.PERCENTAGE,
+            scope = VoucherScope.RESTAURANT,
+            discountValue = 15,
+            maxDiscount = 10000,
+            minOrderValue = 40000,
+            minOrderLabel = "Min. order Rp40.000",
+            expiryDate = today.plusWeeks(2),
+            isAvailable = true,
+            isSelected = false,
+            restaurantIds = listOf("4")
+        ),
+
+        // 3. GLOBAL SHIPPING (Free Delivery)
+        Voucher(
+            id = "VOU-DLVY-01",
+            imageUrl = "https://assets.example.com/icons/delivery.png",
+            title = "Gratis Ongkir Rp15.000",
+            description = "Use with GoPay or 7 other options",
+            type = VoucherType.SHIPPING,
+            discountType = DiscountType.FIXED,
+            scope = VoucherScope.GLOBAL,
+            discountValue = 15000,
+            maxDiscount = 15000,
+            minOrderValue = 50000,
+            minOrderLabel = "Min. order Rp50.000",
+            expiryDate = today.plusDays(7),
+            isAvailable = true,
+            isSelected = false,
+        ),
+
+        // 4. RESTAURANT-SPECIFIC CASHBACK
+        Voucher(
+            id = "VOU-CB-77",
+            imageUrl = "https://assets.example.com/icons/cashback.png",
+            title = "Cashback 10% di Kopi Kenangan",
+            description = "Dapatkan cashback ke Tassty Points",
+            type = VoucherType.CASHBACK,
+            discountType = DiscountType.PERCENTAGE,
+            scope = VoucherScope.RESTAURANT,
+            discountValue = 10,
+            maxDiscount = 20000,
+            minOrderValue = 25000,
+            minOrderLabel = "Min. order Rp25.000",
+            expiryDate = today.plusMonths(2),
+            isAvailable = true,
+            isSelected = false,
+            restaurantIds = listOf("4")
+        ),
+
+        // 5. GLOBAL CASHBACK
+        Voucher(
+            id = "VOU-CB-88",
+            imageUrl = "https://assets.example.com/icons/global_cashback.png",
+            title = "Cashback 5% Semua Restoran",
+            description = "Use with GoPay or Tassty Points balance",
+            type = VoucherType.CASHBACK,
+            discountType = DiscountType.PERCENTAGE,
+            scope = VoucherScope.GLOBAL,
+            discountValue = 5,
+            maxDiscount = 15000,
+            minOrderValue = 20000,
+            minOrderLabel = "Min. order Rp20.000",
+            expiryDate = today.plusMonths(1),
+            isAvailable = true,
+            isSelected = false
+        ),
+
+        // 6. RESTAURANT FIXED DISCOUNT (Unique case)
+        Voucher(
+            id = "VOU-RST-789",
+            imageUrl = "https://assets.example.com/icons/burger.png",
+            title = "Potongan Rp25.000 di Burger Bliss",
+            description = "Hanya berlaku untuk Burger Bliss",
+            type = VoucherType.DISCOUNT,
+            discountType = DiscountType.FIXED,
+            scope = VoucherScope.RESTAURANT,
+            discountValue = 25000,
+            maxDiscount = 25000,
+            minOrderValue = 70000,
+            minOrderLabel = "Min. order Rp70.000",
+            expiryDate = today.plusWeeks(3),
+            isAvailable = true,
+            isSelected = false,
+            restaurantIds = listOf("4")
+        ),
+
+        // 7. SHIPPING - RESTAURANT ONLY (rare case)
+        Voucher(
+            id = "VOU-DLVY-LOCAL",
+            imageUrl = "https://assets.example.com/icons/local_delivery.png",
+            title = "Free Ongkir Rp10.000 (Khusus Nasi Goreng Pak Kumis)",
+            description = "Berlaku hanya untuk resto tertentu.",
+            type = VoucherType.SHIPPING,
+            discountType = DiscountType.FIXED,
+            scope = VoucherScope.RESTAURANT,
+            discountValue = 10000,
+            maxDiscount = 10000,
+            minOrderValue = 30000,
+            minOrderLabel = "Min. order Rp30.000",
+            expiryDate = today.plusDays(10),
+            isAvailable = true,
+            isSelected = false,
+            restaurantIds = listOf("4")
+        )
+    )
+
+}
+
+fun filterVouchersByRestaurant(targetRestaurantId: String): List<Voucher> {
+
+    return getSampleVouchers().filter { voucher ->
+        // Kriteria 1: Voucher GLOBAL selalu disertakan
+        val isGlobal = voucher.scope == VoucherScope.GLOBAL
+
+        // Kriteria 2: Voucher RESTAURANT disertakan HANYA jika ID target cocok
+        val isRestaurantSpecificMatch = voucher.scope == VoucherScope.RESTAURANT &&
+                voucher.restaurantIds.contains(targetRestaurantId)
+
+        // Gabungkan kedua kriteria: (GLOBAL) ATAU (RESTAURANT dan ID cocok)
+        isGlobal || isRestaurantSpecificMatch
+    }
+}
+
+fun placeholder() = Restaurant(
+    id = "", name = "", rating = 0.0,
+    deliveryTime = "", locationDetails = LocationDetails("",0.0,0.0,"",""),
+    imageUrl = "",
+    operationalHours = emptyList(),
+    category = listOf(),
+    reviewCount = 0
+)

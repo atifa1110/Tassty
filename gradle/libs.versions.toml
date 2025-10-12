@@ -14,6 +14,7 @@ play-services-location = "21.3.0"
 maps-compose = "2.11.2"
 compose = "1.9.2"
 lifecycle = "2.8.4"
+threetenabp = "1.4.9"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +40,8 @@ google-play-services-location = { group = "com.google.android.gms", name = "play
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 compose-material = { group = "androidx.compose.material", name = "material", version.ref = "compose"}
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+threeten-abp = { group = "com.jakewharton.threetenabp", name = "threetenabp", version.ref = "threetenabp" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

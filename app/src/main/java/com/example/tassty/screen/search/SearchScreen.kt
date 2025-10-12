@@ -1,4 +1,4 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,13 +25,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.baseChips
-import com.example.tassty.categories
 import com.example.tassty.component.CategoryList
 import com.example.tassty.component.ChipSearchExpandSection
 import com.example.tassty.component.ChipSearchSection
 import com.example.tassty.component.CustomFilterChip
 import com.example.tassty.component.Divider32
-import com.example.tassty.component.EmptyRestaurant
+import com.example.tassty.component.EmptySearchResult
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.FoodNameGridCard
@@ -39,23 +38,18 @@ import com.example.tassty.component.HorizontalTitleSection
 import com.example.tassty.component.LoadingScreen
 import com.example.tassty.component.RestaurantTinyGridCard
 import com.example.tassty.component.SearchBarWhiteSection
-import com.example.tassty.component.TitleListHeader
 import com.example.tassty.component.TopBarButton
 import com.example.tassty.component.restaurantMenuListBlock
-import com.example.tassty.historyOptions
 import com.example.tassty.menus
 import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
-import com.example.tassty.model.DataState
 import com.example.tassty.model.FilterState
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Resource
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.SearchUiState
-import com.example.tassty.model.StatusState
-import com.example.tassty.popularOptions
+import com.example.tassty.model.RestaurantUiModel
+import com.example.tassty.restaurantUiModel
 import com.example.tassty.restaurants
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -125,7 +119,7 @@ fun SearchScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .background(Neutral10),
-            contentPadding = PaddingValues(bottom = 24.dp),
+            contentPadding = PaddingValues(top = 12.dp,bottom = 24.dp),
         ) {
             item {
                 Column(Modifier.padding(horizontal = 24.dp)) {
@@ -179,8 +173,8 @@ fun SearchScreen(
                     // Menu section
                     item {
                         MenuSection(
-                            menus = data.menus.data,
-                            status = RestaurantStatus.OPEN
+                            resource = data.menus,
+                            onRetry = {}
                         )
                     }
                 }
@@ -200,11 +194,15 @@ fun SearchScreen(
                         item { LoadingScreen() }
                     }
 
+                    val filterList = data.filterResult.data ?: emptyList()
+                    val queryList = data.queryResult.data ?: emptyList()
+
+
                     // Show result
-                    val restaurantsToShow = if (data.filterResult.data.isNotEmpty()) {
-                        data.filterResult.data // Filter search when active
+                    val restaurantsToShow = if (filterList.isNotEmpty()) {
+                        filterList // Filter search when active
                     } else {
-                        data.queryResult.data // Filter search with query
+                        queryList // Filter search with query
                     }
 
                     if (restaurantsToShow.isNotEmpty()) {
@@ -216,8 +214,7 @@ fun SearchScreen(
                     } else if (status.isGlobalLoading == false) {
                         // Show empty page if nothing found
                         item {
-                            TitleListHeader(data = 0, text = "Menu found")
-                            EmptyRestaurant()
+                            EmptySearchResult(title = "Menu found")
                         }
                     }
                 }
@@ -239,7 +236,7 @@ fun ChipListSection(
     if(resource.errorMessage!=null){
         ErrorListState(title = stringResource(R.string.your_search_history),
             onRetry = onRetry)
-    } else if(resource.data.isNotEmpty()){
+    } else if(resource.data!=null){
         ChipSearchSection(
             title = stringResource(R.string.your_search_history),
             options = resource.data,
@@ -256,7 +253,7 @@ fun ChipExpandListSection(
     if(resource.errorMessage!=null){
         ErrorListState(title = stringResource(R.string.popular_searches),
             onRetry = onRetry)
-    } else if(resource.data.isNotEmpty()){
+    } else if(resource.data!=null){
         Divider32()
         ChipSearchExpandSection(
             title = stringResource(R.string.popular_searches),
@@ -271,32 +268,33 @@ fun CategoryListSection(
     onRetry: () -> Unit
 ){
     if(resource.errorMessage!=null){
-        ErrorListState(title = stringResource(R.string.explore_by_cuisine),
-            onRetry = onRetry)
-    } else if(resource.data.isNotEmpty()){
+        ErrorListState(
+            title = stringResource(R.string.explore_by_cuisine),
+            onRetry = onRetry
+        )
+    } else if(resource.data!=null){
         CategoryList(categories = resource.data)
     }
 }
 
 @Composable
 fun RestaurantSection(
-    resource: Resource<List<Restaurant>>,
+    resource: Resource<List<RestaurantUiModel>>,
     onRetry: () -> Unit,
 ) {
     if(resource.errorMessage!=null){
         ErrorListState(title = stringResource(R.string.restos_you_ve_searched),
             onRetry = onRetry)
-    } else if(resource.data.isNotEmpty()) {
+    } else if(resource.data!=null) {
         HorizontalTitleSection(
             title = stringResource(R.string.restos_you_ve_searched)
         ) {
             items(
                 items = resource.data,
-                key = { it.id }
+                key = { it.restaurant.id }
             ) { restaurant ->
                 RestaurantTinyGridCard(
-                    restaurant = restaurant,
-                    status = RestaurantStatus.OPEN
+                    restaurant = restaurant
                 )
             }
         }
@@ -305,21 +303,27 @@ fun RestaurantSection(
 
 @Composable
 fun MenuSection(
-    menus: List<Menu>,
-    status: RestaurantStatus
+    resource: Resource<List<Menu>>,
+    onRetry: () -> Unit,
 ) {
-    HorizontalTitleSection(
-        title = stringResource(R.string.menus_you_ve_searched)
-    ) {
-        items(items = menus,
-            key = {it.id}
-        ) { menu ->
-            FoodNameGridCard(
-                menu = menu,
-                status = status,
-                isFirstItem = false,
-                isWishlist = false
-            )
+    if(resource.errorMessage!=null){
+        ErrorListState(title = stringResource(R.string.restos_you_ve_searched),
+            onRetry = onRetry)
+    } else if(resource.data!=null) {
+        HorizontalTitleSection(
+            title = stringResource(R.string.menus_you_ve_searched)
+        ) {
+            items(
+                items = menus,
+                key = { it.id }
+            ) { menu ->
+                FoodNameGridCard(
+                    menu = menu,
+                    status = RestaurantStatus.OPEN,
+                    isFirstItem = false,
+                    isWishlist = false
+                )
+            }
         }
     }
 }
@@ -409,58 +413,58 @@ fun FilterSection(
 //        onQueryChange = {}
 //    )
 //}
-//
+
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewSearchErrorScreen() {
+//    SearchScreen(
+//        uiState = SearchUiState.ErrorFatal(
+//            data = DataState(
+//                history = Resource(data = emptyList(),
+//                    isLoading = false, errorMessage = "Network Error"),
+//                popularSearches = Resource(data = emptyList(),
+//                    isLoading = false, errorMessage = "Network Error"),
+//                categories = Resource(data = emptyList(),
+//                    isLoading = false, errorMessage = "Network Error"),
+//                rest = Resource(data = restaurants, isLoading = false),
+//                menus = Resource(data = menus, isLoading = false)
+//            ),
+//            status = StatusState(
+//                queryText = "", errorMessage = "Network error"),
+//            message = "Failed to connect. Please check your internet connection."
+//        ),
+//        onQueryChange = {}
+//    )
+//}
+
 @Preview(showBackground = true)
 @Composable
-fun PreviewSearchErrorScreen() {
+fun PreviewSearchScreen() {
     SearchScreen(
-        uiState = SearchUiState.ErrorFatal(
+        uiState = SearchUiState.Result(
             data = DataState(
-                history = Resource(data = emptyList(),
-                    isLoading = false, errorMessage = "Network Error"),
-                popularSearches = Resource(data = emptyList(),
-                    isLoading = false, errorMessage = "Network Error"),
-                categories = Resource(data = emptyList(),
-                    isLoading = false, errorMessage = "Network Error"),
-                rest = Resource(data = restaurants, isLoading = false),
-                menus = Resource(data = menus, isLoading = false)
+                queryResult = Resource(data = restaurantUiModel),
             ),
             status = StatusState(
-                queryText = "", errorMessage = "Network error"),
-            message = "Failed to connect. Please check your internet connection."
+                queryText = "burger"
+            )
         ),
         onQueryChange = {}
     )
 }
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewSearchScreen() {
-//    SearchScreen(
-//        uiState = SearchUiState.Result(
-//            data = DataState(
-//                queryResult = Resource(data = restaurants),
-//            ),
-//            status = StatusState(
-//                queryText = "burger"
-//            )
-//        ),
-//        onQueryChange = {}
-//    )
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewSearchEmptyScreen() {
-//    SearchScreen(
-//        uiState = SearchUiState.Result(
-//            data = DataState(
-//                queryResult = Resource(data = emptyList()),
-//            ),
-//            status = StatusState(
-//                queryText = "burger"
-//            )
-//        ),
-//        onQueryChange = {}
-//    )
-//}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewSearchEmptyScreen() {
+    SearchScreen(
+        uiState = SearchUiState.Result(
+            data = DataState(
+                queryResult = Resource(data = emptyList()),
+            ),
+            status = StatusState(
+                queryText = "burger"
+            )
+        ),
+        onQueryChange = {}
+    )
+}

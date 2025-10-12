@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.model.Menu
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
@@ -41,7 +42,8 @@ fun FoodImageWithFloating(
         FloatingAddButton(
             iconSize = 12.dp,
             actionSize = 24.dp,
-            modifier = Modifier.align(Alignment.BottomEnd)
+            modifier = Modifier.align(Alignment.BottomEnd),
+            onClick = {}
         )
     }
 }
@@ -74,7 +76,6 @@ fun FoodCircleImageWithOverlays(
     menu: Menu,
     status : RestaurantStatus,
     isFirstItem: Boolean,
-    isWishlist: Boolean,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,7 +94,7 @@ fun FoodCircleImageWithOverlays(
 
         FavoriteButton(
             modifier = Modifier.align(Alignment.TopEnd),
-            isWishlist = isWishlist,
+            isWishlist = menu.isWishlist,
             onClick = onFavoriteClick
         )
     }
@@ -186,7 +187,7 @@ fun FoodTinyGridCardContent(
         )
 
         FoodPriceTinyText(
-            price = menu.price
+            price = menu.originalPrice.toCleanRupiahFormat()
         )
     }
 }
@@ -208,6 +209,7 @@ fun FoodNameGridCardContent(
         FloatingAddButton(
             iconSize = 16.dp,
             actionSize = 30.dp,
+            onClick = {}
         )
     }
 }
@@ -215,6 +217,7 @@ fun FoodNameGridCardContent(
 @Composable
 fun FoodGridCardContent(
     menu: Menu,
+    onAddToCart:() -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -237,10 +240,11 @@ fun FoodGridCardContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            FoodPriceText(price= menu.price, color = Orange500)
+            FoodPriceText(price= menu.originalPrice.toCleanRupiahFormat(), color = Orange500)
             FloatingAddButton(
                 iconSize = 16.dp,
                 actionSize = 30.dp,
+                onClick = onAddToCart
             )
         }
     }
@@ -249,7 +253,6 @@ fun FoodGridCardContent(
 @Composable
 fun FoodListCardContent(
     menu: Menu,
-    isWishlist : Boolean,
     onFavoriteClick: () -> Unit
 ) {
     Column(
@@ -276,7 +279,7 @@ fun FoodListCardContent(
                 )
             }
             FavoriteButton(
-                isWishlist = isWishlist,
+                isWishlist = menu.isWishlist,
                 onClick = onFavoriteClick
             )
         }
@@ -286,10 +289,11 @@ fun FoodListCardContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            FoodPriceText(price = menu.price, color = Orange500)
+            FoodPriceText(price = menu.originalPrice.toCleanRupiahFormat(), color = Orange500)
             FloatingAddButton(
                 iconSize = 16.dp,
                 actionSize = 30.dp,
+                onClick = {}
             )
         }
 
@@ -348,10 +352,11 @@ fun FoodWideListCardContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            FoodPriceText(price = menu.price, color = Orange500)
+            FoodPriceText(price = menu.originalPrice.toCleanRupiahFormat(), color = Orange500)
             FloatingAddButton(
                 iconSize = 16.dp,
                 actionSize = 30.dp,
+                onClick = {}
             )
         }
 
@@ -383,7 +388,6 @@ fun FoodOrderListCardContent(
                 color = Neutral100
             )
         }
-
 
         NotesText("extra sides")
 

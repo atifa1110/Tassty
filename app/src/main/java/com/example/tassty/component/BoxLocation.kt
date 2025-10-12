@@ -96,10 +96,10 @@ fun BoxLocation(
         }
     }
 }
+
 @Composable
 fun EmptyMapBox() {
     val isPreview = LocalInspectionMode.current
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,7 +107,6 @@ fun EmptyMapBox() {
             .clip(RoundedCornerShape(20.dp))
     ) {
         if (isPreview) {
-            // Placeholder untuk Pratinjau
             Box(
                 modifier = Modifier
                     .matchParentSize()

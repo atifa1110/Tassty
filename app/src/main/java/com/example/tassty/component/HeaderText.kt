@@ -22,85 +22,23 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
+import com.example.tassty.R
 import com.example.tassty.categoriesItem
+import com.example.tassty.model.Category
 import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
-
-@Composable
-fun HeaderText(
-    text: String,
-    textColor : Color,
-    textButton: String,
-    onButtonClick:() -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            style = LocalCustomTypography.current.h5Bold
-        )
-        Text(
-            modifier = Modifier.clickable{
-                onButtonClick()
-            },
-            text = textButton,
-            color = Orange500,
-            style = LocalCustomTypography.current.bodyMediumMedium
-        )
-    }
-
-}
-
-@Composable
-fun HeaderSubtitleText(
-    title: String,
-    subtitle:String,
-    titleColor : Color,
-    subtitleColor: Color,
-    textButton: String,
-    onButtonClick:() -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = title,
-                color = titleColor,
-                style = LocalCustomTypography.current.h5Bold
-            )
-            Text(
-                text = subtitle,
-                color = subtitleColor,
-                style = LocalCustomTypography.current.bodySmallRegular
-            )
-        }
-        Text(
-            modifier = Modifier.clickable{
-                onButtonClick()
-            },
-            text = textButton,
-            color = Orange500,
-            style = LocalCustomTypography.current.bodyMediumMedium
-        )
-    }
-
-}
 
 @Composable
 fun HeaderWithOverlap(
@@ -165,7 +103,37 @@ fun HeaderWithOverlap(
 }
 
 @Composable
-fun TextHeader(
+fun CategoryFoundHeader(
+    searchQuery: String,
+    filteredCategories: List<Category>
+) {
+    val headerText = if (searchQuery.isBlank()) {
+        "Categories"
+    } else {
+        if (filteredCategories.isEmpty()) "Category found"
+        else "Category found"
+    }
+
+    val styledText: AnnotatedString = buildAnnotatedString {
+        withStyle(
+            style = LocalCustomTypography.current.h4Bold.toSpanStyle()
+                .copy(color = Orange500)
+        ) {
+            append("${filteredCategories.size} ")
+        }
+        withStyle(
+            style = LocalCustomTypography.current.h5Bold.toSpanStyle()
+                .copy(color = Neutral100)
+        ) {
+            append(headerText)
+        }
+    }
+
+    Text(text = styledText)
+}
+
+@Composable
+fun CategoryTextHeader(
     title : String,
     subtitle: String
 ){
@@ -195,7 +163,7 @@ fun CategoryAndDescriptionHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TextHeader(title = category, subtitle = "Some lunch boosters!")
+        CategoryTextHeader(title = category, subtitle = "Some lunch boosters!")
         CategoryCard(category = categoriesItem)
     }
 }
@@ -207,7 +175,7 @@ fun BestSellerHeader(){
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        TextHeader(title = "Our best seller!",
+        CategoryTextHeader(title = "Our best seller!",
             subtitle = "Top-selling delicacies you can't miss!")
         BestSellerIcon()
     }
@@ -239,3 +207,167 @@ fun StatusTextHeader(
         )
     }
 }
+
+@Composable
+fun Header(
+    modifier: Modifier = Modifier,
+    content : @Composable ()-> Unit
+){
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun HeaderListTitleButton(
+    modifier: Modifier = Modifier,
+    title: String,
+    titleColor: Color,
+    textButton: String = stringResource(R.string.see_all),
+    onClick:() -> Unit,
+){
+    Header(modifier = modifier) {
+        Text(
+            text = title,
+            style = LocalCustomTypography.current.h5Bold,
+            color = titleColor
+        )
+        Text(
+            modifier = Modifier.clickable(onClick = onClick),
+            text = textButton,
+            style = LocalCustomTypography.current.bodyMediumMedium,
+            color = Orange500
+        )
+    }
+}
+
+@Composable
+fun HeaderListTitleSubtitleButton(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle : String,
+    textButton: String = stringResource(R.string.see_all),
+    onClick:() -> Unit,
+){
+    Header(modifier = modifier) {
+        Column {
+            Text(
+                text = title,
+                color = Neutral100,
+                style = LocalCustomTypography.current.h5Bold
+            )
+            Text(
+                text = subtitle,
+                color = Neutral100,
+                style = LocalCustomTypography.current.bodySmallRegular
+            )
+        }
+        Text(
+            modifier = Modifier.clickable(onClick = onClick),
+            text = textButton,
+            style = LocalCustomTypography.current.bodyMediumMedium,
+            color = Orange500
+        )
+    }
+}
+
+@Composable
+fun HeaderListBlackTitle(
+    modifier: Modifier = Modifier,
+    title: String
+){
+    Header(modifier = modifier) {
+        Text(
+            text = title,
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100
+        )
+    }
+}
+
+@Composable
+fun ItemCountTitleText(
+    itemCount : Int,
+    title : String
+){
+    Text(
+        text = buildAnnotatedString {
+            withStyle(style = LocalCustomTypography.current.h4Bold.toSpanStyle().copy(color = Orange500)) {
+                append(itemCount.toString())
+            }
+            append(" ")
+            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = Neutral100)) {
+                append(title)
+            }
+        }
+    )
+}
+
+@Composable
+fun HeaderListItemCountTitle(
+    modifier: Modifier = Modifier,
+    itemCount : Int,
+    title : String
+){
+    Header(modifier = modifier) {
+        ItemCountTitleText(itemCount = itemCount, title = title)
+    }
+}
+
+@Composable
+fun HeaderListItemCountTitleButton(
+    modifier: Modifier = Modifier,
+    itemCount : Int,
+    title : String,
+    textButton: String = stringResource(R.string.see_all),
+    onClick:() -> Unit
+){
+    Header(modifier = modifier) {
+        ItemCountTitleText(itemCount = itemCount, title = title)
+        Text(
+            modifier = Modifier.clickable(onClick = onClick),
+            text = textButton,
+            style = LocalCustomTypography.current.bodyMediumMedium,
+            color = Orange500
+        )
+    }
+}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewHeader(){
+//    Column (Modifier.fillMaxWidth().padding(24.dp),
+//        verticalArrangement = Arrangement.spacedBy(16.dp)){
+//
+//        HeaderListTitleButton(
+//            title = "Recommended Restaurants",
+//            titleColor = Neutral100,
+//            onClick = {}
+//        )
+//
+//        HeaderListTitleSubtitleButton(
+//            title = "Recommended Restaurants",
+//            subtitle = "Our recommended cafes to explore!",
+//            onClick = {}
+//        )
+//
+//        HeaderListBlackTitle(
+//            title = "Suggested menus for you!"
+//        )
+//
+//        HeaderListItemCountTitle(
+//            itemCount = 24,
+//            title = "Search founds"
+//        )
+//
+//        HeaderListItemCountTitleButton(
+//            itemCount = 24,
+//            title = "Search founds",
+//            onClick = {}
+//        )
+//    }
+//}

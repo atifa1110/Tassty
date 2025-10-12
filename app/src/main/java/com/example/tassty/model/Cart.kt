@@ -6,8 +6,8 @@ data class Cart(
     val imageUrl: String,
     val price: Int,
     var quantity: Int,
-    val stock : Int = 20,
-    val note: String? = null,
+    val stock : Int = 10,
+    val note: List<String>? = null,
     val isSwipeActionVisible: Boolean = false,
-    val isChecked: Boolean = false
+    val isChecked: Boolean = false,
 )

@@ -50,6 +50,7 @@ import com.example.tassty.R
 import com.example.tassty.component.BackTopAppBar
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.ButtonLogout
+import com.example.tassty.component.CircleImageIcon
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.ProfileTopAppBar
 import com.example.tassty.ui.theme.Blue100
@@ -532,18 +533,14 @@ fun ProfileMenuSwitchItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Icon
-            Box(
-                modifier = Modifier.size(32.dp).clip(CircleShape)
-                    .background(boxColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = title,
-                    tint = iconColor,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
+            CircleImageIcon(
+                boxColor =boxColor,
+                icon = icon,
+                iconColor = iconColor,
+                iconSize = 16.dp,
+                contentDescription = title,
+                modifier = Modifier.size(32.dp)
+            )
 
             Spacer(modifier = Modifier.width(8.dp))
 

@@ -1,9 +1,7 @@
 package com.example.tassty.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -12,30 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.SearchUiState
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -90,26 +74,15 @@ fun TopBarButton(
     iconColor: Color,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .size(44.dp)
+    CircleImageIcon(
+        boxColor = boxColor,
+        icon = icon,
+        iconSize = 20.dp,
+        iconColor = iconColor,
+        contentDescription = "top app bar icon",
+        modifier = Modifier.size(44.dp)
             .clickable(onClick = onClick)
-            .clip(CircleShape)
-            .background(boxColor) ,
-        contentAlignment = Alignment.Center
-    ) {
-        val painter = when (icon) {
-            is androidx.compose.ui.graphics.vector.ImageVector -> rememberVectorPainter(icon)
-            is Int -> painterResource(icon)
-            else -> return // Handle case not supported
-        }
-        Icon(
-            modifier = Modifier.size(20.dp),
-            painter = painter,
-            contentDescription = null,
-            tint = iconColor
-        )
-    }
+    )
 }
 
 
@@ -186,6 +159,7 @@ fun CategoryTopAppBar(
 @Composable
 fun CartTopAppBar(
     modifier: Modifier = Modifier,
+    onDeleteClick:() -> Unit
 ) {
     CustomBarSpaceBetween(modifier = modifier) {
         Row {
@@ -203,7 +177,7 @@ fun CartTopAppBar(
 
         TopBarButton(icon = R.drawable.trash,
             boxColor =  Pink500, iconColor = Neutral10
-        ) {  }
+        ) { onDeleteClick() }
     }
 }
 
@@ -220,7 +194,7 @@ fun SetupTopAppBar(
             boxColor = Neutral20, iconColor = Neutral100
         ) { onBackClick() }
         
-        StepIndicator(currentStep,totalStep)
+        StepIndicatorText(currentStep,totalStep)
 
         Text(
             text = "Skip",
@@ -272,6 +246,7 @@ fun TitleTopAppBar(
 
 @Composable
 fun DetailTopAppBar(
+    isFavorite: Boolean,
     onShowSearch : () -> Unit,
     onBackClick:() -> Unit,
     onFavoriteClick:() -> Unit,
@@ -290,7 +265,7 @@ fun DetailTopAppBar(
 
             TopBarButton(
                 icon = R.drawable.heart,
-                boxColor = Neutral10, iconColor = Pink500
+                boxColor = if(isFavorite) Pink500 else Neutral10, iconColor = if(isFavorite) Neutral10 else Pink500
             ) { onFavoriteClick() }
 
             TopBarButton(
@@ -303,6 +278,7 @@ fun DetailTopAppBar(
 
 @Composable
 fun DetailMenuTopAppBar(
+    isFavorite: Boolean,
     onBackClick:() -> Unit,
     onFavoriteClick:() -> Unit,
     onShareClick:() -> Unit
@@ -316,12 +292,12 @@ fun DetailMenuTopAppBar(
 
             TopBarButton(
                 icon = R.drawable.heart,
-                boxColor = Neutral10, iconColor = Pink500
+                boxColor = if(isFavorite) Pink500 else Neutral10, iconColor = if(isFavorite) Neutral10 else Pink500
             ) { onFavoriteClick() }
 
             TopBarButton(
                 icon = R.drawable.share,
-                boxColor = Neutral10, iconColor = Neutral100
+                boxColor = Neutral20.copy(0.9f), iconColor = Neutral100
             ) { onShareClick() }
         }
     }
@@ -339,7 +315,7 @@ fun TopAppBarPreview() {
         SetupTopAppBar(1,2, onBackClick = {}, onSkipClick = {})
         MapSearchTopAppBar(onBackClick = {}) { }
         TitleTopAppBar(title = "Recommended Restaurant",onBackClick = {}) { }
-        DetailTopAppBar(onShowSearch = {}, onShareClick = {}, onFavoriteClick = {}, onBackClick = {})
-        DetailMenuTopAppBar(onShareClick = {}, onFavoriteClick = {}, onBackClick = {})
+        DetailTopAppBar(isFavorite = false, onShowSearch = {}, onShareClick = {}, onFavoriteClick = {}, onBackClick = {})
+        DetailMenuTopAppBar(isFavorite = false, onShareClick = {}, onFavoriteClick = {}, onBackClick = {})
     }
 }

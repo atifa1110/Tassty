@@ -1,4 +1,4 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

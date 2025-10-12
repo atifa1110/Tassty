@@ -27,27 +27,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.example.tassty.component.CategoryTopAppBar
+import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.restaurants
-import com.example.tassty.component.TitleListHeader
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.RestaurantLargeListCard
 import com.example.tassty.component.RestaurantSmallListCard
+import com.example.tassty.model.FilterState
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.restaurantUiModel
+import com.example.tassty.screen.search.FilterSection
 
 @Composable
 fun NearbyRestaurantScreen() {
     Box(
         modifier = Modifier.fillMaxSize(),
     ) {
-        // 1. Peta (Latar Belakang)
         MapArea(modifier = Modifier.fillMaxSize())
 
         CategoryTopAppBar(
             onBackClick = {}, onFilterClick = {}
         )
 
-        // Draggable Search Bar ditempatkan di dalam Box agar posisinya relatif terhadap Box
-        DraggableSearchBar(modifier = Modifier.align(Alignment.BottomCenter),
+        // Draggable Search Bar
+        DraggableSearchBar(
+            modifier = Modifier.align(Alignment.BottomCenter),
             status = RestaurantStatus.OPEN)
     }
 }
@@ -67,7 +70,6 @@ fun DraggableSearchBar(
         label = "heightAnim"
     )
 
-    // === Animasi padding bawah & horizontal ===
     val dynamicBottomPadding by animateDpAsState(
         targetValue = if (offsetY >= 0f) bottomSpacing else 0.dp,
         label = "bottomPaddingAnim"
@@ -129,7 +131,7 @@ fun DraggableSearchBar(
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically()
             ) {
-//                FilterList()
+                FilterSection(filterState = FilterState())
             }
 
             if (dynamicHeight >= 400.dp) {
@@ -141,9 +143,9 @@ fun DraggableSearchBar(
             HorizontalDivider(color = Color(0xFFDEDEDE))
             Spacer(Modifier.height(32.dp))
 
-            TitleListHeader(
-                data = restaurants.size,
-                text = "Restaurants nearby",
+            HeaderListItemCountTitle(
+                itemCount = restaurants.size,
+                title = "Restaurants nearby"
             )
 
             AnimatedVisibility(
@@ -156,8 +158,8 @@ fun DraggableSearchBar(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(restaurants) { restaurant ->
-                    RestaurantSmallListCard(restaurant = restaurant, status = status)
+                items(restaurantUiModel) { restaurant ->
+                    RestaurantSmallListCard(restaurant = restaurant)
                 }
             }
         }
@@ -173,14 +175,13 @@ fun DraggableSearchBar(
                     verticalArrangement = Arrangement.spacedBy(8.dp) // kasih jarak antar item
                 ) {
                     items(
-                        items = restaurants,
-                        key = { it.id } // kalau ada id unik biar lebih efisien
+                        items = restaurantUiModel,
+                        key = { it.restaurant.id }
                     ) { restaurant ->
-                        RestaurantLargeListCard(restaurant = restaurant, status = status)
+                        RestaurantLargeListCard(restaurant = restaurant)
                     }
                 }
             }
-
         }
 
         // Handle drag

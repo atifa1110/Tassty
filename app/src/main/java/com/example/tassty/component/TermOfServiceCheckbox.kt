@@ -39,18 +39,18 @@ fun TermsOfServiceCheckbox(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+        //CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
             Checkbox(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.padding(0.dp).size(24.dp),
                 colors = CheckboxDefaults.colors(
-                    checkedColor = Orange500,      // Color when checked
-                    uncheckedColor = Neutral40,      // Color when unchecked
-                    checkmarkColor = Color.White     // Color of the checkmark
+                    checkedColor = Orange500,
+                    uncheckedColor = Neutral40,
+                    checkmarkColor = Color.White
                 )
             )
-        }
+        //}
 
         val annotatedText = buildAnnotatedString {
             append("I Agree with ")
@@ -71,39 +71,4 @@ fun TermsOfServiceCheckbox(
         )
 
     }
-}
-
-@Composable
-fun CategoryHeader(
-    searchQuery: String,
-    filteredCategories: List<Category>
-) {
-    val headerText = if (searchQuery.isBlank()) {
-        "Categories"
-    } else {
-        if (filteredCategories.isEmpty()) "Category found"
-        else "Category found"
-    }
-
-    val styledText: AnnotatedString = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = Orange500,
-            fontWeight = LocalCustomTypography.current.h4Bold.fontWeight,
-            fontSize = LocalCustomTypography.current.h4Bold.fontSize,
-            fontFamily = LocalCustomTypography.current.h4Bold.fontFamily
-        ),
-        ) {
-            append("${filteredCategories.size} ")
-        }
-        withStyle(style = SpanStyle(
-            color = Neutral100,
-            fontWeight = LocalCustomTypography.current.h5Bold.fontWeight,
-            fontSize = LocalCustomTypography.current.h5Bold.fontSize,
-            fontFamily = LocalCustomTypography.current.h5Bold.fontFamily
-        )
-        ) {
-            append(headerText)
-        }
-    }
-
-    Text(text = styledText)
 }

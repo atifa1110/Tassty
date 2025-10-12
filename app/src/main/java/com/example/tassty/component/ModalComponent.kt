@@ -1,19 +1,22 @@
 package com.example.tassty.component
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -25,27 +28,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
-import com.example.tassty.collection
-import com.example.tassty.collections
 import com.example.tassty.cuisineOptions
 import com.example.tassty.discountOptions
-import com.example.tassty.model.FavoriteCollection
+import com.example.tassty.model.Cart
+import com.example.tassty.model.CollectionUiItem
+import com.example.tassty.model.OperationalDay
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.UserAddress
+import com.example.tassty.model.Voucher
 import com.example.tassty.modesOptions
-import com.example.tassty.operationalHours
 import com.example.tassty.restoRatingsOptions
 import com.example.tassty.rupiahPriceRanges
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
+import com.example.tassty.ui.theme.Neutral30
+import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink500
 import kotlin.collections.take
 
 @Composable
@@ -55,19 +66,20 @@ fun CustomBottomSheet(
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val transition = updateTransition(targetState = visible,
         label = "BottomSheetTransition")
 
-    // Animasi untuk background hitam
+    // Animation for black background
     val scrimAlpha by transition.animateFloat(
         transitionSpec = { tween(300) }, label = "ScrimAlpha"
     ) { if (it) 0.5f else 0f }
 
-    // Animasi untuk sheet (slide dari bawah)
+    // Animation slide from bottom
     val offsetY by transition.animateDp(
         transitionSpec = { tween(300) }, label = "OffsetY"
     ) { show ->
-        if (show) 0.dp else 500.dp // turun 500dp saat ditutup
+        if (show) 0.dp else screenHeight
     }
 
     if (scrimAlpha > 0f || visible) {
@@ -75,20 +87,24 @@ fun CustomBottomSheet(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = scrimAlpha))
-                .then(
-                    if (dismissOnClickOutside) Modifier.clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) { onDismiss() }
-                    else Modifier
-                ),
+                .clickable(
+                    enabled = true, // Selalu aktif untuk menangkap klik
+                    indication = null, // Tidak ada efek visual saat diklik
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    // Jika dismissOnClickOutside TRUE, panggil onDismiss
+                    if (dismissOnClickOutside) {
+                        onDismiss()
+                    }
+                    // Jika FALSE, klik tetap ditangkap di sini dan TIDAK diteruskan ke bawah.
+                },
             contentAlignment = Alignment.BottomCenter
         ) {
             Box(Modifier
                 .offset(y = offsetY)
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(top = 16.dp),
+                .padding(top = 24.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 content()
@@ -119,7 +135,10 @@ fun CustomBottomSheet(
 
 @Composable
 fun CollectionContent(
-    collections: List<FavoriteCollection>
+    collections: List<CollectionUiItem>,
+    onCollectionSelected: (String) -> Unit,
+    onSaveCollectionClick:() -> Unit,
+    onAddCollectionClick: () -> Unit
 ){
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -138,33 +157,45 @@ fun CollectionContent(
                 .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextHeader(
-                title = stringResource(R.string.save_to_collection),
-                subtitle = stringResource(R.string.save_your_favorite)
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)){
+                Text(
+                    text = stringResource(R.string.save_to_collection),
+                    style = LocalCustomTypography.current.h3Bold,
+                    color = Neutral100
+                )
+                Text(
+                    text = stringResource(R.string.save_your_favorite),
+                    style = LocalCustomTypography.current.bodySmallMedium,
+                    color = Neutral70
+                )
+            }
 
             TopBarButton(icon = Icons.Default.Add,
                 boxColor = Orange500, iconColor = Neutral10
-            ) {  }
+            ) { onAddCollectionClick() }
         }
 
         HorizontalDivider(Modifier.padding(vertical = 32.dp))
-        TitleListHeader(
-            data = collections.size,
-            text = "Collection"
+        HeaderListItemCountTitle(
+            itemCount = collections.size,
+            title = "Collection",
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(Modifier.height(12.dp))
 
         Column(Modifier.padding(horizontal = 24.dp)) {
             collections.take(2).forEach { collection ->
-                CollectionCard(collection = collection)
+                CollectionCard(
+                    collection = collection,
+                    onCheckedChange = {onCollectionSelected(collection.collectionId)}
+                )
                 Spacer(Modifier.height(8.dp))
             }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
                 enabled = collections.any { it.isSelected==true },
                 labelResId = R.string.save,
-                onClick = {}
+                onClick = onSaveCollectionClick
             )
         }
     }
@@ -172,6 +203,7 @@ fun CollectionContent(
 
 @Composable
 fun CollectionAddContent(
+    onDismissClick:() -> Unit
 ){
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -198,7 +230,7 @@ fun CollectionAddContent(
 
             TopBarButton(icon = R.drawable.arrow_left,
                 boxColor = Neutral10, iconColor = Neutral100
-            ) {  }
+            ) { onDismissClick() }
         }
 
         HorizontalDivider(Modifier.padding(vertical = 32.dp))
@@ -230,7 +262,8 @@ fun CollectionAddContent(
 fun CollectionSaveContent(
     title: String,
     subtitle: String,
-    onClick:() -> Unit,
+    onCheckCollection: () -> Unit,
+    onConfirmClick:() -> Unit,
 ){
     Column(
         modifier = Modifier
@@ -257,8 +290,8 @@ fun CollectionSaveContent(
                 .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextButton(text = "Check collection", onClick = onClick,modifier = Modifier.weight(0.5f))
-            TextButton(text = "Confirm", onClick = onClick,modifier = Modifier.weight(0.5f))
+            TextButton(text = "Check collection", onClick = onCheckCollection, textColor = Orange500, modifier = Modifier.weight(0.5f))
+            TextButton(text = "Confirm", onClick = onConfirmClick, textColor = Orange500, modifier = Modifier.weight(0.5f))
         }
     }
 }
@@ -287,12 +320,13 @@ fun ModalStatusContent(
         HorizontalDivider()
 
         // Button
-        TextButton(text = buttonTitle,onClick = onClick)
+        TextButton(text = buttonTitle, textColor = Orange500, onClick = onClick)
     }
 }
 
 @Composable
 fun DetailScheduleContent(
+    operationalHours: List<OperationalDay>
 ){
     Column(
         modifier = Modifier
@@ -320,12 +354,12 @@ fun DetailScheduleContent(
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = "Indah Cafe",
+                        text = stringResource(R.string.dummy_restaurant_name),
                         style = LocalCustomTypography.current.h3Bold,
                         color = Neutral100
                     )
                     Text(
-                        text = "Gerunung Lombok Tengah, Praya",
+                        text = stringResource(R.string.dummy_location),
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Neutral70
                     )
@@ -357,8 +391,7 @@ fun DetailScheduleContent(
 }
 
 @Composable
-fun SortContent(
-){
+fun SortContent(){
     var selectedOption by remember { mutableStateOf("Nearest") }
     Column(
         modifier = Modifier
@@ -368,7 +401,9 @@ fun SortContent(
             .padding(top = 24.dp, bottom = 24.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -400,8 +435,7 @@ fun SortContent(
 }
 
 @Composable
-fun FilterContent(
-){
+fun FilterContent(){
     var selectedCuisineKey by remember { mutableStateOf(cuisineOptions.first().key) }
     var selectedPriceKey by remember { mutableStateOf(rupiahPriceRanges.first().key) }
     var selectedRating by remember { mutableStateOf(setOf("Rated 4.0+")) }
@@ -416,7 +450,7 @@ fun FilterContent(
             .padding(top = 24.dp, bottom = 24.dp),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        // 🔹 Header baris atas
+        // Header
         item {
             Row(
                 modifier = Modifier
@@ -434,10 +468,10 @@ fun FilterContent(
             }
         }
 
-        // 🔹 Divider
+        // Divider
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
 
-        // 🔹 Price range
+        // Price range
         item {
             RadioFilterSection(
                 title = "Price range",
@@ -448,10 +482,10 @@ fun FilterContent(
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
 
-        // 🔹 Resto ratings
+        // Restaurant Rating
         item {
             ChipFilterSection(
-                title = "Resto ratings",
+                title = stringResource(R.string.resto_ratings),
                 options = restoRatingsOptions,
                 selectedKeys = selectedRating
             ) { key ->
@@ -465,7 +499,7 @@ fun FilterContent(
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
 
-        // 🔹 Discounts
+        // Discounts
         item {
             ChipFilterSection(
                 title = "Discounts",
@@ -482,7 +516,7 @@ fun FilterContent(
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
 
-        // 🔹 Modes
+        // Modes
         item {
             ChipFilterSection(
                 title = "Modes",
@@ -499,7 +533,7 @@ fun FilterContent(
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
 
-        // 🔹 Cuisines type
+        // Cuisines type
         item {
             RadioFilterSection(
                 title = "Cuisines type",
@@ -510,14 +544,323 @@ fun FilterContent(
     }
 }
 
+@Composable
+fun CartRemoveMenuContent(
+    cart:Cart?=null,
+    onRemoveCartItem: (Cart) -> Unit,
+    onDismiss: () -> Unit
+){
+    if(cart!=null){
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20)
+            .padding(top = 24.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp)
+        ) {
+            OverlapImage(imageUrl = cart.imageUrl)
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Remove this menu",
+                        style = LocalCustomTypography.current.h2Bold,
+                        color = Neutral100
+                    )
+                    Text(
+                        text = "?",
+                        style = LocalCustomTypography.current.h2Bold,
+                        color = Pink500
+                    )
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                Text(
+                    text = "You can add this menu back from the \n" +
+                            "restaurant details page",
+                    style = LocalCustomTypography.current.bodyMediumRegular,
+                    color = Neutral70,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            HorizontalDivider(color = Neutral40)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                TextButton(
+                    text = "Cancel",
+                    textColor = Pink500,
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(0.5f)
+                )
+
+                TextButton(
+                    text = "Remove",
+                    textColor = Neutral70,
+                    onClick = {onRemoveCartItem(cart)},
+                    modifier = Modifier.weight(0.5f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CartEditContent(){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        .background(Neutral20)
+        .padding(top = 24.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text= "Edit Notes",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100
+            )
+
+            TopBarButton(icon = Icons.Default.Clear,
+                boxColor = Neutral10, iconColor = Neutral100
+            ) {  }
+        }
+
+        HorizontalDivider(color= Neutral30)
+
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+        ){
+            Text(
+                text= "Notes",
+                style = LocalCustomTypography.current.h5Bold,
+                color = Neutral100
+            )
+            Spacer(Modifier.height(16.dp))
+            NotesBarSection(
+                value = "",
+                onValueChange = {}
+            )
+            Spacer(Modifier.height(24.dp))
+            ButtonComponent(
+                enabled = true,
+                labelResId = R.string.update
+            ) { }
+        }
+    }
+}
+
+@Composable
+fun CartDeliveryLocationContent(
+    address: List<UserAddress>,
+    onAddressChange: (String) -> Unit,
+    onSetLocationClicked:() -> Unit,
+    onDismiss: () -> Unit
+){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        .background(Neutral20)
+        .padding(top = 24.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = "Choose delivery location",
+                    style = LocalCustomTypography.current.h3Bold,
+                    color = Neutral100
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle().copy(color = Neutral70)) {
+                            append("You can add a new delivery address on the \n")
+                        }
+                        withStyle(style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle().copy(color = Neutral100)) {
+                            append("My Addresses ")
+                        }
+                        withStyle(style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle().copy(color = Neutral70)) {
+                            append("page")
+                        }
+                    },
+                )
+            }
+
+            TopBarButton(icon = Icons.Default.Clear,
+                boxColor = Neutral10, iconColor = Neutral100
+            ) { onDismiss() }
+        }
+
+        HorizontalDivider(color= Neutral30)
+
+        Column(Modifier.padding(horizontal = 24.dp)
+        ) {
+            HeaderListItemCountTitleButton(
+                title = "Addresses",
+                itemCount = address.size,
+                textButton = "Go to My Addresses"
+            ) { }
+            Spacer(Modifier.height(12.dp))
+            address.forEach { address ->
+                LocationSelectorCard(
+                    address = address,
+                    onCheckedChange = { onAddressChange(address.id) }
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            Spacer(Modifier.height(24.dp))
+            ButtonComponent(
+                enabled = true,
+                labelResId = R.string.confirm
+            ) { onSetLocationClicked() }
+        }
+    }
+}
+
+@Composable
+fun CartPromoContent(
+    voucher: List<Voucher>,
+    onVoucherSelectionChanged: (String) -> Unit,
+    onApplyVoucherClicked: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20)
+            .padding(top = 24.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Choose promo",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100
+            )
+
+            TopBarButton(
+                icon = Icons.Default.Clear,
+                boxColor = Neutral10, iconColor = Neutral100
+            ) { onDismiss() }
+        }
+
+        HorizontalDivider(color = Neutral40)
+
+        VerticalTitleItemCountSection(
+            itemCount = voucher.size,
+            headerText = "Vouchers"
+        ) {
+            items(items=voucher, key = {it.id}) { item ->
+                VoucherSelectorCard (
+                    voucher = item,
+                    onCheckedChange = { onVoucherSelectionChanged(item.id) }
+                )
+            }
+        }
+
+        Column(Modifier.padding(horizontal = 24.dp)) {
+            ButtonComponent(
+                enabled = true,
+                labelResId = R.string.confirm
+            ) { onApplyVoucherClicked() }
+        }
+    }
+}
+
+@Composable
+fun CartDoubleCheckContent(
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20)
+            .padding(top = 24.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        DoubleCheckContent()
+        HorizontalDivider(color = Neutral40)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextButton(text = "Recheck", textColor = Neutral70,
+                onClick = {},
+                modifier = Modifier.weight(1f))
+            TextButton(text = "Continue Payment", textColor = Orange500,
+                onClick = {}, modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun RestaurantCloseModal(
+    onDismiss: () -> Unit
+){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20)
+            .padding(top = 12.dp, bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        StatusContent(
+            icon = R.drawable.sorry,
+            title = "Sorry, we’re closed.",
+            subtitle = "You can check out other restaurant options \nfor an amazing dining experience!"
+        )
+
+        Divider24()
+
+        TextButton(text = "I understand", textColor = Orange500, onClick = onDismiss)
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewModalDialog() {
-    CustomBottomSheet(
-        visible = true,
-        dismissOnClickOutside = false,
-        onDismiss = {  }
-    ){
-        FilterContent()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        CartDoubleCheckContent()
     }
 }

@@ -221,13 +221,14 @@ fun CartAddItemButton(
 @Composable
 fun CartAddButton(
     totalPrice: Int,
+    onClick: () -> Unit
 ){
     Surface(
         shape = RoundedCornerShape(100.dp),
         color = Orange500,
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .wrapContentHeight().clickable(onClick = onClick)
     ) {
         Row(
             modifier = Modifier
@@ -296,7 +297,7 @@ fun QuantitySmallButton(
         modifier = Modifier.size(24.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Neutral80,
+            containerColor = if(enabled) Neutral80 else Neutral70,
             contentColor = Color.White
         ),
         shape = CircleShape
@@ -344,10 +345,11 @@ fun QuantityCartContent(
 fun FloatingAddButton(
     actionSize: Dp,
     iconSize: Dp,
+    onClick: () -> Unit,
     modifier : Modifier = Modifier
 ){
     FloatingActionButton(
-        onClick = { /* Handle add click */ },
+        onClick = onClick,
         modifier = modifier.size(actionSize),
         shape = CircleShape,
         containerColor = Neutral100,
@@ -374,7 +376,7 @@ fun NotesBoxButton(
                 shape = RoundedCornerShape(24.dp)
             )
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -394,38 +396,33 @@ fun NotesBoxButton(
     }
 }
 
+
+
 @Composable
 fun FavoriteButton(
+    modifier: Modifier = Modifier,
     isWishlist: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit
 ){
-    var borderColor = if(isWishlist) Pink200 else Color.Transparent
-    var iconColor = if(isWishlist) Pink500 else Neutral10
-    var buttonColor = if(isWishlist) Neutral10.copy(0.75f) else Pink500
+    var borderColor = if(isWishlist) Color.Transparent else Pink200
+    var iconColor = if(isWishlist) Neutral10 else Pink500
+    var buttonColor = if(isWishlist) Pink500 else Neutral10
 
-    Box(
+    CircleImageIcon(
+        boxColor = buttonColor,
+        icon = R.drawable.heart,
+        iconColor = iconColor,
+        iconSize = 16.dp,
+        contentDescription = if (isWishlist) {
+            "Remove from Favorites"
+        } else {
+            "Add to Favorites"
+        },
         modifier = modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .background(buttonColor)
-            .border(0.5.dp, borderColor, CircleShape)
+            .size(32.dp).border(0.5.dp, borderColor, CircleShape)
             .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Favorite,
-            contentDescription = if (isWishlist) {
-                "Remove from Favorites"
-            } else {
-                "Add to Favorites"
-            },
-            tint = iconColor,
-            modifier = Modifier.size(16.dp)
-        )
-    }
+    )
 }
-
 
 @Composable
 fun RankBadgeIcon(
@@ -498,6 +495,7 @@ fun RankBadge(
 @Composable
 fun TextButton(
     text : String,
+    textColor: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
@@ -510,7 +508,7 @@ fun TextButton(
             textAlign = TextAlign.Center,
             text = text,
             style = LocalCustomTypography.current.bodyMediumMedium,
-            color = Orange500
+            color = textColor
         )
     }
 }

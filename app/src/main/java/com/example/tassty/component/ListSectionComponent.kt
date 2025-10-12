@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,12 +12,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,40 +30,27 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
-import androidx.compose.ui.unit.min
-import com.example.tassty.R
-import com.example.tassty.carts
+import com.example.tassty.menus
 import com.example.tassty.model.Cart
+import com.example.tassty.model.Category
 import com.example.tassty.model.Menu
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
-import com.example.tassty.ui.theme.Pink200
 import com.example.tassty.ui.theme.Pink500
-import kotlin.math.abs
-import kotlin.math.roundToInt
 
 @Composable
 fun HorizontalTitleSection(
@@ -71,11 +62,9 @@ fun HorizontalTitleSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
+        HeaderListBlackTitle(
             modifier = Modifier.padding(horizontal = 24.dp),
-            text = title,
-            style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
+            title = title,
         )
 
         LazyRow(
@@ -89,9 +78,37 @@ fun HorizontalTitleSection(
 }
 
 @Composable
-fun HorizontalListOrangeSection(
+fun HorizontalTitleButtonSection(
+    title : String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    data: Int,
+    content: LazyListScope.() -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HeaderListTitleButton(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            title = title,
+            titleColor = Neutral100,
+            onClick = onClick
+        )
+
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun HorizontalTitleItemCountSection(
+    modifier: Modifier = Modifier,
+    itemCount: Int,
     headerText: String,
     content: LazyListScope.() -> Unit
 ) {
@@ -99,9 +116,10 @@ fun HorizontalListOrangeSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        TitleListHeader(
-            data = data,
-            text = headerText
+        HeaderListItemCountTitle(
+            itemCount = itemCount,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
 
         LazyRow(
@@ -115,22 +133,22 @@ fun HorizontalListOrangeSection(
 }
 
 @Composable
-fun HorizontalListSection(
+fun HorizontalTitleItemCountButtonSection(
     modifier: Modifier = Modifier,
-    headerText: String,
-    onSeeAllClick: () -> Unit,
+    itemCount: Int,
+    title: String,
+    onClick: () -> Unit,
     content: LazyListScope.() -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeaderText(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            text = headerText,
-            textColor = Neutral100,
-            textButton = stringResource(R.string.see_all),
-            onButtonClick = onSeeAllClick
+        HeaderListItemCountTitleButton(
+            itemCount = itemCount,
+            title = title,
+            onClick = onClick,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
 
         LazyRow(
@@ -144,7 +162,35 @@ fun HorizontalListSection(
 }
 
 @Composable
-fun HorizontalSubtitleListSection(
+fun VerticalTitleItemCountSection(
+    modifier: Modifier = Modifier,
+    itemCount: Int,
+    headerText: String,
+    content: LazyListScope.() -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HeaderListItemCountTitle(
+            itemCount = itemCount,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            content()
+        }
+    }
+}
+
+
+@Composable
+fun HorizontalTitleSubtitleSection(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String,
@@ -155,14 +201,11 @@ fun HorizontalSubtitleListSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeaderSubtitleText(
-            modifier = Modifier.padding(horizontal = 24.dp),
+        HeaderListTitleSubtitleButton(
             title = title,
             subtitle = subtitle,
-            titleColor = Neutral100,
-            subtitleColor = Neutral70,
-            textButton = stringResource(R.string.see_all),
-            onButtonClick = onSeeAllClick
+            onClick = onSeeAllClick,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
 
         LazyRow(
@@ -170,7 +213,6 @@ fun HorizontalSubtitleListSection(
             contentPadding = PaddingValues(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-
             content()
         }
     }
@@ -179,23 +221,24 @@ fun HorizontalSubtitleListSection(
 fun LazyListScope.restaurantMenuListBlock(
     itemCount: Int,
     headerText: String,
-    restaurantItems: List<Restaurant>
+    restaurantItems: List<RestaurantUiModel>
 ) {
     item {
-        TitleListHeader(
-            data = itemCount,
-            text = headerText,
-            modifier = Modifier.fillMaxWidth()
+        HeaderListItemCountTitle(
+            itemCount = itemCount,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(Modifier.height(12.dp))
     }
 
     items(
         items = restaurantItems,
-        key = { it.id }
+        key = { it.restaurant.id }
     ) { restaurant ->
         RestaurantContentSection(
             restaurant = restaurant,
+            menus = menus,
             status = RestaurantStatus.OPEN
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -204,21 +247,22 @@ fun LazyListScope.restaurantMenuListBlock(
 
 @Composable
 fun RestaurantContentSection(
-    restaurant: Restaurant,
+    restaurant: RestaurantUiModel,
+    menus: List<Menu>,
     status: RestaurantStatus
 ) {
     Column (
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         Column (Modifier.padding(horizontal = 24.dp)){
-            RestaurantLargeListCard(restaurant = restaurant, status = status)
+            RestaurantLargeListCard(restaurant = restaurant)
         }
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(restaurant.menus, key = { it.id }) { menuItem ->
+            items(menus, key = { it.id }) { menuItem ->
                 FoodTinyGridCard(menu = menuItem,status = status)
             }
         }
@@ -227,21 +271,22 @@ fun RestaurantContentSection(
 
 fun LazyListScope.cartVerticalListBlock(
     cart : List<Cart>,
+    selectAll: Boolean,
     headerText: String,
-    onRemoveCartItem: (Cart) -> Unit,
+    onSelectAllClicked:(Boolean) -> Unit,
+    onCartSelectionChange:(Cart) -> Unit,
+    onIncrementQuantity:(Cart) -> Unit,
+    onDecrementQuantity:(Cart) -> Unit,
+    onRemoveItemClicked: (Cart) -> Unit,
     onRevealChange: (Int, Boolean) -> Unit
 ){
     item {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TitleListHeader(
-                data = cart.size,
-                text = headerText,
-            )
+            ItemCountTitleText(itemCount = cart.size, title = headerText)
             Row(
-                modifier = Modifier.padding(horizontal = 24.dp),
                 verticalAlignment = Alignment.CenterVertically){
                 Text(
                     text = "select all",
@@ -250,8 +295,8 @@ fun LazyListScope.cartVerticalListBlock(
                 )
                 Spacer(Modifier.width(8.dp))
                 Checkbox(
-                    checked = false,
-                    onCheckedChange = {},
+                    checked = selectAll,
+                    onCheckedChange = onSelectAllClicked,
                     enabled = true,
                     colors = CheckboxDefaults.colors(
                         checkedColor = Orange500,
@@ -264,7 +309,7 @@ fun LazyListScope.cartVerticalListBlock(
         Spacer(modifier = Modifier.height(12.dp))
     }
 
-    itemsIndexed(items= carts){ index, cartItem ->
+    itemsIndexed(items= cart){ index, cartItem ->
        Column(Modifier.padding(horizontal = 24.dp)) {
            SwipeableItemWithActions(
                isRevealed = cartItem.isSwipeActionVisible,
@@ -283,7 +328,7 @@ fun LazyListScope.cartVerticalListBlock(
                                bottomStart = 20.dp)).background(Pink500),
                        contentAlignment = Alignment.Center
                    ) {
-                       IconButton(onClick = { onRemoveCartItem(cartItem) }) {
+                       IconButton(onClick = {onRemoveItemClicked(cartItem)}) {
                            Icon(
                                imageVector = Icons.Default.Delete,
                                contentDescription = "Delete",
@@ -294,57 +339,106 @@ fun LazyListScope.cartVerticalListBlock(
                    }
                }
            ) {
-               CartListCard(cart = cartItem, isChecked = false)
+               CartListCard(
+                   cart = cartItem,
+                   onCheckedChange = onCartSelectionChange,
+                   onIncrementQuantity = { onIncrementQuantity(cartItem) },
+                   onDecrementQuantity = { onDecrementQuantity(cartItem) }
+               )
            }
        }
         Spacer(Modifier.height(8.dp))
     }
 }
 
-/**
- * Composable for the background content (the delete button).
- * Matches the bright pink/magenta color and trash can icon from the image.
- */
-@Composable
-fun DismissBackground(
-    dismissState: SwipeToDismissBoxState,
-    maxBackgroundWidth: Dp = 80.dp
+fun LazyListScope.restaurantVerticalListBlock(
+    headerText: String,
+    restaurantItems: List<RestaurantUiModel>
 ) {
-    val dismissDirection = dismissState.dismissDirection
-    if (dismissDirection != SwipeToDismissBoxValue.EndToStart) return
+    item {
+        HeaderListItemCountTitle(
+            itemCount = menus.size,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
 
-    val color = Pink500 // Bright Pink/Magenta
-    val offset = dismissState.requireOffset()
+    items(
+        items = restaurantItems,
+        key = { it.restaurant.id }
+    ) { restaurant ->
+        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+            RestaurantLargeListCard(restaurant = restaurant)
+        }
 
-    // Calculate the visible width of the background.
-    // The offset is negative for EndToStart swipe. abs() makes it positive.
-    // We constrain the width to be between 0.dp and maxBackgroundWidth.
-    val visibleWidth = max(0.dp, min(maxBackgroundWidth, abs(offset).toDp()))
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
 
-    // *** KEY CHANGE: Use clipToBounds and fixed width alignment ***
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clipToBounds() // Prevents content from drawing outside bounds
-            .background(Color.Gray), // Use transparent background for the Box container
-        contentAlignment = Alignment.CenterEnd
+fun LazyListScope.menuItemCountVerticalListBlock(
+    headerText: String,
+    menus : List<Menu>,
+    status: RestaurantStatus,
+    onFavoriteClick: (String) -> Unit,
+) {
+    item {
+        HeaderListItemCountTitle(
+            itemCount = menus.size,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(Modifier.height(12.dp))
+    }
+
+    items(
+        items = menus,
+        key = { it.id }
+    ) { menu ->
+        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+            FoodListCard(
+                menu = menu,
+                status=status,
+                isFirstItem = false,
+                onFavoriteClick = { onFavoriteClick(menu.id) }
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+fun GridMenuListSection(
+    title: String,
+    menuItems: List<Menu>,
+    status : RestaurantStatus,
+    onFavoriteClick: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // The inner colored Box with controlled width
-        Box(
+        HeaderListBlackTitle(
+            title = title,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+
+        FlowRow(
             modifier = Modifier
-                .width(visibleWidth) // Control the width based on swipe progress
-                .fillMaxHeight()
-                .background(color, shape = RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
-                .padding(end = 24.dp), // Adjust padding if needed
-            contentAlignment = Alignment.CenterEnd
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            maxItemsInEachRow = 2
         ) {
-            // Icon is only visible when the Box has a positive width
-            if (visibleWidth > 0.dp) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Delete",
-                    tint = Neutral10,
-                    modifier = Modifier.size(28.dp)
+            menuItems.forEach { item ->
+                FoodLargeGridCard(
+                    menu = item,
+                    status = status,
+                    isFirstItem = false,
+                    onFavoriteClick = { onFavoriteClick(item.id) },
+                    modifier = Modifier
+                        .weight(1f, fill = true)
                 )
             }
         }
@@ -352,57 +446,60 @@ fun DismissBackground(
 }
 
 @Composable
-private fun Float.toDp(): Dp = with(LocalDensity.current) { this@toDp.toDp() }
-
-fun LazyListScope.restaurantVerticalListBlock(
-    headerText: String,
-    restaurantItems: List<Restaurant>,
-    status: RestaurantStatus
-) {
-    item {
-        TitleListHeader(
-            data = restaurantItems.size,
-            text = headerText,
+fun FoodCategoryGrid (
+    searchQuery: String,
+    filteredCategories: List<Category>,
+    selectedCategoryIds: List<Int>,
+    onSelectedCategory: (Int) -> Unit,
+    modifier : Modifier = Modifier
+){
+    Column (
+        modifier.fillMaxSize().padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ){
+        CategoryFoundHeader(
+            searchQuery = searchQuery,
+            filteredCategories = filteredCategories,
         )
-        Spacer(modifier = Modifier.height(12.dp))
-    }
 
-    items(
-        items = restaurantItems,
-        key = { it.id }
-    ) { restaurant ->
-
-        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-            RestaurantLargeListCard(restaurant = restaurant, status = status)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filteredCategories) { category ->
+                val isSelected = selectedCategoryIds.contains(category.id)
+                FoodCategoryCard(
+                    isSelected = isSelected,
+                    category = category,
+                    onCardClick = { onSelectedCategory(category.id) }
+                )
+            }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
+@Preview(showBackground =true)
 @Composable
-fun GridRow(
-    rowItems: List<Menu>,
-    status: RestaurantStatus
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        rowItems.forEachIndexed { itemIndexInRow, item ->
-            FoodLargeGridCard(
-                menu = item,
-                status = status,
-                isFirstItem = item.id == 1,
-                isWishlist = false,
-                modifier = Modifier.weight(1f)
-            )
-        }
+fun PreviewList(){
+    Column (Modifier.fillMaxSize()){
+        GridMenuListSection(
+            title = "Suggested menu for you!",
+            menuItems = menus,
+            status = RestaurantStatus.OPEN,
+            onFavoriteClick = {}
+        )
 
-        if (rowItems.size == 1) {
-            Spacer(modifier = Modifier.weight(1f))
-        }
+        FoodCategoryGrid(
+            searchQuery = "",
+            filteredCategories = listOf(
+                Category(1,"","Salad"),
+                Category(2,"","Burger"),
+                Category(3,"","Pizza"),
+            ),
+            selectedCategoryIds = arrayListOf(1,2,3),
+            onSelectedCategory = {}
+        )
     }
 }

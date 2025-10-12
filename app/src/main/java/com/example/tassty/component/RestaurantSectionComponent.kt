@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
@@ -49,7 +50,7 @@ fun RestaurantImageBox(
 @Composable
 fun RestaurantCityAndDistanceText(
     city: String,
-    distance: Int
+    distance: String
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -65,7 +66,7 @@ fun RestaurantCityAndDistanceText(
         )
 
         Text(
-            text = "${distance}m",
+            text = distance,
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Neutral70
         )
@@ -75,8 +76,8 @@ fun RestaurantCityAndDistanceText(
 @Composable
 fun RestaurantCityDistanceDeliveryText(
     city: String,
-    distance: Int,
-    deliveryTime: Int
+    distance: String,
+    deliveryTime: String
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -177,35 +178,35 @@ fun RestaurantCategoryText(
 
 @Composable
 fun RestaurantSmallListCardContent(
-    restaurant: Restaurant
+    restaurant: RestaurantUiModel
 ){
     Column(modifier = Modifier.height(80.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = restaurant.name,
+            text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.city,
-            distance = restaurant.distance
+            city = restaurant.restaurant.cityName,
+            distance = restaurant.formattedDistance
         )
 
-        RatingText(rating = restaurant.rating)
+        RatingText(rating = restaurant.restaurant.rating)
     }
 }
 
 @Composable
 fun RestaurantLargeListCardContent(
-    restaurant: Restaurant
+    restaurant: RestaurantUiModel
 ){
     Column(modifier = Modifier.height(112.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = restaurant.name,
+            text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
@@ -215,26 +216,26 @@ fun RestaurantLargeListCardContent(
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.city,
-            distance = restaurant.distance
+            city = restaurant.restaurant.cityName,
+            distance = restaurant.formattedDistance
         )
 
         RatingText(
-            rating = restaurant.rating
+            rating = restaurant.restaurant.rating
         )
     }
 }
 
 @Composable
 fun RestaurantTinyGridCardContent(
-    restaurant: Restaurant
+    restaurant: RestaurantUiModel
 ){
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = restaurant.name,
+            text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
@@ -243,55 +244,55 @@ fun RestaurantTinyGridCardContent(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            RatingText(rating = restaurant.rating)
-            CityText(city = restaurant.city)
+            RatingText(rating = restaurant.restaurant.rating)
+            CityText(city = restaurant.restaurant.cityName)
         }
     }
 }
 
 @Composable
 fun RestaurantGridCardContent(
-    restaurant: Restaurant
+    restaurant: RestaurantUiModel
 ){
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = restaurant.name,
+            text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.city,
-            distance = restaurant.distance
+            city = restaurant.restaurant.cityName,
+            distance = restaurant.formattedDistance
         )
 
-        RatingText(rating = restaurant.rating)
+        RatingText(rating = restaurant.restaurant.rating)
     }
 }
 
 @Composable
 fun RestaurantLargeGridCardContent(
-    restaurant: Restaurant
+    restaurant: RestaurantUiModel
 ){
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = restaurant.name,
+            text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
 
         RestaurantCityDistanceDeliveryText(
-            city = restaurant.city,
-            distance = restaurant.distance,
-            deliveryTime = restaurant.distance
+            city = restaurant.restaurant.cityName,
+            distance = restaurant.formattedDistance,
+            deliveryTime = restaurant.restaurant.deliveryTime
         )
 
-        RatingText(rating = restaurant.rating)
+        RatingText(rating = restaurant.restaurant.rating)
     }
 }

@@ -29,6 +29,7 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange500
+import okhttp3.internal.http2.Header
 import kotlin.collections.forEach
 
 @Composable
@@ -95,13 +96,10 @@ fun ChipSearchSection(
     options: List<ChipFilterOption>,
     selected: Boolean
 ) {
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-        Text(
-            text = title,
-            style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
-        )
-        Spacer(Modifier.height(12.dp))
+    Column(modifier = Modifier.padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HeaderListBlackTitle(title = title)
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -128,13 +126,9 @@ fun ChipSearchExpandSection(
     var expanded by remember { mutableStateOf(false) }
     val maxVisible = 5
 
-    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-        Text(
-            text = title,
-            style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
-        )
-        Spacer(Modifier.height(12.dp))
+    Column(modifier = Modifier.padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        HeaderListBlackTitle(title = title)
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),

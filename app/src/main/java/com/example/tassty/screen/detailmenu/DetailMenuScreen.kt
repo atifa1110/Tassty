@@ -1,4 +1,4 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.detailmenu
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,22 +18,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tassty.component.CartAddButton
+import com.example.tassty.component.CollectionAddContent
+import com.example.tassty.component.CollectionContent
+import com.example.tassty.component.CollectionSaveContent
+import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DashedDivider
 import com.example.tassty.component.DetailMenuTopAppBar
+import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodPriceBigText
 import com.example.tassty.component.FoodPriceLineText
 import com.example.tassty.component.ItemImage
@@ -42,12 +44,12 @@ import com.example.tassty.component.NotesBarSection
 import com.example.tassty.component.OptionCard
 import com.example.tassty.component.QuantityButton
 import com.example.tassty.component.RestaurantMenuInfoCard
-import com.example.tassty.handleSelectionChange
-import com.example.tassty.menuItem
 import com.example.tassty.menuSections
+import com.example.tassty.menus
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -56,22 +58,78 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
-fun DetailMenuScreen() {
-    var menu by remember { mutableStateOf(menuItem) }
-    var notesValue by remember { mutableStateOf("") }
-    var quantity by remember { mutableIntStateOf(1) }
-    var menuSectionsList by remember {
-        mutableStateOf(menuSections)
+fun DetailMenuScreen(
+    viewModel: DetailMenuViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    DetailMenuContent(
+        uiState = uiState,
+        onOptionToggle = { section,option ->
+            viewModel.onEvent(DetailMenuEvent.OnOptionToggle(section,option))},
+        onIncrementQuantity = {viewModel.onEvent(DetailMenuEvent.OnQuantityIncrease(it))},
+        onDecreaseQuantity = {viewModel.onEvent(DetailMenuEvent.OnQuantityDecrease(it))},
+        onNotesChange = {viewModel.onEvent(DetailMenuEvent.OnNotesChange(it))},
+        onShowCollectionSheet = {viewModel.onEvent(DetailMenuEvent.OnShowCollectionSheet)},
+        onAddToCartClick = {viewModel.onEvent(DetailMenuEvent.OnAddToCartClick)}
+    )
+
+    CustomBottomSheet(
+        visible = uiState.isCollectionSheetVisible,
+        onDismiss = { viewModel.onEvent(DetailMenuEvent.OnDismissCollectionSheet)}
+    ) {
+        CollectionContent(
+            collections = uiState.collections,
+            onCollectionSelected = { id -> viewModel.onEvent(DetailMenuEvent.OnCollectionSelected(id))},
+            onSaveCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnSaveCollectionClick)},
+            onAddCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnShowAddCollectionSheet)}
+        )
     }
 
+    CustomBottomSheet(
+        visible = uiState.isSuccessSheetVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        CollectionSaveContent(
+            title = "Saved to “${uiState.savedCollectionName}” Collection!",
+            subtitle = "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit, sed do eiusmod.",
+            onCheckCollection = {},
+            onConfirmClick = { viewModel.onEvent(DetailMenuEvent.OnDismissSuccessSheet)}
+        )
+    }
+
+    CustomBottomSheet(
+        visible = uiState.isAddCollectionSheet,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        CollectionAddContent(
+            onDismissClick = { viewModel.onEvent(DetailMenuEvent.OnDismissAddCollectionSheet)}
+        )
+    }
+}
+
+@Composable
+fun DetailMenuContent(
+    uiState: DetailMenuUiState,
+    onOptionToggle:(MenuChoiceSection,MenuItemOption) -> Unit,
+    onDecreaseQuantity: (Int) -> Unit,
+    onIncrementQuantity: (Int) -> Unit,
+    onNotesChange:(String) -> Unit,
+    onShowCollectionSheet: () -> Unit,
+    onAddToCartClick: () -> Unit
+) {
     Scaffold(
         containerColor = Neutral10,
         bottomBar = {
             ProductAddToCartBottomBar(
-                quantity = quantity,
-                enableDecrease = quantity > 1,
-                onIncreaseQuantity = { quantity++ },
-                onDecreaseQuantity = { if (quantity > 1) quantity-- }
+                quantity = uiState.quantity,
+                enableDecrease = uiState.quantity >= 1,
+                totalPrice = uiState.cartTotalPrice,
+                onIncreaseQuantity = { onIncrementQuantity(uiState.quantity) },
+                onDecreaseQuantity = { onDecreaseQuantity(uiState.quantity) },
+                onAddToCartClick = onAddToCartClick
             )
         }
     ) { padding ->
@@ -81,22 +139,22 @@ fun DetailMenuScreen() {
                 .fillMaxSize(),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            //1. Gambar & Top AppBar (Bagian atas yang tingginya 370.dp)
             item {
                 Box(Modifier.height(370.dp).fillMaxWidth()) {
                     ItemImage(
-                        imageUrl = menu.imageUrl,
-                        name = menu.name,
-                        status = RestaurantStatus.OPEN,
+                        imageUrl = uiState.menu.imageUrl,
+                        name = uiState.menu.name,
+                        status = if(uiState.menu.stock>0) RestaurantStatus.OPEN else RestaurantStatus.CLOSED,
                         modifier = Modifier.fillMaxSize()
                     )
                     DetailMenuTopAppBar(
+                        isFavorite = uiState.menu.isWishlist,
                         onBackClick = {},
                         onShareClick = {},
-                        onFavoriteClick = {}
+                        onFavoriteClick = onShowCollectionSheet
                     )
 
-                    if(menu.stock==0) {
+                    if(uiState.menu.stock==0) {
                         Box(modifier = Modifier.padding(horizontal = 24.dp)
                             .align(Alignment.BottomCenter)
                             .offset(y=20.dp)
@@ -107,11 +165,9 @@ fun DetailMenuScreen() {
                 }
             }
 
-            //2. Deskripsi Menu, Harga, dan Info Card
             item {
                 Column(
-                    // Padding horizontal dan top padding untuk konten
-                    Modifier.padding(start = 24.dp, end = 24.dp, top = if(menu.stock>0) 24.dp else 40.dp),
+                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = if(uiState.menu.stock>0) 24.dp else 40.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
@@ -120,12 +176,12 @@ fun DetailMenuScreen() {
                     ) {
                         Column {
                             Text(
-                                text = menu.name,
+                                text = uiState.menu.name,
                                 style = LocalCustomTypography.current.h3Bold,
                                 color = Neutral100
                             )
                             Text(
-                                text = menu.description,
+                                text = uiState.menu.description,
                                 style = LocalCustomTypography.current.bodyMediumRegular,
                                 color = Neutral70
                             )
@@ -134,14 +190,19 @@ fun DetailMenuScreen() {
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.Center
                         ) {
+                            val priceToDisplay = if(uiState.menu.sellingPrice>0) uiState.menu.sellingPrice else uiState.menu.originalPrice
+
                             FoodPriceBigText(
-                                price = menu.price,
+                                price = priceToDisplay.toCleanRupiahFormat(),
                                 color = Orange500
                             )
-                            FoodPriceLineText(
-                                price = "5.000",
-                                color = Neutral60
-                            )
+
+                            if(uiState.menu.sellingPrice>0) {
+                                FoodPriceLineText(
+                                    price = uiState.menu.originalPrice.toCleanRupiahFormat(),
+                                    color = Neutral60
+                                )
+                            }
                         }
                     }
                     RestaurantMenuInfoCard(onReviewsClick = {})
@@ -150,38 +211,23 @@ fun DetailMenuScreen() {
 
             // --- Divider 1 ---
             item {
-                HorizontalDivider(Modifier.padding(vertical = 32.dp))
+                Divider32()
             }
 
-            itemsIndexed(menuSectionsList) { index, section ->
+            itemsIndexed(uiState.menuChoiceSections) { index, section ->
                 ChoiceSection(
                     section = section,
-                    onSectionUpdated = { updatedSection ->
-                    // --- Logika Update State ---
-                        // 1. Cari index dari section yang diperbarui
-                        val sectionIndex = menuSectionsList.indexOf(section)
-
-                        // 2. Buat list baru (immutable update)
-                        val newList = menuSectionsList.toMutableList()
-
-                        // 3. Ganti section lama dengan updatedSection
-                        if (sectionIndex != -1) {
-                            newList[sectionIndex] = updatedSection
-                        }
-
-                        // 4. Perbarui state
-                        menuSections = newList
-                    }
+                    onSectionUpdated = onOptionToggle
                 )
 
                 // Divider di antara Choice Sections
                 if (index < menuSections.lastIndex) {
-                    HorizontalDivider(Modifier.padding(vertical = 32.dp))
+                    Divider32()
                 }
             }
 
             item {
-                HorizontalDivider(Modifier.padding(vertical = 32.dp))
+                Divider32()
             }
 
             // 5. Notes Section
@@ -198,14 +244,14 @@ fun DetailMenuScreen() {
                             color = Neutral100
                         )
                         Text(
-                            text = "${notesValue.length} / 100",
+                            text = "${uiState.notesValue.length} / 100",
                             style = LocalCustomTypography.current.bodyMediumRegular,
                             color = Neutral70
                         )
                     }
                     NotesBarSection(
-                        value = notesValue,
-                        onValueChange = { notesValue = it }
+                        value = uiState.notesValue,
+                        onValueChange = onNotesChange
                     )
                 }
             }
@@ -216,13 +262,8 @@ fun DetailMenuScreen() {
 @Composable
 fun ChoiceSection(
     section: MenuChoiceSection,
-    onSectionUpdated: (MenuChoiceSection) -> Unit
+    onSectionUpdated: (MenuChoiceSection, MenuItemOption) -> Unit
 ) {
-    // Helper function untuk memicu update state
-    val onOptionToggled: (MenuItemOption) -> Unit = { toggledOption ->
-        handleSelectionChange(section, toggledOption, onSectionUpdated)
-    }
-
     Column(modifier = Modifier.fillMaxWidth()
         .padding(horizontal = 24.dp)
     ) {
@@ -250,13 +291,11 @@ fun ChoiceSection(
                 option = option,
                 section = section,
                 isSelected = section.selectedOptions.contains(option),
-                onOptionToggled = onOptionToggled
+                onOptionToggled = {onSectionUpdated(section,it)}
             )
 
-            // Tambahkan Garis Putus-putus Kustom setelah setiap item, kecuali yang terakhir
             if (index < section.options.lastIndex) {
                 DashedDivider(
-                    // Memberikan jarak vertikal yang bagus antara teks dan garis
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
@@ -268,8 +307,10 @@ fun ChoiceSection(
 fun ProductAddToCartBottomBar(
     quantity : Int,
     enableDecrease: Boolean,
+    totalPrice : Int,
     onIncreaseQuantity: () -> Unit,
-    onDecreaseQuantity: () -> Unit
+    onDecreaseQuantity: () -> Unit,
+    onAddToCartClick: () -> Unit
 ) {
     Column (
         modifier = Modifier
@@ -315,12 +356,23 @@ fun ProductAddToCartBottomBar(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
-        CartAddButton(totalPrice = 28000)
+        CartAddButton(totalPrice = totalPrice, onClick = onAddToCartClick)
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DetailMenuPreview() {
-    DetailMenuScreen()
+    DetailMenuContent(
+        uiState = DetailMenuUiState(
+            menu = menus[0],
+            menuChoiceSections = menuSections
+        ),
+        onOptionToggle = {_,_->},
+        onIncrementQuantity = {},
+        onDecreaseQuantity = {},
+        onNotesChange = {},
+        onAddToCartClick = {},
+        onShowCollectionSheet = {}
+    )
 }

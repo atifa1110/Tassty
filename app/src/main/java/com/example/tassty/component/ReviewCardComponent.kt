@@ -131,10 +131,8 @@ fun ReviewLargeCard(review: Review) {
             .padding(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // ... (Bagian Header Ulasan tetap sama) ...
         Row(modifier = Modifier
             .fillMaxWidth()) {
-            // Gambar Profil (menggunakan placeholder)
             CommonImage(
                 imageUrl = "",
                 name = "profile reviewers",
@@ -145,7 +143,6 @@ fun ReviewLargeCard(review: Review) {
                 modifier = Modifier.padding(start = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Bagian Bintang (Rating)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start
@@ -193,7 +190,6 @@ fun ReviewLargeCard(review: Review) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    // 🟢 PENTING: Menggambar Segitiga di belakang konten
                     .drawBehind {
                         drawBubbleTail(
                             // Posisi horizontal di mana segitiga menunjuk

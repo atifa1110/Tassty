@@ -1,6 +1,7 @@
-package com.example.tassty
+package com.example.tassty.screen
 
 import androidx.annotation.DrawableRes
+import com.example.tassty.R
 
 sealed class OnBoardingPage(
     @DrawableRes

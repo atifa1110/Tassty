@@ -1,6 +1,7 @@
 package com.example.tassty.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,24 +22,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.collection
-import com.example.tassty.model.FavoriteCollection
+import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
 fun CollectionCard(
-    collection: FavoriteCollection
+    collection: CollectionUiItem,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable{onCheckedChange(!collection.isSelected)},
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(width=1.dp, color = if(collection.isSelected) Orange500 else Neutral30),
+        border = BorderStroke(width=1.dp, color = if(collection.isSelected) Orange500 else Neutral40),
         colors = CardDefaults.cardColors(containerColor = if (collection.isSelected) Orange50 else Neutral10)
     ) {
         Row(
@@ -68,7 +68,7 @@ fun CollectionCard(
 
             Checkbox(
                 checked = collection.isSelected,
-                onCheckedChange = {  },
+                onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
                     checkedColor = Orange500,
                     uncheckedColor = Neutral40
@@ -79,10 +79,14 @@ fun CollectionCard(
     }
 }
 
+
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewCollectionCard() {
-    Column(Modifier.padding(24.dp)) {
-        CollectionCard(collection = collection)
+    Column(modifier = Modifier.fillMaxWidth()
+        .padding(24.dp)
+    ) {
+        CollectionCard(collection = collection, onCheckedChange = {})
     }
 }

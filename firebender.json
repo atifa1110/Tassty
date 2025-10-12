@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "example_mcp_server": {
+      "command": "your_command_here",
+      "args": ["arg1", "arg2"],
+      "env": {
+        "ENV_VAR1": "value1",
+        "ENV_VAR2": "value2"
+      }
+    }
+  },
+  "mcpEnvFile": null,
+  "rules": [],
+  "ignore": []
+}

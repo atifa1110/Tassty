@@ -3,10 +3,7 @@ package com.example.tassty.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,8 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -38,6 +35,7 @@ import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
@@ -48,12 +46,12 @@ import com.example.tassty.ui.theme.Pink600
 
 @Composable
 fun TextComponent(
+    modifier: Modifier = Modifier,
     text: String,
     onTextChanged: (String) -> Unit,
     placeholder: String,
     leadingIcon: Int? = null,
-    textError: String = "",
-    modifier: Modifier = Modifier,
+    textError: String = ""
 ) {
     OutlinedTextField(
         modifier = modifier
@@ -146,10 +144,10 @@ fun TextComponentNoIcon(
 
 @Composable
 fun SearchBarHomeSection(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String = stringResource(R.string.search_delicacies),
-    modifier: Modifier = Modifier
 ) {
     Card(modifier = modifier
         .fillMaxWidth()
@@ -201,10 +199,10 @@ fun SearchBarHomeSection(
 
 @Composable
 fun SearchBarWhiteSection(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String = stringResource(R.string.search_for_something),
-    modifier: Modifier = Modifier
 ) {
     Card(modifier = modifier.border(
             width = 1.dp,
@@ -260,16 +258,16 @@ fun SearchBarWhiteSection(
 
 @Composable
 fun NotesBarSection(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     icon : Int = R.drawable.clipboard_list,
     placeholder: String = stringResource(R.string.places_notes_here),
-    modifier: Modifier = Modifier
 ) {
     Card(modifier = modifier
         .border(
             width = 1.dp,
-            color = Neutral30, // warna border
+            color = Neutral30, 
             shape = RoundedCornerShape(99.dp)
         ),
         shape = RoundedCornerShape(99.dp),
@@ -315,30 +313,6 @@ fun NotesBarSection(
 }
 
 @Composable
-fun TitleListHeader(
-    data: Int,
-    text: String,
-    modifier : Modifier = Modifier
-){
-    Row(
-        modifier = modifier.padding(horizontal = 24.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = data.toString(),
-            color = Orange500,
-            style = LocalCustomTypography.current.h4Bold
-        )
-        Text(
-            text = text,
-            color = Neutral100,
-            style = LocalCustomTypography.current.h5Bold
-        )
-    }
-}
-
-@Composable
 fun CollectionText(
     modifier: Modifier = Modifier,
     itemCount: Int
@@ -357,43 +331,121 @@ fun CollectionText(
 }
 
 @Composable
-fun FoodPriceText(
-    modifier: Modifier = Modifier,
-    price: String,
-    currency: String = "Rp",
-    color: Color
+fun StepIndicatorText(
+    currentStep: Int,
+    totalStep: Int
 ) {
-    val parts = price.split(".")
     Text(
         text = buildAnnotatedString {
-            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = color)) {
-                append(parts[0])
+            // Current step
+            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = Neutral100)) {
+                append(currentStep.toString())
             }
-            withStyle(style = LocalCustomTypography.current.h7Regular.toSpanStyle().copy(color = color)) {
-                append(".${parts[1]}")
+            // Total step
+            withStyle(style = LocalCustomTypography.current.h5Regular.toSpanStyle().copy(color = Neutral60)) {
+                append(" / $totalStep")
+            }
+
+        },
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(Neutral20)
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+    )
+}
+
+@Composable
+private fun BasePriceText(
+    price: String,
+    modifier: Modifier,
+    primaryStyle: androidx.compose.ui.text.TextStyle,
+    secondaryStyle: androidx.compose.ui.text.TextStyle,
+    primaryColor: Color,
+    secondaryColor: Color,
+    textDecoration: TextDecoration? = null
+) {
+    // Logika parsing yang lebih aman untuk memisahkan Rupiah dan angka ribuan
+    // Ex: "Rp10.000" -> primaryPart: "Rp10", secondaryPart: ".000"
+
+    // Cari index titik (dot) terakhir. Jika tidak ada, price dianggap sebagai primary part.
+    val lastDotIndex = price.lastIndexOf('.')
+
+    val primaryPart: String
+    val secondaryPart: String
+
+    if (lastDotIndex != -1 && price.length > lastDotIndex + 1) {
+        // Jika ada dot terakhir dan diikuti karakter (misal: "Rp10.000")
+        primaryPart = price.substring(0, lastDotIndex) // "Rp10"
+        secondaryPart = price.substring(lastDotIndex) // ".000"
+    } else {
+        // Jika tidak ada dot atau hanya satu angka ("Rp10")
+        primaryPart = price
+        secondaryPart = ""
+    }
+
+    Text(
+        text = buildAnnotatedString {
+            withStyle(style = primaryStyle.toSpanStyle().copy(color = primaryColor)) {
+                append(primaryPart)
+            }
+            if (secondaryPart.isNotEmpty()) {
+                withStyle(style = secondaryStyle.toSpanStyle().copy(color = secondaryColor)) {
+                    append(secondaryPart)
+                }
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        textDecoration = textDecoration
+    )
+}
+
+@Composable
+fun SummaryPriceText(
+    modifier: Modifier = Modifier,
+    price: String,
+    isDiscount:Boolean,
+) {
+    val color = if (isDiscount) Pink500 else Neutral70
+    val formattedPrice = if (isDiscount) "-$price" else price
+
+    BasePriceText(
+        price = formattedPrice,
+        modifier = modifier,
+        primaryStyle = LocalCustomTypography.current.h6Bold,
+        secondaryStyle = LocalCustomTypography.current.h8Regular,
+        primaryColor =color,
+        secondaryColor = color
+    )
+}
+
+@Composable
+fun FoodPriceText(
+    modifier: Modifier = Modifier,
+    price: String, // Contoh: "Rp20.000" atau "Rp0"
+    color: Color
+) {
+    BasePriceText(
+        price = price,
+        modifier = modifier,
+        primaryStyle = LocalCustomTypography.current.h5Bold,
+        secondaryStyle = LocalCustomTypography.current.h7Regular,
+        primaryColor = color ,
+        secondaryColor = color
     )
 }
 
 @Composable
 fun FoodPriceTinyText(
     modifier: Modifier = Modifier,
-    price: String,
-    currency: String = "Rp",
+    price: String
 ) {
-    val parts = price.split(".")
-    Text(
+    BasePriceText(
         modifier = modifier,
-        text = buildAnnotatedString {
-            withStyle(style = LocalCustomTypography.current.h7Bold.toSpanStyle().copy(color = Orange500)) {
-                append("$currency${parts[0]}")
-            }
-            withStyle(style = LocalCustomTypography.current.h8Regular.toSpanStyle().copy(color = Orange500)) {
-                append(".${parts[1]}")
-            }
-        },
+        price = price,
+        primaryStyle = LocalCustomTypography.current.h7Bold,
+        secondaryStyle = LocalCustomTypography.current.h8Regular,
+        primaryColor = Orange500,
+        secondaryColor = Orange500
     )
 }
 
@@ -401,20 +453,15 @@ fun FoodPriceTinyText(
 fun FoodPriceBigText(
     modifier: Modifier = Modifier,
     price: String,
-    currency: String = "Rp",
     color: Color
 ) {
-    val parts = price.split(".")
-    Text(
+    BasePriceText(
+        price = price,
         modifier = modifier,
-        text = buildAnnotatedString {
-            withStyle(style = LocalCustomTypography.current.h3Bold.toSpanStyle().copy(color = color)) {
-                append("$currency${parts[0]}")
-            }
-            withStyle(style = LocalCustomTypography.current.h4Regular.toSpanStyle().copy(color = color)) {
-                append(".${parts[1]}")
-            }
-        }
+        primaryStyle = LocalCustomTypography.current.h3Bold,
+        secondaryStyle = LocalCustomTypography.current.h4Regular,
+        primaryColor = color ,
+        secondaryColor = color
     )
 }
 
@@ -422,85 +469,58 @@ fun FoodPriceBigText(
 fun FoodPriceLineText(
     modifier: Modifier = Modifier,
     price: String,
-    currency: String = "Rp",
     color: Color
 ) {
-    val parts = price.split(".")
-    Text(
+    BasePriceText(
+        price = price,
         modifier = modifier,
-        text = buildAnnotatedString {
-            withStyle(style = LocalCustomTypography.current.h5Regular.toSpanStyle().copy(color = color)) {
-                append("$currency${parts[0]}")
-            }
-            withStyle(style = LocalCustomTypography.current.h7Regular.toSpanStyle().copy(color = color)) {
-                append(".${parts[1]}")
-            }
-        },
+        primaryStyle = LocalCustomTypography.current.h5Bold,
+        secondaryStyle = LocalCustomTypography.current.h7Regular,
+        primaryColor = color ,
+        secondaryColor = color,
         textDecoration = TextDecoration.LineThrough
     )
+
 }
 
 @Composable
 fun NotesText(
     notes: String
-){
-    Text(
-        modifier = Modifier,
-        text = buildAnnotatedString {
-            withStyle(
-                style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
-                    .copy(color = Neutral100)
-            ) {
-                append("Notes : ")
-            }
-            withStyle(
-                style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
-                    .copy(color = Neutral70)
-            ) {
-                append(notes)
-            }
-        },
-    )
-}
+) {
+    val lines = notes.split("\n")
 
-@Composable
-fun ErrorStatus(
-    icon : Int,
-    status: String,
-    statusMessage: String
-){
-    Box(
-        modifier = Modifier
-            .background(
-                color = Pink500,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(icon),
-                    tint = Neutral10,
-                    contentDescription = "icon status"
-                )
-                Spacer(Modifier.width(4.dp))
+    Column(modifier = Modifier) {
+        lines.filter { it.isNotBlank() }.forEach { line ->
+            val parts = line.split(":", limit = 2)
+
+            if (parts.size == 2) {
+                val label = parts[0].trim() + " : "
+                val data = parts[1].trim()
+
                 Text(
-                    text = status,
-                    color = Color.White,
-                    style = LocalCustomTypography.current.bodySmallSemiBold
+                    text = buildAnnotatedString {
+                        withStyle(
+                            style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
+                                .copy(color = Neutral100)
+                        ) {
+                            append(label)
+                        }
+
+                        withStyle(
+                            style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
+                                .copy(color = Neutral70)
+                        ) {
+                            append(data)
+                        }
+                    }
+                )
+            } else {
+                Text(
+                    text = line,
+                    style = LocalCustomTypography.current.bodySmallMedium
+                        .copy(color = Neutral70)
                 )
             }
-
-            Text(
-                text = statusMessage,
-                color = Color.White,
-                style = LocalCustomTypography.current.bodySmallMedium
-            )
         }
     }
 }
@@ -540,14 +560,12 @@ fun PreviewAllComponents() {
             onValueChange = {}
         )
 
-        TitleListHeader(data = 16, text = "Restaurant")
+        FoodPriceText(price = "Rp25.000", color = Neutral100)
 
-        FoodPriceText(price = "25.000", color = Neutral100)
+        FoodPriceTinyText(price = "Rp25.000")
 
-        FoodPriceTinyText(price = "25.000")
+        FoodPriceBigText(price = "Rp25.000", color = Orange500)
 
-        FoodPriceBigText(price = "25.000", color = Orange500)
-
-        FoodPriceLineText(price = "25.000", color = Neutral60)
+        FoodPriceLineText(price = "Rp25.000", color = Neutral60)
     }
 }

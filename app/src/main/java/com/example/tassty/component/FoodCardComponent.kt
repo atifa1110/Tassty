@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,6 +24,7 @@ import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
@@ -61,7 +61,8 @@ fun FoodGridCard(
     menu: Menu,
     status: RestaurantStatus,
     isFirstItem: Boolean,
-    isWishlist: Boolean,
+    onFavoriteClick: (String) -> Unit,
+    onAddToCart:(Menu) -> Unit
 ) {
     Card(
         modifier = Modifier.width(140.dp),
@@ -75,12 +76,11 @@ fun FoodGridCard(
                 menu = menu,
                 status = status,
                 isFirstItem = isFirstItem,
-                isWishlist = isWishlist,
-                onFavoriteClick = {},
+                onFavoriteClick = { onFavoriteClick(menu.id) },
                 modifier = Modifier.height(120.dp)
             )
 
-            FoodGridCardContent(menu = menu)
+            FoodGridCardContent(menu = menu,onAddToCart = {onAddToCart(menu)})
         }
     }
 }
@@ -105,7 +105,6 @@ fun FoodNameGridCard(
                 menu = menu,
                 status = status,
                 isFirstItem = isFirstItem,
-                isWishlist = isWishlist,
                 onFavoriteClick = {},
                 modifier = Modifier.height(120.dp)
             )
@@ -118,11 +117,11 @@ fun FoodNameGridCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodLargeGridCard(
+    modifier: Modifier = Modifier,
     menu: Menu,
     status: RestaurantStatus,
     isFirstItem: Boolean,
-    isWishlist: Boolean,
-    modifier: Modifier = Modifier
+    onFavoriteClick: () -> Unit
 ){
     Card(
         modifier = modifier.width(157.dp), // Adjust width as needed
@@ -138,12 +137,11 @@ fun FoodLargeGridCard(
                 menu = menu,
                 status = status,
                 isFirstItem = isFirstItem,
-                isWishlist = isWishlist,
-                onFavoriteClick = {},
+                onFavoriteClick = onFavoriteClick,
                 modifier = Modifier.height(137.dp)
             )
 
-            FoodGridCardContent(menu = menu)
+            FoodGridCardContent(menu = menu, onAddToCart = {})
         }
     }
 }
@@ -154,7 +152,7 @@ fun FoodListCard(
     menu: Menu,
     status: RestaurantStatus,
     isFirstItem: Boolean,
-    isWishlist: Boolean,
+    onFavoriteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -172,8 +170,9 @@ fun FoodListCard(
                 modifier = Modifier.size(100.dp, 84.dp)
             )
 
-            FoodListCardContent(menu = menu,
-                isWishlist = isWishlist, onFavoriteClick = {}
+            FoodListCardContent(
+                menu = menu,
+                onFavoriteClick = onFavoriteClick
             )
         }
     }
@@ -252,6 +251,7 @@ fun OptionCard(
         Text(
             text = option.name,
             style = LocalCustomTypography.current.h6Regular,
+            color = Neutral100,
             modifier = Modifier.weight(1f)
         )
 
@@ -267,8 +267,7 @@ fun OptionCard(
                 Checkbox(
                     checked = isSelected,
                     onCheckedChange = { onOptionToggled(option) },
-                    // Disallow checking if max limit is reached and current option is NOT selected
-                    enabled = isSelected || section.selectedOptions.size < section.maxSelection,
+                    //enabled = isSelected || section.selectedOptions.size < section.maxSelection,
                     colors = CheckboxDefaults.colors(
                         checkedColor = Orange500,
                         uncheckedColor = Neutral40
@@ -330,19 +329,22 @@ fun MenuStockStatus(
 @Preview(showBackground = true)
 @Composable
 fun FoodGridCardPreview() {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ){
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FoodTinyGridCard(menu = menuItem, status = RestaurantStatus.OPEN)
             FoodNameGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN,isWishlist = false)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN,isWishlist = false)
-            FoodGridCard(menu = menuItem, isFirstItem = false, status = RestaurantStatus.OPEN,isWishlist = true)
+            FoodGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN, onFavoriteClick = {}, onAddToCart = {})
+            FoodGridCard(menu = menuItem, isFirstItem = false, status = RestaurantStatus.OPEN, onFavoriteClick = {}, onAddToCart = {})
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodLargeGridCard(menu = menuItem, isFirstItem = true,status = RestaurantStatus.OPEN,isWishlist = false)
-            FoodLargeGridCard(menu = menuItem, isFirstItem = false,status = RestaurantStatus.OPEN,isWishlist = true)
+            FoodLargeGridCard(menu = menuItem, isFirstItem = true,status = RestaurantStatus.OPEN,onFavoriteClick = {})
+            FoodLargeGridCard(menu = menuItem, isFirstItem = false,status = RestaurantStatus.OPEN,onFavoriteClick = {})
         }
     }
 }
@@ -350,27 +352,21 @@ fun FoodGridCardPreview() {
 @Preview(showBackground = true)
 @Composable
 fun FoodListCardPreview() {
-    Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        FoodListCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN,isWishlist = false)
-        FoodListCard(menu = menuItem, isFirstItem = false, status = RestaurantStatus.OPEN,isWishlist = true)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OrderListCardPreview() {
-    Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column (modifier = Modifier.fillMaxWidth().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        FoodListCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN, onFavoriteClick = {})
+        FoodListCard(menu = menuItem, isFirstItem = false, status = RestaurantStatus.OPEN, onFavoriteClick = {})
         OrderFoodListCard(menu = menuItem)
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
 fun OptionCardPreview() {
     Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OptionCard(
-            option = MenuItemOption("Rare",4000),
+            option = MenuItemOption("1","Rare",4000),
             section = menuSections[0],
             isSelected = false,
             onOptionToggled = {}

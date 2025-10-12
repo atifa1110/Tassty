@@ -18,13 +18,15 @@ import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.categories
 import com.example.tassty.component.Divider32
-import com.example.tassty.component.HorizontalSubtitleListSection
+import com.example.tassty.component.HorizontalTitleSubtitleSection
 import com.example.tassty.component.RestaurantLargeGridCard
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.TitleTopAppBar
 import com.example.tassty.component.restaurantVerticalListBlock
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.RestaurantUiModel
+import com.example.tassty.restaurantUiModel
 import com.example.tassty.restaurants
 import com.example.tassty.ui.theme.Neutral10
 
@@ -54,7 +56,7 @@ fun RecommendedRestaurantScreen(){
 
             item {
                 RecommendedRowContent(
-                    restaurantItems = restaurants
+                    restaurantItems = restaurantUiModel
                 )
             }
 
@@ -64,10 +66,8 @@ fun RecommendedRestaurantScreen(){
 
             restaurantVerticalListBlock(
                 headerText = "Recommended Restaurants",
-                restaurantItems = restaurants,
-                status = RestaurantStatus.OPEN
+                restaurantItems = restaurantUiModel
             )
-
         }
     }
 }
@@ -89,20 +89,19 @@ fun SearchHeader(){
 
 @Composable
 fun RecommendedRowContent(
-    restaurantItems : List<Restaurant>
+    restaurantItems : List<RestaurantUiModel>
 ){
-    HorizontalSubtitleListSection(
+    HorizontalTitleSubtitleSection(
         title = "Recommended Restaurant",
         subtitle = "Our recommended cafes to explore!",
         onSeeAllClick = {}
     ) {
         items(
             items = restaurantItems,
-            key = { item -> item.id }
+            key = { item -> item.restaurant.id }
         ) { restaurant ->
             RestaurantLargeGridCard(
-                restaurant = restaurant,
-                status = RestaurantStatus.OPEN
+                restaurant = restaurant
             )
             Spacer(modifier = Modifier.padding(end = 12.dp))
         }

@@ -15,11 +15,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,52 +22,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
-import com.example.tassty.categories
 import com.example.tassty.component.BoxLocation
-import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.ButtonSmallComponent
-import com.example.tassty.component.FoodCategoryGrid
-import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.SetupTopAppBar
-import com.example.tassty.component.SimpleSearchBar
-import com.example.tassty.model.Category
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
-
-//enum class SetupStage {
-//    CUISINE,
-//    LOCATION
-//}
-//
-//@Composable
-//fun SetupAccountScreen() {
-//    var currentStage by remember { mutableStateOf(SetupStage.CUISINE) }
-//
-//    when (currentStage) {
-//        SetupStage.CUISINE -> {
-//            SetupCuisineScreen(
-//                categories = categories,
-//                onNextClick = {
-//                    currentStage = SetupStage.LOCATION
-//                },
-//                onSkipClick = {
-//                },
-//                onBackClick = {}
-//            )
-//        }
-//        SetupStage.LOCATION -> {
-//            SetupLocationScreen(
-//                onBackClick = {},
-//                onSkipClick = {},
-//                onSubmitClick = {}
-//            )
-//        }
-//    }
-//}
 
 @Composable
 fun SetupLocationScreen(

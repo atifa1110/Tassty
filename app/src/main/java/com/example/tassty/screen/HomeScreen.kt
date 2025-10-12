@@ -51,8 +51,9 @@ import com.example.tassty.component.CategoryCard
 import com.example.tassty.component.EmptyMapBox
 import com.example.tassty.component.FoodGridCard
 import com.example.tassty.component.FoodLargeGridCard
-import com.example.tassty.component.HeaderText
-import com.example.tassty.component.HorizontalListSection
+import com.example.tassty.component.GridMenuListSection
+import com.example.tassty.component.HeaderListTitleButton
+import com.example.tassty.component.HorizontalTitleButtonSection
 import com.example.tassty.component.RestaurantGridCard
 import com.example.tassty.component.SearchBarHomeSection
 import com.example.tassty.component.VoucherLargeCard
@@ -61,6 +62,8 @@ import com.example.tassty.model.Category
 import com.example.tassty.model.Menu
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.model.RestaurantUiModel
+import com.example.tassty.restaurantUiModel
 import com.example.tassty.restaurants
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -78,7 +81,6 @@ fun HomeScreen() {
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         item {
-            // Bagian atas dengan radial gradient
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,7 +117,7 @@ fun HomeScreen() {
         item {RecommendationSection(menuItems = menus, status = RestaurantStatus.OPEN)}
         item {HorizontalDivider(color = Neutral30)}
 //        item {RestaurantNearby()}
-        item {RecommendationRestaurant(restaurants,status = RestaurantStatus.OPEN)}
+        item {RecommendationRestaurant(restaurantItems = restaurantUiModel)}
         item {TodayDeal()}
         item {SuggestedMenu(menuItems = menus,status = RestaurantStatus.OPEN) }
     }
@@ -228,10 +230,12 @@ fun BannerSection() {
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeaderText(text="Special Offers",
-            textColor = Neutral10, textButton = "See All",
-            onButtonClick = {}
+        HeaderListTitleButton(
+            title= "Special Offers",
+            titleColor = Neutral10,
+            onClick = {}
         )
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -300,7 +304,7 @@ fun BannerSection() {
                         .size(185.dp)
                         .offset(y = 8.dp)
                         .zIndex(1f)
-                        .align(Alignment.BottomEnd) // Menempatkan gambar di Kanan Bawah
+                        .align(Alignment.BottomEnd)
                 )
             }
         }
@@ -327,9 +331,9 @@ fun RecommendationSection(
     menuItems : List<Menu>,
     status: RestaurantStatus
 ) {
-    HorizontalListSection(
-        headerText = "Recommended for you",
-        onSeeAllClick = {}
+    HorizontalTitleButtonSection(
+        title = "Recommended for you",
+        onClick = {}
     ) {
         itemsIndexed(
             items = menuItems,
@@ -339,7 +343,8 @@ fun RecommendationSection(
                 menu = menu,
                 status = status,
                 isFirstItem = index == 0,
-                isWishlist = false
+                onFavoriteClick = {},
+                onAddToCart = {}
             )
         }
     }
@@ -352,31 +357,30 @@ fun RestaurantNearby() {
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeaderText(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            text = "Restos Nearby you",
-            textColor = Neutral100, textButton = "See All",
-            onButtonClick = {})
+        HeaderListTitleButton(
+            title = "Restos Nearby you",
+            titleColor = Neutral100,
+            onClick = {},
+            modifier = Modifier.padding(24.dp)
+        )
         EmptyMapBox()
     }
 }
 
 @Composable
 fun RecommendationRestaurant(
-    restaurantItems : List<Restaurant>,
-    status: RestaurantStatus
+    restaurantItems : List<RestaurantUiModel>,
 ) {
-    HorizontalListSection(
-        headerText = "Recommended Restaurant",
-        onSeeAllClick = {}
+    HorizontalTitleButtonSection(
+        title = "Recommended Restaurant",
+        onClick = {}
     ) {
         itemsIndexed(
             items = restaurantItems,
-            key = { index, item -> item.id }
+            key = { index, item -> item.restaurant.id }
         ) { index, restaurant ->
             RestaurantGridCard(
-                restaurant = restaurant,
-                status = status
+                restaurant = restaurant
             )
         }
     }
@@ -388,18 +392,9 @@ fun TodayDeal(){
         .fillMaxWidth().background(Neutral20),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeaderText(
-            modifier = Modifier.padding(start = 24.dp,end=24.dp),
-            text = "Today's deals",
-            textColor = Neutral100,
-            textButton = "See All",
-            onButtonClick = {}
-        )
-
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        HorizontalTitleButtonSection(
+            title= "Today's deals",
+            onClick = {}
         ) {
             items(count= 4) {
                 VoucherLargeCard()
@@ -413,51 +408,14 @@ fun SuggestedMenu(
     menuItems: List<Menu>,
     status : RestaurantStatus
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(), // Hapus .height(600.dp)
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        HeaderText(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            text = "Suggested menus for you!",
-            textColor = Neutral100,
-            textButton = "See All",
-            onButtonClick = {}
-        )
-
-        // Gunakan List<Row> di dalam Column biasa.
-        // Ini memastikan semua item ikut scroll bersama LazyColumn utama.
-        Column(
-            modifier = Modifier.padding(horizontal = 24.dp) // Padding kiri/kanan di sini
-        ) {
-            // Membagi list item menjadi baris-baris berisi 2 item
-            menuItems.chunked(2).forEachIndexed { rowIndex, rowItems ->
-
-                // Jarak antar baris (VerticalArrangement)
-                if (rowIndex > 0) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    rowItems.forEachIndexed { itemIndexInRow, item ->
-                        FoodLargeGridCard(
-                            menu = item,
-                            status = status,
-                            isFirstItem = itemIndexInRow == 0,
-                            isWishlist = false,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
-    }
+    GridMenuListSection(
+        title = "Suggested menu for you!",
+        menuItems = menuItems,
+        status = status,
+        onFavoriteClick = {}
+    )
 }
 
-// --- Preview Komponen ---
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeScreen() {

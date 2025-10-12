@@ -1,4 +1,11 @@
-package com.example.tassty.model
+package com.example.tassty.screen.search
+
+import com.example.tassty.model.Category
+import com.example.tassty.model.ChipFilterOption
+import com.example.tassty.model.FilterState
+import com.example.tassty.model.Menu
+import com.example.tassty.model.Restaurant
+import com.example.tassty.model.RestaurantUiModel
 
 sealed class SearchUiState {
     // Initial State (When the query is empty and the keyboard is not yet active)
@@ -30,7 +37,7 @@ sealed class SearchUiState {
 
 // Resource: Wrapper State for individual data items (Local Loading, Error, Data)
 data class Resource<T>(
-    val data: T,
+    val data: T? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -49,10 +56,10 @@ data class DataState(
     val history: Resource<List<ChipFilterOption>> = Resource(emptyList()),
     val popularSearches: Resource<List<ChipFilterOption>> = Resource(emptyList()),
     val categories: Resource<List<Category>> = Resource(emptyList()),
-    val rest : Resource<List<Restaurant>> = Resource(emptyList()),
+    val rest : Resource<List<RestaurantUiModel>> = Resource(emptyList()),
     val menus: Resource<List<Menu>> = Resource(emptyList()),
 
     // Search Results
-    val queryResult: Resource<List<Restaurant>> = Resource(emptyList()),
-    val filterResult: Resource<List<Restaurant>> = Resource(emptyList())
+    val queryResult: Resource<List<RestaurantUiModel>> = Resource(emptyList()),
+    val filterResult: Resource<List<RestaurantUiModel>> = Resource(emptyList())
 )

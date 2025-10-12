@@ -68,4 +68,16 @@
     <string name="see_all">See All</string>
     <string name="continue_payment">Continue payment</string>
     <string name="logout">Logout</string>
+    <string name="update">Update</string>
+    <string name="confirm">Confirm</string>
+    <string name="try_different">Try a different search keyword or look for your \nfavorite menu at other restaurants.</string>
+    <string name="we_couldn_t_find_this_menu">We couldn’t find \nthis menu.</string>
+    <string name="we_cant_cancel_your_order">We can’t cancel your order after you have \nmade the payment process.</string>
+    <string name="please_double_check_your_order">Please double check your order.</string>
+    <string name="start_exploring_your_favorite">Start exploring your favorite restaurants and add \ndelicious meals to your cart.</string>
+    <string name="your_cart_is_empty">Your cart is empty</string>
+    <string name="exclamation">!</string>
+    <string name="dummy_restaurant_name">Indah Cafe</string>
+    <string name="dummy_location">Gerunung Lombok Tengah, Praya</string>
+    <string name="resto_ratings">Resto ratings</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.tassty
+package com.example.tassty.screen.login
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,9 +13,7 @@ data class LoginUiState(
     val isSuccess: Boolean = false,
 )
 
-class LoginViewModel(
-
-) : ViewModel(){
+class LoginViewModel() : ViewModel(){
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 }

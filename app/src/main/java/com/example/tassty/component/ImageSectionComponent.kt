@@ -1,10 +1,13 @@
 package com.example.tassty.component
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,10 +22,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.disk.DiskCache
@@ -32,12 +38,11 @@ import coil.request.ImageRequest
 import com.example.tassty.R
 import com.example.tassty.hashUrl
 import com.example.tassty.model.Category
-import com.example.tassty.model.FavoriteCollection
+import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.model.Menu
 import com.example.tassty.model.Restaurant
 import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Pink200
 import com.example.tassty.ui.theme.Pink500
 
 @Composable
@@ -180,7 +185,7 @@ fun FoodImageRound(
 
 @Composable
 fun CollectionImageRound(
-    collection: FavoriteCollection,
+    collection: CollectionUiItem,
     modifier: Modifier = Modifier
 ){
     CommonImage(
@@ -216,27 +221,6 @@ fun ImageIcon(
         contentDescription = contentDescription,
         modifier = modifier
     )
-}
-
-
-@Composable
-fun CartIcon(
-    icon: Int,
-    boxColor: Color,
-    iconColor: Color
-){
-    Box(
-        modifier = Modifier.size(32.dp)
-            .clip(CircleShape).background(boxColor),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = "icon cart",
-            modifier = Modifier.size(16.dp),
-            tint = iconColor
-        )
-    }
 }
 
 @Composable
@@ -301,4 +285,89 @@ fun PromoIcon(
         )
     }
 
+}
+
+@Composable
+fun CircleImageIcon(
+    boxColor: Color,
+    contentDescription: String,
+    icon: Any,
+    iconSize : Dp,
+    iconColor: Color,
+    modifier: Modifier
+){
+    Box(
+        modifier = modifier.clip(CircleShape)
+            .background(boxColor),
+        contentAlignment = Alignment.Center
+    ) {
+        val painter = when (icon) {
+            is androidx.compose.ui.graphics.vector.ImageVector -> rememberVectorPainter(icon)
+            is Int -> painterResource(icon)
+            else -> return // Handle case not supported
+        }
+        Icon(
+            painter = painter,
+            contentDescription = contentDescription,
+            tint = iconColor,
+            modifier = Modifier.size(iconSize)
+        )
+    }
+}
+
+@Composable
+fun OverlapImage(
+    imageUrl: String
+){
+
+    Row(Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ){
+        Box(
+            modifier = Modifier.offset(10.dp)
+                .zIndex(1f)
+                .size(64.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(Color(0xFFEE8E1E).copy(0.24f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFFE1E1E1))
+                    .align(Alignment.Center),
+                contentAlignment = Alignment.Center
+            ) {
+                CommonImage(
+                    imageUrl =imageUrl,
+                    name ="",
+                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                )
+            }
+        }
+
+        Box(
+            modifier = Modifier.offset(-(10).dp)
+                .zIndex(2f)
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFF03F94).copy(0.24f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Pink500)
+                    .align(Alignment.Center),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.exclamation),
+                    contentDescription = "",
+                    tint = Neutral10,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
 }

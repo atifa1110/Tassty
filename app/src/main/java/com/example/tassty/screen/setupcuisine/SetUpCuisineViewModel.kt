@@ -64,14 +64,14 @@ class SetupCuisineViewModel : ViewModel() {
     fun onSearchTextChanged(newText: String) {
         _searchQuery.value = newText
 
-        if (newText.isBlank()) {
-            uiState = uiState.copy(
+        uiState = if (newText.isBlank()) {
+            uiState.copy(
                 filteredCategories = uiState.categories,
                 isLoading = false,
                 currentSearchQuery = ""
             )
         } else {
-            uiState = uiState.copy(isLoading = true)
+            uiState.copy(isLoading = true)
         }
     }
 

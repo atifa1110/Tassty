@@ -1,6 +1,5 @@
 package com.example.tassty.component
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,9 +29,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.model.OperationalDay
-import com.example.tassty.model.Restaurant
+import com.example.tassty.model.RestaurantDetailUiModel
 import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.restaurantItem
+import com.example.tassty.model.RestaurantUiModel
+import com.example.tassty.restaurantUiModel
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -45,8 +45,7 @@ import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun RestaurantSmallListCard (
-    restaurant: Restaurant,
-    status: RestaurantStatus
+    restaurant: RestaurantUiModel
 ){
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -60,8 +59,8 @@ fun RestaurantSmallListCard (
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurantItem,
-                status = status,
+                restaurant = restaurant.restaurant,
+                status = restaurant.operationalStatus,
                 modifier = Modifier.size(100.dp,80.dp)
             )
 
@@ -72,8 +71,7 @@ fun RestaurantSmallListCard (
 
 @Composable
 fun RestaurantLargeListCard(
-    restaurant: Restaurant,
-    status: RestaurantStatus
+    restaurant: RestaurantUiModel
 ){
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -87,8 +85,8 @@ fun RestaurantLargeListCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurantItem,
-                status = status,
+                restaurant = restaurant.restaurant,
+                status = restaurant.operationalStatus,
                 modifier = Modifier.size(100.dp,112.dp)
             )
 
@@ -99,8 +97,7 @@ fun RestaurantLargeListCard(
 
 @Composable
 fun RestaurantTinyGridCard (
-    restaurant: Restaurant,
-    status: RestaurantStatus,
+    restaurant: RestaurantUiModel
 ){
     Card(
         modifier = Modifier.width(140.dp), // Adjust width as needed
@@ -112,8 +109,8 @@ fun RestaurantTinyGridCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant,
-                status = status,
+                restaurant = restaurant.restaurant,
+                status = restaurant.operationalStatus,
                 modifier = Modifier.size(124.dp,120.dp)
             )
 
@@ -124,8 +121,7 @@ fun RestaurantTinyGridCard (
 
 @Composable
 fun RestaurantGridCard (
-    restaurant : Restaurant,
-    status: RestaurantStatus,
+    restaurant : RestaurantUiModel
 ){
     Card(
         modifier = Modifier.width(156.dp), // Adjust width as needed
@@ -137,8 +133,8 @@ fun RestaurantGridCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant,
-                status = status,
+                restaurant = restaurant.restaurant,
+                status = restaurant.operationalStatus,
                 modifier = Modifier.size(140.dp,100.dp)
             )
 
@@ -149,8 +145,7 @@ fun RestaurantGridCard (
 
 @Composable
 fun RestaurantLargeGridCard (
-    restaurant : Restaurant,
-    status: RestaurantStatus
+    restaurant : RestaurantUiModel
 ){
     Card(
         modifier = Modifier.width(196.dp), // Adjust width as needed
@@ -162,8 +157,8 @@ fun RestaurantLargeGridCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant,
-                status = status,
+                restaurant = restaurant.restaurant,
+                status = restaurant.operationalStatus,
                 modifier = Modifier.size(180.dp,120.dp)
             )
 
@@ -214,7 +209,8 @@ fun RestaurantCloseStatus(
 
 @Composable
 fun RestaurantInfoCard(
-    restaurant: Restaurant,
+    restaurant: RestaurantDetailUiModel,
+    operationalHour: String,
     onLocationClick:() -> Unit,
     onReviewsClick:() -> Unit,
     onScheduleClick:() -> Unit
@@ -277,7 +273,7 @@ fun RestaurantInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = restaurant.rating.toString(),
+                        text = restaurant.detail.restaurant.rating.toString(),
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
@@ -307,7 +303,7 @@ fun RestaurantInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "${restaurant.distance} km • ${restaurant.deliveryTime} min",
+                        text = "${restaurant.formattedDistance} • ${restaurant.detail.restaurant.deliveryTime}",
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
@@ -332,7 +328,7 @@ fun RestaurantInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "10.00 - 20.00",
+                        text = operationalHour,
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
@@ -592,7 +588,7 @@ fun RestaurantOperationalCard(day: OperationalDay) {
             )
         }
 
-        // Kanan: Jam Operasional
+        // Operational time
         Text(
             text = day.hours,
             style = if (isToday) LocalCustomTypography.current.bodySmallBold else LocalCustomTypography.current.bodySmallMedium,
@@ -625,26 +621,14 @@ fun SeeInfoButton(
     }
 }
 
-@Preview
-@Composable
-fun PreviewRestaurantInfoCard() {
-    RestaurantInfoCard(
-        restaurant = restaurantItem,
-        onReviewsClick = {},
-        onLocationClick = {},
-        onScheduleClick = {}
-    )
-}
-
-
 @Preview(showBackground = true)
 @Composable
 fun RestaurantListCardPreview() {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        RestaurantSmallListCard(restaurant = restaurantItem, status = RestaurantStatus.OPEN)
-        RestaurantLargeListCard(restaurant = restaurantItem, status = RestaurantStatus.OPEN)
+        RestaurantSmallListCard(restaurant = restaurantUiModel[0])
+        RestaurantLargeListCard(restaurant = restaurantUiModel[0])
     }
 }
 
@@ -655,9 +639,9 @@ fun RestaurantGridCardPreview() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
-            RestaurantTinyGridCard(restaurant = restaurantItem,status = RestaurantStatus.OPEN)
-            RestaurantGridCard(restaurant = restaurantItem, status = RestaurantStatus.OPEN)
+            RestaurantTinyGridCard(restaurant = restaurantUiModel[0])
+            RestaurantGridCard(restaurant = restaurantUiModel[0])
         }
-        RestaurantLargeGridCard(restaurant = restaurantItem,status = RestaurantStatus.OPEN)
+        RestaurantLargeGridCard(restaurant = restaurantUiModel[0])
     }
 }

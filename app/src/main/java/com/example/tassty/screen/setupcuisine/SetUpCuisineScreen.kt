@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,11 +31,11 @@ import com.example.tassty.component.SetupTopAppBar
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
-import com.example.tassty.component.CategoryHeader
+import com.example.tassty.component.CategoryFoundHeader
+import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodCategoryCard
 import com.example.tassty.model.Category
 
@@ -99,11 +98,9 @@ fun SetupCuisineScreen(
         }
     ) { innerPadding ->
         LazyColumn (
-            modifier = Modifier
+            modifier = Modifier.padding(innerPadding)
                 .fillMaxSize()
                 .background(Neutral10)
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -137,9 +134,7 @@ fun SetupCuisineScreen(
             }
 
             item {
-                HorizontalDivider(
-                    color = Neutral30
-                )
+                Divider32()
             }
             item {
                 if (uiState.isLoading || uiState.filteredCategories.isEmpty()) {
@@ -173,7 +168,7 @@ fun CategoriesContent(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        CategoryHeader(
+        CategoryFoundHeader(
             searchQuery = searchText,
             filteredCategories = filteredCategories,
         )
@@ -182,7 +177,6 @@ fun CategoriesContent(
             modifier = Modifier
         ) {
             filteredCategories.chunked(3).forEachIndexed { rowIndex, rowItems ->
-
                 if (rowIndex > 0) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }

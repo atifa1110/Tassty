@@ -1,30 +1,23 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.category
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.component.*
-import com.example.tassty.model.CategoryUiState
 import com.example.tassty.model.FilterState
 import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.restaurants
+import com.example.tassty.screen.search.FilterSection
 import com.example.tassty.ui.theme.Neutral10
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -82,13 +75,7 @@ fun CategoryScreen(
                     )
                 } else {
                     item {
-                        TitleListHeader(
-                            data = uiState.totalCount,
-                            text = context.getString(R.string.restos_that_have, category),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        EmptyRestaurant()
+                        EmptySearchResult(title = context.getString(R.string.restos_that_have, category))
                     }
                 }
             }
@@ -154,8 +141,8 @@ fun PreviewCategoryScreenSuccess() {
     CategoryScreen(
         category = "Ramen",
         uiState = CategoryUiState.Success(
-            restaurants = restaurants,
-            totalCount = 4,
+            restaurants = emptyList(),
+            totalCount = 0,
             activeFilters = FilterState(sort = "Nearest")
         )
     )
