@@ -1,17 +1,17 @@
 package com.example.tassty.screen.detailrestaurant
 
 
+import com.example.core.ui.model.RestaurantDetailUiModel
+import com.example.core.ui.model.RestaurantStatusResult
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatusResult
 import com.example.tassty.model.Review
 import com.example.tassty.model.Voucher
 import com.example.tassty.screen.search.Resource
 
 // --- 1. UiState (PERSISTENT DATA) ---
 data class DetailRestaurantUiState(
-    val restaurantResource: Resource<Restaurant> = Resource(isLoading = true),
+    val restaurantResource: Resource<RestaurantDetailUiModel> = Resource(isLoading = true),
 
     val allMenusResource: Resource<List<Menu>> = Resource(isLoading = true),
     val bestSellersResource: Resource<List<Menu>> = Resource(isLoading = true),

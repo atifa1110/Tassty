@@ -1,11 +1,13 @@
 package com.example.tassty
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Looper
 import androidx.compose.ui.graphics.Color
-import androidx.core.content.ContextCompat
+import com.example.core.domain.model.LocationDetails
+import com.example.core.domain.model.OperationalDay
+import com.example.core.domain.model.Restaurant
+import com.example.core.domain.model.RestaurantDetail
+import com.example.core.ui.model.RestaurantDetailUiModel
+import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.RestaurantStatusResult
 import com.example.tassty.model.AddressType
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Category
@@ -13,17 +15,10 @@ import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
 import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.model.DiscountType
-import com.example.tassty.model.LocationDetails
 import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.model.OperationalDay
 import com.example.tassty.model.RadioFilterOption
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantDetail
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantStatusResult
-import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.model.Review
 import com.example.tassty.model.UserAddress
 import com.example.tassty.model.Voucher
@@ -35,12 +30,6 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.maps.model.LatLng
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -49,7 +38,6 @@ import org.threeten.bp.LocalTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.ParseException
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
 import java.util.Calendar
 
 fun hashUrl(url: String): String {
@@ -65,56 +53,56 @@ fun getSubtitle(min: Int, max: Int): String {
     }
 }
 
-fun getCurrentLocation(
-    context: Context,
-    onLocation: (LatLng) -> Unit
-) {
-    // 1. Cek Izin Lokasi
-    if (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        // Jika izin belum diberikan, Anda harus meminta izin terlebih dahulu.
-        // Anda bisa menggunakan ActivityResultLauncher untuk menangani ini.
-        return
-    }
-
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-
-    // 2. Ambil Lokasi Terakhir
-    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-        if (location != null) {
-            onLocation(LatLng(location.latitude, location.longitude))
-        } else {
-            // 3. Jika Lokasi Terakhir tidak tersedia, minta update baru
-            val locationRequest = LocationRequest.Builder(
-                Priority.PRIORITY_HIGH_ACCURACY,
-                TimeUnit.SECONDS.toMillis(10)
-            )
-                .setMinUpdateIntervalMillis(TimeUnit.SECONDS.toMillis(5))
-                .setMaxUpdates(1) // Minta hanya satu update
-                .build()
-
-            val locationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-                    val newLocation = locationResult.lastLocation
-                    if (newLocation != null) {
-                        onLocation(LatLng(newLocation.latitude, newLocation.longitude))
-                    }
-                    // Hentikan update setelah mendapatkan lokasi
-                    fusedLocationClient.removeLocationUpdates(this)
-                }
-            }
-
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-        }
-    }
-}
+//fun getCurrentLocation(
+//    context: Context,
+//    onLocation: (LatLng) -> Unit
+//) {
+//    // 1. Cek Izin Lokasi
+//    if (ContextCompat.checkSelfPermission(
+//            context,
+//            Manifest.permission.ACCESS_FINE_LOCATION
+//        ) != PackageManager.PERMISSION_GRANTED
+//    ) {
+//        // Jika izin belum diberikan, Anda harus meminta izin terlebih dahulu.
+//        // Anda bisa menggunakan ActivityResultLauncher untuk menangani ini.
+//        return
+//    }
+//
+//    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+//
+//    // 2. Ambil Lokasi Terakhir
+//    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+//        if (location != null) {
+//            onLocation(LatLng(location.latitude, location.longitude))
+//        } else {
+//            // 3. Jika Lokasi Terakhir tidak tersedia, minta update baru
+//            val locationRequest = LocationRequest.Builder(
+//                Priority.PRIORITY_HIGH_ACCURACY,
+//                TimeUnit.SECONDS.toMillis(10)
+//            )
+//                .setMinUpdateIntervalMillis(TimeUnit.SECONDS.toMillis(5))
+//                .setMaxUpdates(1) // Minta hanya satu update
+//                .build()
+//
+//            val locationCallback = object : LocationCallback() {
+//                override fun onLocationResult(locationResult: LocationResult) {
+//                    val newLocation = locationResult.lastLocation
+//                    if (newLocation != null) {
+//                        onLocation(LatLng(newLocation.latitude, newLocation.longitude))
+//                    }
+//                    // Hentikan update setelah mendapatkan lokasi
+//                    fusedLocationClient.removeLocationUpdates(this)
+//                }
+//            }
+//
+//            fusedLocationClient.requestLocationUpdates(
+//                locationRequest,
+//                locationCallback,
+//                Looper.getMainLooper()
+//            )
+//        }
+//    }
+//}
 
 fun Int.toCleanRupiahFormat(): String {
     val localeID = Locale.Builder().setLanguage("in").setRegion("ID").build()
@@ -439,6 +427,32 @@ val restaurantDetails = listOf(
     )
 )
 
+val restaurantDetailItem = RestaurantDetailUiModel(
+    detail = RestaurantDetail(
+        restaurant = Restaurant(
+            id = "1",
+            name = "Indah Cafe",
+            imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
+            category = listOf("Bakery", "Martabak", "Western"),
+            rating = 4.9,
+            reviewCount = 1250, // Nilai reviewCount diisi
+            deliveryTime = "10-20 min",
+            locationDetails = LocationDetails( // city dan koordinat dipindahkan ke sini
+                fullAddress = "Jl. Sudirman No. 10",
+                latitude = -6.2088,
+                longitude = 106.8456,
+                city = "Jakarta"
+            ),
+            operationalHours = operationalHours,
+        ),
+        isVerified = true,
+        deliveryCost = "Free",
+    ),
+    distance = 100,
+    isWishlist = false,
+    operationalStatus = RestaurantStatusResult(RestaurantStatus.CLOSED,"")
+)
+
 val userCurrentLocation = LocationDetails(
     fullAddress = "Lokasi Pengguna",
     latitude = -6.2150,
@@ -446,12 +460,6 @@ val userCurrentLocation = LocationDetails(
     city = "Jakarta"
 )
 
-fun calculateHaversine(loc1: LocationDetails, loc2: LocationDetails): Int {
-    // Logika riilnya lebih kompleks, ini hanya simulasi
-    val latDiff = (loc1.latitude - loc2.latitude) * 111000 // Konversi sederhana ke meter
-    val lonDiff = (loc1.longitude - loc2.longitude) * 111000
-    return (kotlin.math.sqrt(latDiff * latDiff + lonDiff * lonDiff) / 1.5).toInt() // Dibagi 1.5 untuk perkiraan jarak
-}
 
 
 val indahCafeDomain = restaurantDetails.first { it.restaurant.id == "1" }
@@ -479,26 +487,7 @@ private fun getDayOfWeekString(calendarDay: Int): String {
  * @param operationalHours The list of daily operational hours.
  */
 
-fun Restaurant.getTodayStatus(): RestaurantStatus {
-    val today = LocalDate.now().dayOfWeek.name // e.g. "MONDAY"
-    val todayInfo = operationalHours.find {
-        it.day.equals(today, ignoreCase = true)
-    } ?: return RestaurantStatus.OFFDAY
 
-    if (todayInfo.hours.equals("CLOSED", ignoreCase = true))
-        return RestaurantStatus.CLOSED
-
-    val (openStr, closeStr) = todayInfo.hours.split("-").map { it.trim() }
-    val now = LocalTime.now()
-    val open = LocalTime.parse(openStr)
-    val close = LocalTime.parse(closeStr)
-
-    return if (now.isAfter(open) && now.isBefore(close)) {
-        RestaurantStatus.OPEN
-    } else {
-        RestaurantStatus.CLOSED
-    }
-}
 
 fun Restaurant.getTodayStatusResult(): RestaurantStatusResult {
     val calendar = Calendar.getInstance()

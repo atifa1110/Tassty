@@ -5,6 +5,7 @@ pluginManagement {
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
+                includeGroup("com.google.devtools.ksp")
             }
         }
         mavenCentral()
@@ -21,4 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Tassty"
 include(":app")
- 
+include(":core")

@@ -27,11 +27,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.domain.model.OperationalDay
+import com.example.core.ui.model.RestaurantDetailUiModel
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
-import com.example.tassty.model.OperationalDay
-import com.example.tassty.model.RestaurantDetailUiModel
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.restaurantUiModel
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
@@ -59,8 +58,7 @@ fun RestaurantSmallListCard (
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant.restaurant,
-                status = restaurant.operationalStatus,
+                restaurant = restaurant,
                 modifier = Modifier.size(100.dp,80.dp)
             )
 
@@ -85,8 +83,7 @@ fun RestaurantLargeListCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant.restaurant,
-                status = restaurant.operationalStatus,
+                restaurant = restaurant,
                 modifier = Modifier.size(100.dp,112.dp)
             )
 
@@ -109,8 +106,7 @@ fun RestaurantTinyGridCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant.restaurant,
-                status = restaurant.operationalStatus,
+                restaurant = restaurant,
                 modifier = Modifier.size(124.dp,120.dp)
             )
 
@@ -133,8 +129,7 @@ fun RestaurantGridCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant.restaurant,
-                status = restaurant.operationalStatus,
+                restaurant = restaurant,
                 modifier = Modifier.size(140.dp,100.dp)
             )
 
@@ -157,8 +152,7 @@ fun RestaurantLargeGridCard (
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             RestaurantImageBox(
-                restaurant = restaurant.restaurant,
-                status = restaurant.operationalStatus,
+                restaurant = restaurant,
                 modifier = Modifier.size(180.dp,120.dp)
             )
 

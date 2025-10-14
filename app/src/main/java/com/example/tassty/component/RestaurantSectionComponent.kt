@@ -18,10 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
@@ -32,8 +30,7 @@ import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun RestaurantImageBox(
-    restaurant: Restaurant,
-    status: RestaurantStatus,
+    restaurant: RestaurantUiModel,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxWidth(),
@@ -41,7 +38,6 @@ fun RestaurantImageBox(
     ) {
         RestaurantImageRound(
             restaurant = restaurant,
-            status = status,
             modifier = Modifier.clip(RoundedCornerShape(10.dp))
         )
     }

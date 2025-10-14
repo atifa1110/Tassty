@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.categories
 import com.example.tassty.component.Divider32
@@ -23,11 +24,8 @@ import com.example.tassty.component.RestaurantLargeGridCard
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.TitleTopAppBar
 import com.example.tassty.component.restaurantVerticalListBlock
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.restaurantUiModel
-import com.example.tassty.restaurants
+import com.example.tassty.screen.home.CategorySection
 import com.example.tassty.ui.theme.Neutral10
 
 @Composable

@@ -1,8 +1,11 @@
 package com.example.tassty
 
-import com.example.tassty.model.LocationDetails
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantUiModel
+import com.example.core.domain.model.LocationDetails
+import com.example.core.domain.model.Restaurant
+import com.example.core.domain.utils.calculateHaversine
+import com.example.core.domain.utils.getTodayStatus
+import com.example.core.ui.model.RestaurantUiModel
+
 
 val restaurants = listOf(
     Restaurant(
@@ -86,6 +89,7 @@ val restaurants = listOf(
         operationalHours = operationalHours
     )
 )
+
 
 fun Restaurant.toUiModel(): RestaurantUiModel {
     val statusResult = this.getTodayStatus()

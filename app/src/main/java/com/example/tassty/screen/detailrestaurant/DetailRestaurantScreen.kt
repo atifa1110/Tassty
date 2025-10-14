@@ -37,6 +37,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.core.ui.model.RestaurantDetailUiModel
+import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.RestaurantStatusResult
 import com.example.tassty.component.CartAddItemButton
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DetailScheduleContent
@@ -62,13 +65,9 @@ import com.example.tassty.component.menuItemCountVerticalListBlock
 import com.example.tassty.getSampleVouchers
 import com.example.tassty.menus
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantStatusResult
 import com.example.tassty.model.Review
 import com.example.tassty.model.Voucher
-import com.example.tassty.restaurantDetails
-import com.example.tassty.restaurants
+import com.example.tassty.restaurantDetailItem
 import com.example.tassty.reviews
 import com.example.tassty.screen.DetailSearchScreen
 import com.example.tassty.screen.search.Resource
@@ -102,7 +101,7 @@ fun DetailRestaurantScreen(
         onDismiss = { viewModel.onEvent(DetailRestaurantEvent.OnDismissScheduleSheet)}
     ) {
         DetailScheduleContent(
-            operationalHours = uiState.restaurantResource.data?.operationalHours?: emptyList()
+            operationalHours = uiState.restaurantResource.data?.detail?.restaurant?.operationalHours?:emptyList()
         )
     }
 
@@ -244,7 +243,7 @@ fun DetailRestaurantContent(
 
 @Composable
 fun HeaderWithVoucherSection(
-    restaurant: Restaurant?,
+    restaurant: RestaurantDetailUiModel?,
     voucherResource: Resource<List<Voucher>>,
     status: RestaurantStatusResult,
     isFavorite: Boolean,
@@ -291,7 +290,7 @@ fun HeaderWithVoucherSection(
                     .height(imageHeight)
             ) {
                 ItemImage(
-                    imageUrl = restaurant?.imageUrl ?: "",
+                    imageUrl = restaurant?.detail?.restaurant?.imageUrl?:"",
                     name = "detail header image",
                     status = status.status,
                     modifier = Modifier
@@ -331,7 +330,7 @@ fun HeaderWithVoucherSection(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = restaurant?.name ?: "Restaurant Name",
+                                text = restaurant?.detail?.restaurant?.name?:"",
                                 style = LocalCustomTypography.current.h3Bold,
                                 color = Neutral100
                             )
@@ -339,7 +338,7 @@ fun HeaderWithVoucherSection(
                         }
 
                         Text(
-                            text = restaurant?.category?.joinToString(",")?:"No Category",
+                            text = restaurant?.formattedCategories?:"",
                             style = LocalCustomTypography.current.bodySmallMedium,
                             color = Neutral70
                         )
@@ -352,7 +351,7 @@ fun HeaderWithVoucherSection(
                     ) {
                         items(1) {
                             RestaurantInfoCard(
-                                restaurant = restaurantDetails[0],
+                                restaurant = restaurantDetailItem,
                                 operationalHour = operationalHour,
                                 onReviewsClick = {},
                                 onLocationClick = {},
@@ -590,7 +589,7 @@ fun RecommendedMenuSection(
 fun DetailClosePreview() {
     DetailRestaurantContent(
         uiState = DetailRestaurantUiState(
-            restaurantResource = Resource(data = restaurants[0],isLoading = false),
+            restaurantResource = Resource(data = restaurantDetailItem,isLoading = false),
             bestSellersResource = Resource(data = menus,isLoading = false),
             recommendedMenusResource = Resource(data = menus,isLoading = false),
             allMenusResource = Resource(data = menus,isLoading = false),

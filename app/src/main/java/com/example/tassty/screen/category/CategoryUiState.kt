@@ -1,8 +1,7 @@
 package com.example.tassty.screen.category
 
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.model.FilterState
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantUiModel
 
 sealed class CategoryUiState {
     // Loading State

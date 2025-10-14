@@ -1,0 +1,490 @@
+{
+  "meta": {
+    "code": 200,
+    "status": "success",
+    "message": "OK",
+    "traceId": "7b1d06b2-221f-4ff4-9e15-7c3c4e8d0f4a"
+  },
+  "data": [
+    {
+      "id": "RES-001",
+      "name": "Shaburi & Kintan Buffet",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
+      "category": [
+        "Japanese",
+        "Buffet"
+      ],
+      "rating": 4.7,
+      "reviewCount": 215,
+      "deliveryTime": "25-35 min",
+      "rank": 1,
+      "fullAddress": "Margo City Mall Lt. 2, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3738,
+      "longitude": 106.8317,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-002",
+      "name": "Bebek Kaleyo",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/01aad7de-eea8-4979-9a69-f3c6470831db.jpg?auto=format",
+      "category": [
+        "Indonesian",
+        "Duck"
+      ],
+      "rating": 4.5,
+      "reviewCount": 184,
+      "deliveryTime": "20-30 min",
+      "rank": 2,
+      "fullAddress": "Margo City Mall Ground Floor, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3742,
+      "longitude": 106.8315,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 21:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 21:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 21:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 21:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-003",
+      "name": "Sushi Tei",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/e2767551-09dc-4d71-ad35-9fde0a396181_restaurant-image_1608047423756.jpg?auto=format",
+      "category": [
+        "Japanese",
+        "Sushi"
+      ],
+      "rating": 4.6,
+      "reviewCount": 320,
+      "deliveryTime": "25-35 min",
+      "rank": 3,
+      "fullAddress": "Margo City Mall Lt. 1, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3740,
+      "longitude": 106.8320,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-004",
+      "name": "Marugame Udon",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/844fea6d-b6a8-4750-b2ca-c0c7addf6e06_brand-image_1760303057679.jpg?auto=format",
+      "category": [
+        "Japanese",
+        "Udon"
+      ],
+      "rating": 4.4,
+      "reviewCount": 260,
+      "deliveryTime": "20-30 min",
+      "rank": 4,
+      "fullAddress": "Margo City Mall LG Floor, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3741,
+      "longitude": 106.8321,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-005",
+      "name": "Kopitiam Oey",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/bf574d63-bfdc-4c4c-bf3b-695475a584bb.jpg?auto=format",
+      "category": [
+        "Cafe",
+        "Asian"
+      ],
+      "rating": 4.3,
+      "reviewCount": 142,
+      "deliveryTime": "15-25 min",
+      "rank": 5,
+      "fullAddress": "Margo City Mall Ground Floor, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3739,
+      "longitude": 106.8318,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "09:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "09:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-006",
+      "name": "Raa Cha Suki & BBQ",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5b8fb822-5b51-4ee3-ba1c-505e45e650af_brand-image_1604926735962.jpg?auto=format",
+      "category": [
+        "Thai",
+        "Grill"
+      ],
+      "rating": 4.4,
+      "reviewCount": 200,
+      "deliveryTime": "25-35 min",
+      "rank": 6,
+      "fullAddress": "Margo City Mall Lt. 2, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3745,
+      "longitude": 106.8319,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-007",
+      "name": "Warung Leko",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ec0d8b1f-1e2a-4b02-ac4f-f19e839ec335.jpg?auto=format",
+      "category": [
+        "Indonesian",
+        "Ribs"
+      ],
+      "rating": 4.5,
+      "reviewCount": 180,
+      "deliveryTime": "20-30 min",
+      "rank": 7,
+      "fullAddress": "Margo City Mall Lt. 1, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3743,
+      "longitude": 106.8320,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 21:30"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-008",
+      "name": "Gyu-Kaku Japanese BBQ",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/78574835-e9cc-4506-860b-7f77b3b87ccf_brand-image_1744601149241.jpg?auto=format",
+      "category": [
+        "Japanese",
+        "BBQ"
+      ],
+      "rating": 4.6,
+      "reviewCount": 230,
+      "deliveryTime": "25-40 min",
+      "rank": 8,
+      "fullAddress": "Margo City Mall Lt. 2, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3744,
+      "longitude": 106.8321,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-009",
+      "name": "Kopi Kenangan",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/c3e88b1c-84be-42a6-a7e2-b006cf58c276_brand-image_1758593162291.jpg?auto=format",
+      "category": [
+        "Cafe",
+        "Beverage"
+      ],
+      "rating": 4.2,
+      "reviewCount": 140,
+      "deliveryTime": "10-20 min",
+      "rank": 9,
+      "fullAddress": "Margo City Mall Ground Floor, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3746,
+      "longitude": 106.8316,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "09:00 - 21:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "09:00 - 21:30"
+        },
+        {
+          "day": "Saturday",
+          "hours": "09:00 - 21:30"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    },
+    {
+      "id": "RES-010",
+      "name": "Pizza Marzano",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/0dcc3936-8d64-4c79-9634-39362dd4064a_brand-image_1745481396169.jpg?auto=format",
+      "category": [
+        "Italian",
+        "Pizza"
+      ],
+      "rating": 4.4,
+      "reviewCount": 150,
+      "deliveryTime": "25-35 min",
+      "rank": 10,
+      "fullAddress": "Margo City Mall Lt. 1, Jl. Margonda Raya No.358, Depok",
+      "latitude": -6.3740,
+      "longitude": 106.8319,
+      "city": "Depok",
+      "postcode": "16431",
+      "operationalHours": [
+        {
+          "day": "Monday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Tuesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Wednesday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Thursday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Friday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Saturday",
+          "hours": "10:00 - 22:00"
+        },
+        {
+          "day": "Sunday",
+          "hours": "OFF DAY"
+        }
+      ]
+    }
+  ]
+}

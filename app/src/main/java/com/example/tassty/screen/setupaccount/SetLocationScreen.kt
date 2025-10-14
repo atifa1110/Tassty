@@ -56,7 +56,6 @@ import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.MapSearchTopAppBar
 import com.example.tassty.component.TextComponent
 import com.example.tassty.component.TextComponentNoIcon
-import com.example.tassty.getCurrentLocation
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -110,11 +109,11 @@ fun SetLocationScreen(
 
     // Panggil lokasi saat pertama kali Composable diluncurkan
     LaunchedEffect(Unit) {
-        getCurrentLocation(context) { latLng ->
-            currentLocation = latLng
-            locationAddress = "Your Current Location"
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 15f)
-        }
+//        getCurrentLocation(context) { latLng ->
+//            currentLocation = latLng
+//            locationAddress = "Your Current Location"
+//            cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, 15f)
+//        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

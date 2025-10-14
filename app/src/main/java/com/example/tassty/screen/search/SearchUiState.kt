@@ -1,11 +1,10 @@
 package com.example.tassty.screen.search
 
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.FilterState
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantUiModel
 
 sealed class SearchUiState {
     // Initial State (When the query is empty and the keyboard is not yet active)

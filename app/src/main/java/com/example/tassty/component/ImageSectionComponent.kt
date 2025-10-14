@@ -35,13 +35,13 @@ import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.hashUrl
 import com.example.tassty.model.Category
 import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
 
@@ -69,11 +69,11 @@ fun rememberImageLoader(): ImageLoader {
 
 @Composable
 fun ItemImage(
+    modifier : Modifier = Modifier,
     imageUrl: String,
     name: String,
     status: RestaurantStatus,
-    placeholder: ColorPainter = ColorPainter(Color.LightGray),
-    modifier : Modifier = Modifier
+    placeholder: ColorPainter = ColorPainter(Color.LightGray)
 ){
     val context = LocalContext.current
     val imageLoader = rememberImageLoader()
@@ -112,10 +112,10 @@ fun ItemImage(
 
 @Composable
 fun CommonImage(
+    modifier : Modifier = Modifier,
     imageUrl: String,
     name: String,
-    placeholder: ColorPainter = ColorPainter(Color.LightGray),
-    modifier : Modifier = Modifier
+    placeholder: ColorPainter = ColorPainter(Color.LightGray)
 ){
     val context = LocalContext.current
     val imageLoader = rememberImageLoader()
@@ -198,14 +198,13 @@ fun CollectionImageRound(
 
 @Composable
 fun RestaurantImageRound(
-    restaurant: Restaurant,
-    status: RestaurantStatus,
+    restaurant: RestaurantUiModel,
     modifier: Modifier = Modifier
 ){
     ItemImage(
-        imageUrl = restaurant.imageUrl,
-        name = restaurant.name,
-        status = status,
+        imageUrl = restaurant.restaurant.imageUrl,
+        name = restaurant.restaurant.name,
+        status = restaurant.operationalStatus,
         modifier = modifier.fillMaxSize()
     )
 }

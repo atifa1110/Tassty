@@ -33,12 +33,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.component.BackTopAppBar
 import com.example.tassty.component.ItemImage
 import com.example.tassty.component.RestaurantShortInfoCard
 import com.example.tassty.component.TopBarButton
-import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100

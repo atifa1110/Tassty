@@ -1,11 +1,10 @@
 package com.example.tassty.screen.detailmenu
 
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.model.RestaurantStatus
-
 
 data class DetailMenuUiState(
     val menu: Menu, // Data menu utama

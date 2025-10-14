@@ -1,4 +1,4 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -45,12 +44,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tassty.R
 import com.example.tassty.categories
 import com.example.tassty.component.CategoryCard
+import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmptyMapBox
 import com.example.tassty.component.FoodGridCard
-import com.example.tassty.component.FoodLargeGridCard
 import com.example.tassty.component.GridMenuListSection
 import com.example.tassty.component.HeaderListTitleButton
 import com.example.tassty.component.HorizontalTitleButtonSection
@@ -60,20 +61,32 @@ import com.example.tassty.component.VoucherLargeCard
 import com.example.tassty.menus
 import com.example.tassty.model.Category
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantUiModel
-import com.example.tassty.restaurantUiModel
-import com.example.tassty.restaurants
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Orange900
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.RestaurantUiModel
+import com.example.tassty.component.ErrorListState
+import com.example.tassty.component.LoadingRowState
+import com.example.tassty.screen.search.Resource
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.homeState.collectAsStateWithLifecycle()
+
+    HomeContent(uiState = uiState)
+}
+
+@Composable
+fun HomeContent(
+    uiState: HomeUiState
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -112,12 +125,17 @@ fun HomeScreen() {
             }
         }
         // konten bawah
-        item {CategorySection(categoryItems = categories)}
-        item {HorizontalDivider(color = Neutral30)}
-        item {RecommendationSection(menuItems = menus, status = RestaurantStatus.OPEN)}
-        item {HorizontalDivider(color = Neutral30)}
+        item {
+            CategorySection(categoryItems = categories)
+            Divider32()
+        }
+
+        item {
+            RecommendationSection(menuItems = menus, status = RestaurantStatus.OPEN)
+            Divider32()
+        }
 //        item {RestaurantNearby()}
-        item {RecommendationRestaurant(restaurantItems = restaurantUiModel)}
+        item {RecommendationRestaurant(resource = uiState.recommendedRestaurants)}
         item {TodayDeal()}
         item {SuggestedMenu(menuItems = menus,status = RestaurantStatus.OPEN) }
     }
@@ -369,19 +387,36 @@ fun RestaurantNearby() {
 
 @Composable
 fun RecommendationRestaurant(
-    restaurantItems : List<RestaurantUiModel>,
+    resource : Resource<List<RestaurantUiModel>>,
 ) {
-    HorizontalTitleButtonSection(
-        title = "Recommended Restaurant",
-        onClick = {}
-    ) {
-        itemsIndexed(
-            items = restaurantItems,
-            key = { index, item -> item.restaurant.id }
-        ) { index, restaurant ->
-            RestaurantGridCard(
-                restaurant = restaurant
+    val items = resource.data.orEmpty()
+
+    when{
+        resource.isLoading -> {
+            LoadingRowState()
+        }
+
+        resource.errorMessage!=null || items.isEmpty() -> {
+            ErrorListState(
+                title = "Recommended Restaurant",
+                onRetry = {}
             )
+        }
+
+        else ->{
+            HorizontalTitleButtonSection(
+                title = "Recommended Restaurant",
+                onClick = {}
+            ) {
+                itemsIndexed(
+                    items = items,
+                    key = { index, item -> item.restaurant.id }
+                ) { index, restaurant ->
+                    RestaurantGridCard(
+                        restaurant = restaurant
+                    )
+                }
+            }
         }
     }
 }

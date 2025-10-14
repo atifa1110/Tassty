@@ -2,8 +2,12 @@ package com.example.tassty
 
 import android.app.Application
 import com.jakewharton.threetenabp.AndroidThreeTen
+import dagger.hilt.android.HiltAndroidApp
 
+
+@HiltAndroidApp
 class MyApp : Application() {
+
     override fun onCreate() {
         super.onCreate()
 
@@ -11,3 +15,4 @@ class MyApp : Application() {
         AndroidThreeTen.init(this)
     }
 }
+

@@ -1,7 +1,5 @@
 package com.example.tassty.component
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -28,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -36,13 +33,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.domain.model.OperationalDay
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.cuisineOptions
 import com.example.tassty.discountOptions
 import com.example.tassty.model.Cart
 import com.example.tassty.model.CollectionUiItem
-import com.example.tassty.model.OperationalDay
-import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.model.UserAddress
 import com.example.tassty.model.Voucher
 import com.example.tassty.modesOptions

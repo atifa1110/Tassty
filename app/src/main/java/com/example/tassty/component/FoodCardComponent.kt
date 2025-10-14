@@ -14,13 +14,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.menuItem
 import com.example.tassty.menuSections
 import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10

@@ -13,12 +13,14 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.component.*
 import com.example.tassty.model.FilterState
-import com.example.tassty.model.RestaurantStatus
+import com.example.tassty.restaurantUiModel
 import com.example.tassty.screen.search.FilterSection
 import com.example.tassty.ui.theme.Neutral10
+import kotlin.collections.isNotEmpty
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -141,7 +143,7 @@ fun PreviewCategoryScreenSuccess() {
     CategoryScreen(
         category = "Ramen",
         uiState = CategoryUiState.Success(
-            restaurants = emptyList(),
+            restaurants = restaurantUiModel,
             totalCount = 0,
             activeFilters = FilterState(sort = "Nearest")
         )

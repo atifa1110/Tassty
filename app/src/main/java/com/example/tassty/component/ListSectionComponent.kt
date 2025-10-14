@@ -38,13 +38,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.menus
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Category
 import com.example.tassty.model.Menu
-import com.example.tassty.model.Restaurant
-import com.example.tassty.model.RestaurantStatus
-import com.example.tassty.model.RestaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40

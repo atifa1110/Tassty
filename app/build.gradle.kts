@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 // Baca dari local.properties
@@ -84,5 +86,17 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.threeten.abp)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofitGson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttpLogging)
+    implementation(libs.gson)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
+    implementation(project(":core"))
 
 }

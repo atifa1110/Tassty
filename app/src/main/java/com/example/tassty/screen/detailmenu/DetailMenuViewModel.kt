@@ -2,13 +2,13 @@ package com.example.tassty.screen.detailmenu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.collections
 import com.example.tassty.menuSections
 import com.example.tassty.menus
 import com.example.tassty.model.Cart
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.model.RestaurantStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,13 +1,6 @@
-package com.example.tassty.model
+package com.example.core.ui.model
 
-data class RestaurantDetail(
-    val restaurant: Restaurant,
-    val isVerified: Boolean,
-    val deliveryCost: String
-){
-    val cityName: String
-        get() = restaurant.locationDetails.city
-}
+import com.example.core.domain.model.RestaurantDetail
 
 // UI Model
 data class RestaurantDetailUiModel(
@@ -30,3 +23,9 @@ data class RestaurantDetailUiModel(
     val formattedReviewCount: String
         get() = if(detail.restaurant.reviewCount >= 200) "${detail.restaurant.reviewCount}" else "(200+)"
 }
+
+data class OperationalDayUi(
+    val day: String,
+    val hours: String,
+    val isToday: Boolean = false
+)

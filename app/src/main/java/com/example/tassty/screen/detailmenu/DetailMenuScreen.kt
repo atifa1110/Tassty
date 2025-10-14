@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.component.CartAddButton
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionContent
@@ -48,7 +49,6 @@ import com.example.tassty.menuSections
 import com.example.tassty.menus
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10

@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import com.example.core.ui.model.RestaurantStatus
 import com.example.tassty.component.CategoryTopAppBar
 import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.restaurants
@@ -33,7 +34,6 @@ import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.RestaurantLargeListCard
 import com.example.tassty.component.RestaurantSmallListCard
 import com.example.tassty.model.FilterState
-import com.example.tassty.model.RestaurantStatus
 import com.example.tassty.restaurantUiModel
 import com.example.tassty.screen.search.FilterSection
 
