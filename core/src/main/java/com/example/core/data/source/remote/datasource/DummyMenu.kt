@@ -2,7 +2,9 @@ package com.example.core.data.source.remote.datasource
 
 import android.content.Context
 import android.util.Log
+import com.example.core.data.model.MenuDto
 import com.example.core.data.model.RestaurantDto
+import com.example.core.data.source.remote.api.MenuApi
 import com.example.core.data.source.remote.api.RestaurantApi
 import com.example.core.data.source.remote.network.ApiResponse
 import com.example.core.data.source.remote.network.ErrorMapper
@@ -10,29 +12,29 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
 
-class DummyRestaurantApi(
+class DummyMenu (
     private val context: Context,
     private val gson: Gson
-) : RestaurantApi {
+) : MenuApi {
 
     // Define a Tag for easy filtering in Logcat
-    private val TAG = "DummyRestaurantApi"
+    private val TAG = "MenuApi"
 
     private suspend fun readJson(fileName: String): String {
         return context.assets.open(fileName).bufferedReader().use { it.readText() }
     }
 
-    override suspend fun getRecommendedRestaurants(): ApiResponse<List<RestaurantDto>> {
+    override suspend fun getRecommendedMenus(): ApiResponse<List<MenuDto>> {
         return try {
             delay(300) // simulate network delay
-            val jsonStr = readJson("restaurant.json")
+            val jsonStr = readJson("menu.json")
 
             // 1. LOG THE RAW JSON STRING
             Log.d(TAG, "Raw JSON read: $jsonStr")
 
             // Parse langsung ke ApiResponse<List<RestaurantDto>>
-            val type = object : TypeToken<ApiResponse<List<RestaurantDto>>>() {}.type
-            val apiResponse = gson.fromJson<ApiResponse<List<RestaurantDto>>>(jsonStr, type)
+            val type = object : TypeToken<ApiResponse<List<MenuDto>>>() {}.type
+            val apiResponse = gson.fromJson<ApiResponse<List<MenuDto>>>(jsonStr, type)
 
             // 2. LOG THE PARSED OBJECT
             if (apiResponse != null) {
@@ -54,17 +56,17 @@ class DummyRestaurantApi(
         }
     }
 
-    override suspend fun getNearbyRestaurants(): ApiResponse<List<RestaurantDto>> {
+    override suspend fun getSuggestedMenus(): ApiResponse<List<MenuDto>> {
         return try {
             delay(300) // simulate network delay
-            val jsonStr = readJson("restaurant.json")
+            val jsonStr = readJson("menu.json")
 
             // 1. LOG THE RAW JSON STRING
             Log.d(TAG, "Raw JSON read: $jsonStr")
 
             // Parse langsung ke ApiResponse<List<RestaurantDto>>
-            val type = object : TypeToken<ApiResponse<List<RestaurantDto>>>() {}.type
-            val apiResponse = gson.fromJson<ApiResponse<List<RestaurantDto>>>(jsonStr, type)
+            val type = object : TypeToken<ApiResponse<List<MenuDto>>>() {}.type
+            val apiResponse = gson.fromJson<ApiResponse<List<MenuDto>>>(jsonStr, type)
 
             // 2. LOG THE PARSED OBJECT
             if (apiResponse != null) {
@@ -85,5 +87,5 @@ class DummyRestaurantApi(
             ApiResponse(meta = ErrorMapper.mapError(e), data = null)
         }
     }
+
 }
-

@@ -67,6 +67,61 @@ fun rememberImageLoader(): ImageLoader {
     }
 }
 
+interface DisplayStatus {
+    val isEnabled: Boolean
+}
+
+enum class RestaurantStatus : DisplayStatus {
+    OPEN { override val isEnabled = true },
+    CLOSED { override val isEnabled = false },
+    OFFDAY { override val isEnabled = false }
+}
+
+enum class MenuStatus : DisplayStatus {
+    AVAILABLE { override val isEnabled = true },
+    SOLDOUT { override val isEnabled = false }
+}
+
+
+@Composable
+fun <T : DisplayStatus> ItemImage(
+    modifier: Modifier = Modifier,
+    imageUrl: String,
+    name: String,
+    status: T,
+    placeholder: ColorPainter = ColorPainter(Color.LightGray)
+) {
+    val context = LocalContext.current
+    val imageLoader = rememberImageLoader()
+    val imageRequest = ImageRequest.Builder(context)
+        .data(imageUrl)
+        .diskCacheKey("image_${hashUrl(imageUrl)}")
+        .memoryCacheKey("image_${hashUrl(imageUrl)}")
+        .diskCachePolicy(CachePolicy.ENABLED)
+        .memoryCachePolicy(CachePolicy.ENABLED)
+        .crossfade(true)
+        .size(256)
+        .build()
+
+    val grayscaleFilter = ColorFilter.colorMatrix(
+        ColorMatrix().apply { setToSaturation(0f) }
+    )
+
+    val filter = if (status.isEnabled) null else grayscaleFilter
+
+    AsyncImage(
+        model = imageRequest,
+        imageLoader = imageLoader,
+        contentDescription = name,
+        contentScale = ContentScale.Crop,
+        modifier = modifier,
+        placeholder = placeholder,
+        error = placeholder,
+        colorFilter = filter
+    )
+}
+
+
 @Composable
 fun ItemImage(
     modifier : Modifier = Modifier,

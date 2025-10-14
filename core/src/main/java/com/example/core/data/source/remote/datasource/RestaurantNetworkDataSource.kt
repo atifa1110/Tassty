@@ -9,14 +9,18 @@ import com.google.gson.Gson
 import javax.inject.Inject
 
 class RestaurantNetworkDataSource @Inject constructor(
-    private val context: Context,
-    private val restaurantApi: RestaurantApi,
-    private val gson: Gson,
+    private val restaurantApi: RestaurantApi
 ) {
 
-    suspend fun getRestaurants(): ResultWrapper<List<RestaurantDto>> {
+    suspend fun getRecommendedRestaurants(): ResultWrapper<List<RestaurantDto>> {
         return safeApiCall {
-            restaurantApi.getRestaurants()
+            restaurantApi.getRecommendedRestaurants()
+        }
+    }
+
+    suspend fun getNearbyRestaurants(): ResultWrapper<List<RestaurantDto>> {
+        return safeApiCall {
+            restaurantApi.getNearbyRestaurants()
         }
     }
 }
