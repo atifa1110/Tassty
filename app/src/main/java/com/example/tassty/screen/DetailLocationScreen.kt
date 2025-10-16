@@ -33,11 +33,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.component.BackTopAppBar
-import com.example.tassty.component.ItemImage
 import com.example.tassty.component.RestaurantShortInfoCard
+import com.example.tassty.component.StatusItemImage
 import com.example.tassty.component.TopBarButton
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -129,7 +129,7 @@ fun DraggableRestaurantBar(
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
                 Row (horizontalArrangement = Arrangement.spacedBy(12.dp)){
-                    ItemImage(
+                    StatusItemImage(
                         imageUrl = "https://tse3.mm.bing.net/th/id/OIP.MO6T-LKR9oi03dJSe9DMGgHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
                         name = "restaurant location image",
                         status = RestaurantStatus.OPEN,

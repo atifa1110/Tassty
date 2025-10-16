@@ -20,12 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.BestSellerHeader
 import com.example.tassty.component.CategoryTopAppBar
 import com.example.tassty.component.FoodWideListCard
-import com.example.tassty.component.ItemImage
 import com.example.tassty.component.SearchBarWhiteSection
+import com.example.tassty.component.StatusItemImage
 import com.example.tassty.menus
 import com.example.tassty.screen.detailrestaurant.ShoppingCartBottomBar
 import com.example.tassty.ui.theme.Neutral10
@@ -61,9 +61,9 @@ fun BestSellerScreen() {
                 }
             }
 
-            items(items = menus, key ={it.id} ) { item ->
+            items(items = menus, key ={it.menu.id} ) { item ->
                 Column(Modifier.padding(horizontal = 24.dp)) {
-                    FoodWideListCard(item, status = RestaurantStatus.OPEN,false, false)
+                    FoodWideListCard(menu = item)
                     Spacer(Modifier.height(12.dp))
                 }
             }
@@ -85,7 +85,7 @@ fun ScrollableBestHeaderContent(
             .height(imageHeight)
     ) {
         // A. Header Image with status overlay
-        ItemImage(
+        StatusItemImage(
             imageUrl = imageUrl,
             name = "category header image",
             status = status,

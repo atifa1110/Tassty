@@ -28,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.CartAddButton
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionContent
@@ -39,17 +39,16 @@ import com.example.tassty.component.DetailMenuTopAppBar
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodPriceBigText
 import com.example.tassty.component.FoodPriceLineText
-import com.example.tassty.component.ItemImage
 import com.example.tassty.component.MenuStockStatus
 import com.example.tassty.component.NotesBarSection
 import com.example.tassty.component.OptionCard
 import com.example.tassty.component.QuantityButton
 import com.example.tassty.component.RestaurantMenuInfoCard
+import com.example.tassty.component.StatusItemImage
 import com.example.tassty.menuSections
 import com.example.tassty.menus
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -141,10 +140,10 @@ fun DetailMenuContent(
         ) {
             item {
                 Box(Modifier.height(370.dp).fillMaxWidth()) {
-                    ItemImage(
-                        imageUrl = uiState.menu.imageUrl,
-                        name = uiState.menu.name,
-                        status = if(uiState.menu.stock>0) RestaurantStatus.OPEN else RestaurantStatus.CLOSED,
+                    StatusItemImage(
+                        imageUrl = uiState.menu.menu.imageUrl,
+                        name = uiState.menu.menu.name,
+                        status = if(uiState.menu.menu.isAvailable) RestaurantStatus.OPEN else RestaurantStatus.CLOSED,
                         modifier = Modifier.fillMaxSize()
                     )
                     DetailMenuTopAppBar(
@@ -154,7 +153,7 @@ fun DetailMenuContent(
                         onFavoriteClick = onShowCollectionSheet
                     )
 
-                    if(uiState.menu.stock==0) {
+                    if(!uiState.menu.menu.isAvailable) {
                         Box(modifier = Modifier.padding(horizontal = 24.dp)
                             .align(Alignment.BottomCenter)
                             .offset(y=20.dp)
@@ -167,7 +166,7 @@ fun DetailMenuContent(
 
             item {
                 Column(
-                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = if(uiState.menu.stock>0) 24.dp else 40.dp),
+                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = if(!uiState.menu.menu.isAvailable) 24.dp else 40.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
@@ -176,12 +175,12 @@ fun DetailMenuContent(
                     ) {
                         Column {
                             Text(
-                                text = uiState.menu.name,
+                                text = uiState.menu.menu.name,
                                 style = LocalCustomTypography.current.h3Bold,
                                 color = Neutral100
                             )
                             Text(
-                                text = uiState.menu.description,
+                                text = uiState.menu.menu.description,
                                 style = LocalCustomTypography.current.bodyMediumRegular,
                                 color = Neutral70
                             )
@@ -190,16 +189,15 @@ fun DetailMenuContent(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            val priceToDisplay = if(uiState.menu.sellingPrice>0) uiState.menu.sellingPrice else uiState.menu.originalPrice
 
                             FoodPriceBigText(
-                                price = priceToDisplay.toCleanRupiahFormat(),
+                                price = uiState.menu.formatPrice,
                                 color = Orange500
                             )
 
-                            if(uiState.menu.sellingPrice>0) {
+                            if(uiState.menu.menu.formatDiscountPrice>0) {
                                 FoodPriceLineText(
-                                    price = uiState.menu.originalPrice.toCleanRupiahFormat(),
+                                    price = uiState.menu.formatOriginalPrice,
                                     color = Neutral60
                                 )
                             }

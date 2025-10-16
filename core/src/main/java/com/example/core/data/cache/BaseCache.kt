@@ -1,51 +1,60 @@
 package com.example.core.data.cache
 
+import android.util.Log
 import com.example.core.data.source.remote.network.Meta
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 open class BaseCache<T : Any> @Inject constructor() {
 
-    // Simpan data per kategori (key: misalnya "recommended_restaurants")
-    internal val dataMap = mutableMapOf<String, MutableMap<String, T>>()
+    // key -> (id -> item)
+    protected val dataMap = mutableMapOf<String, MutableMap<String, T>>()
+    protected val metaMap = mutableMapOf<String, Meta?>()
 
-    // Simpan meta per kategori
-    private val metaMap = mutableMapOf<String, Meta?>()
+    protected val mutex = Mutex() // thread-safety
 
-    /** Simpan banyak data ke kategori tertentu */
-    open fun saveAll(key: String, items: List<T>, getId: (T) -> String) {
-        val categoryMap = dataMap.getOrPut(key) { mutableMapOf() }
-        items.forEach { categoryMap[getId(it)] = it }
+    open suspend fun saveAll(key: String, items: List<T>, getId: (T) -> String) {
+        mutex.withLock {
+            val categoryMap = dataMap.getOrPut(key) { mutableMapOf() }
+            items.forEach { categoryMap[getId(it)] = it }
+            Log.d("DianaBaseCache", "Saved ${items.size} items to key=$key, total now=${categoryMap.size}")
+        }
     }
 
-    /** Ambil semua data berdasarkan kategori */
-    open fun getAll(key: String): List<T> {
-        return dataMap[key]?.values?.toList() ?: emptyList()
+    open suspend fun getAll(key: String): List<T> = mutex.withLock {
+        dataMap[key]?.values?.toList() ?: emptyList()
     }
 
-    /** Ambil data + meta sekaligus */
-    open fun getWithMeta(key: String): Pair<List<T>, Meta?> {
-        return getAll(key) to getMeta(key)
+    open suspend fun getWithMeta(key: String): Pair<List<T>, Meta?> = mutex.withLock {
+        val list = dataMap[key]?.values?.toList() ?: emptyList()
+        val meta = metaMap[key]
+        list to meta
     }
 
-    /** Simpan meta */
-    open fun saveMeta(key: String, meta: Meta?) {
-        if (meta != null) metaMap[key] = meta
+    open suspend fun saveMeta(key: String, meta: Meta?) {
+        mutex.withLock {
+            if (meta != null) metaMap[key] = meta
+        }
     }
 
-    /** Ambil meta */
-    open fun getMeta(key: String): Meta? = metaMap[key]
-
-    /** Hapus cache kategori tertentu */
-    open fun clear(key: String) {
-        dataMap.remove(key)
-        metaMap.remove(key)
+    open suspend fun getMeta(key: String): Meta? = mutex.withLock {
+        metaMap[key]
     }
 
-    /** Hapus semua cache */
-    open fun clearAll() {
-        dataMap.clear()
-        metaMap.clear()
-    }
+//    open suspend fun clear(key: String) {
+//        mutex.withLock {
+//            dataMap.remove(key)
+//            metaMap.remove(key)
+//        }
+//    }
+//
+//    open suspend fun clearAll() {
+//        mutex.withLock {
+//            dataMap.clear()
+//            metaMap.clear()
+//        }
+//    }
 }

@@ -37,8 +37,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
-import com.example.core.ui.model.RestaurantStatus
 import com.example.core.ui.model.RestaurantStatusResult
 import com.example.tassty.component.CartAddItemButton
 import com.example.tassty.component.CustomBottomSheet
@@ -51,7 +52,6 @@ import com.example.tassty.component.FoodGridCard
 import com.example.tassty.component.GridMenuListSection
 import com.example.tassty.component.HorizontalTitleButtonSection
 import com.example.tassty.component.HorizontalTitleItemCountButtonSection
-import com.example.tassty.component.ItemImage
 import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.RankBadgeIcon
@@ -59,12 +59,12 @@ import com.example.tassty.component.RestaurantCloseModal
 import com.example.tassty.component.RestaurantCloseStatus
 import com.example.tassty.component.RestaurantInfoCard
 import com.example.tassty.component.ReviewCard
+import com.example.tassty.component.StatusItemImage
 import com.example.tassty.component.SuccessImage
 import com.example.tassty.component.VoucherCard
 import com.example.tassty.component.menuItemCountVerticalListBlock
 import com.example.tassty.getSampleVouchers
 import com.example.tassty.menus
-import com.example.tassty.model.Menu
 import com.example.tassty.model.Review
 import com.example.tassty.model.Voucher
 import com.example.tassty.restaurantDetailItem
@@ -159,7 +159,7 @@ fun DetailRestaurantContent(
     onAllMenuFavoriteClick: (String) -> Unit,
     onRecommendedFavoriteClick: (String) -> Unit,
     onBestSellerFavorite: (String) -> Unit,
-    onAddToCart: (Menu) -> Unit,
+    onAddToCart: (MenuUiModel) -> Unit,
     onShowSchedule : () -> Unit,
     onShowSearchSheet : () -> Unit,
 ) {
@@ -205,7 +205,6 @@ fun DetailRestaurantContent(
                 item {
                     BestSellerSection(
                         resource = uiState.bestSellersResource,
-                        status = status.status,
                         onFavoriteClick = onBestSellerFavorite,
                         onAddToCart = onAddToCart
                     )
@@ -221,7 +220,6 @@ fun DetailRestaurantContent(
                 item {
                     RecommendedMenuSection(
                         resource = uiState.recommendedMenusResource,
-                        status = status.status,
                         onFavoriteClick = onRecommendedFavoriteClick
                     )
                     Divider32()
@@ -289,7 +287,7 @@ fun HeaderWithVoucherSection(
                     .fillMaxWidth()
                     .height(imageHeight)
             ) {
-                ItemImage(
+                StatusItemImage(
                     imageUrl = restaurant?.detail?.restaurant?.imageUrl?:"",
                     name = "detail header image",
                     status = status.status,
@@ -468,7 +466,7 @@ fun ReviewSection(
 
 
 fun LazyListScope.allMenuSection(
-    resource: Resource<List<Menu>>,
+    resource: Resource<List<MenuUiModel>>,
     status: RestaurantStatus,
     onFavoriteClick: (String) -> Unit
 ) {
@@ -499,7 +497,6 @@ fun LazyListScope.allMenuSection(
             menuItemCountVerticalListBlock(
                 headerText = "All menus",
                 menus = menuItems,
-                status = status,
                 onFavoriteClick = onFavoriteClick
             )
         }
@@ -508,10 +505,9 @@ fun LazyListScope.allMenuSection(
 
 @Composable
 fun BestSellerSection(
-    resource: Resource<List<Menu>>,
-    status: RestaurantStatus,
+    resource: Resource<List<MenuUiModel>>,
     onFavoriteClick: (String) -> Unit,
-    onAddToCart: (Menu) -> Unit,
+    onAddToCart: (MenuUiModel) -> Unit
 ) {
     val menuItems = resource.data.orEmpty()
     when {
@@ -534,8 +530,6 @@ fun BestSellerSection(
                 items(menuItems) { item ->
                     FoodGridCard(
                         menu = item,
-                        status = status,
-                        isFirstItem = false,
                         onFavoriteClick = onFavoriteClick,
                         onAddToCart = onAddToCart
                     )
@@ -547,8 +541,7 @@ fun BestSellerSection(
 
 @Composable
 fun RecommendedMenuSection(
-    resource: Resource<List<Menu>>,
-    status : RestaurantStatus,
+    resource: Resource<List<MenuUiModel>>,
     onFavoriteClick: (String) -> Unit,
 ) {
     val menuItems = resource.data.orEmpty()
@@ -576,7 +569,6 @@ fun RecommendedMenuSection(
             GridMenuListSection(
                 title = "Our recommended menu",
                 menuItems = menuItems,
-                status = status,
                 onFavoriteClick = onFavoriteClick
             )
         }

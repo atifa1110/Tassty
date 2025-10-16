@@ -1,8 +1,12 @@
 package com.example.core.di
 
 import android.content.Context
+import com.example.core.data.source.remote.api.MenuApi
 import com.example.core.data.source.remote.api.RestaurantApi
+import com.example.core.data.source.remote.api.VoucherApi
+import com.example.core.data.source.remote.datasource.DummyMenuApi
 import com.example.core.data.source.remote.datasource.DummyRestaurantApi
+import com.example.core.data.source.remote.datasource.DummyVoucherApi
 import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
@@ -29,5 +33,23 @@ object ApiModule {
         gson: Gson
     ): RestaurantApi {
         return DummyRestaurantApi(context, gson)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMenuApi(
+        @ApplicationContext context: Context,
+        gson: Gson
+    ): MenuApi{
+        return DummyMenuApi(context, gson)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVoucherApi(
+        @ApplicationContext context: Context,
+        gson: Gson
+    ): VoucherApi{
+        return DummyVoucherApi(context, gson)
     }
 }

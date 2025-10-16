@@ -4,88 +4,85 @@ import android.content.Context
 import android.util.Log
 import com.example.core.data.model.MenuDto
 import com.example.core.data.model.RestaurantDto
+import com.example.core.data.model.VoucherDto
 import com.example.core.data.source.remote.api.MenuApi
 import com.example.core.data.source.remote.api.RestaurantApi
+import com.example.core.data.source.remote.api.VoucherApi
 import com.example.core.data.source.remote.network.ApiResponse
 import com.example.core.data.source.remote.network.ErrorMapper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import java.lang.reflect.Type
 
-class DummyMenu (
+abstract class BaseDummyApi<T>(
     private val context: Context,
-    private val gson: Gson
-) : MenuApi {
+    private val gson: Gson,
+    private val fileName: String
+) {
 
-    // Define a Tag for easy filtering in Logcat
-    private val TAG = "MenuApi"
+    private val TAG = this::class.simpleName ?: "BaseDummyApi"
 
-    private suspend fun readJson(fileName: String): String {
-        return context.assets.open(fileName).bufferedReader().use { it.readText() }
+    // 🚨 BARU: Properti abstrak untuk menampung TypeToken yang SPESIFIK
+    protected abstract val apiResponseType: Type
+
+    // Membaca file blocking → pakai IO dispatcher saat dipanggil
+    protected suspend fun readJson(): String = withContext(Dispatchers.IO) {
+        context.assets.open(fileName).use { inputStream ->
+            inputStream.bufferedReader().use { it.readText() }
+        }
     }
 
-    override suspend fun getRecommendedMenus(): ApiResponse<List<MenuDto>> {
+    // Fungsi generik untuk load & parse JSON
+    protected suspend fun loadData(): ApiResponse<List<T>> {
         return try {
-            delay(300) // simulate network delay
-            val jsonStr = readJson("menu.json")
+            delay(300) // simulate network
 
-            // 1. LOG THE RAW JSON STRING
+            val jsonStr = readJson()
             Log.d(TAG, "Raw JSON read: $jsonStr")
 
-            // Parse langsung ke ApiResponse<List<RestaurantDto>>
-            val type = object : TypeToken<ApiResponse<List<MenuDto>>>() {}.type
-            val apiResponse = gson.fromJson<ApiResponse<List<MenuDto>>>(jsonStr, type)
+            // 🚨 UBAH: Gunakan properti Type abstrak yang spesifik, BUKAN TypeToken generik
+            val apiResponse = gson.fromJson<ApiResponse<List<T>>>(jsonStr, apiResponseType)
 
-            // 2. LOG THE PARSED OBJECT
             if (apiResponse != null) {
-                // Log success status
-                Log.i(TAG, "Parsing successful. Number of restaurants: ${apiResponse.data?.size}")
-                // Log the entire parsed object (use caution with very large objects)
-                // Log.d(TAG, "Parsed Response: $apiResponse")
+                Log.i(TAG, "Parsing successful. Number of items: ${apiResponse.data?.size}")
             } else {
                 Log.e(TAG, "Parsing FAILED. gson.fromJson returned null.")
             }
 
-
-            return apiResponse
-                ?: ApiResponse(meta = ErrorMapper.mapError(Exception("Parsing error")), data = null)
+            apiResponse ?: ApiResponse(meta = ErrorMapper.mapError(Exception("Parsing error")), data = null)
         } catch (e: Exception) {
-            // 3. LOG ANY EXCEPTIONS (like file not found or IO error)
-            Log.e(TAG, "Error reading or parsing restaurant.json", e)
+            Log.e(TAG, "Error reading or parsing $fileName", e)
             ApiResponse(meta = ErrorMapper.mapError(e), data = null)
         }
     }
+}
 
-    override suspend fun getSuggestedMenus(): ApiResponse<List<MenuDto>> {
-        return try {
-            delay(300) // simulate network delay
-            val jsonStr = readJson("menu.json")
+class DummyRestaurantApi(context: Context, gson: Gson) :
+    BaseDummyApi<RestaurantDto>(context, gson, "restaurant.json"), RestaurantApi {
 
-            // 1. LOG THE RAW JSON STRING
-            Log.d(TAG, "Raw JSON read: $jsonStr")
+    override val apiResponseType: Type = object : TypeToken<ApiResponse<List<RestaurantDto>>>() {}.type
 
-            // Parse langsung ke ApiResponse<List<RestaurantDto>>
-            val type = object : TypeToken<ApiResponse<List<MenuDto>>>() {}.type
-            val apiResponse = gson.fromJson<ApiResponse<List<MenuDto>>>(jsonStr, type)
+    override suspend fun getRecommendedRestaurants(): ApiResponse<List<RestaurantDto>> = loadData()
+    override suspend fun getNearbyRestaurants(): ApiResponse<List<RestaurantDto>> = loadData()
+}
 
-            // 2. LOG THE PARSED OBJECT
-            if (apiResponse != null) {
-                // Log success status
-                Log.i(TAG, "Parsing successful. Number of restaurants: ${apiResponse.data?.size}")
-                // Log the entire parsed object (use caution with very large objects)
-                // Log.d(TAG, "Parsed Response: $apiResponse")
-            } else {
-                Log.e(TAG, "Parsing FAILED. gson.fromJson returned null.")
-            }
+class DummyVoucherApi(context: Context, gson: Gson) :
+    BaseDummyApi<VoucherDto>(context, gson, "voucher.json"), VoucherApi {
+
+    override val apiResponseType: Type = object : TypeToken<ApiResponse<List<VoucherDto>>>() {}.type
+
+    override suspend fun getTodayVoucher(): ApiResponse<List<VoucherDto>> = loadData()
+}
 
 
-            return apiResponse
-                ?: ApiResponse(meta = ErrorMapper.mapError(Exception("Parsing error")), data = null)
-        } catch (e: Exception) {
-            // 3. LOG ANY EXCEPTIONS (like file not found or IO error)
-            Log.e(TAG, "Error reading or parsing restaurant.json", e)
-            ApiResponse(meta = ErrorMapper.mapError(e), data = null)
-        }
-    }
+class DummyMenuApi(context: Context, gson: Gson) :
+    BaseDummyApi<MenuDto>(context, gson, "menu.json"), MenuApi {
 
+    override val apiResponseType: Type = object : TypeToken<ApiResponse<List<MenuDto>>>() {}.type
+
+    override suspend fun getRecommendedMenus(): ApiResponse<List<MenuDto>> = loadData()
+    override suspend fun getSuggestedMenus(): ApiResponse<List<MenuDto>> = loadData()
 }

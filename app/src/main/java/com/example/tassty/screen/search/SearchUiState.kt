@@ -1,10 +1,10 @@
 package com.example.tassty.screen.search
 
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.FilterState
-import com.example.tassty.model.Menu
 
 sealed class SearchUiState {
     // Initial State (When the query is empty and the keyboard is not yet active)
@@ -56,7 +56,7 @@ data class DataState(
     val popularSearches: Resource<List<ChipFilterOption>> = Resource(emptyList()),
     val categories: Resource<List<Category>> = Resource(emptyList()),
     val rest : Resource<List<RestaurantUiModel>> = Resource(emptyList()),
-    val menus: Resource<List<Menu>> = Resource(emptyList()),
+    val menus: Resource<List<MenuUiModel>> = Resource(emptyList()),
 
     // Search Results
     val queryResult: Resource<List<RestaurantUiModel>> = Resource(emptyList()),

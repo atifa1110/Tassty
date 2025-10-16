@@ -7,8 +7,10 @@
   },
   "data": [
     {
+      "id": "MENU-001",
       "name": "Shabu Premium Set",
-      "imageUrl": "https://cdn.example.com/menu/shabu_premium.jpg",
+      "description": "Set shabu premium lengkap dengan daging pilihan dan sayuran segar.",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
       "originalPrice": 150000,
       "discountPrice": 130000,
       "isAvailable": true,
@@ -22,8 +24,10 @@
       "restaurantId": "RES-001"
     },
     {
+      "id": "MENU-002",
       "name": "Kintan Wagyu Beef",
-      "imageUrl": "https://cdn.example.com/menu/kintan_wagyu.jpg",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
       "originalPrice": 180000,
       "discountPrice": null,
       "isAvailable": true,
@@ -37,8 +41,10 @@
       "restaurantId": "RES-001"
     },
     {
+      "id": "MENU-003",
       "name": "Bebek Goreng Kaleyo",
-      "imageUrl": "https://cdn.example.com/menu/bebek_goreng.jpg",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
       "originalPrice": 60000,
       "discountPrice": 55000,
       "isAvailable": true,
@@ -52,8 +58,10 @@
       "restaurantId": "RES-002"
     },
     {
+      "id": "MENU-004",
       "name": "Nasi Bebek Sambal Ijo",
-      "imageUrl": "https://cdn.example.com/menu/nasi_bebek.jpg",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
       "originalPrice": 65000,
       "discountPrice": null,
       "isAvailable": true,
@@ -67,8 +75,10 @@
       "restaurantId": "RES-002"
     },
     {
+      "id": "MENU-005",
       "name": "Salmon Roll",
-      "imageUrl": "https://cdn.example.com/menu/salmon_roll.jpg",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
       "originalPrice": 45000,
       "discountPrice": 40000,
       "isAvailable": true,
@@ -82,8 +92,10 @@
       "restaurantId": "RES-003"
     },
     {
+      "id": "MENU-006",
       "name": "Tuna Sashimi",
-      "imageUrl": "https://cdn.example.com/menu/tuna_sashimi.jpg",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
+      "imageUrl": "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/5ba64f5e-a267-4216-85e2-adbba101f90d_brand-image_1706085747563.jpg?auto=format",
       "originalPrice": 50000,
       "discountPrice": null,
       "isAvailable": true,
@@ -97,7 +109,9 @@
       "restaurantId": "RES-003"
     },
     {
+      "id": "MENU-007",
       "name": "Beef Udon",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/beef_udon.jpg",
       "originalPrice": 50000,
       "discountPrice": 45000,
@@ -112,7 +126,9 @@
       "restaurantId": "RES-004"
     },
     {
+      "id": "MENU-008",
       "name": "Tempura Udon Set",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/tempura_udon.jpg",
       "originalPrice": 55000,
       "discountPrice": null,
@@ -127,7 +143,9 @@
       "restaurantId": "RES-004"
     },
     {
+      "id": "MENU-009",
       "name": "Kopi Oey Signature Coffee",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/kopi_oey_coffee.jpg",
       "originalPrice": 30000,
       "discountPrice": 25000,
@@ -142,7 +160,9 @@
       "restaurantId": "RES-005"
     },
     {
+      "id": "MENU-010",
       "name": "Kopi Susu Aren",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/kopi_susu_aren.jpg",
       "originalPrice": 28000,
       "discountPrice": null,
@@ -157,7 +177,9 @@
       "restaurantId": "RES-005"
     },
     {
+      "id": "MENU-011",
       "name": "Raa Cha Beef Suki",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/raa_cha_beef.jpg",
       "originalPrice": 120000,
       "discountPrice": 110000,
@@ -172,7 +194,9 @@
       "restaurantId": "RES-006"
     },
     {
+      "id": "MENU-012",
       "name": "Raa Cha Pork Suki",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/raa_cha_pork.jpg",
       "originalPrice": 125000,
       "discountPrice": null,
@@ -187,7 +211,9 @@
       "restaurantId": "RES-006"
     },
     {
+      "id": "MENU-013",
       "name": "Ayam Bakar Leko",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/ayam_bakar_leko.jpg",
       "originalPrice": 55000,
       "discountPrice": 50000,
@@ -202,7 +228,9 @@
       "restaurantId": "RES-007"
     },
     {
+      "id": "MENU-014",
       "name": "Iga Bakar Leko",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/iga_bakar_leko.jpg",
       "originalPrice": 65000,
       "discountPrice": null,
@@ -217,7 +245,9 @@
       "restaurantId": "RES-007"
     },
     {
+      "id": "MENU-015",
       "name": "Gyu-Kaku BBQ Set",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/gyu_kaku_bbq.jpg",
       "originalPrice": 140000,
       "discountPrice": 130000,
@@ -232,7 +262,9 @@
       "restaurantId": "RES-008"
     },
     {
+      "id": "MENU-016",
       "name": "Gyu-Kaku Wagyu Set",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/gyu_kaku_wagyu.jpg",
       "originalPrice": 180000,
       "discountPrice": null,
@@ -247,7 +279,9 @@
       "restaurantId": "RES-008"
     },
     {
+      "id": "MENU-017",
       "name": "Kenangan Kopi Susu",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/kenangan_kopi_susu.jpg",
       "originalPrice": 25000,
       "discountPrice": 20000,
@@ -262,7 +296,9 @@
       "restaurantId": "RES-009"
     },
     {
+      "id": "MENU-018",
       "name": "Kenangan Es Kopi",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/kenangan_es_kopi.jpg",
       "originalPrice": 28000,
       "discountPrice": null,
@@ -277,7 +313,9 @@
       "restaurantId": "RES-009"
     },
     {
+      "id": "MENU-019",
       "name": "Marzano Pepperoni Pizza",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/marzano_pepperoni.jpg",
       "originalPrice": 95000,
       "discountPrice": 90000,
@@ -292,7 +330,9 @@
       "restaurantId": "RES-010"
     },
     {
+      "id": "MENU-020",
       "name": "Marzano Margherita Pizza",
+      "description": "Menu Kintan Wagyu Beef yang lezat dan direkomendasikan.",
       "imageUrl": "https://cdn.example.com/menu/marzano_margherita.jpg",
       "originalPrice": 90000,
       "discountPrice": null,

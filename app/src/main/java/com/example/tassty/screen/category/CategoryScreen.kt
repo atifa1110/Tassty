@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.component.*
 import com.example.tassty.model.FilterState
@@ -100,7 +100,7 @@ fun ScrollableHeaderContent(
             .height(imageHeight)
     ) {
         // A. Header Image with status overlay
-        ItemImage(
+        StatusItemImage(
             imageUrl = imageUrl,
             name = "category header image",
             status = status,

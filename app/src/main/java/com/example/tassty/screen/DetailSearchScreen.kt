@@ -28,7 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.R
 import com.example.tassty.component.EmptySearchResult
 import com.example.tassty.component.FoodListCard
@@ -36,7 +37,6 @@ import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.LoadingScreen
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.menus
-import com.example.tassty.model.Menu
 import com.example.tassty.screen.search.Resource
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
@@ -45,7 +45,7 @@ import com.example.tassty.ui.theme.Pink500
 fun DetailSearchScreen(
     query : String,
     status: RestaurantStatus,
-    resource : Resource<List<Menu>>,
+    resource : Resource<List<MenuUiModel>>,
     onQueryChange: (String) -> Unit,
     onClose: () -> Unit
 ) {
@@ -134,7 +134,7 @@ fun SearchAppBarActive(
 
 @Composable
 fun SearchResultList(
-    resource: Resource<List<Menu>>,
+    resource: Resource<List<MenuUiModel>>,
     status: RestaurantStatus
 ) {
     val menuItems = resource.data.orEmpty()
@@ -160,9 +160,8 @@ fun SearchResultList(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(menuItems) { item ->
-                        FoodListCard(item,
-                            status = status,
-                            false,
+                        FoodListCard(
+                            menu = item,
                             onFavoriteClick = {}
                         )
                     }

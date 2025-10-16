@@ -1,12 +1,10 @@
 package com.example.core.domain.model
 
-import com.example.core.data.model.OperationalDayDto
-import com.example.core.ui.model.MenuStatus
-
 // Domain Model
 data class Menu (
     val id: String,
     val name: String,
+    val description: String,
     val imageUrl: String,
     val originalPrice: Int,
     val discountPrice: Int? = null,
@@ -18,9 +16,10 @@ data class Menu (
     val rank: Int? = null,
     val distanceMeters: Int? = null,
     val maxOrderQuantity: Int? = null,
-    val operationalHours: List<OperationalDayDto>
+    val operationalHours: List<OperationalDay> = emptyList()
 ){
     val price : Int = discountPrice?: originalPrice
+    val formatDiscountPrice : Int = discountPrice?:0
 }
 
 data class MenuBusinessInfo(

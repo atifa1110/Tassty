@@ -1,10 +1,10 @@
 package com.example.tassty.screen.detailrestaurant
 
 
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
 import com.example.core.ui.model.RestaurantStatusResult
 import com.example.tassty.model.Cart
-import com.example.tassty.model.Menu
 import com.example.tassty.model.Review
 import com.example.tassty.model.Voucher
 import com.example.tassty.screen.search.Resource
@@ -13,9 +13,9 @@ import com.example.tassty.screen.search.Resource
 data class DetailRestaurantUiState(
     val restaurantResource: Resource<RestaurantDetailUiModel> = Resource(isLoading = true),
 
-    val allMenusResource: Resource<List<Menu>> = Resource(isLoading = true),
-    val bestSellersResource: Resource<List<Menu>> = Resource(isLoading = true),
-    val recommendedMenusResource: Resource<List<Menu>> = Resource(isLoading = true),
+    val allMenusResource: Resource<List<MenuUiModel>> = Resource(isLoading = true),
+    val bestSellersResource: Resource<List<MenuUiModel>> = Resource(isLoading = true),
+    val recommendedMenusResource: Resource<List<MenuUiModel>> = Resource(isLoading = true),
     val reviewsResource: Resource<List<Review>> = Resource(isLoading = true),
     val voucherResource: Resource<List<Voucher>> = Resource(isLoading = true),
 
@@ -31,13 +31,13 @@ data class DetailRestaurantUiState(
 
     val showSearch: Boolean = false,
     val searchQuery: String = "",
-    val searchResultsResource: Resource<List<Menu>> = Resource(),
+    val searchResultsResource: Resource<List<MenuUiModel>> = Resource(),
 
     // Bottom Bar (Checkout)
     val cartItemsResource: List<Cart> = emptyList(),
 
     // Modal State for item configuration
-    val itemModalToConfigure: Menu? = null
+    val itemModalToConfigure: MenuUiModel? = null
 ){
     // 🌟 Hitung nilai turunan di dalam data class (atau ViewModel)
     val cartItemCount: Int
@@ -65,5 +65,5 @@ sealed class DetailRestaurantEvent {
     data class OnRecommendedFavorite(val menuId: String) : DetailRestaurantEvent()
     data class OnBestSellerFavorite(val menuId: String) : DetailRestaurantEvent()
 
-    data class OnAddToCart(val menu: Menu) : DetailRestaurantEvent()
+    data class OnAddToCart(val menu: MenuUiModel) : DetailRestaurantEvent()
 }

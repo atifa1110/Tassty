@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,9 +29,11 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +53,6 @@ import com.example.tassty.R
 import com.example.tassty.categories
 import com.example.tassty.component.CategoryCard
 import com.example.tassty.component.Divider32
-import com.example.tassty.component.EmptyMapBox
 import com.example.tassty.component.FoodGridCard
 import com.example.tassty.component.GridMenuListSection
 import com.example.tassty.component.HeaderListTitleButton
@@ -60,19 +62,36 @@ import com.example.tassty.component.SearchBarHomeSection
 import com.example.tassty.component.VoucherLargeCard
 import com.example.tassty.menus
 import com.example.tassty.model.Category
-import com.example.tassty.model.Menu
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Orange900
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.ErrorListState
+import com.example.tassty.component.ListMapBox
 import com.example.tassty.component.LoadingRowState
+import com.example.tassty.restaurantUiModel
 import com.example.tassty.screen.search.Resource
+import kotlinx.coroutines.launch
+import kotlin.collections.orEmpty
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+
+// 🚨 INI SANGAT KRITIS UNTUK `nestedScroll` dan `nestedScrollConnection`
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import com.example.tassty.ui.theme.Orange500
+
+private val TOP_APP_BAR_HEIGHT = 70.dp
 
 @Composable
 fun HomeScreen(
@@ -80,71 +99,132 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.homeState.collectAsStateWithLifecycle()
 
-    HomeContent(uiState = uiState)
+    HomeContent(uiState = uiState, onRefresh = {viewModel.onPullToRefresh()})
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
-    uiState: HomeUiState
+    uiState: HomeUiState,
+    onRefresh: () -> Unit
 ) {
-    LazyColumn(
+    val scope = rememberCoroutineScope()
+    val refreshState = rememberPullToRefreshState()
+
+    val listState = rememberLazyListState()
+    val colorChangeThreshold = 100.dp
+    val thresholdPx = with(LocalDensity.current) { colorChangeThreshold.toPx() }
+
+    val scrolledPastThreshold by remember {
+        derivedStateOf {
+            val currentScrollOffset = if (listState.firstVisibleItemIndex == 0) {
+                listState.firstVisibleItemScrollOffset.toFloat()
+            } else {
+                thresholdPx + 1f
+            }
+            currentScrollOffset > thresholdPx
+        }
+    }
+    val topBarColor = if (scrolledPastThreshold) Orange500 else Color.Transparent
+
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Neutral10),
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+            .fillMaxSize().background(Color.Transparent)
+
     ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                        .height(375.dp)
-                        .drawBehind {
-                            drawRect(
-                                brush = Brush.radialGradient(
-                                    colorStops = arrayOf(
-                                        0.0f to Color(0xFF737373),
-                                        0.57f to Color(0xFF3E3E3E),
-                                        0.78f to Color(0xFF1F1E1E)
-                                    ),
-                                    center = center, // Gunakan center yang disediakan oleh DrawScope
-                                    radius = 1900f,
-                                )
-                            )
-                        }
+        TopAppBarSection(
+            modifier = Modifier.background(topBarColor).zIndex(2f)
+        )
+
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Neutral10)
+                .pullToRefresh(
+                    state = refreshState,
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = {
+                        scope.launch { onRefresh() }
+                    }
                 )
-                Column {
-                    TopAppBarSection()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HeaderSection()
-                    Spacer(modifier = Modifier.height(24.dp))
-                    BannerSection()
+        ) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(460.dp)
+                            .offset(y = -TOP_APP_BAR_HEIGHT)
+                            .drawBehind {
+                                drawRect(
+                                    brush = Brush.radialGradient(
+                                        colorStops = arrayOf(
+                                            0.0f to Color(0xFF737373),
+                                            0.57f to Color(0xFF3E3E3E),
+                                            0.78f to Color(0xFF1F1E1E)
+                                        ),
+                                        center = center,
+                                        radius = 1900f,
+                                    )
+                                )
+                            }
+                    )
+                    Column (modifier = Modifier.offset(y = TOP_APP_BAR_HEIGHT)){
+                        //TopAppBarSection()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        HeaderSection()
+                        Spacer(modifier = Modifier.height(24.dp))
+                        BannerSection()
+                    }
                 }
             }
-        }
-        // konten bawah
-        item {
-            CategorySection(categoryItems = categories)
-            Divider32()
+            item {
+                Spacer(Modifier.height(32.dp))
+                CategorySection(categoryItems = categories)
+                Divider32()
+            }
+
+            item {
+                RecommendationSection(resource = uiState.recommendedMenus)
+                Divider32()
+            }
+            item {
+                RestaurantNearby(resource = uiState.nearbyRestaurants)
+                Spacer(Modifier.height(32.dp))
+            }
+            item {
+                RecommendationRestaurant(resource = uiState.recommendedRestaurants)
+                Spacer(Modifier.height(32.dp))
+            }
+            item {
+                TodayDeal(resource = uiState.todayVouchers)
+                Spacer(Modifier.height(32.dp))
+            }
+            item {
+                SuggestedMenu(resource = uiState.suggestedMenus)
+                Spacer(Modifier.height(32.dp))
+            }
         }
 
-        item {
-            RecommendationSection(menuItems = menus, status = RestaurantStatus.OPEN)
-            Divider32()
-        }
-//        item {RestaurantNearby()}
-        item {RecommendationRestaurant(resource = uiState.recommendedRestaurants)}
-        item {TodayDeal()}
-        item {SuggestedMenu(menuItems = menus,status = RestaurantStatus.OPEN) }
+        PullToRefreshDefaults.Indicator(
+            state = refreshState,
+            isRefreshing = uiState.isRefreshing,
+            modifier = Modifier.align(Alignment.TopCenter)
+                .padding(top = TOP_APP_BAR_HEIGHT)
+        )
     }
 }
 
 @Composable
-fun TopAppBarSection() {
+fun TopAppBarSection(
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp, horizontal = 24.dp)
     ) {
@@ -209,10 +289,11 @@ fun TopAppBarSection() {
     }
 }
 
-// --- Komponen Header ---
+// --- Header Section ---
 @Composable
 fun HeaderSection() {
-    Column(modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier
+        .fillMaxWidth()
         .padding(horizontal = 24.dp)) {
         Text(
             text = "Hi Rafiq Daniel,",
@@ -239,7 +320,7 @@ fun HeaderSection() {
     }
 }
 
-// --- Komponen Banner ---
+// ---- Banner Section ---
 @Composable
 fun BannerSection() {
     Column(
@@ -346,42 +427,68 @@ fun CategorySection(
 
 @Composable
 fun RecommendationSection(
-    menuItems : List<Menu>,
-    status: RestaurantStatus
+    resource : Resource<List<MenuUiModel>>
 ) {
-    HorizontalTitleButtonSection(
-        title = "Recommended for you",
-        onClick = {}
-    ) {
-        itemsIndexed(
-            items = menuItems,
-            key = { index, menu -> menu.id }
-        ) { index, menu ->
-            FoodGridCard(
-                menu = menu,
-                status = status,
-                isFirstItem = index == 0,
-                onFavoriteClick = {},
-                onAddToCart = {}
+    val items = resource.data.orEmpty()
+
+    when {
+        resource.isLoading -> {
+            LoadingRowState()
+        }
+
+        resource.errorMessage != null || items.isEmpty() -> {
+            ErrorListState(
+                title = "Recommended for you",
+                onRetry = {}
             )
+        }
+
+        else -> {
+            HorizontalTitleButtonSection(
+                title = "Recommended for you",
+                onClick = {}
+            ) {
+                itemsIndexed(
+                    items = items,
+                    key = { index, menu -> menu.menu.id }
+                ) { index, menu ->
+                    FoodGridCard(
+                        menu = menu,
+                        onFavoriteClick = {},
+                        onAddToCart = {}
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun RestaurantNearby() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        HeaderListTitleButton(
-            title = "Restos Nearby you",
-            titleColor = Neutral100,
-            onClick = {},
-            modifier = Modifier.padding(24.dp)
-        )
-        EmptyMapBox()
+fun RestaurantNearby(
+    resource: Resource<List<RestaurantUiModel>>
+) {
+    val items = resource.data.orEmpty()
+
+    when{
+        resource.isLoading ->{
+            LoadingRowState()
+        }
+        resource.errorMessage!=null || items.isEmpty() -> {
+            ErrorListState("Resto Nearby you") { }
+        }
+        else -> {
+            Column(modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                HeaderListTitleButton(
+                    title = "Restos Nearby you",
+                    titleColor = Neutral100,
+                    onClick = {},
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+                ListMapBox(restaurant = items)
+            }
+        }
     }
 }
 
@@ -422,17 +529,33 @@ fun RecommendationRestaurant(
 }
 
 @Composable
-fun TodayDeal(){
-    Column(modifier = Modifier.padding(vertical = 24.dp)
-        .fillMaxWidth().background(Neutral20),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        HorizontalTitleButtonSection(
-            title= "Today's deals",
-            onClick = {}
-        ) {
-            items(count= 4) {
-                VoucherLargeCard()
+fun TodayDeal(
+    resource: Resource<List<VoucherUiModel>>
+){
+    val items = resource.data.orEmpty()
+    when{
+        resource.isLoading -> {
+            LoadingRowState()
+        }
+
+        resource.errorMessage!=null || items.isEmpty() -> {
+            ErrorListState("Today's deals") { }
+        }
+        else ->{
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .background(Neutral20)
+                .padding(vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                HorizontalTitleButtonSection(
+                    title= "Today's deals",
+                    onClick = {}
+                ) {
+                    items(items = items, key = {it.voucher.id}) {
+                        VoucherLargeCard(voucher = it)
+                    }
+                }
             }
         }
     }
@@ -440,19 +563,42 @@ fun TodayDeal(){
 
 @Composable
 fun SuggestedMenu(
-    menuItems: List<Menu>,
-    status : RestaurantStatus
+    resource: Resource<List<MenuUiModel>>
 ) {
-    GridMenuListSection(
-        title = "Suggested menu for you!",
-        menuItems = menuItems,
-        status = status,
-        onFavoriteClick = {}
-    )
+    val items = resource.data.orEmpty()
+
+    when {
+        resource.isLoading -> {
+            LoadingRowState()
+        }
+
+        resource.errorMessage != null || items.isEmpty() -> {
+            ErrorListState(
+                title = "Suggested menu for you!",
+                onRetry = {}
+            )
+        }
+
+        else -> {
+            GridMenuListSection(
+                title = "Suggested menu for you!",
+                menuItems = items,
+                onFavoriteClick = {}
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeScreen() {
-    HomeScreen()
+    HomeContent(
+        uiState = HomeUiState(
+            recommendedRestaurants = Resource(data = restaurantUiModel),
+            nearbyRestaurants = Resource(data=restaurantUiModel),
+            recommendedMenus = Resource(data = menus),
+            suggestedMenus = Resource(data = menus)
+        ),
+        onRefresh = {}
+    )
 }

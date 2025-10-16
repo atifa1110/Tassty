@@ -1,7 +1,5 @@
 package com.example.core.domain.model
 
-import com.example.core.ui.model.RestaurantStatus
-
 // Domain Model
 data class Restaurant(
     val id: String,

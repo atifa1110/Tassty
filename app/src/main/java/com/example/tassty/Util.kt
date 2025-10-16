@@ -1,13 +1,24 @@
 package com.example.tassty
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.view.View
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.drawToBitmap
+import com.example.core.data.mapper.toDomain
 import com.example.core.domain.model.LocationDetails
+import com.example.core.domain.model.MenuStatus
 import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantDetail
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.domain.model.VoucherStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
-import com.example.core.ui.model.RestaurantStatus
 import com.example.core.ui.model.RestaurantStatusResult
+import com.example.core.ui.model.VoucherUiModel
+import com.example.tassty.component.MarkerView
 import com.example.tassty.model.AddressType
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Category
@@ -15,7 +26,6 @@ import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
 import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.model.DiscountType
-import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.RadioFilterOption
@@ -30,6 +40,8 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -52,57 +64,6 @@ fun getSubtitle(min: Int, max: Int): String {
         else -> "select options"
     }
 }
-
-//fun getCurrentLocation(
-//    context: Context,
-//    onLocation: (LatLng) -> Unit
-//) {
-//    // 1. Cek Izin Lokasi
-//    if (ContextCompat.checkSelfPermission(
-//            context,
-//            Manifest.permission.ACCESS_FINE_LOCATION
-//        ) != PackageManager.PERMISSION_GRANTED
-//    ) {
-//        // Jika izin belum diberikan, Anda harus meminta izin terlebih dahulu.
-//        // Anda bisa menggunakan ActivityResultLauncher untuk menangani ini.
-//        return
-//    }
-//
-//    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-//
-//    // 2. Ambil Lokasi Terakhir
-//    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-//        if (location != null) {
-//            onLocation(LatLng(location.latitude, location.longitude))
-//        } else {
-//            // 3. Jika Lokasi Terakhir tidak tersedia, minta update baru
-//            val locationRequest = LocationRequest.Builder(
-//                Priority.PRIORITY_HIGH_ACCURACY,
-//                TimeUnit.SECONDS.toMillis(10)
-//            )
-//                .setMinUpdateIntervalMillis(TimeUnit.SECONDS.toMillis(5))
-//                .setMaxUpdates(1) // Minta hanya satu update
-//                .build()
-//
-//            val locationCallback = object : LocationCallback() {
-//                override fun onLocationResult(locationResult: LocationResult) {
-//                    val newLocation = locationResult.lastLocation
-//                    if (newLocation != null) {
-//                        onLocation(LatLng(newLocation.latitude, newLocation.longitude))
-//                    }
-//                    // Hentikan update setelah mendapatkan lokasi
-//                    fusedLocationClient.removeLocationUpdates(this)
-//                }
-//            }
-//
-//            fusedLocationClient.requestLocationUpdates(
-//                locationRequest,
-//                locationCallback,
-//                Looper.getMainLooper()
-//            )
-//        }
-//    }
-//}
 
 fun Int.toCleanRupiahFormat(): String {
     val localeID = Locale.Builder().setLanguage("in").setRegion("ID").build()
@@ -296,17 +257,48 @@ val reviews = listOf(
     )
 )
 val menus = listOf(
-    Menu(id = "1",
-        name = "Fresh Salad", description = "food short description",
-        originalPrice = 28000, rating= 4.9, distance = 190, sold = 154, stock = 10,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
+    MenuUiModel(
+        menu = com.example.core.domain.model.Menu(
+            id = "RES-001", // karena tidak ada "id" di JSON, tapi ada "restaurantId"
+            name = "Shabu Premium Set",
+            description = "",
+            imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
+            originalPrice = 150000,
+            discountPrice = 130000,
+            isAvailable = true,
+            rating = 4.8,
+            soldCount = 120,
+            isBestSeller = true,
+            isRecommended = true,
+            rank = 1,
+            distanceMeters = 750,
+            maxOrderQuantity = 3,
+            operationalHours = emptyList() // karena tidak ada datanya di JSON
+        ),
+        status = MenuStatus.CLOSED,
+        isWishlist = false
     ),
-    Menu(id = "2", name= "Ramen Tomyum", description = "spicy noodle soup", originalPrice = 28000, sellingPrice = 20000,
-        rating = 4.7, distance = 125,sold = 167, stock = 0, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
-    Menu(id = "3", name = "Pizza", description = "pepperoni pizza", originalPrice = 25000,
-        rating = 4.8, distance = 100 ,sold = 100, stock =0,imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/c8c7b731-0ad1-47d7-90a2-8525239a4b5f_Combo-Jiwa-Toast.jpg?auto=format"),
-    Menu(id  = "4", name = "Burger", description = "classic cheeseburger", originalPrice = 20000, sellingPrice =12000, rating = 4.6, distance = 250 ,
-        sold = 154, stock = 8, imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
+    MenuUiModel(
+        menu = com.example.core.domain.model.Menu(
+            id = "RES-002", // karena tidak ada "id" di JSON, tapi ada "restaurantId"
+            name = "Shabu Premium Set",
+            description = "",
+            imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
+            originalPrice = 150000,
+            discountPrice = 130000,
+            isAvailable = true,
+            rating = 4.8,
+            soldCount = 120,
+            isBestSeller = true,
+            isRecommended = true,
+            rank = 1,
+            distanceMeters = 750,
+            maxOrderQuantity = 3,
+            operationalHours = emptyList() // karena tidak ada datanya di JSON
+        ),
+        status = MenuStatus.CLOSED,
+        isWishlist = false
+    )
 )
 
 val carts = listOf(
@@ -318,11 +310,28 @@ val carts = listOf(
 )
 
 val menuItem =
-    Menu(id = "1",
-        name = "Fresh Salad", description = "food short description",
-        originalPrice = 28000, rating= 4.9, distance = 190, sold = 154, stock = 10,
-        imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"
+    MenuUiModel(
+        menu = com.example.core.domain.model.Menu(
+            id = "RES-001", // karena tidak ada "id" di JSON, tapi ada "restaurantId"
+            name = "Shabu Premium Set",
+            description = "",
+            imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
+            originalPrice = 150000,
+            discountPrice = 130000,
+            isAvailable = true,
+            rating = 4.8,
+            soldCount = 120,
+            isBestSeller = true,
+            isRecommended = true,
+            rank = 1,
+            distanceMeters = 750,
+            maxOrderQuantity = 3,
+            operationalHours = emptyList() // karena tidak ada datanya di JSON
+        ),
+        status = MenuStatus.CLOSED,
+        isWishlist = false
     )
+
 
 val restaurantDetails = listOf(
     RestaurantDetail(
@@ -462,8 +471,6 @@ val userCurrentLocation = LocationDetails(
 
 
 
-val indahCafeDomain = restaurantDetails.first { it.restaurant.id == "1" }
-
 /**
  * Maps Java Calendar's day of week to a standardized string (e.g., "MONDAY").
  */
@@ -486,8 +493,6 @@ private fun getDayOfWeekString(calendarDay: Int): String {
  *
  * @param operationalHours The list of daily operational hours.
  */
-
-
 
 fun Restaurant.getTodayStatusResult(): RestaurantStatusResult {
     val calendar = Calendar.getInstance()
@@ -912,4 +917,45 @@ fun placeholder() = Restaurant(
     operationalHours = emptyList(),
     category = listOf(),
     reviewCount = 0
+)
+
+suspend fun renderComposableToBitmap(
+    context: Context,
+    imageUrl: String
+): Bitmap = withContext(Dispatchers.Main) {
+    val composeView = ComposeView(context).apply {
+        setContent {
+            MarkerView(imageUrl)
+        }
+    }
+
+    val widthSpec = View.MeasureSpec.makeMeasureSpec(40, View.MeasureSpec.EXACTLY)
+    val heightSpec = View.MeasureSpec.makeMeasureSpec(40, View.MeasureSpec.EXACTLY)
+    composeView.measure(widthSpec, heightSpec)
+    composeView.layout(0, 0, composeView.measuredWidth, composeView.measuredHeight)
+
+    return@withContext composeView.drawToBitmap()
+}
+
+val voucherItem = VoucherUiModel(
+    voucher = com.example.core.domain.model.Voucher(
+        id = "VCHR001",
+        code =  "DISKON20",
+        imageUrl = "https://example.com/images/voucher_discount_20.png",
+        title =  "Diskon 20% Semua Menu",
+        description= "Nikmati diskon 20% untuk semua menu tanpa minimum pembelian.",
+        type= com.example.core.domain.model.VoucherType.DISCOUNT,
+        discountType= com.example.core.domain.model.DiscountType.PERCENTAGE,
+        scope = com.example.core.domain.model.VoucherScope.RESTAURANT,
+        discountValue = 20,
+        maxDiscount= 50000,
+        minOrderValue = 0,
+        minOrderLabel ="Tanpa minimum pembelian",
+        startDate= LocalDate.of(2024,10,24),
+        expiryDate=LocalDate.of(2024,10,24),
+        status= VoucherStatus.AVAILABLE,
+        terms = "Tidak dapat digabung dengan promo lain. Berlaku untuk semua restoran yang berpartisipasi."
+    ),
+    isUsable = true,
+    isSelected = false
 )

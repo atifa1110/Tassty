@@ -26,7 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.CategoryTopAppBar
 import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.restaurants

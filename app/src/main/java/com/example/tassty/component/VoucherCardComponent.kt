@@ -34,7 +34,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
 import com.example.tassty.getSampleVouchers
 import com.example.tassty.model.Voucher
@@ -50,6 +51,7 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
+import com.example.tassty.voucherItem
 
 @Composable
 fun VoucherCard(
@@ -138,7 +140,9 @@ fun VoucherSelectorCard(
 }
 
 @Composable
-fun VoucherLargeCard() {
+fun VoucherLargeCard(
+    voucher : VoucherUiModel
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -171,12 +175,15 @@ fun VoucherLargeCard() {
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "Discount Food 50%+",
+                        text = voucher.voucher.title,
                         style = LocalCustomTypography.current.h5Bold,
                         color = Neutral100
                     )
 
-                    DateAndMinTransactionContent()
+                    DateAndMinTransactionContent(
+                        date = voucher.expireLabel,
+                        minTransaction = voucher.voucher.minOrderValue
+                    )
                 }
             }
         }
@@ -322,8 +329,7 @@ fun VoucherDiscount(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview(showBackground = true, apiLevel = 34)
+@Preview(showBackground = true)
 @Composable
 fun PreviewVoucherScreen() {
     Column (
@@ -331,7 +337,7 @@ fun PreviewVoucherScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         VoucherCard(voucher = getSampleVouchers()[0], status = RestaurantStatus.CLOSED)
-        VoucherLargeCard()
+        VoucherLargeCard(voucher = voucherItem)
         VoucherExtraLargeCard()
         VoucherSelectorCard(
             voucher = getSampleVouchers()[0] ,

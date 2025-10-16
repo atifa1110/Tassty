@@ -2,11 +2,6 @@ package com.example.tassty.model
 
 import androidx.compose.ui.graphics.Color
 
-data class Filter(
-    val label: String,
-    val iconId: Int
-)
-
 data class ChipOption(
     val key: String,
     val label: String,

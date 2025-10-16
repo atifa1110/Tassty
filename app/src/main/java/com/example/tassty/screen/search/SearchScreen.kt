@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.baseChips
@@ -47,7 +47,6 @@ import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
 import com.example.tassty.model.FilterState
-import com.example.tassty.model.Menu
 import com.example.tassty.restaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -301,7 +300,7 @@ fun RestaurantSection(
 
 @Composable
 fun MenuSection(
-    resource: Resource<List<Menu>>,
+    resource: Resource<List<MenuUiModel>>,
     onRetry: () -> Unit,
 ) {
     if(resource.errorMessage!=null){
@@ -313,13 +312,10 @@ fun MenuSection(
         ) {
             items(
                 items = menus,
-                key = { it.id }
+                key = { it.menu.id }
             ) { menu ->
                 FoodNameGridCard(
-                    menu = menu,
-                    status = RestaurantStatus.OPEN,
-                    isFirstItem = false,
-                    isWishlist = false
+                    menu = menu
                 )
             }
         }

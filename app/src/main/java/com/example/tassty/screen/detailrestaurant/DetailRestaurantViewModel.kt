@@ -3,14 +3,14 @@ package com.example.tassty.screen.detailrestaurant
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.calculateRestaurantStatus
 import com.example.tassty.filterVouchersByRestaurant
 import com.example.tassty.getTodayOperatingHoursString
 import com.example.tassty.markToday
 import com.example.tassty.menus
 import com.example.tassty.model.Cart
-import com.example.tassty.model.Menu
 import com.example.tassty.restaurantDetails
 import com.example.tassty.reviews
 import com.example.tassty.screen.search.Resource
@@ -131,7 +131,7 @@ class DetailRestaurantViewModel (): ViewModel() {
         if (_uiState.value.restaurantResource.errorMessage != null) return@launch
         try {
             delay(5000)
-            val bestSellerList = menus.filter { it.sold>100 }
+            val bestSellerList = menus
 
             _uiState.update { it.copy(
                 bestSellersResource = Resource(data = bestSellerList, isLoading = false)
@@ -211,7 +211,7 @@ class DetailRestaurantViewModel (): ViewModel() {
     private fun handleAllMenuItemWishlist(menuId: String) {
         _uiState.update { currentState ->
             val updatedMenus = currentState.allMenusResource.data?.map { menu ->
-                if (menu.id == menuId) {
+                if (menu.menu.id == menuId) {
                     menu.copy(isWishlist = !menu.isWishlist)
                 } else {
                     menu
@@ -227,7 +227,7 @@ class DetailRestaurantViewModel (): ViewModel() {
     private fun handleBestSellerMenuItemWishlist(menuId: String) {
         _uiState.update { currentState ->
             val updatedMenus = currentState.bestSellersResource.data?.map { menu ->
-                if (menu.id == menuId) {
+                if (menu.menu.id == menuId) {
                     menu.copy(isWishlist = !menu.isWishlist)
                 } else {
                     menu
@@ -243,7 +243,7 @@ class DetailRestaurantViewModel (): ViewModel() {
     private fun handleRecommendedMenuItemWishlist(menuId: String) {
         _uiState.update { currentState ->
             val updatedMenus = currentState.recommendedMenusResource.data?.map { menu ->
-                if (menu.id == menuId) {
+                if (menu.menu.id == menuId) {
                     menu.copy(isWishlist = !menu.isWishlist)
                 } else {
                     menu
@@ -256,7 +256,7 @@ class DetailRestaurantViewModel (): ViewModel() {
         }
     }
 
-    private fun handleAddToCart(menu: Menu) {
+    private fun handleAddToCart(menu: MenuUiModel) {
         viewModelScope.launch {
             val ui = _uiState.value
 
@@ -275,11 +275,11 @@ class DetailRestaurantViewModel (): ViewModel() {
             val currentCart = ui.cartItemsResource
 
             // Check if item exist
-            val existingItem = currentCart.find { it.id == menu.id }
+            val existingItem = currentCart.find { it.id == menu.menu.id }
 
             val newCartList = if (existingItem != null) {
                 currentCart.map { item ->
-                    if (item.id == menu.id) {
+                    if (item.id == menu.menu.id) {
                         item.copy(quantity = item.quantity + 1)
                     } else {
                         item
@@ -288,12 +288,11 @@ class DetailRestaurantViewModel (): ViewModel() {
             } else {
                 // add cart if empty
                 currentCart + Cart(
-                    id = menu.id,
-                    name = menu.name,
-                    imageUrl = menu.imageUrl,
-                    price = menu.originalPrice,
+                    id = menu.menu.id,
+                    name = menu.menu.name,
+                    imageUrl = menu.menu.imageUrl,
+                    price = menu.menu.originalPrice,
                     quantity = 1,
-                    stock = menu.stock,
                     note = null,
                     isSwipeActionVisible = false,
                     isChecked = false
@@ -351,7 +350,7 @@ class DetailRestaurantViewModel (): ViewModel() {
         val allMenus = _uiState.value.allMenusResource.data.orEmpty()
 
         val filteredList = allMenus.filter { menu ->
-            menu.name.contains(query, ignoreCase = true)
+            menu.menu.name.contains(query, ignoreCase = true)
         }
 
         // Update hasil search dan matikan loading

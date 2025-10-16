@@ -35,13 +35,14 @@ import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.DisplayStatus
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.hashUrl
 import com.example.tassty.model.Category
 import com.example.tassty.model.CollectionUiItem
-import com.example.tassty.model.Menu
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
 
@@ -67,24 +68,9 @@ fun rememberImageLoader(): ImageLoader {
     }
 }
 
-interface DisplayStatus {
-    val isEnabled: Boolean
-}
-
-enum class RestaurantStatus : DisplayStatus {
-    OPEN { override val isEnabled = true },
-    CLOSED { override val isEnabled = false },
-    OFFDAY { override val isEnabled = false }
-}
-
-enum class MenuStatus : DisplayStatus {
-    AVAILABLE { override val isEnabled = true },
-    SOLDOUT { override val isEnabled = false }
-}
-
 
 @Composable
-fun <T : DisplayStatus> ItemImage(
+fun <T : DisplayStatus> StatusItemImage(
     modifier: Modifier = Modifier,
     imageUrl: String,
     name: String,
@@ -122,48 +108,48 @@ fun <T : DisplayStatus> ItemImage(
 }
 
 
-@Composable
-fun ItemImage(
-    modifier : Modifier = Modifier,
-    imageUrl: String,
-    name: String,
-    status: RestaurantStatus,
-    placeholder: ColorPainter = ColorPainter(Color.LightGray)
-){
-    val context = LocalContext.current
-    val imageLoader = rememberImageLoader()
-    val imageRequest = ImageRequest.Builder(context)
-        .data(imageUrl)
-        .diskCacheKey("image_${hashUrl(imageUrl)}")    // cache unik per kategori
-        .memoryCacheKey("image_${hashUrl(imageUrl)}")  // supaya gak reload kalau sama
-        .diskCachePolicy(CachePolicy.ENABLED)    // simpan ke disk cache
-        .memoryCachePolicy(CachePolicy.ENABLED)  // simpan ke mem cache
-        .crossfade(true)
-        .size(256)// masih bisa override per gambar
-        .build()
-
-    // 🔹 ColorMatrix buat grayscale
-    val grayscaleFilter = ColorFilter.colorMatrix(
-        ColorMatrix().apply { setToSaturation(0f) }
-    )
-
-    val filter = when (status) {
-        RestaurantStatus.OPEN -> null
-        RestaurantStatus.CLOSED -> grayscaleFilter
-        RestaurantStatus.OFFDAY -> grayscaleFilter
-    }
-
-    AsyncImage(
-        model = imageRequest,
-        imageLoader = imageLoader,
-        contentDescription = name,
-        contentScale = ContentScale.Crop,
-        modifier = modifier,
-        placeholder = placeholder,
-        error = placeholder,
-        colorFilter = filter
-    )
-}
+//@Composable
+//fun ItemImage(
+//    modifier : Modifier = Modifier,
+//    imageUrl: String,
+//    name: String,
+//    status: RestaurantStatus,
+//    placeholder: ColorPainter = ColorPainter(Color.LightGray)
+//){
+//    val context = LocalContext.current
+//    val imageLoader = rememberImageLoader()
+//    val imageRequest = ImageRequest.Builder(context)
+//        .data(imageUrl)
+//        .diskCacheKey("image_${hashUrl(imageUrl)}")    // cache unik per kategori
+//        .memoryCacheKey("image_${hashUrl(imageUrl)}")  // supaya gak reload kalau sama
+//        .diskCachePolicy(CachePolicy.ENABLED)    // simpan ke disk cache
+//        .memoryCachePolicy(CachePolicy.ENABLED)  // simpan ke mem cache
+//        .crossfade(true)
+//        .size(256)// masih bisa override per gambar
+//        .build()
+//
+//    // 🔹 ColorMatrix buat grayscale
+//    val grayscaleFilter = ColorFilter.colorMatrix(
+//        ColorMatrix().apply { setToSaturation(0f) }
+//    )
+//
+//    val filter = when (status) {
+//        RestaurantStatus.OPEN -> null
+//        RestaurantStatus.CLOSED -> grayscaleFilter
+//        RestaurantStatus.OFFDAY -> grayscaleFilter
+//    }
+//
+//    AsyncImage(
+//        model = imageRequest,
+//        imageLoader = imageLoader,
+//        contentDescription = name,
+//        contentScale = ContentScale.Crop,
+//        modifier = modifier,
+//        placeholder = placeholder,
+//        error = placeholder,
+//        colorFilter = filter
+//    )
+//}
 
 @Composable
 fun CommonImage(
@@ -210,14 +196,13 @@ fun CategoryImageCircle(
 
 @Composable
 fun FoodImageCircle(
-    menu : Menu,
-    status: RestaurantStatus,
+    menu : MenuUiModel,
     modifier: Modifier = Modifier
 ){
-    ItemImage(
-        imageUrl = menu.imageUrl,
-        name = menu.name,
-        status = status,
+    StatusItemImage(
+        imageUrl = menu.menu.imageUrl,
+        name = menu.menu.name,
+        status = menu.status,
         modifier = modifier.fillMaxSize()
             .clip(CircleShape)
     )
@@ -225,14 +210,13 @@ fun FoodImageCircle(
 
 @Composable
 fun FoodImageRound(
-    menu : Menu,
-    status: RestaurantStatus,
+    menu : MenuUiModel,
     modifier: Modifier = Modifier
 ){
-    ItemImage(
-        imageUrl = menu.imageUrl,
-        name = menu.name,
-        status = status,
+    StatusItemImage(
+        imageUrl = menu.menu.imageUrl,
+        name = menu.menu.name,
+        status = menu.status,
         modifier = modifier.fillMaxSize()
             .clip(RoundedCornerShape(10))
     )
@@ -256,7 +240,7 @@ fun RestaurantImageRound(
     restaurant: RestaurantUiModel,
     modifier: Modifier = Modifier
 ){
-    ItemImage(
+    StatusItemImage(
         imageUrl = restaurant.restaurant.imageUrl,
         name = restaurant.restaurant.name,
         status = restaurant.operationalStatus,

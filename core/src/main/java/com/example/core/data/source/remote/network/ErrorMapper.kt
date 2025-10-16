@@ -8,7 +8,7 @@ import java.util.UUID
 object ErrorMapper {
 
     fun mapError(throwable: Throwable): Meta {
-        val traceId = UUID.randomUUID().toString() // Buat trace unik
+        val traceId = UUID.randomUUID().toString()
 
         return when (throwable) {
             is SocketTimeoutException -> Meta(

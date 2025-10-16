@@ -1,5 +1,6 @@
 package com.example.core.domain.usecase
 
+import android.util.Log
 import com.example.core.data.source.remote.network.ResultWrapper
 import com.example.core.domain.model.MenuBusinessInfo
 import com.example.core.domain.model.RestaurantBusinessInfo
@@ -30,6 +31,4 @@ class GetRecommendedMenusUseCase @Inject constructor(
             is ResultWrapper.Loading -> ResultWrapper.Loading
         }
     }
-
-
-    }
+}

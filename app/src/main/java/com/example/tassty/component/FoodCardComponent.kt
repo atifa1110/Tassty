@@ -14,11 +14,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.R
 import com.example.tassty.menuItem
 import com.example.tassty.menuSections
-import com.example.tassty.model.Menu
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
 import com.example.tassty.toCleanRupiahFormat
@@ -34,8 +33,7 @@ import com.example.tassty.ui.theme.Pink500
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodTinyGridCard(
-    menu : Menu,
-    status : RestaurantStatus
+    menu : MenuUiModel
 ) {
     Card(
         modifier = Modifier.width(96.dp),
@@ -46,7 +44,7 @@ fun FoodTinyGridCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ){
             FoodImageWithFloating(
-                menu = menu, status = status,
+                menu = menu,
                 modifier = Modifier.size(80.dp)
             )
 
@@ -58,11 +56,9 @@ fun FoodTinyGridCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodGridCard(
-    menu: Menu,
-    status: RestaurantStatus,
-    isFirstItem: Boolean,
+    menu: MenuUiModel,
     onFavoriteClick: (String) -> Unit,
-    onAddToCart:(Menu) -> Unit
+    onAddToCart:(MenuUiModel) -> Unit
 ) {
     Card(
         modifier = Modifier.width(140.dp),
@@ -74,13 +70,11 @@ fun FoodGridCard(
         ){
             FoodCircleImageWithOverlays(
                 menu = menu,
-                status = status,
-                isFirstItem = isFirstItem,
-                onFavoriteClick = { onFavoriteClick(menu.id) },
+                onFavoriteClick = { onFavoriteClick(menu.menu.id) },
                 modifier = Modifier.height(120.dp)
             )
 
-            FoodGridCardContent(menu = menu,onAddToCart = {onAddToCart(menu)})
+            FoodGridCardContent(menu = menu,onAddToCart = {})
         }
     }
 }
@@ -88,10 +82,7 @@ fun FoodGridCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodNameGridCard(
-    menu: Menu,
-    status: RestaurantStatus,
-    isFirstItem: Boolean,
-    isWishlist: Boolean,
+    menu: MenuUiModel
 ) {
     Card(
         modifier = Modifier.width(140.dp),
@@ -103,8 +94,6 @@ fun FoodNameGridCard(
         ){
             FoodCircleImageWithOverlays(
                 menu = menu,
-                status = status,
-                isFirstItem = isFirstItem,
                 onFavoriteClick = {},
                 modifier = Modifier.height(120.dp)
             )
@@ -118,9 +107,7 @@ fun FoodNameGridCard(
 @Composable
 fun FoodLargeGridCard(
     modifier: Modifier = Modifier,
-    menu: Menu,
-    status: RestaurantStatus,
-    isFirstItem: Boolean,
+    menu: MenuUiModel,
     onFavoriteClick: () -> Unit
 ){
     Card(
@@ -135,8 +122,6 @@ fun FoodLargeGridCard(
         ){
             FoodCircleImageWithOverlays(
                 menu = menu,
-                status = status,
-                isFirstItem = isFirstItem,
                 onFavoriteClick = onFavoriteClick,
                 modifier = Modifier.height(137.dp)
             )
@@ -149,9 +134,7 @@ fun FoodLargeGridCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodListCard(
-    menu: Menu,
-    status: RestaurantStatus,
-    isFirstItem: Boolean,
+    menu: MenuUiModel,
     onFavoriteClick: () -> Unit
 ) {
     Card(
@@ -165,8 +148,6 @@ fun FoodListCard(
         ) {
             FoodRoundImageWithOverlays(
                 menu = menu,
-                status = status,
-                isFirstItem = isFirstItem,
                 modifier = Modifier.size(100.dp, 84.dp)
             )
 
@@ -181,10 +162,7 @@ fun FoodListCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodWideListCard(
-    menu: Menu,
-    status: RestaurantStatus,
-    isFirstItem: Boolean,
-    isWishlist: Boolean,
+    menu: MenuUiModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -197,13 +175,13 @@ fun FoodWideListCard(
         ) {
             FoodRoundImageWithOverlays(
                 menu = menu,
-                status = status,
-                isFirstItem = isFirstItem,
                 modifier = Modifier.size(100.dp)
             )
 
-            FoodWideListCardContent(menu = menu,
-                isWishlist = isWishlist, onFavoriteClick = {}
+            FoodWideListCardContent(
+                menu = menu,
+                isWishlist = menu.isWishlist,
+                onFavoriteClick = {}
             )
         }
     }
@@ -212,7 +190,7 @@ fun FoodWideListCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderFoodListCard(
-    menu: Menu
+    menu: MenuUiModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -225,8 +203,6 @@ fun OrderFoodListCard(
         ) {
             FoodRoundImageWithOverlays(
                 menu= menu,
-                status = RestaurantStatus.OPEN,
-                isFirstItem = false,
                 modifier = Modifier.size(84.dp)
             )
 
@@ -334,17 +310,17 @@ fun FoodGridCardPreview() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodTinyGridCard(menu = menuItem, status = RestaurantStatus.OPEN)
-            FoodNameGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN,isWishlist = false)
+            FoodTinyGridCard(menu = menuItem)
+            FoodNameGridCard(menu = menuItem)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodGridCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN, onFavoriteClick = {}, onAddToCart = {})
-            FoodGridCard(menu = menuItem, isFirstItem = false, status = RestaurantStatus.OPEN, onFavoriteClick = {}, onAddToCart = {})
+            FoodGridCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
+            FoodGridCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodLargeGridCard(menu = menuItem, isFirstItem = true,status = RestaurantStatus.OPEN,onFavoriteClick = {})
-            FoodLargeGridCard(menu = menuItem, isFirstItem = false,status = RestaurantStatus.OPEN,onFavoriteClick = {})
+            FoodLargeGridCard(menu = menuItem,onFavoriteClick = {})
+            FoodLargeGridCard(menu = menuItem,onFavoriteClick = {})
         }
     }
 }
@@ -355,8 +331,8 @@ fun FoodListCardPreview() {
     Column (modifier = Modifier.fillMaxWidth().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        FoodListCard(menu = menuItem, isFirstItem = true, status = RestaurantStatus.OPEN, onFavoriteClick = {})
-        FoodListCard(menu = menuItem, isFirstItem = false, status = RestaurantStatus.OPEN, onFavoriteClick = {})
+        FoodListCard(menu = menuItem, onFavoriteClick = {})
+        FoodListCard(menu = menuItem, onFavoriteClick = {})
         OrderFoodListCard(menu = menuItem)
     }
 }

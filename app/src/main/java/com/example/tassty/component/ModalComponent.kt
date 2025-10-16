@@ -34,7 +34,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.OperationalDay
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.cuisineOptions
 import com.example.tassty.discountOptions
@@ -340,7 +340,7 @@ fun DetailScheduleContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ItemImage(
+                StatusItemImage(
                     imageUrl = "",
                     status = RestaurantStatus.OPEN,
                     name = "Restaurant Modal Popup",

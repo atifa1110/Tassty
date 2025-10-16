@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.R
 import com.example.tassty.categoriesItem
 import com.example.tassty.model.Category
@@ -56,7 +56,7 @@ fun HeaderWithOverlap(
             .fillMaxWidth()
             .height(currentHeight)
     ) {
-        ItemImage(
+        StatusItemImage(
             imageUrl = imageUrl,
             name = "category header image",
             status = status,

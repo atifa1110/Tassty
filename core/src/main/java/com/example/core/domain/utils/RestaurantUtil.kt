@@ -2,11 +2,14 @@ package com.example.core.domain.utils
 
 import com.example.core.domain.model.LocationDetails
 import com.example.core.domain.model.Menu
+import com.example.core.domain.model.MenuStatus
 import com.example.core.domain.model.Restaurant
-import com.example.core.ui.model.MenuStatus
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
+import com.example.core.domain.model.Voucher
+import com.example.core.domain.model.VoucherStatus
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalTime
+import org.threeten.bp.format.DateTimeFormatter
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.sqrt
@@ -79,3 +82,18 @@ fun Int.toCleanRupiahFormat(): String {
     // format into currency
     return formatRupiah.format(this.toLong())
 }
+
+
+fun LocalDate.toDisplayFormat(locale: Locale = Locale("id", "ID")): String {
+    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
+    return this.format(formatter)
+}
+
+fun computeStatus(voucher: Voucher, now: LocalDate): VoucherStatus {
+    return when {
+        now.isBefore(voucher.startDate) -> VoucherStatus.UPCOMING
+        now.isAfter(voucher.expiryDate) -> VoucherStatus.EXPIRED
+        else -> VoucherStatus.AVAILABLE
+    }
+}
+

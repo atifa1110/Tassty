@@ -8,6 +8,7 @@ fun MenuDto.toDomain(operationalHours : List<OperationalDayDto>): Menu {
     return Menu(
         id = id,
         name = name,
+        description = description,
         imageUrl = imageUrl,
         originalPrice = originalPrice,
         discountPrice = discountPrice,
@@ -19,7 +20,6 @@ fun MenuDto.toDomain(operationalHours : List<OperationalDayDto>): Menu {
         rank = rank,
         distanceMeters = distanceMeters,
         maxOrderQuantity = maxOrderQuantity,
-        operationalHours = operationalHours
+        operationalHours = operationalHours.map { it.toDomain() }
     )
-
 }

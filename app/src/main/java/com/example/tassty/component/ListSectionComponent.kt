@@ -38,12 +38,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.menus
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Category
-import com.example.tassty.model.Menu
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
@@ -237,8 +236,7 @@ fun LazyListScope.restaurantMenuListBlock(
     ) { restaurant ->
         RestaurantContentSection(
             restaurant = restaurant,
-            menus = menus,
-            status = RestaurantStatus.OPEN
+            menus = menus
         )
         Spacer(modifier = Modifier.height(12.dp))
     }
@@ -247,8 +245,7 @@ fun LazyListScope.restaurantMenuListBlock(
 @Composable
 fun RestaurantContentSection(
     restaurant: RestaurantUiModel,
-    menus: List<Menu>,
-    status: RestaurantStatus
+    menus: List<MenuUiModel>
 ) {
     Column (
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -261,8 +258,8 @@ fun RestaurantContentSection(
             contentPadding = PaddingValues(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(menus, key = { it.id }) { menuItem ->
-                FoodTinyGridCard(menu = menuItem,status = status)
+            items(menus, key = { it.menu.id }) { menuItem ->
+                FoodTinyGridCard(menu = menuItem)
             }
         }
     }
@@ -377,8 +374,7 @@ fun LazyListScope.restaurantVerticalListBlock(
 
 fun LazyListScope.menuItemCountVerticalListBlock(
     headerText: String,
-    menus : List<Menu>,
-    status: RestaurantStatus,
+    menus : List<MenuUiModel>,
     onFavoriteClick: (String) -> Unit,
 ) {
     item {
@@ -392,14 +388,12 @@ fun LazyListScope.menuItemCountVerticalListBlock(
 
     items(
         items = menus,
-        key = { it.id }
+        key = { it.menu.id }
     ) { menu ->
         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
             FoodListCard(
                 menu = menu,
-                status=status,
-                isFirstItem = false,
-                onFavoriteClick = { onFavoriteClick(menu.id) }
+                onFavoriteClick = { onFavoriteClick(menu.menu.id) }
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -409,8 +403,7 @@ fun LazyListScope.menuItemCountVerticalListBlock(
 @Composable
 fun GridMenuListSection(
     title: String,
-    menuItems: List<Menu>,
-    status : RestaurantStatus,
+    menuItems: List<MenuUiModel>,
     onFavoriteClick: (String) -> Unit,
 ) {
     Column(
@@ -433,9 +426,7 @@ fun GridMenuListSection(
             menuItems.forEach { item ->
                 FoodLargeGridCard(
                     menu = item,
-                    status = status,
-                    isFirstItem = false,
-                    onFavoriteClick = { onFavoriteClick(item.id) },
+                    onFavoriteClick = { onFavoriteClick(item.menu.id) },
                     modifier = Modifier
                         .weight(1f, fill = true)
                 )
@@ -486,7 +477,6 @@ fun PreviewList(){
         GridMenuListSection(
             title = "Suggested menu for you!",
             menuItems = menus,
-            status = RestaurantStatus.OPEN,
             onFavoriteClick = {}
         )
 

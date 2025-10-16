@@ -208,7 +208,7 @@ fun RestaurantLargeListCardContent(
         )
 
         RestaurantCategoryText(
-            category = "Bakery, Coffee, Croissant"
+            category = restaurant.formattedCategories
         )
 
         RestaurantCityAndDistanceText(
@@ -257,7 +257,8 @@ fun RestaurantGridCardContent(
         Text(
             text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = Neutral100,
+            maxLines = 1
         )
 
         RestaurantCityAndDistanceText(

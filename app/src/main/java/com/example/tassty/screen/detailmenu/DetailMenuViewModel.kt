@@ -2,7 +2,7 @@ package com.example.tassty.screen.detailmenu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.collections
 import com.example.tassty.menuSections
 import com.example.tassty.menus
@@ -113,23 +113,23 @@ class DetailMenuViewModel: ViewModel() {
             }
         }
 
-        val priceToUse = if (state.menu.sellingPrice > 0) {
+        val priceToUse = if (state.menu.menu.formatDiscountPrice > 0) {
             // If sellingPrice exists and is valid (> 0), use the discounted price
-            state.menu.sellingPrice
+            state.menu.menu.discountPrice
         } else {
             // If sellingPrice does not exist (or is 0), use the original price
-            state.menu.originalPrice
+            state.menu.menu.originalPrice
         }
 
         // 2. Calculate the final price per item
-        val finalPricePerItem = priceToUse + totalOptionPrice
+        val finalPricePerItem = priceToUse?.plus(totalOptionPrice)
 
         // 3. Calculate the total cart price
-        val cartTotalPrice = finalPricePerItem * state.quantity
+        val cartTotalPrice = finalPricePerItem?.times(state.quantity)
 
         _uiState.update {
             it.copy(
-                cartTotalPrice = cartTotalPrice
+                cartTotalPrice = cartTotalPrice?:0
             )
         }
     }
@@ -174,12 +174,11 @@ class DetailMenuViewModel: ViewModel() {
 
         val item = Cart(
             id = "1",
-            name = state.menu.name,
+            name = state.menu.menu.name,
             price = state.cartTotalPrice,
-            imageUrl = state.menu.imageUrl,
+            imageUrl = state.menu.menu.imageUrl,
             note = allNotesList.ifEmpty { null },
             quantity = state.quantity,
-            stock = state.menu.stock,
         )
 
         println("\n--- CART ITEM CREATED ---\n$item")
@@ -199,7 +198,7 @@ class DetailMenuViewModel: ViewModel() {
     private fun handleIncrementQuantity() {
         _uiState.update { currentState ->
             // Check if quantity is less than available stock
-            if (currentState.quantity < currentState.menu.stock) {
+            if (currentState.quantity < currentState.menu.menu.maxOrderQuantity?:0) {
                 currentState.copy(quantity = currentState.quantity + 1)
             } else {
                 currentState

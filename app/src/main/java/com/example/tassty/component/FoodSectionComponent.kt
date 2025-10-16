@@ -18,10 +18,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.example.core.ui.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.R
-import com.example.tassty.model.Menu
-import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
@@ -30,14 +28,13 @@ import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun FoodImageWithFloating(
-    menu : Menu,
-    status : RestaurantStatus,
+    menu : MenuUiModel,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        FoodImageCircle(menu,status)
+        FoodImageCircle(menu)
 
         FloatingAddButton(
             iconSize = 12.dp,
@@ -50,17 +47,15 @@ fun FoodImageWithFloating(
 
 @Composable
 fun FoodRoundImageWithOverlays(
-    menu: Menu,
-    status : RestaurantStatus,
-    isFirstItem: Boolean,
+    menu: MenuUiModel,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        FoodImageRound(menu = menu,status = status)
+        FoodImageRound(menu = menu)
 
-        if (isFirstItem) {
+        if (menu.menu.rank!=null) {
             RankBadge(
                 horizontal = 8.dp, vertical = 4.dp,
                 modifier = Modifier.width(40.dp)
@@ -73,18 +68,16 @@ fun FoodRoundImageWithOverlays(
 
 @Composable
 fun FoodCircleImageWithOverlays(
-    menu: Menu,
-    status : RestaurantStatus,
-    isFirstItem: Boolean,
+    menu: MenuUiModel,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        FoodImageCircle(menu = menu,status = status)
+        FoodImageCircle(menu = menu)
 
-        if (isFirstItem) {
+        if (menu.menu.rank!=null) {
             RankBadge(
                 horizontal = 8.dp, vertical = 4.dp,
                 modifier = Modifier.width(40.dp)
@@ -103,7 +96,7 @@ fun FoodCircleImageWithOverlays(
 @Composable
 fun FoodRatingAndDistanceRow(
     rating: Double,
-    distance: Int,
+    distance: String,
     modifier: Modifier = Modifier
 ){
     Row(
@@ -129,7 +122,7 @@ fun FoodRatingAndDistanceRow(
         )
         Spacer(modifier = Modifier.width(2.dp))
         Text(
-            text = "$distance m",
+            text = distance,
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Neutral70
         )
@@ -174,27 +167,27 @@ fun FoodRatingAndCityRow(
 
 @Composable
 fun FoodTinyGridCardContent(
-    menu: Menu,
+    menu: MenuUiModel,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = menu.name,
+            text = menu.menu.name,
             style = LocalCustomTypography.current.h7Bold,
             color = Neutral100
         )
 
         FoodPriceTinyText(
-            price = menu.originalPrice.toCleanRupiahFormat()
+            price = menu.formatPrice
         )
     }
 }
 
 @Composable
 fun FoodNameGridCardContent(
-    menu: Menu,
+    menu: MenuUiModel,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -202,7 +195,7 @@ fun FoodNameGridCardContent(
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            text = menu.name,
+            text = menu.menu.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
@@ -216,22 +209,22 @@ fun FoodNameGridCardContent(
 
 @Composable
 fun FoodGridCardContent(
-    menu: Menu,
+    menu: MenuUiModel,
     onAddToCart:() -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = menu.name,
+            text = menu.menu.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
 
         Spacer(modifier = Modifier.height(4.dp))
         FoodRatingAndDistanceRow(
-            rating = menu.rating,
-            distance = menu.distance
+            rating = menu.formatRating,
+            distance = menu.formattedDistance
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -240,7 +233,7 @@ fun FoodGridCardContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            FoodPriceText(price= menu.originalPrice.toCleanRupiahFormat(), color = Orange500)
+            FoodPriceText(price= menu.formatPrice, color = Orange500)
             FloatingAddButton(
                 iconSize = 16.dp,
                 actionSize = 30.dp,
@@ -252,7 +245,7 @@ fun FoodGridCardContent(
 
 @Composable
 fun FoodListCardContent(
-    menu: Menu,
+    menu: MenuUiModel,
     onFavoriteClick: () -> Unit
 ) {
     Column(
@@ -268,12 +261,12 @@ fun FoodListCardContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = menu.name,
+                    text = menu.menu.name,
                     style = LocalCustomTypography.current.h5Bold,
                     color = Neutral100
                 )
                 Text(
-                    text = menu.description,
+                    text = menu.menu.description,
                     style = LocalCustomTypography.current.bodySmallMedium,
                     color = Neutral70
                 )
@@ -289,7 +282,7 @@ fun FoodListCardContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            FoodPriceText(price = menu.originalPrice.toCleanRupiahFormat(), color = Orange500)
+            FoodPriceText(price = menu.formatPrice, color = Orange500)
             FloatingAddButton(
                 iconSize = 16.dp,
                 actionSize = 30.dp,
@@ -303,7 +296,7 @@ fun FoodListCardContent(
 
 @Composable
 fun FoodWideListCardContent(
-    menu: Menu,
+    menu: MenuUiModel,
     isWishlist : Boolean,
     onFavoriteClick: () -> Unit
 ) {
@@ -319,13 +312,13 @@ fun FoodWideListCardContent(
                 modifier = Modifier.padding(top = 4.dp),
             ) {
                 Text(
-                    text = menu.name,
+                    text = menu.menu.name,
                     style = LocalCustomTypography.current.h5Bold,
                     color = Neutral100
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = menu.description,
+                    text = menu.menu.description,
                     style = LocalCustomTypography.current.bodySmallMedium,
                     color = Neutral70
                 )
@@ -333,7 +326,7 @@ fun FoodWideListCardContent(
                 Text(
                     text = buildAnnotatedString {
                         withStyle(style = LocalCustomTypography.current.h7Bold.toSpanStyle().copy(color = Neutral70)) {
-                            append("${menu.sold}x")
+                            append("${menu.menu.soldCount}")
                         }
                         withStyle(style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle().copy(color = Neutral70)) {
                             append("sold")
@@ -352,7 +345,7 @@ fun FoodWideListCardContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            FoodPriceText(price = menu.originalPrice.toCleanRupiahFormat(), color = Orange500)
+            FoodPriceText(price = menu.formatPrice, color = Orange500)
             FloatingAddButton(
                 iconSize = 16.dp,
                 actionSize = 30.dp,
@@ -366,7 +359,7 @@ fun FoodWideListCardContent(
 
 @Composable
 fun FoodOrderListCardContent(
-    menu: Menu,
+    menu: MenuUiModel,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(4.dp),
@@ -378,12 +371,12 @@ fun FoodOrderListCardContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = menu.name,
+                text = menu.menu.name,
                 style = LocalCustomTypography.current.h5Bold,
                 color = Neutral100
             )
             Text(
-                text = "154x",
+                text = menu.formatSoldCount,
                 style = LocalCustomTypography.current.h5Regular,
                 color = Neutral100
             )

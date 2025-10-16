@@ -3,6 +3,7 @@ package com.example.core.data.model
 data class MenuDto(
     val id: String,
     val name: String,
+    val description: String,
     val imageUrl: String,
     val originalPrice: Int,
     val discountPrice: Int? = null,
