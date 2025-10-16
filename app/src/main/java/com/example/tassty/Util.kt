@@ -7,13 +7,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.drawToBitmap
 import com.example.core.data.mapper.toDomain
+import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.LocationDetails
 import com.example.core.domain.model.MenuStatus
 import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantDetail
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
+import com.example.core.domain.model.VoucherType
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
 import com.example.core.ui.model.RestaurantStatusResult
@@ -25,28 +28,20 @@ import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
 import com.example.tassty.model.CollectionUiItem
-import com.example.tassty.model.DiscountType
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.model.Review
 import com.example.tassty.model.UserAddress
 import com.example.tassty.model.Voucher
-import com.example.tassty.model.VoucherScope
-import com.example.tassty.model.VoucherType
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.text.NumberFormat
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import org.threeten.bp.LocalDate
-import org.threeten.bp.LocalTime
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -63,18 +58,6 @@ fun getSubtitle(min: Int, max: Int): String {
         min == max && min > 1 -> "pick $min"
         else -> "select options"
     }
-}
-
-fun Int.toCleanRupiahFormat(): String {
-    val localeID = Locale.Builder().setLanguage("in").setRegion("ID").build()
-
-    val formatRupiah = NumberFormat.getCurrencyInstance(localeID).apply {
-        // Baris ini yang menghilangkan koma dan angka nol di belakang
-        maximumFractionDigits = 0
-    }
-
-    // Perhatikan: Simbol mata uang default dari locale "in", "ID" adalah "Rp"
-    return formatRupiah.format(this.toLong())
 }
 
 val addresses = listOf(
@@ -213,7 +196,6 @@ var menuSections = listOf(
     )
 )
 
-// Data Dummy Jam Operasional
 val operationalHours = listOf(
     OperationalDay("Monday", "08.00 - 22.00"),
     OperationalDay("Tuesday", "08.00 - 22.00"),
@@ -919,24 +901,6 @@ fun placeholder() = Restaurant(
     reviewCount = 0
 )
 
-suspend fun renderComposableToBitmap(
-    context: Context,
-    imageUrl: String
-): Bitmap = withContext(Dispatchers.Main) {
-    val composeView = ComposeView(context).apply {
-        setContent {
-            MarkerView(imageUrl)
-        }
-    }
-
-    val widthSpec = View.MeasureSpec.makeMeasureSpec(40, View.MeasureSpec.EXACTLY)
-    val heightSpec = View.MeasureSpec.makeMeasureSpec(40, View.MeasureSpec.EXACTLY)
-    composeView.measure(widthSpec, heightSpec)
-    composeView.layout(0, 0, composeView.measuredWidth, composeView.measuredHeight)
-
-    return@withContext composeView.drawToBitmap()
-}
-
 val voucherItem = VoucherUiModel(
     voucher = com.example.core.domain.model.Voucher(
         id = "VCHR001",
@@ -944,9 +908,9 @@ val voucherItem = VoucherUiModel(
         imageUrl = "https://example.com/images/voucher_discount_20.png",
         title =  "Diskon 20% Semua Menu",
         description= "Nikmati diskon 20% untuk semua menu tanpa minimum pembelian.",
-        type= com.example.core.domain.model.VoucherType.DISCOUNT,
-        discountType= com.example.core.domain.model.DiscountType.PERCENTAGE,
-        scope = com.example.core.domain.model.VoucherScope.RESTAURANT,
+        type= VoucherType.DISCOUNT,
+        discountType= DiscountType.PERCENTAGE,
+        scope = VoucherScope.RESTAURANT,
         discountValue = 20,
         maxDiscount= 50000,
         minOrderValue = 0,

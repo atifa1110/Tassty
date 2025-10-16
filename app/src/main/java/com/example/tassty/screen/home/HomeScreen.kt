@@ -3,6 +3,7 @@ package com.example.tassty.screen.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tassty.R
 import com.example.tassty.categories
 import com.example.tassty.component.CategoryCard
@@ -69,14 +70,12 @@ import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Orange900
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.ListMapBox
-import com.example.tassty.component.LoadingRowState
 import com.example.tassty.restaurantUiModel
 import com.example.tassty.screen.search.Resource
 import kotlinx.coroutines.launch
@@ -85,10 +84,14 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
-
-// 🚨 INI SANGAT KRITIS UNTUK `nestedScroll` dan `nestedScrollConnection`
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import com.example.tassty.component.CommonImage
+import com.example.tassty.component.ShimmerFoodGridCard
+import com.example.tassty.component.ShimmerGridMenuListPlaceholder
+import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
+import com.example.tassty.component.ShimmerRestaurantGridCard
+import com.example.tassty.component.ShimmerVoucherLargeCard
+import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.Orange500
 
 private val TOP_APP_BAR_HEIGHT = 70.dp
@@ -112,7 +115,7 @@ fun HomeContent(
     val refreshState = rememberPullToRefreshState()
 
     val listState = rememberLazyListState()
-    val colorChangeThreshold = 100.dp
+    val colorChangeThreshold = 80.dp
     val thresholdPx = with(LocalDensity.current) { colorChangeThreshold.toPx() }
 
     val scrolledPastThreshold by remember {
@@ -174,9 +177,8 @@ fun HomeContent(
                             }
                     )
                     Column (modifier = Modifier.offset(y = TOP_APP_BAR_HEIGHT)){
-                        //TopAppBarSection()
                         Spacer(modifier = Modifier.height(16.dp))
-                        HeaderSection()
+                        HeaderSection(onClick = {})
                         Spacer(modifier = Modifier.height(24.dp))
                         BannerSection()
                     }
@@ -187,7 +189,6 @@ fun HomeContent(
                 CategorySection(categoryItems = categories)
                 Divider32()
             }
-
             item {
                 RecommendationSection(resource = uiState.recommendedMenus)
                 Divider32()
@@ -226,72 +227,77 @@ fun TopAppBarSection(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 24.dp)
+            .padding(vertical = 12.dp, horizontal = 24.dp),
+        contentAlignment = Alignment.Center
     ) {
-        // Kiri (profile + home)
+
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.align(Alignment.CenterStart)
+            modifier = Modifier.align(Alignment.CenterStart),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
+            CommonImage(
+                imageUrl = "https://avatar.iran.liara.run/public",
+                name = "",
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(Color.Gray)
             )
-        }
 
-        // Title (center)
-        Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .clip(RoundedCornerShape(20.dp))
-                .border(
-                    width = 1.dp,
-                    color = Neutral10.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(20.dp)
-                )
-                .padding(horizontal = 20.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Rafiq's Home",
-                style = LocalCustomTypography.current.h6Bold,
-                color = Neutral10
-            )
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowDown,
-                contentDescription = "Dropdown",
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
-            )
-        }
+            Row (modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center){
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .border(
+                            width = 1.dp,
+                            color = Neutral10.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Rafiq's Home",
+                        style = LocalCustomTypography.current.h6Bold,
+                        color = Neutral10
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Dropdown",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
 
-        // Kanan (notif button)
-        IconButton(
-            onClick = {},
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .size(44.dp)
-                .border(
-                    width = 1.dp,
-                    color = Neutral10.copy(alpha = 0.2f),
-                    shape = CircleShape
+            // Kanan (notif button)
+            IconButton(
+                onClick = {},
+                modifier = Modifier
+                    .size(44.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Neutral10.copy(alpha = 0.2f),
+                        shape = CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notifications",
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
-        ) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notifications",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
-            )
+            }
         }
     }
 }
 
 // --- Header Section ---
 @Composable
-fun HeaderSection() {
+fun HeaderSection(
+    onClick: () -> Unit
+) {
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 24.dp)) {
@@ -314,6 +320,7 @@ fun HeaderSection() {
         }
         Spacer(modifier = Modifier.height(16.dp))
         SearchBarHomeSection(
+            modifier = Modifier.clickable(onClick = onClick),
             value= "",
             onValueChange = {}
         )
@@ -433,7 +440,11 @@ fun RecommendationSection(
 
     when {
         resource.isLoading -> {
-            LoadingRowState()
+            ShimmerHorizontalTitleButtonSection {
+                items(4) {
+                    ShimmerFoodGridCard()
+                }
+            }
         }
 
         resource.errorMessage != null || items.isEmpty() -> {
@@ -471,7 +482,40 @@ fun RestaurantNearby(
 
     when{
         resource.isLoading ->{
-            LoadingRowState()
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f).clip(RoundedCornerShape(20.dp))
+                            .height(14.dp)
+                            .shimmerLoadingAnimation()
+                    )
+
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f).clip(RoundedCornerShape(20.dp))
+                            .height(14.dp)
+                            .shimmerLoadingAnimation()
+                    )
+                }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Neutral20
+                    ),
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .shimmerLoadingAnimation()
+                    )
+                }
+            }
         }
         resource.errorMessage!=null || items.isEmpty() -> {
             ErrorListState("Resto Nearby you") { }
@@ -500,7 +544,11 @@ fun RecommendationRestaurant(
 
     when{
         resource.isLoading -> {
-            LoadingRowState()
+            ShimmerHorizontalTitleButtonSection {
+                items(4){
+                    ShimmerRestaurantGridCard()
+                }
+            }
         }
 
         resource.errorMessage!=null || items.isEmpty() -> {
@@ -535,12 +583,17 @@ fun TodayDeal(
     val items = resource.data.orEmpty()
     when{
         resource.isLoading -> {
-            LoadingRowState()
+            ShimmerHorizontalTitleButtonSection {
+                items(4){
+                    ShimmerVoucherLargeCard()
+                }
+            }
         }
 
         resource.errorMessage!=null || items.isEmpty() -> {
             ErrorListState("Today's deals") { }
         }
+
         else ->{
             Column(modifier = Modifier
                 .fillMaxWidth()
@@ -569,7 +622,7 @@ fun SuggestedMenu(
 
     when {
         resource.isLoading -> {
-            LoadingRowState()
+            ShimmerGridMenuListPlaceholder()
         }
 
         resource.errorMessage != null || items.isEmpty() -> {

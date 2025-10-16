@@ -2,9 +2,11 @@ package com.example.core.data.source.remote.datasource
 
 import android.content.Context
 import android.util.Log
+import com.example.core.data.model.CategoryDto
 import com.example.core.data.model.MenuDto
 import com.example.core.data.model.RestaurantDto
 import com.example.core.data.model.VoucherDto
+import com.example.core.data.source.remote.api.CategoryApi
 import com.example.core.data.source.remote.api.MenuApi
 import com.example.core.data.source.remote.api.RestaurantApi
 import com.example.core.data.source.remote.api.VoucherApi
@@ -85,4 +87,12 @@ class DummyMenuApi(context: Context, gson: Gson) :
 
     override suspend fun getRecommendedMenus(): ApiResponse<List<MenuDto>> = loadData()
     override suspend fun getSuggestedMenus(): ApiResponse<List<MenuDto>> = loadData()
+}
+
+class DummyCategoryApi(context: Context, gson: Gson) :
+    BaseDummyApi<CategoryDto>(context, gson, "category.json"), CategoryApi {
+
+    override val apiResponseType: Type = object : TypeToken<ApiResponse<List<CategoryDto>>>() {}.type
+    override suspend fun getAllCategories(): ApiResponse<List<CategoryDto>> = loadData()
+
 }

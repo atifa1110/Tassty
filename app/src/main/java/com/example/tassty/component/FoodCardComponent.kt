@@ -103,7 +103,6 @@ fun FoodNameGridCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodLargeGridCard(
     modifier: Modifier = Modifier,
@@ -131,7 +130,6 @@ fun FoodLargeGridCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodListCard(
     menu: MenuUiModel,

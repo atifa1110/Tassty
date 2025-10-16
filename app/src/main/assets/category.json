@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "code": 200,
+    "status": "success",
+    "message": "OK",
+    "traceId": "7b1d06b2-221f-4ff4-9e15-7c3c4e8d0f4a"
+  },
+  "data": [
+    {
+      "id": "category001",
+      "name": "Martabak",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"
+    },
+    {
+      "id": "category002",
+      "name": "Bakso & Soto",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"
+    },
+    {
+      "id": "category003",
+      "name": "Bakery",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/ea0db4c2-79b8-4a69-8b00-ea634e7ff3c9_cuisine-roti-banner.png?auto=format"
+    },
+    {
+      "id": "category004",
+      "name": "Chinese",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/e152cfa1-1813-4be7-aebb-62b84cd0d38f_cuisine-chinese-banner.png?auto=format"
+    },
+    {
+      "id": "category005",
+      "name": "Western",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/00847dea-ca14-4ecc-8cdf-f97a8d221d53_cuisine-burger_sandwich_steak-banner.png?auto=format"
+    },
+    {
+      "id": "category006",
+      "name": "Fast Food",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format"
+    },
+    {
+      "id": "category007",
+      "name": "Martabak",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"
+    },
+    {
+      "id": "category008",
+      "name": "Bakso & Soto",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"
+    },
+    {
+      "id": "category009",
+      "name": "Bakery",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/ea0db4c2-79b8-4a69-8b00-ea634e7ff3c9_cuisine-roti-banner.png?auto=format"
+    },
+    {
+      "id": "category010",
+      "name": "Chinese",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/e152cfa1-1813-4be7-aebb-62b84cd0d38f_cuisine-chinese-banner.png?auto=format"
+    },
+    {
+      "id": "category011",
+      "name": "Western",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/00847dea-ca14-4ecc-8cdf-f97a8d221d53_cuisine-burger_sandwich_steak-banner.png?auto=format"
+    },
+    {
+      "id": "category012",
+      "name": "Fast Food",
+      "image_url": "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format"
+    }
+  ]
+}

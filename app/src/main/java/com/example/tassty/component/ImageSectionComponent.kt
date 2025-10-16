@@ -107,50 +107,6 @@ fun <T : DisplayStatus> StatusItemImage(
     )
 }
 
-
-//@Composable
-//fun ItemImage(
-//    modifier : Modifier = Modifier,
-//    imageUrl: String,
-//    name: String,
-//    status: RestaurantStatus,
-//    placeholder: ColorPainter = ColorPainter(Color.LightGray)
-//){
-//    val context = LocalContext.current
-//    val imageLoader = rememberImageLoader()
-//    val imageRequest = ImageRequest.Builder(context)
-//        .data(imageUrl)
-//        .diskCacheKey("image_${hashUrl(imageUrl)}")    // cache unik per kategori
-//        .memoryCacheKey("image_${hashUrl(imageUrl)}")  // supaya gak reload kalau sama
-//        .diskCachePolicy(CachePolicy.ENABLED)    // simpan ke disk cache
-//        .memoryCachePolicy(CachePolicy.ENABLED)  // simpan ke mem cache
-//        .crossfade(true)
-//        .size(256)// masih bisa override per gambar
-//        .build()
-//
-//    // 🔹 ColorMatrix buat grayscale
-//    val grayscaleFilter = ColorFilter.colorMatrix(
-//        ColorMatrix().apply { setToSaturation(0f) }
-//    )
-//
-//    val filter = when (status) {
-//        RestaurantStatus.OPEN -> null
-//        RestaurantStatus.CLOSED -> grayscaleFilter
-//        RestaurantStatus.OFFDAY -> grayscaleFilter
-//    }
-//
-//    AsyncImage(
-//        model = imageRequest,
-//        imageLoader = imageLoader,
-//        contentDescription = name,
-//        contentScale = ContentScale.Crop,
-//        modifier = modifier,
-//        placeholder = placeholder,
-//        error = placeholder,
-//        colorFilter = filter
-//    )
-//}
-
 @Composable
 fun CommonImage(
     modifier : Modifier = Modifier,

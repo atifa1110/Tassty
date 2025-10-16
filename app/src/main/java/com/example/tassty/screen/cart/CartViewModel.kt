@@ -1,18 +1,16 @@
 package com.example.tassty.screen.cart
 
 import androidx.lifecycle.ViewModel
+import com.example.core.domain.model.DiscountType
+import com.example.core.domain.model.VoucherType
 import com.example.tassty.addresses
 import com.example.tassty.carts
 import com.example.tassty.filterVouchersByRestaurant
-import com.example.tassty.getSampleVouchers
 import com.example.tassty.model.Cart
-import com.example.tassty.model.DiscountType
 import com.example.tassty.model.Voucher
-import com.example.tassty.model.VoucherType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 

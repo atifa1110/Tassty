@@ -145,7 +145,7 @@ fun TextComponentNoIcon(
 @Composable
 fun SearchBarHomeSection(
     modifier: Modifier = Modifier,
-    value: String,
+    value: String="",
     onValueChange: (String) -> Unit,
     placeholder: String = stringResource(R.string.search_delicacies),
 ) {
@@ -160,30 +160,26 @@ fun SearchBarHomeSection(
         colors = CardDefaults.cardColors(
             containerColor = Neutral10.copy(alpha = 0.10f)
         ),
-        // Elevation rendah untuk shadow ringan (PENTING untuk performa)
         elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
     ) {
         TextField(
             value = value,
+            enabled = false,
             onValueChange = { onValueChange(it) },
             placeholder = {
                 Text(
                     text = placeholder,
-                    style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = Neutral10.copy(alpha = 0.50f)
+                    style = LocalCustomTypography.current.bodyMediumRegular
                 )
             },
             textStyle = LocalCustomTypography.current.bodyMediumRegular,
-            // Ikon kaca pembesar (di sebelah kanan)
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "",
-                    tint = Neutral10
+                    contentDescription = ""
                 )
             },
             modifier = Modifier.fillMaxWidth(),
-            // Menonaktifkan indikator/border default TextField
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Neutral10.copy(alpha = 0.10f),
                 unfocusedContainerColor = Neutral10.copy(alpha = 0.10f),
@@ -191,7 +187,11 @@ fun SearchBarHomeSection(
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
                 unfocusedTextColor = Neutral10,
-                focusedTextColor = Neutral10
+                focusedTextColor = Neutral10,
+                disabledTextColor = Neutral10.copy(alpha = 0.50f),
+                disabledPlaceholderColor = Neutral10.copy(alpha = 0.50f),
+                disabledTrailingIconColor =  Neutral10,
+                disabledContainerColor = Neutral10.copy(alpha = 0.10f)
             ),
         )
     }

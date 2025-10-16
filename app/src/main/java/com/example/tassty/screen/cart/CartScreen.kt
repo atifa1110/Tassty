@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.core.domain.model.DiscountType
 import com.example.tassty.R
 import com.example.tassty.carts
 import com.example.tassty.component.ButtonComponent
@@ -38,7 +39,6 @@ import com.example.tassty.component.SelectPaymentCard
 import com.example.tassty.component.TextButton
 import com.example.tassty.component.cartVerticalListBlock
 import com.example.tassty.model.Cart
-import com.example.tassty.model.DiscountType
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100

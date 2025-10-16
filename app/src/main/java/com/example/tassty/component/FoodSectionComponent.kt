@@ -176,7 +176,8 @@ fun FoodTinyGridCardContent(
         Text(
             text = menu.menu.name,
             style = LocalCustomTypography.current.h7Bold,
-            color = Neutral100
+            color = Neutral100,
+            maxLines = 1
         )
 
         FoodPriceTinyText(
