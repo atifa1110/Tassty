@@ -11,14 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.tassty.categoriesItem
-import com.example.tassty.model.Category
+import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange50
+import com.example.core.domain.model.Category
 
 @Composable
 fun CategoryCard(
-    category: Category
+    category: CategoryUiModel
 ) {
     Box(
         modifier = Modifier
@@ -40,6 +40,6 @@ fun CategoryCard(
 @Composable
 fun PreviewCategoryScreen() {
     CategoryCard(
-        category = categoriesItem
+        category = CategoryUiModel(category = Category("","",""))
     )
 }

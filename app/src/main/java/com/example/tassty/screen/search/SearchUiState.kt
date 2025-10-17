@@ -1,8 +1,8 @@
 package com.example.tassty.screen.search
 
+import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
-import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.FilterState
 
@@ -54,7 +54,7 @@ data class DataState(
     // Initial Content
     val history: Resource<List<ChipFilterOption>> = Resource(emptyList()),
     val popularSearches: Resource<List<ChipFilterOption>> = Resource(emptyList()),
-    val categories: Resource<List<Category>> = Resource(emptyList()),
+    val categories: Resource<List<CategoryUiModel>> = Resource(emptyList()),
     val rest : Resource<List<RestaurantUiModel>> = Resource(emptyList()),
     val menus: Resource<List<MenuUiModel>> = Resource(emptyList()),
 

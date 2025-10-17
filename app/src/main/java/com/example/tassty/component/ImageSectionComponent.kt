@@ -37,11 +37,11 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.core.domain.model.DisplayStatus
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.hashUrl
-import com.example.tassty.model.Category
 import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
@@ -140,11 +140,11 @@ fun CommonImage(
 
 @Composable
 fun CategoryImageCircle(
-    category: Category
+    category: CategoryUiModel
 ){
     CommonImage(
-        imageUrl = category.imageUrl,
-        name = category.name,
+        imageUrl = category.category.imageUrl,
+        name = category.category.name,
         modifier = Modifier.size(24.dp)
             .clip(CircleShape)
     )

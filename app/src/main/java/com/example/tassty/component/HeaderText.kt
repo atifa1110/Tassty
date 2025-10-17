@@ -27,9 +27,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.R
 import com.example.tassty.categoriesItem
-import com.example.tassty.model.Category
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -101,7 +101,7 @@ fun HeaderWithOverlap(
 @Composable
 fun CategoryFoundHeader(
     searchQuery: String,
-    filteredCategories: List<Category>
+    filteredCategories: List<CategoryUiModel>
 ) {
     val headerText = if (searchQuery.isBlank()) {
         "Categories"

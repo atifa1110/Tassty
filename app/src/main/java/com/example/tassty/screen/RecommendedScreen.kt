@@ -81,7 +81,7 @@ fun SearchHeader(){
                 onValueChange = {}
             )
         }
-        CategorySection(categoryItems = categories)
+        //CategorySection(categoryItems = categories)
     }
 }
 

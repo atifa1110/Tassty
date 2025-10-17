@@ -34,10 +34,10 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
+import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.component.CategoryFoundHeader
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodCategoryCard
-import com.example.tassty.model.Category
 
 @Composable
 fun SetupCuisineRoute(
@@ -65,7 +65,7 @@ fun SetupCuisineScreen(
     uiState: SetupCuisineUiState,
     searchText: String,
     onSearchText : (String) -> Unit,
-    onSelectedCategory: (Int) -> Unit,
+    onSelectedCategory: (String) -> Unit,
     onNextClick: () -> Unit,
     onSkipClick: () -> Unit,
     onBackClick: () -> Unit
@@ -160,9 +160,9 @@ fun SetupCuisineScreen(
 @Composable
 fun CategoriesContent(
     searchText: String,
-    selectedCategoryIds: List<Int>,
-    filteredCategories: List<Category>,
-    onSelectedCategory: (Int) -> Unit
+    selectedCategoryIds: List<String>,
+    filteredCategories: List<CategoryUiModel>,
+    onSelectedCategory: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
@@ -187,9 +187,9 @@ fun CategoriesContent(
                 ) {
                     rowItems.forEachIndexed { itemIndexInRow, item ->
                         FoodCategoryCard(
-                            isSelected = selectedCategoryIds.contains(item.id),
+                            isSelected = selectedCategoryIds.contains(item.category.id),
                             category = item,
-                            onCardClick = { onSelectedCategory(item.id) }
+                            onCardClick = { onSelectedCategory(item.category.id) }
                         )
                     }
                 }
@@ -204,7 +204,7 @@ fun PreviewSetupCuisineScreen() {
     SetupCuisineScreen(
         uiState = SetupCuisineUiState(
             categories = categories,
-            selectedCategoryIds = listOf(1,2),
+            selectedCategoryIds = listOf("1","2"),
             currentSearchQuery = "bakery",
             filteredCategories = categories
         ),

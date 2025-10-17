@@ -4,9 +4,9 @@ package com.example.tassty.screen.detailrestaurant
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
 import com.example.core.ui.model.RestaurantStatusResult
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.model.Cart
 import com.example.tassty.model.Review
-import com.example.tassty.model.Voucher
 import com.example.tassty.screen.search.Resource
 
 // --- 1. UiState (PERSISTENT DATA) ---
@@ -17,7 +17,7 @@ data class DetailRestaurantUiState(
     val bestSellersResource: Resource<List<MenuUiModel>> = Resource(isLoading = true),
     val recommendedMenusResource: Resource<List<MenuUiModel>> = Resource(isLoading = true),
     val reviewsResource: Resource<List<Review>> = Resource(isLoading = true),
-    val voucherResource: Resource<List<Voucher>> = Resource(isLoading = true),
+    val voucherResource: Resource<List<VoucherUiModel>> = Resource(isLoading = true),
 
     // Derived Status (only available if restaurant is success)
     val status: RestaurantStatusResult? = null,

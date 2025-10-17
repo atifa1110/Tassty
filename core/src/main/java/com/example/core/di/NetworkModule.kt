@@ -1,9 +1,11 @@
 package com.example.core.di
 
 import android.content.Context
+import com.example.core.data.source.remote.api.CategoryApi
 import com.example.core.data.source.remote.api.MenuApi
 import com.example.core.data.source.remote.api.RestaurantApi
 import com.example.core.data.source.remote.api.VoucherApi
+import com.example.core.data.source.remote.datasource.DummyCategoryApi
 import com.example.core.data.source.remote.datasource.DummyMenuApi
 import com.example.core.data.source.remote.datasource.DummyRestaurantApi
 import com.example.core.data.source.remote.datasource.DummyVoucherApi
@@ -51,5 +53,14 @@ object ApiModule {
         gson: Gson
     ): VoucherApi{
         return DummyVoucherApi(context, gson)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryApi(
+        @ApplicationContext context: Context,
+        gson: Gson
+    ): CategoryApi{
+        return DummyCategoryApi(context, gson)
     }
 }

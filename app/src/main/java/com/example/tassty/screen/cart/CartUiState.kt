@@ -1,8 +1,8 @@
 package com.example.tassty.screen.cart
 
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.model.Cart
 import com.example.tassty.model.UserAddress
-import com.example.tassty.model.Voucher
 
 data class CartState(
     // Data Keranjang & Restoran
@@ -18,8 +18,8 @@ data class CartState(
     val selectedAddress: UserAddress? = null,
     val availableAddresses: List<UserAddress> = emptyList(),
 
-    val selectedVoucher: Voucher? = null,
-    val availableVouchers: List<Voucher> = emptyList(),
+    val selectedVoucher: VoucherUiModel? = null,
+    val availableVouchers: List<VoucherUiModel> = emptyList(),
 
     val cartItemToRemove: Cart? = null,
 

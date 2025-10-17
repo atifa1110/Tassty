@@ -35,13 +35,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
 import com.example.tassty.cuisineOptions
 import com.example.tassty.discountOptions
 import com.example.tassty.model.Cart
 import com.example.tassty.model.CollectionUiItem
 import com.example.tassty.model.UserAddress
-import com.example.tassty.model.Voucher
 import com.example.tassty.modesOptions
 import com.example.tassty.restoRatingsOptions
 import com.example.tassty.rupiahPriceRanges
@@ -742,7 +742,7 @@ fun CartDeliveryLocationContent(
 
 @Composable
 fun CartPromoContent(
-    voucher: List<Voucher>,
+    voucher: List<VoucherUiModel>,
     onVoucherSelectionChanged: (String) -> Unit,
     onApplyVoucherClicked: () -> Unit,
     onDismiss: () -> Unit
@@ -780,10 +780,10 @@ fun CartPromoContent(
             itemCount = voucher.size,
             headerText = "Vouchers"
         ) {
-            items(items=voucher, key = {it.id}) { item ->
+            items(items=voucher, key = {it.voucher.id}) { item ->
                 VoucherSelectorCard (
                     voucher = item,
-                    onCheckedChange = { onVoucherSelectionChanged(item.id) }
+                    onCheckedChange = { onVoucherSelectionChanged(item.voucher.id) }
                 )
             }
         }

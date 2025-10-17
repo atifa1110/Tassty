@@ -48,7 +48,7 @@ class SetupCuisineViewModel : ViewModel() {
             .onEach { query ->
                 // 1. Lakukan filtering
                 val filtered = uiState.categories.filter {
-                    it.name.contains(query, ignoreCase = true)
+                    it.category.name.contains(query, ignoreCase = true)
                 }
 
                 // 2. Update UIState dengan hasil filter dan hilangkan status loading
@@ -75,7 +75,7 @@ class SetupCuisineViewModel : ViewModel() {
         }
     }
 
-    fun toggleCategorySelection(categoryId: Int) {
+    fun toggleCategorySelection(categoryId: String) {
         val current = uiState.selectedCategoryIds.toMutableList()
         if (current.contains(categoryId)) {
             current.remove(categoryId)

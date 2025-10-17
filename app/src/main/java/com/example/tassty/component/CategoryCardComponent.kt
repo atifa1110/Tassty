@@ -14,8 +14,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.categories
-import com.example.tassty.model.Category
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
@@ -25,7 +25,7 @@ import com.example.tassty.ui.theme.Orange500
 @Composable
 fun FoodCategoryCard(
     isSelected: Boolean,
-    category: Category,
+    category: CategoryUiModel,
     onCardClick : () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -51,7 +51,7 @@ fun FoodCategoryCard(
                     .padding(10.dp)
             ) {
                 Text(
-                    text = category.name,
+                    text = category.category.name,
                     style = LocalCustomTypography.current.h6Bold,
                     color = Neutral100
                 )
@@ -62,7 +62,7 @@ fun FoodCategoryCard(
                 .offset(x = 10.dp, y = (-10).dp)
             ) {
                 CommonImage(
-                    imageUrl = category.imageUrl,
+                    imageUrl = category.category.imageUrl,
                     name = "Category Image",
                     modifier = Modifier.size(86.dp).clip(CircleShape)
                 )

@@ -41,6 +41,7 @@ import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
 import com.example.core.ui.model.RestaurantStatusResult
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.CartAddItemButton
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DetailScheduleContent
@@ -66,7 +67,6 @@ import com.example.tassty.component.menuItemCountVerticalListBlock
 import com.example.tassty.getSampleVouchers
 import com.example.tassty.menus
 import com.example.tassty.model.Review
-import com.example.tassty.model.Voucher
 import com.example.tassty.restaurantDetailItem
 import com.example.tassty.reviews
 import com.example.tassty.screen.DetailSearchScreen
@@ -242,7 +242,7 @@ fun DetailRestaurantContent(
 @Composable
 fun HeaderWithVoucherSection(
     restaurant: RestaurantDetailUiModel?,
-    voucherResource: Resource<List<Voucher>>,
+    voucherResource: Resource<List<VoucherUiModel>>,
     status: RestaurantStatusResult,
     isFavorite: Boolean,
     operationalHour: String,
@@ -386,7 +386,7 @@ fun HeaderWithVoucherSection(
 
 @Composable
 fun VoucherSection(
-    resource: Resource<List<Voucher>>,
+    resource: Resource<List<VoucherUiModel>>,
     status: RestaurantStatus
 ){
     val voucher = resource.data.orEmpty()
@@ -405,7 +405,7 @@ fun VoucherSection(
                 title = "Vouchers",
                 onClick = {}
             ) {
-                items(voucher, key = {it.id}) { item ->
+                items(voucher, key = {it.voucher.id}) { item ->
                     VoucherCard(
                         voucher = item,
                         status = status

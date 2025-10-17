@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
-import com.example.tassty.categories
 import com.example.tassty.component.CategoryCard
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodGridCard
@@ -62,7 +61,6 @@ import com.example.tassty.component.RestaurantGridCard
 import com.example.tassty.component.SearchBarHomeSection
 import com.example.tassty.component.VoucherLargeCard
 import com.example.tassty.menus
-import com.example.tassty.model.Category
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -85,6 +83,7 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
+import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerGridMenuListPlaceholder
@@ -186,7 +185,7 @@ fun HomeContent(
             }
             item {
                 Spacer(Modifier.height(32.dp))
-                CategorySection(categoryItems = categories)
+                CategorySection(resource = uiState.allCategories)
                 Divider32()
             }
             item {
@@ -419,15 +418,38 @@ fun BannerSection() {
 
 @Composable
 fun CategorySection(
-    categoryItems : List<Category>
+    resource: Resource<List<CategoryUiModel>>
 ){
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items (items = categoryItems, key = { it.id }) { category ->
-            CategoryCard(category = category)
+    val items = resource.data.orEmpty()
+    when{
+        resource.isLoading -> {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(8){
+                    Spacer(modifier = Modifier.size(50.dp).clip(CircleShape)
+                        .shimmerLoadingAnimation()
+                    )
+                }
+            }
+        }
+
+        resource.errorMessage!= null || items.isEmpty() -> {
+            ErrorListState("") { }
+        }
+
+        else ->{
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items (items = items, key = { it.category.id }) { category ->
+                    CategoryCard(category = category)
+                }
+            }
         }
     }
 }
@@ -647,10 +669,12 @@ fun SuggestedMenu(
 fun PreviewHomeScreen() {
     HomeContent(
         uiState = HomeUiState(
+            allCategories = Resource(data = emptyList()),
             recommendedRestaurants = Resource(data = restaurantUiModel),
-            nearbyRestaurants = Resource(data=restaurantUiModel),
+            nearbyRestaurants = Resource(data= restaurantUiModel),
             recommendedMenus = Resource(data = menus),
-            suggestedMenus = Resource(data = menus)
+            suggestedMenus = Resource(data = menus),
+            todayVouchers = Resource(data = emptyList())
         ),
         onRefresh = {}
     )

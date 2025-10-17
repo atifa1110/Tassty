@@ -35,10 +35,6 @@ import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
-import com.example.tassty.getSampleVouchers
-import com.example.tassty.model.Voucher
-import com.example.tassty.toCleanRupiahFormat
-import com.example.tassty.toUiDateString
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -53,7 +49,7 @@ import com.example.tassty.voucherItem
 
 @Composable
 fun VoucherCard(
-    voucher: Voucher,
+    voucher: VoucherUiModel,
     status: RestaurantStatus
 ) {
     Card(
@@ -75,11 +71,12 @@ fun VoucherCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DiscountFoodContent(title = voucher.title, description = voucher.description)
+                DiscountFoodContent(title = voucher.voucher.title,
+                    description = voucher.voucher.description)
                 HorizontalDivider(color = Neutral30)
                 DateAndMinTransactionContent(
-                    date = voucher.expiryDate.toUiDateString(),
-                    minTransaction = voucher.minOrderValue
+                    date = voucher.expireLabel,
+                    minTransaction = voucher.formatMinOrder
                 )
             }
         }
@@ -88,7 +85,7 @@ fun VoucherCard(
 
 @Composable
 fun VoucherSelectorCard(
-    voucher : Voucher,
+    voucher : VoucherUiModel,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
@@ -110,13 +107,13 @@ fun VoucherSelectorCard(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DiscountFoodContent(
-                    title = voucher.title,
-                    description = voucher.description
+                    title = voucher.voucher.title,
+                    description = voucher.voucher.description
                 )
                 HorizontalDivider(color =  if(voucher.isSelected) Neutral40 else Neutral30)
                 DateAndMinTransactionContent(
-                    date = voucher.expiryDate.toUiDateString(),
-                    minTransaction = voucher.minOrderValue
+                    date = voucher.expireLabel,
+                    minTransaction = voucher.formatMinOrder
                 )
             }
             Spacer(Modifier.width(12.dp))
@@ -142,7 +139,7 @@ fun VoucherLargeCard(
     voucher : VoucherUiModel
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.width(320.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Neutral10
@@ -163,7 +160,7 @@ fun VoucherLargeCard(
             }
 
             Row(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -175,12 +172,13 @@ fun VoucherLargeCard(
                     Text(
                         text = voucher.voucher.title,
                         style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
+                        color = Neutral100,
+                        maxLines = 1
                     )
 
                     DateAndMinTransactionContent(
                         date = voucher.expireLabel,
-                        minTransaction = voucher.voucher.minOrderValue
+                        minTransaction = voucher.formatMinOrder
                     )
                 }
             }
@@ -207,7 +205,7 @@ fun VoucherExtraLargeCard() {
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .aspectRatio(3f / 1f)
+                       // .aspectRatio(3f / 1f)
                 )
             }
 
@@ -230,7 +228,7 @@ fun VoucherExtraLargeCard() {
 @Composable
 fun DateAndMinTransactionContent(
     date: String = "12 Oct 2024",
-    minTransaction : Int = 0
+    minTransaction : String = "Rp0"
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -276,7 +274,7 @@ fun DateAndMinTransactionContent(
                 color = Neutral70
             )
             Text(
-                text = minTransaction.toCleanRupiahFormat(),
+                text = minTransaction,
                 style = LocalCustomTypography.current.h6Bold,
                 color = Neutral100
             )
@@ -334,11 +332,11 @@ fun PreviewVoucherScreen() {
         modifier = Modifier.fillMaxWidth().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        VoucherCard(voucher = getSampleVouchers()[0], status = RestaurantStatus.CLOSED)
+        VoucherCard(voucher = voucherItem, status = RestaurantStatus.CLOSED)
         VoucherLargeCard(voucher = voucherItem)
         VoucherExtraLargeCard()
         VoucherSelectorCard(
-            voucher = getSampleVouchers()[0] ,
+            voucher = voucherItem ,
             onCheckedChange = {})
     }
 }

@@ -38,11 +38,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.domain.model.Category
+import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.menus
 import com.example.tassty.model.Cart
-import com.example.tassty.model.Category
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
@@ -438,9 +439,9 @@ fun GridMenuListSection(
 @Composable
 fun FoodCategoryGrid (
     searchQuery: String,
-    filteredCategories: List<Category>,
-    selectedCategoryIds: List<Int>,
-    onSelectedCategory: (Int) -> Unit,
+    filteredCategories: List<CategoryUiModel>,
+    selectedCategoryIds: List<String>,
+    onSelectedCategory: (String) -> Unit,
     modifier : Modifier = Modifier
 ){
     Column (
@@ -459,11 +460,11 @@ fun FoodCategoryGrid (
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(filteredCategories) { category ->
-                val isSelected = selectedCategoryIds.contains(category.id)
+                val isSelected = selectedCategoryIds.contains(category.category.id)
                 FoodCategoryCard(
                     isSelected = isSelected,
                     category = category,
-                    onCardClick = { onSelectedCategory(category.id) }
+                    onCardClick = { onSelectedCategory(category.category.id) }
                 )
             }
         }
@@ -483,11 +484,11 @@ fun PreviewList(){
         FoodCategoryGrid(
             searchQuery = "",
             filteredCategories = listOf(
-                Category(1,"","Salad"),
-                Category(2,"","Burger"),
-                Category(3,"","Pizza"),
+                CategoryUiModel(Category("1","","Salad")),
+                CategoryUiModel(Category("2","","Burger")),
+                CategoryUiModel(Category("3","","Pizza")),
             ),
-            selectedCategoryIds = arrayListOf(1,2,3),
+            selectedCategoryIds = arrayListOf("1","2","3"),
             onSelectedCategory = {}
         )
     }

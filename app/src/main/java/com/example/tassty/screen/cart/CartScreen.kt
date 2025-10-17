@@ -230,11 +230,11 @@ fun CartScreen(
                     Divider32()
                     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                         OrderSummaryCard(
-                            isPercentageDiscount = uiState.selectedVoucher?.discountType == DiscountType.PERCENTAGE,
+                            isPercentageDiscount = uiState.selectedVoucher?.voucher?.discountType == DiscountType.PERCENTAGE,
                             totalPrice = uiState.subtotal,
                             deliveryFee = uiState.deliveryFee,
                             voucherDiscount = uiState.voucherDiscount,
-                            voucherDiscountPercent = uiState.selectedVoucher?.discountValue,
+                            //voucherDiscountPercent = uiState.selectedVoucher?.vdiscountValue,
                             totalOrder = uiState.totalOrder
                         )
                     }

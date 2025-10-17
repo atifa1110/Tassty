@@ -28,12 +28,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.domain.utils.toCleanRupiahFormat
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
 import com.example.tassty.carts
 import com.example.tassty.model.Cart
 import com.example.tassty.model.UserAddress
-import com.example.tassty.model.Voucher
-import com.example.tassty.toCleanRupiahFormat
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -179,7 +179,7 @@ fun EmptyLocationCard(
 
 @Composable
 fun SelectPaymentCard(
-    voucher: Voucher? = null,
+    voucher: VoucherUiModel? = null,
     onClick: () -> Unit
 ){
     if(voucher!=null){
@@ -191,7 +191,7 @@ fun SelectPaymentCard(
 }
 @Composable
 fun VoucherApplyCard(
-    voucher: Voucher,
+    voucher: VoucherUiModel,
     onClick: () -> Unit
 ){
     Card(
@@ -214,12 +214,12 @@ fun VoucherApplyCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = voucher.title,
+                    text = voucher.voucher.title,
                     style = LocalCustomTypography.current.h6Bold,
                     color = Neutral100
                 )
                 Text(
-                    text = voucher.description,
+                    text = voucher.voucher.description,
                     style = LocalCustomTypography.current.bodySmallMedium,
                     color = Neutral70
                 )

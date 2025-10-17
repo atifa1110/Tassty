@@ -1,8 +1,10 @@
 package com.example.core.di
 
+import com.example.core.data.repository.CategoryRepositoryImpl
 import com.example.core.data.repository.MenuRepositoryImpl
 import com.example.core.data.repository.RestaurantRepositoryImpl
 import com.example.core.data.repository.VoucherRepositoryImpl
+import com.example.core.domain.repository.CategoryRepository
 import com.example.core.domain.repository.MenuRepository
 import com.example.core.domain.repository.RestaurantRepository
 import com.example.core.domain.repository.VoucherRepository
@@ -34,6 +36,14 @@ abstract class RepositoryModule {
     abstract fun bindVoucherRepository(
         voucherRepositoryImpl: VoucherRepositoryImpl
     ): VoucherRepository
+
+
+    @Binds
+    @Singleton
+    abstract fun bindCategoryRepository(
+        categoryRepositoryImpl: CategoryRepositoryImpl
+    ): CategoryRepository
+
 
 
 }

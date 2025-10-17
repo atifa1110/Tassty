@@ -1,6 +1,7 @@
 package com.example.core.ui.model
 
 import com.example.core.domain.model.Voucher
+import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.core.domain.utils.toDisplayFormat
 
 data class VoucherUiModel(
@@ -13,4 +14,7 @@ data class VoucherUiModel(
 
     val startLabel : String
         get() = voucher.startDate.toDisplayFormat()
+
+    val formatMinOrder : String
+        get() = voucher.minOrderValue.toCleanRupiahFormat()
 }

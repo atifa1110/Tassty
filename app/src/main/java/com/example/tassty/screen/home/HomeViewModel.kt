@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.ResultWrapper
+import com.example.core.domain.usecase.GetAllCategoriesUseCase
 import com.example.core.domain.usecase.GetNearbyRestaurantsUseCase
 import com.example.core.domain.usecase.GetRecommendedMenusUseCase
 import com.example.core.domain.usecase.GetRecommendedRestaurantsUseCase
@@ -28,6 +29,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
     private val getRecommendedRestaurantsUseCase: GetRecommendedRestaurantsUseCase,
     private val getNearbyRestaurantsUseCase: GetNearbyRestaurantsUseCase,
     private val getRecommendedMenusUseCase: GetRecommendedMenusUseCase,
@@ -52,6 +54,7 @@ class HomeViewModel @Inject constructor(
 
             _homeState.update {
                 it.copy(
+                    allCategories = Resource(isLoading = true),
                     recommendedRestaurants = Resource(isLoading = true),
                     nearbyRestaurants = Resource(isLoading = true),
                     recommendedMenus = Resource(isLoading = true),
@@ -62,49 +65,24 @@ class HomeViewModel @Inject constructor(
             }
             try {
                 supervisorScope {
-                    Log.d("Diana", "SupervisorScope started")
-
-                    val recommendedDeferred = async {
-                        Log.d("Diana", "Calling getRecommendedRestaurantsUseCase")
-                        getRecommendedRestaurantsUseCase().also {
-                            Log.d("Diana", "getRecommendedRestaurantsUseCase finished: $it")
-                        }
-                    }
-
+                    val categoriesDeferred = async { getAllCategoriesUseCase() }
+                    val recommendedDeferred = async { getRecommendedRestaurantsUseCase() }
                     val nearbyDeferred = async { getNearbyRestaurantsUseCase() }
+                    val recommendedMenusDeferred = async { getRecommendedMenusUseCase() }
+                    val suggestedMenusDeferred = async { getSuggestedMenusUseCase() }
+                    val vouchersDeferred = async { getTodayVouchersUseCase() }
 
-                    val recommendedMenusDeferred = async {
-                        Log.d("Diana", "Calling getRecommendedMenusUseCase")
-                        getRecommendedMenusUseCase().also {
-                            Log.d("Diana", "getRecommendedMenusUseCase finished: $it")
-                        }
-                    }
-
-                    val suggestedMenusDeferred = async {
-                        Log.d("Diana", "Calling getSuggestedMenusUseCase")
-                        getSuggestedMenusUseCase().also {
-                            Log.d("Diana", "getSuggestedMenusUseCase finished: $it")
-                        }
-                    }
-
-                    val vouchersDeferred = async {
-                        Log.d("Diana", "Calling getTodayVouchersUseCase")
-                        getTodayVouchersUseCase().also {
-                            Log.d("Diana", "getTodayVouchersUseCase finished: $it")
-                        }
-                    }
-
+                    val categoriesResult = categoriesDeferred.await()
                     val recommendedResult = recommendedDeferred.await()
                     val nearbyResult = nearbyDeferred.await()
                     val recMenusResult = recommendedMenusDeferred.await()
                     val sugMenusResult = suggestedMenusDeferred.await()
                     val vouchersResult = vouchersDeferred.await()
 
-                    Log.d("Diana", "All await finished, performing mapping...")
-
-                    // Lakukan mapping dan update state di Dispatchers.Default
+                    // Do mapping dan update state in Dispatchers.Default
                     val finalStateData = withContext(Dispatchers.Default) {
                         HomeUiState(
+                            allCategories = categoriesResult.toResource { it.toUiModel() },
                             recommendedRestaurants = recommendedResult.toResource { it.toUiModel() },
                             nearbyRestaurants = nearbyResult.toResource { it.toUiModel() },
                             recommendedMenus = recMenusResult.toResource { it.toUiModel() },
@@ -115,14 +93,12 @@ class HomeViewModel @Inject constructor(
                     }
 
                     _homeState.update { finalStateData }
-
-                    Log.d("Diana", "UI state updated, fetchHomeData finished")
                 }
             } catch (e: CancellationException) {
-                // WAJIB: Biarkan coroutine dibatalkan
+                // Let coroutine cancel
                 throw e
             } catch (e: Exception) {
-                // Tangani error umum (jaringan, dll.)
+                // Handle Error here
                 Log.e("Diana", "General fetch error: ${e.message}", e)
                 _homeState.update {
                     it.copy(isRefreshing = false, errorMessage = "Terjadi kegagalan memuat data: ${e.message}")

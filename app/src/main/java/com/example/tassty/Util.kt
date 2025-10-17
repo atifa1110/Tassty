@@ -1,12 +1,7 @@
 package com.example.tassty
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.view.View
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
-import androidx.core.view.drawToBitmap
-import com.example.core.data.mapper.toDomain
+import com.example.core.domain.model.Category
 import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.LocationDetails
 import com.example.core.domain.model.MenuStatus
@@ -14,17 +9,17 @@ import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantDetail
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.domain.model.Voucher
 import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
 import com.example.core.domain.model.VoucherType
+import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
 import com.example.core.ui.model.RestaurantStatusResult
 import com.example.core.ui.model.VoucherUiModel
-import com.example.tassty.component.MarkerView
 import com.example.tassty.model.AddressType
 import com.example.tassty.model.Cart
-import com.example.tassty.model.Category
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.ChipOption
 import com.example.tassty.model.CollectionUiItem
@@ -33,7 +28,6 @@ import com.example.tassty.model.MenuItemOption
 import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.model.Review
 import com.example.tassty.model.UserAddress
-import com.example.tassty.model.Voucher
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -716,179 +710,72 @@ fun markToday(operationalHours: List<OperationalDay>): List<OperationalDay> {
 
 
 val categories = listOf(
-    Category(1,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"),
-    Category(2,"Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"),
-    Category(3,"Bakery","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/ea0db4c2-79b8-4a69-8b00-ea634e7ff3c9_cuisine-roti-banner.png?auto=format"),
-    Category(4,"Chinese","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/e152cfa1-1813-4be7-aebb-62b84cd0d38f_cuisine-chinese-banner.png?auto=format"),
-    Category(5,"Western","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/00847dea-ca14-4ecc-8cdf-f97a8d221d53_cuisine-burger_sandwich_steak-banner.png?auto=format"),
-    Category(6,"Fast Food","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format"),
-    Category(7,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"),
-    Category(8,"Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"),
-    Category(9,"Bakery","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/ea0db4c2-79b8-4a69-8b00-ea634e7ff3c9_cuisine-roti-banner.png?auto=format"),
-    Category(10,"Chinese","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/e152cfa1-1813-4be7-aebb-62b84cd0d38f_cuisine-chinese-banner.png?auto=format"),
-    Category(11,"Western","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/00847dea-ca14-4ecc-8cdf-f97a8d221d53_cuisine-burger_sandwich_steak-banner.png?auto=format"),
-    Category(12,"Fast Food","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/292379c7-fcdd-44e9-8821-ede3a09765b1_fastfood.png?auto=format")
+    CategoryUiModel(category = Category("1","Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format")),
+    CategoryUiModel(category = Category("2","Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"))
 )
 
-val categoriesItem = Category(1,"Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format")
+val categoriesItem = CategoryUiModel(category = Category("1","Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"))
 
-fun LocalDate.toUiDateString(): String {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yy", Locale.ENGLISH)
-    return this.format(formatter)
-}
-
-fun getSampleVouchers(): List<Voucher> {
-    val todayApiString = "2025-10-06"
-    val apiFormatter = DateTimeFormatter.ISO_DATE
-    val today: LocalDate = LocalDate.parse(todayApiString, apiFormatter)
-
+fun getSampleVouchers(): List<VoucherUiModel> {
     return listOf(
-
-        // 1. GLOBAL DISCOUNT (Percentage)
-        Voucher(
-            id = "VOU-PYPL-99",
-            imageUrl = "https://assets.example.com/icons/paypal.png",
-            title = "Diskon 20% Semua Restoran",
-            description = "Use with GoPay or 7 other options, \nmax Rp15K discount.",
-            type = VoucherType.DISCOUNT,
-            discountType = DiscountType.PERCENTAGE,
-            scope = VoucherScope.GLOBAL,
-            discountValue = 20,
-            maxDiscount = 30000,
-            minOrderValue = 75000,
-            minOrderLabel = "Min. order Rp75.000",
-            expiryDate = today.plusMonths(1).withDayOfMonth(28),
-            isAvailable = true,
-            isSelected = false,
+        VoucherUiModel(
+            voucher = Voucher(
+                id = "VOU-PYPL-99",
+                code = "Voucher1",
+                imageUrl = "https://assets.example.com/icons/paypal.png",
+                title = "Diskon 20% Semua Restoran",
+                description = "Use with GoPay or 7 other options, \nmax Rp15K discount.",
+                type = VoucherType.DISCOUNT,
+                discountType = DiscountType.PERCENTAGE,
+                scope = VoucherScope.GLOBAL,
+                discountValue = 20,
+                maxDiscount = 30000,
+                minOrderValue = 75000,
+                minOrderLabel = "Min. order Rp75.000",
+                startDate = LocalDate.of(2025,6,10),
+                expiryDate = LocalDate.of(2025,10,10),
+                terms = "",
+                status = VoucherStatus.AVAILABLE
+            ),
+            isUsable = true
         ),
 
-        // 2. RESTAURANT-SPECIFIC DISCOUNT (Percentage)
-        Voucher(
-            id = "VOU-RST-456",
-            imageUrl = "https://assets.example.com/icons/restaurant_exclusive.png",
-            title = "Chef's Special 15% Off",
-            description = "Valid only at 'The Spice Garden' \nrestaurant.",
-            type = VoucherType.DISCOUNT,
-            discountType = DiscountType.PERCENTAGE,
-            scope = VoucherScope.RESTAURANT,
-            discountValue = 15,
-            maxDiscount = 10000,
-            minOrderValue = 40000,
-            minOrderLabel = "Min. order Rp40.000",
-            expiryDate = today.plusWeeks(2),
-            isAvailable = true,
-            isSelected = false,
-            restaurantIds = listOf("4")
-        ),
-
-        // 3. GLOBAL SHIPPING (Free Delivery)
-        Voucher(
-            id = "VOU-DLVY-01",
-            imageUrl = "https://assets.example.com/icons/delivery.png",
-            title = "Gratis Ongkir Rp15.000",
-            description = "Use with GoPay or 7 other options",
-            type = VoucherType.SHIPPING,
-            discountType = DiscountType.FIXED,
-            scope = VoucherScope.GLOBAL,
-            discountValue = 15000,
-            maxDiscount = 15000,
-            minOrderValue = 50000,
-            minOrderLabel = "Min. order Rp50.000",
-            expiryDate = today.plusDays(7),
-            isAvailable = true,
-            isSelected = false,
-        ),
-
-        // 4. RESTAURANT-SPECIFIC CASHBACK
-        Voucher(
-            id = "VOU-CB-77",
-            imageUrl = "https://assets.example.com/icons/cashback.png",
-            title = "Cashback 10% di Kopi Kenangan",
-            description = "Dapatkan cashback ke Tassty Points",
-            type = VoucherType.CASHBACK,
-            discountType = DiscountType.PERCENTAGE,
-            scope = VoucherScope.RESTAURANT,
-            discountValue = 10,
-            maxDiscount = 20000,
-            minOrderValue = 25000,
-            minOrderLabel = "Min. order Rp25.000",
-            expiryDate = today.plusMonths(2),
-            isAvailable = true,
-            isSelected = false,
-            restaurantIds = listOf("4")
-        ),
-
-        // 5. GLOBAL CASHBACK
-        Voucher(
-            id = "VOU-CB-88",
-            imageUrl = "https://assets.example.com/icons/global_cashback.png",
-            title = "Cashback 5% Semua Restoran",
-            description = "Use with GoPay or Tassty Points balance",
-            type = VoucherType.CASHBACK,
-            discountType = DiscountType.PERCENTAGE,
-            scope = VoucherScope.GLOBAL,
-            discountValue = 5,
-            maxDiscount = 15000,
-            minOrderValue = 20000,
-            minOrderLabel = "Min. order Rp20.000",
-            expiryDate = today.plusMonths(1),
-            isAvailable = true,
-            isSelected = false
-        ),
-
-        // 6. RESTAURANT FIXED DISCOUNT (Unique case)
-        Voucher(
-            id = "VOU-RST-789",
-            imageUrl = "https://assets.example.com/icons/burger.png",
-            title = "Potongan Rp25.000 di Burger Bliss",
-            description = "Hanya berlaku untuk Burger Bliss",
-            type = VoucherType.DISCOUNT,
-            discountType = DiscountType.FIXED,
-            scope = VoucherScope.RESTAURANT,
-            discountValue = 25000,
-            maxDiscount = 25000,
-            minOrderValue = 70000,
-            minOrderLabel = "Min. order Rp70.000",
-            expiryDate = today.plusWeeks(3),
-            isAvailable = true,
-            isSelected = false,
-            restaurantIds = listOf("4")
-        ),
-
-        // 7. SHIPPING - RESTAURANT ONLY (rare case)
-        Voucher(
-            id = "VOU-DLVY-LOCAL",
-            imageUrl = "https://assets.example.com/icons/local_delivery.png",
-            title = "Free Ongkir Rp10.000 (Khusus Nasi Goreng Pak Kumis)",
-            description = "Berlaku hanya untuk resto tertentu.",
-            type = VoucherType.SHIPPING,
-            discountType = DiscountType.FIXED,
-            scope = VoucherScope.RESTAURANT,
-            discountValue = 10000,
-            maxDiscount = 10000,
-            minOrderValue = 30000,
-            minOrderLabel = "Min. order Rp30.000",
-            expiryDate = today.plusDays(10),
-            isAvailable = true,
-            isSelected = false,
-            restaurantIds = listOf("4")
+        VoucherUiModel(
+            voucher =  Voucher(
+                id = "VOU-RST-456",
+                code = "Vocuher1",
+                imageUrl = "https://assets.example.com/icons/restaurant_exclusive.png",
+                title = "Chef's Special 15% Off",
+                description = "Valid only at 'The Spice Garden' \nrestaurant.",
+                type = VoucherType.DISCOUNT,
+                discountType = DiscountType.PERCENTAGE,
+                scope = VoucherScope.RESTAURANT,
+                discountValue = 15,
+                maxDiscount = 10000,
+                minOrderValue = 40000,
+                minOrderLabel = "Min. order Rp40.000",
+                startDate = LocalDate.of(2025,6,10),
+                expiryDate = LocalDate.of(2025,10,10),
+                terms = "",
+                status = VoucherStatus.AVAILABLE
+            ),
+            isUsable = false
         )
     )
-
 }
 
-fun filterVouchersByRestaurant(targetRestaurantId: String): List<Voucher> {
+fun filterVouchersByRestaurant(targetRestaurantId: String): List<VoucherUiModel> {
 
     return getSampleVouchers().filter { voucher ->
         // Kriteria 1: Voucher GLOBAL selalu disertakan
-        val isGlobal = voucher.scope == VoucherScope.GLOBAL
+        val isGlobal = voucher.voucher.scope == VoucherScope.GLOBAL
 
         // Kriteria 2: Voucher RESTAURANT disertakan HANYA jika ID target cocok
-        val isRestaurantSpecificMatch = voucher.scope == VoucherScope.RESTAURANT &&
-                voucher.restaurantIds.contains(targetRestaurantId)
+//        val isRestaurantSpecificMatch = voucher.voucher.scope == VoucherScope.RESTAURANT &&
+//                voucher.restaurantIds.contains(targetRestaurantId)
 
         // Gabungkan kedua kriteria: (GLOBAL) ATAU (RESTAURANT dan ID cocok)
-        isGlobal || isRestaurantSpecificMatch
+        isGlobal //|| isRestaurantSpecificMatch
     }
 }
 
@@ -902,7 +789,7 @@ fun placeholder() = Restaurant(
 )
 
 val voucherItem = VoucherUiModel(
-    voucher = com.example.core.domain.model.Voucher(
+    voucher = Voucher(
         id = "VCHR001",
         code =  "DISKON20",
         imageUrl = "https://example.com/images/voucher_discount_20.png",
@@ -913,7 +800,7 @@ val voucherItem = VoucherUiModel(
         scope = VoucherScope.RESTAURANT,
         discountValue = 20,
         maxDiscount= 50000,
-        minOrderValue = 0,
+        minOrderValue = 50000,
         minOrderLabel ="Tanpa minimum pembelian",
         startDate= LocalDate.of(2024,10,24),
         expiryDate=LocalDate.of(2024,10,24),

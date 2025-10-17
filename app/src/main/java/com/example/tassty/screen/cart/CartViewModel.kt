@@ -3,11 +3,11 @@ package com.example.tassty.screen.cart
 import androidx.lifecycle.ViewModel
 import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.VoucherType
+import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.addresses
 import com.example.tassty.carts
 import com.example.tassty.filterVouchersByRestaurant
 import com.example.tassty.model.Cart
-import com.example.tassty.model.Voucher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -202,7 +202,7 @@ class CartViewModel : ViewModel() {
         _state.update { currentState ->
             val updatedVouchers = currentState.availableVouchers.map { voucher ->
                 // Sets the clicked voucher as selected and deselects all others.
-                voucher.copy(isSelected = voucher.id == selectedId)
+                voucher.copy(isSelected = voucher.voucher.id == selectedId)
             }
             currentState.copy(availableVouchers = updatedVouchers)
         }
@@ -224,25 +224,25 @@ class CartViewModel : ViewModel() {
         calculateTotals()
     }
 
-    private fun calculateDiscountAmount(subtotal: Int, voucher: Voucher): Int {
+    private fun calculateDiscountAmount(subtotal: Int, voucher: VoucherUiModel): Int {
         // 1. Check Minimum Order Requirement
-        if (subtotal < voucher.minOrderValue) {
+        if (subtotal < voucher.voucher.minOrderValue) {
             return 0
         }
 
-        val rawDiscount = when (voucher.discountType) {
+        val rawDiscount = when (voucher.voucher.discountType) {
             DiscountType.PERCENTAGE -> {
                 // Calculate percentage and round it to the nearest integer
-                (subtotal * (voucher.discountValue / 100.0)).roundToInt()
+                (subtotal * (voucher.voucher.discountValue / 100.0)).roundToInt()
             }
             DiscountType.FIXED -> {
                 // For fixed, the discount is the value itself
-                voucher.discountValue
+                voucher.voucher.discountValue
             }
         }
 
         // 2. Apply Maximum Discount Cap
-        return min(rawDiscount, voucher.maxDiscount)
+        return min(rawDiscount, voucher.voucher.maxDiscount)
     }
 
     //Core logic: Recalculates all totals, discounts, and delivery fees based on the current state (selected items, voucher, etc.).
@@ -265,7 +265,7 @@ class CartViewModel : ViewModel() {
                 deliveryFee = 20000
                 val calculatedValue = calculateDiscountAmount(subtotal, voucher)
 
-                when (voucher.type) {
+                when (voucher.voucher.type) {
                     VoucherType.DISCOUNT -> {
                         // Applies the discount directly to the item subtotal
                         itemDiscount = calculatedValue
