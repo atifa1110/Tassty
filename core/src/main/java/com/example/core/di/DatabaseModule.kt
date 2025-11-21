@@ -2,8 +2,8 @@ package com.example.core.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.core.data.source.local.dao.MenuDao
-import com.example.core.data.source.local.db.AppDatabase
+import com.example.core.data.source.local.database.dao.MenuDao
+import com.example.core.data.source.local.database.db.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +15,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    // 1. PROVIDE DATABASE INSTANCE (AppDatabase)
     @Singleton
     @Provides
     fun provideDatabase(
@@ -28,8 +27,6 @@ object DatabaseModule {
         ).build()
     }
 
-    // 2. PROVIDE DAO (Data Access Object)
-    // Hilt akan menggunakan instance AppDatabase yang sudah dibuat di atas
     @Singleton
     @Provides
     fun provideMenuDao(database: AppDatabase): MenuDao {

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange500
 
@@ -30,8 +31,7 @@ fun TermsOfServiceCheckbox(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        //CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-            Checkbox(
+        Checkbox(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 modifier = Modifier.padding(0.dp).size(24.dp),
@@ -41,10 +41,11 @@ fun TermsOfServiceCheckbox(
                     checkmarkColor = Color.White
                 )
             )
-        //}
 
         val annotatedText = buildAnnotatedString {
-            append("I Agree with ")
+            withStyle(style = SpanStyle(color = Neutral100)) {
+                append("I Agree with ")
+            }
 
             pushStringAnnotation(tag = "TOS", annotation = "terms_of_service")
             withStyle(style = SpanStyle(color = Orange500)) { // orange

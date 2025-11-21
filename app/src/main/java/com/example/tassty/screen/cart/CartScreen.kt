@@ -45,7 +45,7 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
-fun CartScreenRoute(
+fun CartRoute(
     viewModel: CartViewModel = viewModel()
 ){
 

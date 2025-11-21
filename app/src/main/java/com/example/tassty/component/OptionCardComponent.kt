@@ -22,45 +22,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
-import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange500
-import okhttp3.internal.http2.Header
 import kotlin.collections.forEach
-
-@Composable
-fun SortOptionItemStandard(
-    options: List<String>,
-    selected: String,
-    onSelect: (String) -> Unit
-) {
-    Column {
-        options.forEachIndexed { index, option ->
-            RadioFilterItem(
-                label = option,
-                isSelected = selected == option,
-                onSelect = { onSelect(option) }
-            )
-
-            if (index < options.lastIndex) {
-                DashedDivider(
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChipFilterSection(
     title: String,
-    options: List<ChipFilterOption>,
-    selectedKeys: Set<String>,
+    options: List<FilterOptionUi>,
     onToggleOption: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -76,13 +51,11 @@ fun ChipFilterSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             options.forEach { option ->
-                val isSelected = selectedKeys.contains(option.label)
-
                 CustomBorderChip(
                     label = option.label,
-                    icon = option.iconId?:0,
-                    selected = isSelected,
-                    onClick = { onToggleOption(option.label) }
+                    icon = option.iconRes?:0,
+                    selected = option.isSelected,
+                    onClick = { onToggleOption(option.key) }
                 )
             }
         }
@@ -164,25 +137,27 @@ fun ChipSearchExpandSection(
 }
 
 @Composable
-fun RadioFilterSection(
+fun RadioFilterTitleSection(
     title: String,
-    options: List<RadioFilterOption>,
-    selectedKey: String,
+    isTitleShown: Boolean = true,
+    options: List<FilterOptionUi>,
     onOptionSelected: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.padding(horizontal=24.dp),
     ) {
-        Text(
-            text = title,
-            style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
-        )
-        Spacer(Modifier.height(24.dp))
+        if(isTitleShown) {
+            Text(
+                text = title,
+                style = LocalCustomTypography.current.h5Bold,
+                color = Neutral100,
+            )
+            Spacer(Modifier.height(24.dp))
+        }
         options.forEachIndexed { index, option ->
             RadioFilterItem(
                 label = option.label,
-                isSelected = selectedKey == option.key,
+                isSelected = option.isSelected,
                 onSelect = { onOptionSelected(option.key) }
             )
             if (index < options.lastIndex) {
@@ -193,7 +168,6 @@ fun RadioFilterSection(
         }
     }
 }
-
 
 @Composable
 fun RadioFilterItem(

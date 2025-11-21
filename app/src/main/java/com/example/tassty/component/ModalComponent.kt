@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -33,18 +34,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.data.model.Resource
 import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.CollectionUiModel
+import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
-import com.example.tassty.cuisineOptions
-import com.example.tassty.discountOptions
 import com.example.tassty.model.Cart
-import com.example.tassty.model.CollectionUiItem
+import com.example.tassty.model.FilterKey
 import com.example.tassty.model.UserAddress
-import com.example.tassty.modesOptions
-import com.example.tassty.restoRatingsOptions
-import com.example.tassty.rupiahPriceRanges
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -54,8 +53,8 @@ import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-import kotlin.collections.take
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun CustomBottomSheet(
     visible: Boolean,
@@ -132,11 +131,12 @@ fun CustomBottomSheet(
 
 @Composable
 fun CollectionContent(
-    collections: List<CollectionUiItem>,
-    onCollectionSelected: (String) -> Unit,
+    resource: Resource<List<CollectionUiModel>>,
+    onCollectionSelected: (Int, Boolean) -> Unit,
     onSaveCollectionClick:() -> Unit,
     onAddCollectionClick: () -> Unit
 ){
+    val items = resource.data.orEmpty()
     Column(modifier = Modifier
         .fillMaxWidth()
         .clip(
@@ -174,23 +174,34 @@ fun CollectionContent(
 
         HorizontalDivider(Modifier.padding(vertical = 32.dp))
         HeaderListItemCountTitle(
-            itemCount = collections.size,
+            itemCount = items.size,
             title = "Collection",
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(Modifier.height(12.dp))
 
         Column(Modifier.padding(horizontal = 24.dp)) {
-            collections.take(2).forEach { collection ->
-                CollectionCard(
-                    collection = collection,
-                    onCheckedChange = {onCollectionSelected(collection.collectionId)}
-                )
-                Spacer(Modifier.height(8.dp))
+            when{
+                resource.isLoading ->{
+                    LoadingRowState()
+                }
+
+                resource.errorMessage!=null || items.isEmpty()-> {
+                    ErrorListState("") { }
+                }
+                else -> {
+                    items.takeLast(2).forEach { collection ->
+                        CollectionCard(
+                            collection = collection,
+                            onCheckedChange = {onCollectionSelected(collection.collection.collectionId,it)}
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
             }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
-                enabled = collections.any { it.isSelected==true },
+                enabled = items.isNotEmpty(),
                 labelResId = R.string.save,
                 onClick = onSaveCollectionClick
             )
@@ -200,7 +211,10 @@ fun CollectionContent(
 
 @Composable
 fun CollectionAddContent(
-    onDismissClick:() -> Unit
+    collectionName: String,
+    onValueName: (String) -> Unit,
+    onDismissClick:() -> Unit,
+    onAddCollection: () -> Unit
 ){
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -240,16 +254,16 @@ fun CollectionAddContent(
             )
             Spacer(Modifier.height(16.dp))
             NotesBarSection(
-                value="",
-                onValueChange = {},
+                value=collectionName,
+                onValueChange = onValueName,
                 icon = R.drawable.icon,
                 placeholder = stringResource(R.string.add_collection_name)
             )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
-                enabled = false,
+                enabled = collectionName.isNotEmpty(),
                 labelResId = R.string.create,
-                onClick = {}
+                onClick = onAddCollection
             )
         }
     }
@@ -388,8 +402,12 @@ fun DetailScheduleContent(
 }
 
 @Composable
-fun SortContent(){
-    var selectedOption by remember { mutableStateOf("Nearest") }
+fun SortContent(
+    sortList: List<FilterOptionUi>,
+    onSortSelected: (String) -> Unit,
+    onApplySort: () -> Unit,
+    onResetSort: () -> Unit
+){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -409,43 +427,45 @@ fun SortContent(){
                 color = Neutral100,
                 modifier = Modifier.weight(1f)
             )
-            ResetButton(onClick={})
+            ResetButton(onClick=onResetSort)
         }
 
         HorizontalDivider(Modifier.padding(vertical = 32.dp))
 
+        RadioFilterTitleSection(
+            title = "",
+            isTitleShown = false,
+            options = sortList,
+        ) { key -> onSortSelected(key) }
+
         Column (Modifier.padding(horizontal = 24.dp)){
-            SortOptionItemStandard(
-                options = listOf("Recommended", "Nearest", "Popularity"),
-                selected = selectedOption,
-                onSelect = { selectedOption = it }
-            )
-
             Spacer(Modifier.height(24.dp))
-
             ButtonComponent(
                 enabled = true,
                 labelResId = R.string.apply,
-                onClick = {})
+                onClick = onApplySort
+            )
         }
     }
 }
 
 @Composable
-fun FilterContent(){
-    var selectedCuisineKey by remember { mutableStateOf(cuisineOptions.first().key) }
-    var selectedPriceKey by remember { mutableStateOf(rupiahPriceRanges.first().key) }
-    var selectedRating by remember { mutableStateOf(setOf("Rated 4.0+")) }
-    var selectedDiscount by remember { mutableStateOf(setOf("All type promo")) }
-    var selectedMode by remember { mutableStateOf(setOf("Delivery")) }
-
+fun FilterContent(
+    rupiahPriceRanges: List<FilterOptionUi>,
+    restoRatingsOptions: List<FilterOptionUi>,
+    discountOptions: List<FilterOptionUi>,
+    modesOptions: List<FilterOptionUi>,
+    cuisineOption: List<FilterOptionUi>,
+    onUpdateDraftFilter: (FilterKey,String) -> Unit,
+    onApplyFilter:() -> Unit,
+    onResetFilter:() -> Unit
+){
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
             .background(Neutral20)
-            .padding(top = 24.dp, bottom = 24.dp),
-        contentPadding = PaddingValues(bottom = 24.dp)
+            .padding(top = 24.dp)
     ) {
         // Header
         item {
@@ -461,7 +481,7 @@ fun FilterContent(){
                     color = Neutral100,
                     modifier = Modifier.weight(1f)
                 )
-                ResetButton(onClick = {})
+                ResetButton(onClick = onResetFilter)
             }
         }
 
@@ -470,11 +490,10 @@ fun FilterContent(){
 
         // Price range
         item {
-            RadioFilterSection(
+            RadioFilterTitleSection(
                 title = "Price range",
                 options = rupiahPriceRanges,
-                selectedKey = selectedPriceKey
-            ) { selectedPriceKey = it }
+            ) { key -> onUpdateDraftFilter(FilterKey.PriceRange,key) }
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
@@ -484,14 +503,7 @@ fun FilterContent(){
             ChipFilterSection(
                 title = stringResource(R.string.resto_ratings),
                 options = restoRatingsOptions,
-                selectedKeys = selectedRating
-            ) { key ->
-                selectedRating = if (selectedRating.contains(key)) {
-                    selectedRating - key
-                } else {
-                    selectedRating + key
-                }
-            }
+            ) { key -> onUpdateDraftFilter(FilterKey.RestoRating,key) }
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
@@ -501,14 +513,7 @@ fun FilterContent(){
             ChipFilterSection(
                 title = "Discounts",
                 options = discountOptions,
-                selectedKeys = selectedDiscount
-            ) { key ->
-                selectedDiscount = if (selectedDiscount.contains(key)) {
-                    selectedDiscount - key
-                } else {
-                    selectedDiscount + key
-                }
-            }
+            ) { key ->  onUpdateDraftFilter(FilterKey.Discount,key)}
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
@@ -518,25 +523,26 @@ fun FilterContent(){
             ChipFilterSection(
                 title = "Modes",
                 options = modesOptions,
-                selectedKeys = selectedMode
-            ) { key ->
-                selectedMode = if (selectedMode.contains(key)) {
-                    selectedMode - key
-                } else {
-                    selectedMode + key
-                }
-            }
+            ) { key ->  onUpdateDraftFilter(FilterKey.Mode,key)}
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
 
         // Cuisines type
         item {
-            RadioFilterSection(
+            RadioFilterTitleSection(
                 title = "Cuisines type",
-                options = cuisineOptions,
-                selectedKey = selectedPriceKey
-            ) { selectedCuisineKey = it }
+                options = cuisineOption,
+            ) { key->  onUpdateDraftFilter(FilterKey.Cuisine,key)}
+        }
+
+        item{
+            Column (Modifier.padding(horizontal = 24.dp, vertical = 16.dp)){
+                ButtonComponent(
+                    enabled = true,
+                    labelResId = R.string.apply
+                ) { onApplyFilter() }
+            }
         }
     }
 }
@@ -858,6 +864,14 @@ fun PreviewModalDialog() {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        CartDoubleCheckContent()
+        FilterContent(
+            rupiahPriceRanges = emptyList(),
+            restoRatingsOptions = emptyList(),
+            discountOptions = emptyList(),
+            modesOptions = emptyList(),
+            cuisineOption = emptyList(),
+            onApplyFilter = {},
+            onResetFilter = {}, onUpdateDraftFilter = {_,_->}
+        )
     }
 }

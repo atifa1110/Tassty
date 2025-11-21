@@ -1,0 +1,108 @@
+package com.example.tassty.screen.register
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.core.data.model.RegistrationStep
+import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.usecase.RegisterEmailPasswordUseCase
+import com.example.core.domain.usecase.UpdateAuthStatusUseCase
+import com.example.tassty.screen.login.InputValidator
+import com.example.tassty.screen.login.handleMinimumDelay
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val registerEmailPasswordUseCase: RegisterEmailPasswordUseCase,
+    private val updateAuthStatusUseCase: UpdateAuthStatusUseCase
+): ViewModel() {
+    private val _uiState = MutableStateFlow(RegisterUiState())
+    val uiState: StateFlow<RegisterUiState> = _uiState
+
+    private val _events = MutableSharedFlow<RegisterEvent>()
+    val events: SharedFlow<RegisterEvent> = _events.asSharedFlow()
+
+    // Update name
+    fun onFullNameChange(fullName: String) {
+        _uiState.value = _uiState.value.copy(fullName = fullName, fullNameError = null)
+    }
+
+    // Update email
+    fun onEmailChange(email: String) {
+        _uiState.value = _uiState.value.copy(email = email, emailError = null)
+    }
+
+    // Update password
+    fun onPasswordChange(password: String) {
+        _uiState.value = _uiState.value.copy(password = password, passwordError = null)
+    }
+
+    fun onTermCheckChanged(isChecked: Boolean) {
+        _uiState.value = _uiState.value.copy(isTermSelected = isChecked)
+    }
+
+    fun onUserConfirmVerification() {
+        viewModelScope.launch {
+            updateAuthStatusUseCase { current ->
+                current.copy(registrationStep = RegistrationStep.REGISTERED)
+            }
+            _events.emit(RegisterEvent.NavigateToVerify)
+        }
+    }
+
+
+    val isRegisterEnable: StateFlow<Boolean> = _uiState.map { state ->
+        state.email.isNotBlank() && state.password.isNotBlank() && state.fullName.isNotBlank() && state.isTermSelected
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    fun setBottomSheetVisible(isVisible: Boolean) {
+        _uiState.update { it.copy(isBottomSheetVisible = isVisible) }
+    }
+
+    fun register() {
+        val state = _uiState.value
+        val emailError = InputValidator.validateEmail(state.email)
+        val passwordError = InputValidator.validatePassword(state.password)
+        val fullNameError = InputValidator.validateNotEmpty(state.fullName,"Name")
+
+        if (emailError != null || passwordError != null  || fullNameError != null) {
+            _uiState.value = state.copy(emailError = emailError, passwordError = passwordError, fullNameError = fullNameError)
+            return
+        }
+
+        viewModelScope.launch {
+            val startTime = System.currentTimeMillis()
+            registerEmailPasswordUseCase.invoke(uiState.value.email,
+                uiState.value.password,uiState.value.fullName).collect { result ->
+                when(result){
+                    is TasstyResponse.Error -> {
+                        _uiState.update {
+                            it.copy(bottomSheetMessage = result.meta.message)
+                        }
+                        handleMinimumDelay(startTime)
+                        _uiState.update { it.copy(isLoading = false) }
+                        _events.emit(RegisterEvent.ShowBottomSheet)
+                    }
+                    is TasstyResponse.Loading -> _uiState.update {
+                        it.copy(isLoading = true)
+                    }
+                    is TasstyResponse.Success-> {
+                        handleMinimumDelay(startTime)
+                        _uiState.update { it.copy(isLoading = false) }
+                        _events.emit(RegisterEvent.ShowBottomSheet)
+                    }
+                }
+            }
+        }
+    }
+}

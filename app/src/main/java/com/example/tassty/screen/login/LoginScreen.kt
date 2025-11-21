@@ -1,5 +1,6 @@
 package com.example.tassty.screen.login
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,22 +11,32 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.component.AuthTopAppBar
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.ButtonLogin
+import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.EmailComponent
+import com.example.tassty.component.LoadingButtonComponent
+import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.PasswordComponent
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -36,13 +47,75 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
+fun LoginRoute(
+    onNavigateToRegister: () -> Unit,
+    onNavigateToHome :() -> Unit,
+    onNavigateToResetPassword: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel()
+){
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // LaunchedEffect
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is LoginEvent.NavigateToHome -> {
+                    onNavigateToHome()
+                }
+                is LoginEvent.ShowBottomSheet -> {
+                    viewModel.setBottomSheetVisible(true)
+                }
+            }
+        }
+    }
+
+    LoginScreen(
+        isLoading = uiState.isLoading,
+        email= uiState.email,
+        emailError = uiState.emailError?:"",
+        onEmailChanged = { viewModel.onEmailChange(it)},
+        password = uiState.password,
+        passwordError = uiState.passwordError?:"",
+        onPasswordChanged = {viewModel.onPasswordChange(it)},
+        onLoginClick = {viewModel.login()},
+        onRegisterClick = onNavigateToRegister,
+        onForgotClick = onNavigateToResetPassword,
+        isButtonEnable = viewModel.isLoginEnabled.collectAsState().value
+    )
+
+    CustomBottomSheet(
+        visible = uiState.isBottomSheetVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        ModalStatusContent(
+            title = "Login failed!",
+            subtitle = uiState.bottomSheetMessage?:"",
+            buttonTitle = "OK",
+            onClick = { viewModel.resetLoginInput() }
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.success),
+                contentDescription = "Success Icon",
+                modifier = Modifier.size(64.dp)
+            )
+        }
+    }
+
+}
+@Composable
 fun LoginScreen(
+    isLoading: Boolean,
     email:String,
     emailError:String,
+    onEmailChanged: (String) -> Unit,
     password:String,
     passwordError:String,
+    onPasswordChanged:(String) -> Unit,
     onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    onForgotClick:() -> Unit,
+    isButtonEnable: Boolean,
 ) {
     Scaffold(
         containerColor = Color.White,
@@ -86,12 +159,13 @@ fun LoginScreen(
                         textAlign = TextAlign.Start,
                         text = "Username/Email",
                         style = LocalCustomTypography.current.h5Bold,
+                        color = Neutral100
                     )
 
                     EmailComponent(
                         email = email,
                         emailError = emailError,
-                        onEmailChanged = {}
+                        onEmailChanged = onEmailChanged
                     )
                 }
 
@@ -104,12 +178,13 @@ fun LoginScreen(
                         textAlign = TextAlign.Start,
                         text = "Password",
                         style = LocalCustomTypography.current.h5Bold,
+                        color = Neutral100
                     )
 
                     PasswordComponent(
                         password = password,
                         passwordError = passwordError,
-                        onPasswordChanged = {}
+                        onPasswordChanged = onPasswordChanged
                     )
 
                     // Teks Forgot password
@@ -118,7 +193,7 @@ fun LoginScreen(
                         style = LocalCustomTypography.current.bodyMediumMedium,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(onClick = { /* Handle forgot password click */ }),
+                            .clickable(onClick = onForgotClick),
                         textAlign = TextAlign.Right,
                         color = Orange500
                     )
@@ -127,10 +202,11 @@ fun LoginScreen(
 
             Spacer(Modifier.height(8.dp))
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                ButtonComponent(
-                    enabled = email.isNotEmpty() && password.isNotEmpty(),
+                LoadingButtonComponent(
+                    enabled = isButtonEnable,
                     labelResId = R.string.login,
-                    onClick = onLoginClick
+                    onClick = onLoginClick,
+                    isLoading = isLoading
                 )
             }
 
@@ -165,11 +241,16 @@ fun LoginScreen(
 @Composable
 fun LoginPreview() {
     LoginScreen(
-        email="atifafiorenza@gmail.com",
-        emailError = "",
-        password = "1245678",
+        email= "",
+        emailError ="",
+        onEmailChanged = { },
+        password = "",
         passwordError = "",
+        onPasswordChanged = {},
         onLoginClick = {},
-        onRegisterClick = {}
+        onRegisterClick = {},
+        onForgotClick = {},
+        isButtonEnable = false,
+        isLoading = false
     )
 }

@@ -59,12 +59,14 @@ fun TextComponent(
             .height(54.dp),
         shape = RoundedCornerShape(30.dp),
         colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Neutral100,
+            unfocusedTextColor = Neutral100,
+            focusedPlaceholderColor = Neutral60,
+            unfocusedPlaceholderColor = Neutral60,
             focusedContainerColor = Neutral10,
             unfocusedContainerColor = Neutral10,
             focusedBorderColor = Neutral30,
             unfocusedBorderColor = Neutral30,
-            focusedPlaceholderColor = Neutral100,
-            unfocusedPlaceholderColor = Neutral60,
             unfocusedLeadingIconColor = Neutral70,
             focusedLeadingIconColor = Neutral100,
             errorPlaceholderColor = Pink600,
@@ -98,11 +100,11 @@ fun TextComponent(
 
 @Composable
 fun TextComponentNoIcon(
+    modifier: Modifier = Modifier,
     text: String,
     onTextChanged: (String) -> Unit,
     placeholder: String,
-    textError: String = "",
-    modifier: Modifier = Modifier,
+    textError: String = ""
 ) {
     OutlinedTextField(
         modifier = modifier
@@ -110,12 +112,14 @@ fun TextComponentNoIcon(
             .height(54.dp),
         shape = RoundedCornerShape(30.dp),
         colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = Neutral100,
+            unfocusedTextColor = Neutral100,
+            focusedPlaceholderColor = Neutral60,
+            unfocusedPlaceholderColor = Neutral60,
             unfocusedContainerColor = Neutral10,
             focusedContainerColor = Neutral10,
             focusedBorderColor = Neutral30,
             unfocusedBorderColor = Neutral30,
-            focusedPlaceholderColor = Neutral100,
-            unfocusedPlaceholderColor = Neutral60,
             unfocusedLeadingIconColor = Neutral70,
             focusedLeadingIconColor = Neutral100,
             errorPlaceholderColor = Pink600,

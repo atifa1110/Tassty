@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.MenuUiModel
@@ -192,13 +193,16 @@ fun FoodNameGridCardContent(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.Bottom,
     ) {
         Text(
+            modifier = Modifier.weight(1f),
             text = menu.menu.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = Neutral100,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
         FloatingAddButton(
             iconSize = 16.dp,

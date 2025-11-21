@@ -1,5 +1,7 @@
 package com.example.core.data.source.remote.network
 
+import androidx.core.os.trace
+
 sealed class ResultWrapper<out T> {
 
     // Success: Membawa data sukses T dan Meta info
@@ -16,3 +18,5 @@ sealed class ResultWrapper<out T> {
 
     object Loading : ResultWrapper<Nothing>()
 }
+
+val LOCAL_SUCCESS_META = Meta(code = 200, status = "", message = "", traceId = null)

@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.data.model.Resource
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.R
@@ -37,7 +38,6 @@ import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.LoadingScreen
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.menus
-import com.example.tassty.screen.search.Resource
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
 

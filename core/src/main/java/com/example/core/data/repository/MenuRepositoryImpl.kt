@@ -1,24 +1,22 @@
 package com.example.core.data.repository
 
-import android.util.Log
-import com.example.core.data.cache.MenuCache
-import com.example.core.data.cache.RestaurantCache
 import com.example.core.data.mapper.toDomain
-import com.example.core.data.model.MenuDto
-import com.example.core.data.model.OperationalDayDto
+import com.example.core.data.source.local.datasource.MenuCacheLocalDataSource
 import com.example.core.data.source.remote.datasource.MenuNetworkDataSource
 import com.example.core.data.source.remote.network.Meta
-import com.example.core.data.source.remote.network.ResultWrapper
+import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Menu
 import com.example.core.domain.repository.MenuRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class MenuRepositoryImpl @Inject constructor(
     private val remoteDataSource: MenuNetworkDataSource,
-    private val cache: MenuCache,
-    private val restaurantCache: RestaurantCache
+    private val menuCacheLocalDataSource: MenuCacheLocalDataSource,
 ): MenuRepository {
 
     companion object {
@@ -26,75 +24,108 @@ class MenuRepositoryImpl @Inject constructor(
         private const val META_KEY_MENU_SUGGESTED = "suggested_menus"
     }
 
-    override suspend fun getRecommendedMenus(): ResultWrapper<List<Menu>> {
-        return withContext(Dispatchers.IO) {
-            val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_RECOMMENDED)
-            if (cachedData.isNotEmpty()) {
-                val menus = cachedData.map { menuDto ->
-                    val restaurantOps = getOperationalHoursForMenu(menuDto)
+
+    override suspend fun getRecommendedMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
+        emit(TasstyResponse.Loading)
+
+        // Erase when using real api
+        delay(1000)
+
+        val (cachedData, cachedMeta) = menuCacheLocalDataSource.getWithMeta(META_KEY_MENU_RECOMMENDED)
+        if (cachedData.isNotEmpty()) {
+            val menus = cachedData.map { menuDto ->
+                val restaurantOps = menuCacheLocalDataSource.getOperationalHoursForMenu(menuDto)
+                menuDto.toDomain(restaurantOps)
+            }
+            emit(
+                TasstyResponse.Success(
+                    data = menus,
+                    meta = cachedMeta ?: Meta(0, "", "", null)
+                )
+            )
+            return@flow
+        }
+
+        val result = remoteDataSource.getRecommendedMenus()
+        when (result) {
+            is TasstyResponse.Success -> {
+                // save to cache + meta
+                menuCacheLocalDataSource.saveMenu(META_KEY_MENU_RECOMMENDED, result.data?: emptyList())
+                menuCacheLocalDataSource.saveMeta(META_KEY_MENU_RECOMMENDED, result.meta)
+
+                val menus = result.data?.map { menuDto ->
+                    val restaurantOps = menuCacheLocalDataSource.getOperationalHoursForMenu(menuDto)
                     menuDto.toDomain(restaurantOps)
                 }
-                return@withContext ResultWrapper.Success(menus, cachedMeta ?: Meta(0, "", "", null))
+
+                emit(TasstyResponse.Success(menus, result.meta))
             }
-
-            val result = remoteDataSource.getRecommendedMenus()
-            return@withContext when (result) {
-                is ResultWrapper.Success -> {
-                    // save to cache + meta
-                    cache.saveAll(META_KEY_MENU_RECOMMENDED, result.data)
-                    cache.saveMeta(META_KEY_MENU_RECOMMENDED, result.meta)
-
-                    val menus = result.data.map { menuDto ->
-                        val restaurantOps = getOperationalHoursForMenu(menuDto)
-                        menuDto.toDomain(restaurantOps)
-                    }
-
-                    ResultWrapper.Success(menus, result.meta)
-                }
-
-                is ResultWrapper.Error -> result
-                is ResultWrapper.Loading -> result
-            }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
         }
-    }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
-    override suspend fun getSuggestedMenus(): ResultWrapper<List<Menu>> {
-        return withContext(Dispatchers.IO) {
-            // check cache
-            val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_RECOMMENDED)
-            if (cachedData.isNotEmpty()) {
-                val menus = cachedData.map { menuDto ->
-                    val restaurantOps = getOperationalHoursForMenu(menuDto)
+
+
+    override suspend fun getSuggestedMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
+        emit(TasstyResponse.Loading)
+        // Erase when using real api
+        delay(1000)
+
+        val (cachedData, cachedMeta) = menuCacheLocalDataSource.getWithMeta(META_KEY_MENU_SUGGESTED)
+        if (cachedData.isNotEmpty()) {
+            val menus = cachedData.map { menuDto ->
+                val restaurantOps = menuCacheLocalDataSource.getOperationalHoursForMenu(menuDto)
+                menuDto.toDomain(restaurantOps)
+            }
+            emit(
+                TasstyResponse.Success(
+                    data = menus,
+                    meta = cachedMeta ?: Meta(0, "", "", null)
+                )
+            )
+            return@flow
+        }
+
+        val result = remoteDataSource.getSuggestedMenus()
+        when (result) {
+            is TasstyResponse.Success -> {
+                // save to cache + meta
+                menuCacheLocalDataSource.saveMenu(META_KEY_MENU_SUGGESTED, result.data?: emptyList())
+                menuCacheLocalDataSource.saveMeta(META_KEY_MENU_SUGGESTED, result.meta)
+
+                val menus = result.data?.map { menuDto ->
+                    val restaurantOps = menuCacheLocalDataSource.getOperationalHoursForMenu(menuDto)
                     menuDto.toDomain(restaurantOps)
                 }
-                return@withContext ResultWrapper.Success(menus, cachedMeta ?: Meta(0, "", "", null))
+
+                emit(TasstyResponse.Success(menus, result.meta))
             }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
+        }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
+    override suspend fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
+        emit(TasstyResponse.Loading)
+        // Erase when using real api
+        delay(1000)
 
-            val result = remoteDataSource.getSuggestedMenus()
-            return@withContext when (result) {
-                is ResultWrapper.Success -> {
-                    // save to cache + meta
-                    cache.saveAll(META_KEY_MENU_SUGGESTED, result.data)
-                    cache.saveMeta(META_KEY_MENU_SUGGESTED, result.meta)
+        val result = remoteDataSource.getSearchMenus()
+        when (result) {
+            is TasstyResponse.Success -> {
 
-                    val menus = result.data.map { menuDto ->
-                        val restaurantOps = getOperationalHoursForMenu(menuDto)
-                        menuDto.toDomain(restaurantOps)
-                    }
-
-                    ResultWrapper.Success(menus, result.meta)
+                val menus = result.data?.map { menuDto ->
+                    val restaurantOps = menuCacheLocalDataSource.getOperationalHoursForMenu(menuDto)
+                    menuDto.toDomain(restaurantOps)
                 }
 
-                is ResultWrapper.Error -> result
-                is ResultWrapper.Loading -> result
+                emit(TasstyResponse.Success(menus, result.meta))
             }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
         }
-    }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
-    /** Ambil operationalHours restoran dari cache, fallback ke emptyList() */
-    private suspend fun getOperationalHoursForMenu(menuDto: MenuDto): List<OperationalDayDto> {
-        val restaurant = restaurantCache.getById(menuDto.restaurantId)
-        return restaurant?.operationalHours ?: emptyList()
-    }
+
 }

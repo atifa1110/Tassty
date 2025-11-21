@@ -1,5 +1,6 @@
 package com.example.tassty.screen.home
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -75,16 +76,21 @@ import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.ListMapBox
 import com.example.tassty.restaurantUiModel
-import com.example.tassty.screen.search.Resource
 import kotlinx.coroutines.launch
 import kotlin.collections.orEmpty
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import com.example.core.data.model.Resource
 import com.example.core.ui.model.CategoryUiModel
+import com.example.tassty.component.CollectionAddContent
+import com.example.tassty.component.CollectionContent
 import com.example.tassty.component.CommonImage
+import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerGridMenuListPlaceholder
 import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
@@ -97,18 +103,75 @@ private val TOP_APP_BAR_HEIGHT = 70.dp
 
 @Composable
 fun HomeScreen(
+    onNavigateToDetail: () -> Unit,
+    onNavigateToSearch: () -> Unit,
+    onNavigateToCategory:(String, String) -> Unit,
+    onNavigateToRecommended:() -> Unit,
+    onNavigateToNearbyRestaurant:() -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.homeState.collectAsStateWithLifecycle()
 
-    HomeContent(uiState = uiState, onRefresh = {viewModel.onPullToRefresh()})
+    LaunchedEffect(key1 = Unit) {
+        viewModel.singleEventFlow.collect { event ->
+            when (event) {
+                is HomeEvent.ShowSnackbar -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    HomeContent(
+        uiState = uiState,
+        onNavigateToSearch = onNavigateToSearch,
+        onNavigateToDetail = onNavigateToDetail,
+        onNavigateToCategory = onNavigateToCategory,
+        onNavigateToRecommended = onNavigateToRecommended,
+        onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
+        onRefresh = {viewModel.onPullToRefresh()},
+        onFavoriteClicked = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) }
+    )
+
+    CustomBottomSheet(
+        visible = uiState.isCollectionSheetVisible,
+        onDismiss = { viewModel.onEvent(HomeEvent.OnDismissCollectionSheet) }
+    ) {
+        CollectionContent(
+            resource = uiState.collectionsResource,
+            onCollectionSelected = {id, check -> viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id,check))},
+            onSaveCollectionClick = {viewModel.onEvent(HomeEvent.OnSaveToCollection)},
+            onAddCollectionClick = { viewModel.onEvent(HomeEvent.OnShowAddCollectionSheet) }
+        )
+    }
+
+    CustomBottomSheet(
+        visible = uiState.isAddCollectionSheet,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        CollectionAddContent (
+            collectionName = uiState.newCollectionName,
+            onValueName = {viewModel.onEvent(HomeEvent.OnNewCollectionNameChange(it))},
+            onDismissClick = { viewModel.onEvent(HomeEvent.OnDismissAddCollectionSheet) },
+            onAddCollection = {viewModel.onEvent(HomeEvent.OnCreateCollection)}
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
     uiState: HomeUiState,
-    onRefresh: () -> Unit
+    onNavigateToDetail: () -> Unit,
+    onNavigateToSearch: () -> Unit,
+    onNavigateToCategory:(String, String) -> Unit,
+    onNavigateToRecommended:() -> Unit,
+    onNavigateToNearbyRestaurant:() -> Unit,
+    onRefresh: () -> Unit,
+    onFavoriteClicked: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
@@ -177,7 +240,7 @@ fun HomeContent(
                     )
                     Column (modifier = Modifier.offset(y = TOP_APP_BAR_HEIGHT)){
                         Spacer(modifier = Modifier.height(16.dp))
-                        HeaderSection(onClick = {})
+                        HeaderSection(onClick = onNavigateToSearch)
                         Spacer(modifier = Modifier.height(24.dp))
                         BannerSection()
                     }
@@ -185,19 +248,23 @@ fun HomeContent(
             }
             item {
                 Spacer(Modifier.height(32.dp))
-                CategorySection(resource = uiState.allCategories)
+                CategorySection(resource = uiState.allCategories,onNavigateToCategory = onNavigateToCategory)
                 Divider32()
             }
             item {
-                RecommendationSection(resource = uiState.recommendedMenus)
+                RecommendationSection(
+                    resource = uiState.recommendedMenus,
+                    onFavoriteClicked = onFavoriteClicked,
+                    onNavigateToRecommended = onNavigateToRecommended
+                )
                 Divider32()
             }
             item {
-                RestaurantNearby(resource = uiState.nearbyRestaurants)
+                RestaurantNearby(resource = uiState.nearbyRestaurants, onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant)
                 Spacer(Modifier.height(32.dp))
             }
             item {
-                RecommendationRestaurant(resource = uiState.recommendedRestaurants)
+                RecommendationRestaurant(resource = uiState.recommendedRestaurants, onNavigateToDetail = onNavigateToDetail)
                 Spacer(Modifier.height(32.dp))
             }
             item {
@@ -205,7 +272,10 @@ fun HomeContent(
                 Spacer(Modifier.height(32.dp))
             }
             item {
-                SuggestedMenu(resource = uiState.suggestedMenus)
+                SuggestedMenu(
+                    resource = uiState.suggestedMenus,
+                    onFavoriteClicked = onFavoriteClicked
+                )
                 Spacer(Modifier.height(32.dp))
             }
         }
@@ -418,7 +488,8 @@ fun BannerSection() {
 
 @Composable
 fun CategorySection(
-    resource: Resource<List<CategoryUiModel>>
+    resource: Resource<List<CategoryUiModel>>,
+    onNavigateToCategory:(String, String) -> Unit
 ){
     val items = resource.data.orEmpty()
     when{
@@ -447,7 +518,10 @@ fun CategorySection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items (items = items, key = { it.category.id }) { category ->
-                    CategoryCard(category = category)
+                    CategoryCard(categoryName = category.category.name,
+                        imageUrl = category.category.imageUrl,
+                        onClick = {onNavigateToCategory(category.category.name,
+                            category.category.imageUrl)})
                 }
             }
         }
@@ -456,10 +530,11 @@ fun CategorySection(
 
 @Composable
 fun RecommendationSection(
-    resource : Resource<List<MenuUiModel>>
+    resource : Resource<List<MenuUiModel>>,
+    onFavoriteClicked: (String) -> Unit,
+    onNavigateToRecommended:() -> Unit
 ) {
     val items = resource.data.orEmpty()
-
     when {
         resource.isLoading -> {
             ShimmerHorizontalTitleButtonSection {
@@ -479,7 +554,7 @@ fun RecommendationSection(
         else -> {
             HorizontalTitleButtonSection(
                 title = "Recommended for you",
-                onClick = {}
+                onClick = onNavigateToRecommended
             ) {
                 itemsIndexed(
                     items = items,
@@ -487,7 +562,7 @@ fun RecommendationSection(
                 ) { index, menu ->
                     FoodGridCard(
                         menu = menu,
-                        onFavoriteClick = {},
+                        onFavoriteClick = onFavoriteClicked,
                         onAddToCart = {}
                     )
                 }
@@ -498,7 +573,8 @@ fun RecommendationSection(
 
 @Composable
 fun RestaurantNearby(
-    resource: Resource<List<RestaurantUiModel>>
+    resource: Resource<List<RestaurantUiModel>>,
+    onNavigateToNearbyRestaurant:() -> Unit,
 ) {
     val items = resource.data.orEmpty()
 
@@ -549,7 +625,7 @@ fun RestaurantNearby(
                 HeaderListTitleButton(
                     title = "Restos Nearby you",
                     titleColor = Neutral100,
-                    onClick = {},
+                    onClick = onNavigateToNearbyRestaurant,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
                 ListMapBox(restaurant = items)
@@ -561,6 +637,7 @@ fun RestaurantNearby(
 @Composable
 fun RecommendationRestaurant(
     resource : Resource<List<RestaurantUiModel>>,
+    onNavigateToDetail: () -> Unit,
 ) {
     val items = resource.data.orEmpty()
 
@@ -590,7 +667,8 @@ fun RecommendationRestaurant(
                     key = { index, item -> item.restaurant.id }
                 ) { index, restaurant ->
                     RestaurantGridCard(
-                        restaurant = restaurant
+                        restaurant = restaurant,
+                        onNavigateToDetail = onNavigateToDetail
                     )
                 }
             }
@@ -638,7 +716,8 @@ fun TodayDeal(
 
 @Composable
 fun SuggestedMenu(
-    resource: Resource<List<MenuUiModel>>
+    resource: Resource<List<MenuUiModel>>,
+    onFavoriteClicked: (String) -> Unit
 ) {
     val items = resource.data.orEmpty()
 
@@ -658,7 +737,7 @@ fun SuggestedMenu(
             GridMenuListSection(
                 title = "Suggested menu for you!",
                 menuItems = items,
-                onFavoriteClick = {}
+                onFavoriteClick = onFavoriteClicked
             )
         }
     }
@@ -669,13 +748,19 @@ fun SuggestedMenu(
 fun PreviewHomeScreen() {
     HomeContent(
         uiState = HomeUiState(
-            allCategories = Resource(data = emptyList()),
-            recommendedRestaurants = Resource(data = restaurantUiModel),
-            nearbyRestaurants = Resource(data= restaurantUiModel),
-            recommendedMenus = Resource(data = menus),
-            suggestedMenus = Resource(data = menus),
-            todayVouchers = Resource(data = emptyList())
+            allCategories = Resource(data = emptyList(),isLoading = false),
+            recommendedRestaurants = Resource(data = restaurantUiModel,isLoading = false),
+            nearbyRestaurants = Resource(data= restaurantUiModel,isLoading = false),
+            recommendedMenus = Resource(data = menus,isLoading = false),
+            suggestedMenus = Resource(data = menus,isLoading = false),
+            todayVouchers = Resource(data = emptyList(),isLoading = false)
         ),
-        onRefresh = {}
+        onRefresh = {},
+        onFavoriteClicked = {},
+        onNavigateToDetail = {},
+        onNavigateToSearch = {},
+        onNavigateToRecommended = {},
+        onNavigateToCategory = {_,_->},
+        onNavigateToNearbyRestaurant = {}
     )
 }

@@ -17,6 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
@@ -89,7 +91,7 @@ fun RestaurantCityDistanceDeliveryText(
         )
 
         Text(
-            text = "${distance}m",
+            text = distance,
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Neutral70
         )
@@ -101,9 +103,9 @@ fun RestaurantCityDistanceDeliveryText(
         )
 
         Text(
-            text = "${deliveryTime}min",
+            text = deliveryTime,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = Neutral70,
         )
     }
 }
@@ -148,6 +150,41 @@ fun RatingText(
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Neutral70
         )
+    }
+}
+
+@Composable
+fun RatingDeliverTimeText(
+    rating : Double,
+    deliveryTime: String
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.star),
+            contentDescription = "Rating",
+            tint = Orange500,
+        )
+        Text(
+            text = rating.toString(),
+            style = LocalCustomTypography.current.bodySmallMedium,
+            color = Neutral70
+        )
+
+        Text(
+            text = " • ",
+            style = LocalCustomTypography.current.bodySmallRegular,
+            color = Neutral40
+        )
+
+        Text(
+            text = deliveryTime,
+            style = LocalCustomTypography.current.bodySmallMedium,
+            color = Neutral70,
+        )
+
     }
 }
 
@@ -281,15 +318,17 @@ fun RestaurantLargeGridCardContent(
         Text(
             text = restaurant.restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = Neutral100,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
-        RestaurantCityDistanceDeliveryText(
+        RestaurantCityAndDistanceText(
             city = restaurant.restaurant.cityName,
-            distance = restaurant.formattedDistance,
-            deliveryTime = restaurant.restaurant.deliveryTime
+            distance = restaurant.formattedDistance
         )
 
-        RatingText(rating = restaurant.restaurant.rating)
+        RatingDeliverTimeText(rating = restaurant.restaurant.rating,
+            deliveryTime = restaurant.restaurant.deliveryTime)
     }
 }

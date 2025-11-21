@@ -1,17 +1,28 @@
 package com.example.tassty.component
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,51 +59,72 @@ fun CategoryStaggeredList(
     categories: List<CategoryUiModel>,
     onCategoryClick: (CategoryUiModel) -> Unit
 ) {
-    // pisahin jadi atas & bawah
-    val topRow = categories.filterIndexed { i, _ -> i % 2 == 0 }
-    val bottomRow = categories.filterIndexed { i, _ -> i % 2 == 1 }
+    val rows = categories.chunked(2)
+    val middleIndex = rows.size / 2
 
-    val startingIndex = (categories.size / 2)
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = startingIndex
-    )
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = middleIndex)
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    LazyRow(
+        state = listState,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        contentPadding = PaddingValues(horizontal = 0.dp)
     ) {
-        // Baris atas
-        LazyRow(
-            state = listState,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(horizontal = 0.dp)
-        ) {
-            items(topRow) { category ->
+        items(rows) { pair ->
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+            ) {
                 FoodCategoryCard(
-                    category = category,
+                    category = pair[0],
                     isSelected = false,
-                    onCardClick = { onCategoryClick(category) }
+                    onCardClick = { onCategoryClick(pair[0]) }
                 )
-            }
-        }
 
-        Spacer(Modifier.height(4.dp))
-
-        // Baris bawah
-        LazyRow(
-            state = listState, // pakai state sama biar scroll sync
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(horizontal = 32.dp) // offset dikit biar zigzag
-        ) {
-            items(bottomRow) { category ->
-                FoodCategoryCard(
-                    category = category,
-                    isSelected = false,
-                    onCardClick = { onCategoryClick(category) }
-                )
+                if (pair.size > 1) {
+                    FoodCategoryCard(
+                        category = pair[1],
+                        isSelected = false,
+                        onCardClick = { onCategoryClick(pair[1]) },
+                        modifier = Modifier.offset(x = 28.dp)
+                    )
+                }
             }
         }
     }
 }
+
+
+@Composable
+fun ShimmerCategoryStaggeredList() {
+    val shimmerItems = List(10) { it }
+    val rows = shimmerItems.chunked(2)
+    val middleIndex = rows.size / 2
+
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = middleIndex)
+
+    LazyRow(
+        state = listState,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        contentPadding = PaddingValues(horizontal = 0.dp)
+    ) {
+        items(rows) { pair ->
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ShimmerFoodCategoryCard()
+                if (pair.size > 1) {
+                    ShimmerFoodCategoryCard(
+                        modifier = Modifier.offset(x = 28.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+
 
 
 @Preview(showBackground = true)

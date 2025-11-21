@@ -7,7 +7,7 @@
   },
   "data": [
     {
-      "id": "VCHR001",
+      "id": "VCHR-001",
       "code": "DISKON20",
       "imageUrl": "https://example.com/images/voucher_discount_20.png",
       "title": "Diskon 20% Semua Menu",
@@ -25,7 +25,7 @@
       "terms": "Tidak dapat digabung dengan promo lain. Berlaku untuk semua restoran yang berpartisipasi."
     },
     {
-      "id": "VCHR002",
+      "id": "VCHR-002",
       "code": "ONGKIRFREE",
       "imageUrl": "https://example.com/images/free_shipping.png",
       "title": "Gratis Ongkir",
@@ -43,7 +43,7 @@
       "terms": "Berlaku untuk semua metode pembayaran."
     },
     {
-      "id": "VCHR003",
+      "id": "VCHR-003",
       "code": "CASHBACK10",
       "imageUrl": "https://example.com/images/cashback_10.png",
       "title": "Cashback 10%",
@@ -61,7 +61,7 @@
       "terms": "Cashback masuk ke saldo akun maksimal 24 jam setelah transaksi berhasil."
     },
     {
-      "id": "VCHR004",
+      "id": "VCHR-004",
       "code": "HALLOWEEN30",
       "imageUrl": "https://example.com/images/voucher_halloween.png",
       "title": "Halloween Sale 30%",
@@ -79,7 +79,7 @@
       "terms": "Hanya berlaku selama periode Halloween."
     },
     {
-      "id": "VCHR005",
+      "id": "VCHR-005",
       "code": "WEEKEND15",
       "imageUrl": "https://example.com/images/voucher_weekend.png",
       "title": "Diskon Weekend 15%",
@@ -97,7 +97,7 @@
       "terms": "Berlaku Sabtu dan Minggu saja."
     },
     {
-      "id": "VCHR006",
+      "id": "VCHR-006",
       "code": "NEWUSER50",
       "imageUrl": "https://example.com/images/voucher_newuser.png",
       "title": "Diskon 50% Pengguna Baru",
@@ -115,7 +115,7 @@
       "terms": "Hanya berlaku untuk pengguna baru yang belum pernah bertransaksi."
     },
     {
-      "id": "VCHR007",
+      "id": "VCHR-007",
       "code": "PAYDAY25",
       "imageUrl": "https://example.com/images/voucher_payday.png",
       "title": "Payday Sale 25%",
@@ -133,14 +133,14 @@
       "terms": "Hanya berlaku pada periode tanggal 25-30."
     },
     {
-      "id": "VCHR008",
+      "id": "VCHR-008",
       "code": "FREECOFFEE",
       "imageUrl": "https://example.com/images/voucher_freecoffee.png",
       "title": "Gratis Kopi Setiap Pesanan di Atas Rp40.000",
       "description": "Tambahkan kopi favoritmu gratis untuk pesanan minimal Rp40.000.",
       "type": "SHIPPING",
       "discountType": "FIXED",
-      "scope": "GLOBAL",
+      "scope": "RESTAURANT",
       "discountValue": 15000,
       "maxDiscount": 15000,
       "minOrderValue": 40000,
@@ -151,7 +151,7 @@
       "terms": "Gratis 1 kopi reguler per transaksi."
     },
     {
-      "id": "VCHR009",
+      "id": "VCHR-009",
       "code": "STUDENT10",
       "imageUrl": "https://example.com/images/voucher_student.png",
       "title": "Diskon Pelajar 10%",
@@ -169,7 +169,7 @@
       "terms": "Wajib menunjukkan kartu pelajar saat pengambilan pesanan."
     },
     {
-      "id": "VCHR010",
+      "id": "VCHR-010",
       "code": "MIDNIGHT30",
       "imageUrl": "https://example.com/images/voucher_midnight.png",
       "title": "Diskon Tengah Malam 30%",

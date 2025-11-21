@@ -1,5 +1,13 @@
 package com.example.core.data.model
 
+import com.google.gson.annotations.SerializedName
+
+// DTO pendukung tidak perlu diubah
+data class OperationalDayDto(
+    val day: String,
+    val hours: String
+)
+
 data class RestaurantDto(
     val id: String = "",
     val name: String = "",
@@ -17,7 +25,3 @@ data class RestaurantDto(
     val operationalHours: List<OperationalDayDto> = emptyList()
 )
 
-data class OperationalDayDto(
-    val day: String,
-    val hours: String
-)

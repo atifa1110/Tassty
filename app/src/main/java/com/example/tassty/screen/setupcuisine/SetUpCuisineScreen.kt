@@ -1,5 +1,6 @@
 package com.example.tassty.screen.setupcuisine
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,29 +36,52 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.component.CategoryFoundHeader
 import com.example.tassty.component.Divider32
+import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.FoodCategoryCard
 
 @Composable
 fun SetupCuisineRoute(
-    onNextClick: () -> Unit,
+    onNavigateToSetUpLocation: (List<String>) -> Unit,
     onSkipClick: () -> Unit,
-    onBackClick: () -> Unit,
-    viewModel: SetupCuisineViewModel = viewModel()
+    onBackButtonClick: () -> Unit,
+    viewModel: SetupCuisineViewModel = hiltViewModel()
 ) {
-    val state = viewModel.uiState
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchText by viewModel.searchQueryText.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when(event){
+                is SetupCuisineEvent.ShowError -> {
+                    Toast.makeText(
+                        context,
+                        event.message,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                is SetupCuisineEvent.NavigateToSetUpLocation -> {
+                    onNavigateToSetUpLocation(event.cuisines)
+                }
+            }
+        }
+    }
 
     SetupCuisineScreen(
-        uiState = state,
+        uiState = uiState,
         searchText = searchText,
         onSearchText = viewModel::onSearchTextChanged,
         onSelectedCategory = viewModel::toggleCategorySelection,
-        onNextClick = onNextClick,
+        onNextClick = viewModel::onNextClick,
         onSkipClick = onSkipClick,
-        onBackClick = onBackClick
+        onBackButtonClick = onBackButtonClick
     )
 }
 
@@ -68,7 +93,7 @@ fun SetupCuisineScreen(
     onSelectedCategory: (String) -> Unit,
     onNextClick: () -> Unit,
     onSkipClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBackButtonClick: () -> Unit
 ) {
     Scaffold(
         containerColor = Neutral10,
@@ -76,7 +101,7 @@ fun SetupCuisineScreen(
             SetupTopAppBar(
                 currentStep = 1,
                 totalStep = 2,
-                onBackClick = onBackClick,
+                onBackClick = onBackButtonClick,
                 onSkipClick = onSkipClick
             )
         },
@@ -137,14 +162,14 @@ fun SetupCuisineScreen(
                 Divider32()
             }
             item {
-                if (uiState.isLoading || uiState.filteredCategories.isEmpty()) {
+                if (uiState.isLoading || uiState.categories.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator()
                     }
-                } else {
+                }else {
                     CategoriesContent(
                         searchText = searchText,
                         selectedCategoryIds = uiState.selectedCategoryIds,
@@ -170,7 +195,7 @@ fun CategoriesContent(
     ) {
         CategoryFoundHeader(
             searchQuery = searchText,
-            filteredCategories = filteredCategories,
+            filteredCategories = filteredCategories
         )
 
         Column(
@@ -213,6 +238,6 @@ fun PreviewSetupCuisineScreen() {
         onSelectedCategory = {},
         onNextClick = {},
         onSkipClick = {},
-        onBackClick = {}
+        onBackButtonClick = {}
     )
 }

@@ -77,12 +77,12 @@ fun DetailMenuScreen(
         visible = uiState.isCollectionSheetVisible,
         onDismiss = { viewModel.onEvent(DetailMenuEvent.OnDismissCollectionSheet)}
     ) {
-        CollectionContent(
-            collections = uiState.collections,
-            onCollectionSelected = { id -> viewModel.onEvent(DetailMenuEvent.OnCollectionSelected(id))},
-            onSaveCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnSaveCollectionClick)},
-            onAddCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnShowAddCollectionSheet)}
-        )
+//        CollectionContent(
+//            collections = uiState.collections,
+//            onCollectionSelected = { id -> viewModel.onEvent(DetailMenuEvent.OnCollectionSelected(id))},
+//            onSaveCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnSaveCollectionClick)},
+//            onAddCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnShowAddCollectionSheet)}
+//        )
     }
 
     CustomBottomSheet(
@@ -103,9 +103,9 @@ fun DetailMenuScreen(
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
-        CollectionAddContent(
-            onDismissClick = { viewModel.onEvent(DetailMenuEvent.OnDismissAddCollectionSheet)}
-        )
+//        CollectionAddContent(
+//            onDismissClick = { viewModel.onEvent(DetailMenuEvent.OnDismissAddCollectionSheet)}
+//        )
     }
 }
 

@@ -1,15 +1,18 @@
 package com.example.core.data.repository
 
-import android.util.Log
-import com.example.core.data.cache.RestaurantCache
+import com.example.core.data.source.local.cache.RestaurantCache
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.source.remote.datasource.RestaurantNetworkDataSource
 import com.example.core.data.source.remote.network.Meta
-import com.example.core.data.source.remote.network.ResultWrapper
+import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Restaurant
+import com.example.core.domain.model.RestaurantMenu
 import com.example.core.domain.repository.RestaurantRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class RestaurantRepositoryImpl @Inject constructor(
@@ -20,63 +23,139 @@ class RestaurantRepositoryImpl @Inject constructor(
     companion object {
         private const val META_KEY_RECOMMENDED = "recommended_restaurants"
         private const val META_KEY_NEARBY = "nearby_restaurants"
+        private const val META_KEY_SEARCH = "search_restaurants"
     }
 
-    override suspend fun getRecommendedRestaurants(): ResultWrapper<List<Restaurant>> {
-        return withContext(Dispatchers.IO) {
+    override suspend fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+            emit(TasstyResponse.Loading)
+            // Erase when using real api
+            delay(1000)
+
             val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_RECOMMENDED)
-            Log.d("Diana", "cachedData=${cachedData.size}")
-
             if (cachedData.isNotEmpty()) {
-                // Return cache hit
-                return@withContext ResultWrapper.Success(
-                    cachedData.map { it.toDomain() },
-                    cachedMeta ?: Meta(0, "", "", null)
+                emit(
+                    TasstyResponse.Success(
+                        data = cachedData.map { it.toDomain() },
+                        meta = cachedMeta ?: Meta(0, "", "", null)
+                    )
+                )
+                return@flow
+            }
+
+            // Take from remote
+            when (val result = remoteDataSource.getRecommendedRestaurants()) {
+                is TasstyResponse.Success -> {
+                    // save to cache
+                    cache.saveAll(META_KEY_RECOMMENDED, result.data ?: emptyList())
+                    cache.saveMeta(META_KEY_RECOMMENDED, result.meta)
+
+                    emit(
+                        TasstyResponse.Success(
+                            data = result.data?.map { it.toDomain() },
+                            meta = result.meta
+                        )
+                    )
+                }
+
+                is TasstyResponse.Error -> emit(result)
+                is TasstyResponse.Loading -> emit(result)
+            }
+        }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+
+
+    override suspend fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+        emit(TasstyResponse.Loading)
+
+        // Erase when using real api
+        delay(1000)
+
+        val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_NEARBY)
+        if (cachedData.isNotEmpty()) {
+            emit(
+                TasstyResponse.Success(
+                    data = cachedData.map { it.toDomain() },
+                    meta = cachedMeta ?: Meta(0, "", "", null)
+                )
+            )
+            return@flow
+        }
+
+        // Take from remote
+        when (val result = remoteDataSource.getNearbyRestaurants()) {
+            is TasstyResponse.Success -> {
+                // save to cache
+                cache.saveAll(META_KEY_NEARBY, result.data ?: emptyList())
+                cache.saveMeta(META_KEY_NEARBY, result.meta)
+
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
                 )
             }
 
-            // Ambil dari remote
-            val result = remoteDataSource.getRecommendedRestaurants()
-            return@withContext when (result) {
-                is ResultWrapper.Success -> {
-                    Log.d("Diana", "API Success: ${result.data}")
-
-                    cache.saveAll(META_KEY_RECOMMENDED,result.data)
-                    cache.saveMeta(META_KEY_RECOMMENDED,result.meta)
-
-                    ResultWrapper.Success(
-                        result.data.map { it.toDomain() },
-                        result.meta
-                    )
-                }
-                is ResultWrapper.Error -> result
-                is ResultWrapper.Loading -> result
-            }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
         }
-    }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
-    override suspend fun getNearbyRestaurants(): ResultWrapper<List<Restaurant>> =
-        withContext(Dispatchers.IO) {
-            val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_NEARBY)
-            if (cachedData.isNotEmpty()) {
-                return@withContext ResultWrapper.Success(
-                    cachedData.map { it.toDomain() },
-                    cachedMeta ?: Meta(0, "", "", null)
+    override suspend fun getSearchRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+        emit(TasstyResponse.Loading)
+
+        // Erase when using real api
+        delay(1000)
+
+        val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_SEARCH)
+        if (cachedData.isNotEmpty()) {
+            emit(
+                TasstyResponse.Success(
+                    data = cachedData.map { it.toDomain() },
+                    meta = cachedMeta ?: Meta(0, "", "", null)
+                )
+            )
+            return@flow
+        }
+
+        // Take from remote
+        when (val result = remoteDataSource.getNearbyRestaurants()) {
+            is TasstyResponse.Success -> {
+                // save to cache
+                cache.saveAll(META_KEY_SEARCH, result.data ?: emptyList())
+                cache.saveMeta(META_KEY_SEARCH, result.meta)
+
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
                 )
             }
 
-            val result = remoteDataSource.getNearbyRestaurants()
-            return@withContext when (result) {
-                is ResultWrapper.Success -> {
-                    cache.saveAll(META_KEY_NEARBY,result.data)
-                    cache.saveMeta(META_KEY_NEARBY,result.meta)
-                    ResultWrapper.Success(
-                        result.data.map { it.toDomain() },
-                        result.meta
-                    )
-                }
-                is ResultWrapper.Error -> result
-                is ResultWrapper.Loading -> result
-            }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
         }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+
+    override suspend fun getSortingRestaurants(): Flow<TasstyResponse<List<RestaurantMenu>>> = flow {
+        emit(TasstyResponse.Loading)
+
+        // Erase when using real api
+        delay(2000)
+        when (val result = remoteDataSource.getSortingRestaurants()) {
+            is TasstyResponse.Success -> {
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
+                )
+            }
+
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
+        }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 }
+
+

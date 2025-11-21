@@ -152,7 +152,7 @@ fun CategoryTopAppBar(
 
         TopBarButton(icon = R.drawable.filter,
             boxColor =  Orange500, iconColor = Neutral10
-        ) { onFilterClick }
+        ) { onFilterClick() }
     }
 }
 

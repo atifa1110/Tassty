@@ -1,7 +1,6 @@
 package com.example.tassty.component
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -13,30 +12,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
-import coil.compose.AsyncImage
+import com.example.core.domain.model.AddressType
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.R
+import com.example.core.ui.model.UserAddressUiModel
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+
+
 @Composable
-fun BoxLocation(
+fun LocationBox(
     modifier: Modifier = Modifier,
+    resource: UserAddressUiModel,
     onCardClick:() -> Unit
 ){
     Card(
@@ -53,33 +51,37 @@ fun BoxLocation(
             defaultElevation = 20.dp
         )
     ) {
+
         Column (
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp, bottom = 14.dp, start = 8.dp, end = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ){
-            EmptyMapBox()
+            LocationMapBox(
+                fullAddress = resource.fullAddress,
+                latitude = resource.latitude,
+                longitude = resource.longitude
+            )
             Column (
                 modifier = Modifier.padding(horizontal=6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Address title",
+                    text = resource.formatAddressName,
                     style = LocalCustomTypography.current.h5Bold,
                     color = Neutral100
                 )
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Image(
                         painter = painterResource(R.drawable.location),
                         contentDescription = "location"
                     )
                     Text(
-                        text = "-",
+                        text = resource.formatFullAddress,
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Neutral70
                     )
@@ -87,14 +89,14 @@ fun BoxLocation(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Image(
                         painter = painterResource(R.drawable.flag),
                         contentDescription = "flag"
                     )
                     Text(
-                        text = "Type",
+                        text = resource.formatAddressType,
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Neutral70
                     )
@@ -103,25 +105,6 @@ fun BoxLocation(
         }
     }
 }
-
-@Composable
-fun MarkerView(imageUrl: String) {
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.White)
-            .padding(4.dp)
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.size(30.dp).clip(RoundedCornerShape(12.dp))
-        )
-    }
-}
-
 
 @Composable
 fun ListMapBox(
@@ -156,48 +139,49 @@ fun ListMapBox(
 }
 
 
-
-
 @Composable
-fun EmptyMapBox() {
-    val isPreview = LocalInspectionMode.current
+fun LocationMapBox(
+    latitude : Double,
+    longitude: Double,
+    fullAddress: String,
+) {
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(latitude, longitude),
+            13f
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .clip(RoundedCornerShape(20.dp))
     ) {
-        if (isPreview) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(Color.LightGray)
-            )
-        } else {
-            // Kode GoogleMap untuk perangkat nyata
-            val jakarta = LatLng(-6.2088, 106.8456)
-            val cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(jakarta, 12f)
-            }
-            GoogleMap(
-                modifier = Modifier.matchParentSize(),
-                cameraPositionState = cameraPositionState,
-                properties = MapProperties(
-                ),
-                uiSettings = MapUiSettings(
-                    compassEnabled = false,
-                    mapToolbarEnabled = false,
-                    myLocationButtonEnabled = false,
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+            if (fullAddress.isNotEmpty()) {
+                Marker(
+                    state = MarkerState(position = LatLng(latitude,
+                        longitude)),
+                    title = fullAddress,
+                    snippet = fullAddress
                 )
-            ) {
-                // Tidak ada Marker atau Composable lain
             }
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewBoxLocation() {
-    BoxLocation {  }
+    LocationBox(
+        resource = UserAddressUiModel(
+            "","",0.0,0.0,
+            "", "", AddressType.NONE
+        ),
+        onCardClick = {}
+    )
 }

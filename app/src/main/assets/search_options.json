@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "code": 200,
+    "status": "success",
+    "message": "OK",
+    "traceId": "7b1d06b2-221f-4ff4-9e15-7c3c4e8d0f4a"
+  },
+  "data": {
+    "sort_options": [
+      {"key": "RECOMMENDED", "label": "Recommended"},
+      {"key": "NEAREST", "label": "Nearest"},
+      {"key": "POPULARITY", "label": "Popularity"}
+    ],
+    "discount_options": [
+      {"key": "ALL", "label": "Semua Promo"},
+      {"key": "CASHBACK", "label": "Cashback"},
+      {"key": "SHIPPING", "label": "Gratis Ongkir"},
+      {"key": "DISCOUNT", "label": "Potongan Harga"}
+    ],
+    "rating_options": [
+      {"key": "4.5_UP", "label": "Rated 4.5+"},
+      {"key": "4.0_UP", "label": "Rated 4.0+"}
+    ],
+    "price_range_options": [
+      { "key": "below_20000", "label": "Di bawah Rp20.000" },
+      { "key": "20000_50000", "label": "Rp20.000 ~ Rp50.000" },
+      { "key": "50000_200000", "label": "Rp50.000 ~ Rp200.000" },
+      { "key": "above_200000", "label": "Di atas Rp200.000" }
+    ],
+    "cuisine_options": [
+      { "key": "all", "label": "All Cuisines" },
+      { "key": "martabak", "label": "Martabak" },
+      { "key": "bakso_soto", "label": "Bakso & Soto" },
+      { "key": "bakery", "label": "Bakery" },
+      { "key": "chinese", "label": "Chinese" },
+      { "key": "western", "label": "Western" },
+      { "key": "fast_food", "label": "Fast Food" },
+      { "key": "japanese", "label": "Japanese" },
+      { "key": "snacks", "label": "Snacks" },
+      { "key": "sate", "label": "Sate" },
+      { "key": "pizza_pasta", "label": "Pizza & Pasta" },
+      { "key": "noodles", "label": "Noodles" },
+      { "key": "beverages", "label": "Beverages" },
+      { "key": "korean", "label": "Korean" },
+      { "key": "seafood", "label": "Seafood" },
+      { "key": "coffee", "label": "Coffee" },
+      { "key": "indian", "label": "Indian" },
+      { "key": "middle_eastern", "label": "Middle Eastern" }
+    ],
+    "mode_options": [
+      {"key": "DELIVERY", "label": "Delivery"},
+      {"key": "PICKUP", "label": "Pickup"}
+    ]
+  }
+}

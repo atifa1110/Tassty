@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,6 +22,46 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
+
+@Composable
+fun ShimmerFoodCategoryCard(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.size(120.dp)
+            .clip(RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Neutral20
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 20.dp
+        )
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(10.dp)
+            ) {
+                Spacer(
+                    modifier = Modifier.height(16.dp).width(50.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .shimmerLoadingAnimation()
+                )
+            }
+
+            Box(
+                modifier = Modifier.align(Alignment.TopEnd)
+                    .offset(x = 10.dp, y = (-10).dp)
+            ) {
+                Spacer(modifier = Modifier.size(86.dp).clip(CircleShape)
+                    .shimmerLoadingAnimation())
+            }
+        }
+
+    }
+}
+
 
 @Composable
 fun FoodCategoryCard(
@@ -88,5 +129,7 @@ fun PreviewFoodCategoryCard() {
             isSelected = true,
             onCardClick = {}
         )
+
+        ShimmerFoodCategoryCard()
     }
 }

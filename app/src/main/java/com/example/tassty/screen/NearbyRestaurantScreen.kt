@@ -131,7 +131,7 @@ fun DraggableSearchBar(
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically()
             ) {
-                FilterSection(filterState = FilterState())
+                //FilterSection(filterState = FilterState(), onSortClick = )
             }
 
             if (dynamicHeight >= 400.dp) {

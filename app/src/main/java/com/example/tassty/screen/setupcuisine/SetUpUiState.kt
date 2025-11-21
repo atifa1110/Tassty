@@ -8,8 +8,14 @@ data class SetupCuisineUiState(
     val selectedCategoryIds: List<String> = emptyList(),
     val currentSearchQuery: String = "",
     val filteredCategories: List<CategoryUiModel> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isEmptyResult : Boolean = false
 ) {
     val canProceed: Boolean
         get() = selectedCategoryIds.isNotEmpty()
+}
+
+sealed class SetupCuisineEvent {
+    data class ShowError(val message: String) : SetupCuisineEvent()
+    data class NavigateToSetUpLocation(val cuisines : List<String>) : SetupCuisineEvent()
 }

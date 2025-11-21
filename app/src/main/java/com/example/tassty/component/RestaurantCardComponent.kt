@@ -117,10 +117,12 @@ fun RestaurantTinyGridCard (
 
 @Composable
 fun RestaurantGridCard (
-    restaurant : RestaurantUiModel
+    restaurant : RestaurantUiModel,
+    onNavigateToDetail: () -> Unit,
 ){
     Card(
-        modifier = Modifier.width(156.dp), // Adjust width as needed
+        modifier = Modifier.width(156.dp)
+            .clickable(onClick = onNavigateToDetail),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Neutral20),
     ) {
@@ -153,7 +155,7 @@ fun RestaurantLargeGridCard (
         ) {
             RestaurantImageBox(
                 restaurant = restaurant,
-                modifier = Modifier.size(180.dp,120.dp)
+                modifier = Modifier.height(120.dp)
             )
 
             RestaurantLargeGridCardContent(restaurant = restaurant)
@@ -634,7 +636,7 @@ fun RestaurantGridCardPreview() {
     ) {
         Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
             RestaurantTinyGridCard(restaurant = restaurantUiModel[0])
-            RestaurantGridCard(restaurant = restaurantUiModel[0])
+            RestaurantGridCard(restaurant = restaurantUiModel[0], onNavigateToDetail = {})
         }
         RestaurantLargeGridCard(restaurant = restaurantUiModel[0])
     }

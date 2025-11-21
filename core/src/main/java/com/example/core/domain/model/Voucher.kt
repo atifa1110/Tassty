@@ -26,6 +26,7 @@ enum class VoucherType(val displayName: String) {
     SHIPPING("Shipping"),
     CASHBACK("Cashback")
 }
+
 enum class DiscountType(val displayName: String) {
     PERCENTAGE("Percentage"),
     FIXED("Fixed"),

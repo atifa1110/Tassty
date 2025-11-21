@@ -1,14 +1,17 @@
 package com.example.core.data.repository
 
-import com.example.core.data.cache.VoucherCache
+import com.example.core.data.source.local.cache.VoucherCache
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.source.remote.datasource.VoucherNetworkDataSource
 import com.example.core.data.source.remote.network.Meta
-import com.example.core.data.source.remote.network.ResultWrapper
+import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Voucher
 import com.example.core.domain.repository.VoucherRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class VoucherRepositoryImpl @Inject constructor(
@@ -20,32 +23,39 @@ class VoucherRepositoryImpl @Inject constructor(
         private const val META_KEY_TODAY = "today_vouchers"
     }
 
-    override suspend fun getTodayVouchers(): ResultWrapper<List<Voucher>> {
-        return withContext(Dispatchers.IO) {
-            val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_TODAY)
-            if (cachedData.isNotEmpty()) {
-                return@withContext ResultWrapper.Success(
-                    cachedData.map { it.toDomain() },
-                    cachedMeta ?: Meta(0, "", "", null)
+    override suspend fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>> = flow {
+        emit(TasstyResponse.Loading)
+        // Erase when using real api
+        delay(1000)
+
+        val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_TODAY)
+        if (cachedData.isNotEmpty()) {
+            emit(
+                TasstyResponse.Success(
+                    data = cachedData.map { it.toDomain() },
+                    meta = cachedMeta ?: Meta(0, "", "", null)
+                )
+            )
+            return@flow
+        }
+
+        // Take from remote
+        when (val result = remoteDataSource.getTodayVouchers()) {
+            is TasstyResponse.Success -> {
+                // save to cache
+                cache.saveAll(META_KEY_TODAY, result.data?:emptyList())
+                cache.saveMeta(META_KEY_TODAY, result.meta)
+
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
                 )
             }
-
-            val result = remoteDataSource.getTodayVouchers()
-            return@withContext when (result) {
-                is ResultWrapper.Success -> {
-                    cache.saveAll(META_KEY_TODAY, result.data)
-                    cache.saveMeta(META_KEY_TODAY, result.meta)
-
-                    ResultWrapper.Success(
-                        result.data.map { it.toDomain() }, // mapping DTO → Domain
-                        result.meta
-                    )
-                }
-
-                is ResultWrapper.Error -> result
-                is ResultWrapper.Loading -> result
-            }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
         }
-    }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
 }

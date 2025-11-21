@@ -1,12 +1,22 @@
 package com.example.core.di
 
+import com.example.core.data.repository.AuthRepositoryImpl
 import com.example.core.data.repository.CategoryRepositoryImpl
+import com.example.core.data.repository.CollectionRepositoryImpl
+import com.example.core.data.repository.LocationRepositoryImpl
 import com.example.core.data.repository.MenuRepositoryImpl
 import com.example.core.data.repository.RestaurantRepositoryImpl
+import com.example.core.data.repository.SearchRepositoryImpl
+import com.example.core.data.repository.UserRepositoryImpl
 import com.example.core.data.repository.VoucherRepositoryImpl
+import com.example.core.domain.repository.AuthRepository
 import com.example.core.domain.repository.CategoryRepository
+import com.example.core.domain.repository.CollectionRepository
+import com.example.core.domain.repository.LocationRepository
 import com.example.core.domain.repository.MenuRepository
 import com.example.core.domain.repository.RestaurantRepository
+import com.example.core.domain.repository.SearchRepository
+import com.example.core.domain.repository.UserRepository
 import com.example.core.domain.repository.VoucherRepository
 import dagger.Binds
 import dagger.Module
@@ -45,5 +55,34 @@ abstract class RepositoryModule {
     ): CategoryRepository
 
 
+    @Binds
+    @Singleton
+    abstract fun bindCollectionRepository(
+        collectionRepositoryImpl: CollectionRepositoryImpl
+    ): CollectionRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        authRepositoryImpl: AuthRepositoryImpl
+    ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        userRepositoryImpl: UserRepositoryImpl
+    ): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLocationRepository(
+        locationRepositoryImpl: LocationRepositoryImpl
+    ): LocationRepository
+
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchRepository(
+        searchRepositoryImpl: SearchRepositoryImpl
+    ): SearchRepository
 }

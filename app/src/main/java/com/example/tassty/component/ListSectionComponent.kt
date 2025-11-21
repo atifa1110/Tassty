@@ -38,18 +38,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.data.model.Resource
 import com.example.core.domain.model.Category
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.menus
 import com.example.tassty.model.Cart
+import com.example.tassty.model.ChipType
+import com.example.tassty.model.SummaryFilterChip
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
+import kotlin.collections.orEmpty
 
 @Composable
 fun HorizontalTitleSection(
@@ -220,7 +225,7 @@ fun HorizontalTitleSubtitleSection(
 fun LazyListScope.restaurantMenuListBlock(
     itemCount: Int,
     headerText: String,
-    restaurantItems: List<RestaurantUiModel>
+    restaurantItems: List<RestaurantMenuUiModel>
 ) {
     item {
         HeaderListItemCountTitle(
@@ -233,11 +238,11 @@ fun LazyListScope.restaurantMenuListBlock(
 
     items(
         items = restaurantItems,
-        key = { it.restaurant.id }
+        key = { it.restaurant.restaurant.id }
     ) { restaurant ->
         RestaurantContentSection(
-            restaurant = restaurant,
-            menus = menus
+            restaurant = restaurant.restaurant,
+            menus = restaurant.menus
         )
         Spacer(modifier = Modifier.height(12.dp))
     }
@@ -470,6 +475,56 @@ fun FoodCategoryGrid (
         }
     }
 }
+
+@Composable
+fun FilterSection(
+    activeSummaryChips : List<SummaryFilterChip>,
+    onSortClick: () -> Unit
+) {
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(activeSummaryChips) { option ->
+            CustomFilterChip(
+                option = option,
+                onClick = {
+                    if(option.type == ChipType.SORT){
+                        onSortClick()
+                    }
+                }
+            )
+        }
+    }
+}
+
+fun LazyListScope.filterListSection(
+    resource: Resource<List<RestaurantMenuUiModel>>,
+    onRetry: () -> Unit
+){
+    val items = resource.data.orEmpty()
+    when{
+        resource.isLoading ->{
+            item{
+                LoadingRowState()
+            }
+        }
+        resource.errorMessage!=null  ->{
+            item {
+                ErrorScreen()
+            }
+        }
+        else -> {
+            restaurantMenuListBlock(
+                itemCount = items.size,
+                headerText = "Search founds",
+                restaurantItems = items
+            )
+        }
+    }
+}
+
 
 @Preview(showBackground =true)
 @Composable

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -59,6 +60,41 @@ import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink200
 import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
+
+@Composable
+fun LoadingButtonComponent(
+    enabled : Boolean,
+    @StringRes labelResId: Int,
+    isLoading: Boolean = false,
+    onClick:() -> Unit,
+) {
+    Button(
+        enabled = enabled,
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Orange500,
+            contentColor = Color.White,
+            disabledContentColor = Neutral100,
+            disabledContainerColor = Neutral40
+        )
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(
+                text = stringResource(labelResId),
+                style = LocalCustomTypography.current.bodyMediumSemiBold
+            )
+        }
+    }
+}
 
 @Composable
 fun ButtonComponent(

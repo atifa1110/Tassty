@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.core.data.model.Resource
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
@@ -70,7 +71,6 @@ import com.example.tassty.model.Review
 import com.example.tassty.restaurantDetailItem
 import com.example.tassty.reviews
 import com.example.tassty.screen.DetailSearchScreen
-import com.example.tassty.screen.search.Resource
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100

@@ -3,6 +3,7 @@ package com.example.tassty.screen.detailrestaurant
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.data.model.Resource
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.calculateRestaurantStatus
@@ -13,7 +14,6 @@ import com.example.tassty.menus
 import com.example.tassty.model.Cart
 import com.example.tassty.restaurantDetails
 import com.example.tassty.reviews
-import com.example.tassty.screen.search.Resource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -2,6 +2,7 @@ package com.example.tassty.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
@@ -18,10 +19,11 @@ import com.example.core.domain.model.Category
 
 @Composable
 fun CategoryCard(
-    category: CategoryUiModel
+    categoryName: String,
+    imageUrl: String,
+    onClick:() -> Unit
 ) {
-    Box(
-        modifier = Modifier
+    Box(modifier = Modifier.clickable(onClick = onClick)
             .clip(CircleShape)
             .border(
                 width = 1.dp,
@@ -32,7 +34,7 @@ fun CategoryCard(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-       CategoryImageCircle(category = category)
+       CategoryImageCircle(categoryName = categoryName,imageUrl=imageUrl)
     }
 }
 
@@ -40,6 +42,8 @@ fun CategoryCard(
 @Composable
 fun PreviewCategoryScreen() {
     CategoryCard(
-        category = CategoryUiModel(category = Category("","",""))
+        categoryName = "",
+        imageUrl = "",
+        onClick = {}
     )
 }

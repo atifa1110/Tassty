@@ -80,4 +80,10 @@
     <string name="dummy_restaurant_name">Indah Cafe</string>
     <string name="dummy_location">Gerunung Lombok Tengah, Praya</string>
     <string name="resto_ratings">Resto ratings</string>
+    <string name="logo">Logo</string>
+    <string name="tasstty">Tasstty!</string>
+    <string name="home">Home</string>
+    <string name="chat">Chat</string>
+    <string name="profile">Profile</string>
+    <string name="cart">Cart</string>
 </resources>

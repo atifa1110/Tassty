@@ -17,3 +17,11 @@ data class MenuDto(
     val maxOrderQuantity: Int? = null,
     val restaurantId: String
 )
+
+data class MenuShortDto(
+    val id: String,
+    val name: String,
+    val imageUrl: String,
+    val originalPrice: Int,
+    val discountPrice: Int? = null
+)

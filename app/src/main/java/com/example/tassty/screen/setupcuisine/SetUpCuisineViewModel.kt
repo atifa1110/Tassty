@@ -5,58 +5,98 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.usecase.GetAllCategoriesUseCase
+import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.categories
+import com.example.tassty.screen.home.HomeUiState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SetupCuisineViewModel : ViewModel() {
+@HiltViewModel
+class SetupCuisineViewModel @Inject constructor(
+    private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
+) : ViewModel() {
 
-    var uiState by mutableStateOf(SetupCuisineUiState())
-        private set
+    private val _uiState = MutableStateFlow(SetupCuisineUiState())
+    val uiState: StateFlow<SetupCuisineUiState> = _uiState.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQueryText: StateFlow<String> = _searchQuery
 
+    private val _event = MutableSharedFlow<SetupCuisineEvent>()
+    val event = _event.asSharedFlow()
+
     init {
         loadDummyCategories()
-        observeSearchQuery()
+        observeSearchQueryWithDebounce()
     }
 
     private fun loadDummyCategories() {
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
-            delay(5000)
-            uiState = uiState.copy(
-                isLoading = false,
-                categories = categories,
-                filteredCategories = categories
-            )
+            getAllCategoriesUseCase.invoke().collect { result ->
+                when(result) {
+                    is TasstyResponse.Error -> {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _event.emit(SetupCuisineEvent.ShowError(result.meta.message))
+                    }
+                    is TasstyResponse.Loading -> _uiState.update { it.copy(isLoading = true) }
+                    is TasstyResponse.Success -> {
+                        val list = result.data?.map { it.toUiModel() }?:emptyList()
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                categories = list,
+                                filteredCategories = list
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
-    /** 🧠 Listen perubahan search text + debounce untuk melakukan filtering */
-    private fun observeSearchQuery() {
+    fun onNextClick() {
+        viewModelScope.launch {
+            _event.emit(SetupCuisineEvent.NavigateToSetUpLocation(uiState.value.selectedCategoryIds))
+        }
+    }
+
+    /** Observe search query dengan debounce */
+    @OptIn(FlowPreview::class)
+    private fun observeSearchQueryWithDebounce() {
         _searchQuery
-            .debounce(500) // wait user stop 500ms
+            .debounce(500) // tunggu 500ms user berhenti mengetik
             .distinctUntilChanged()
             .onEach { query ->
-                // 1. Lakukan filtering
-                val filtered = uiState.categories.filter {
-                    it.category.name.contains(query, ignoreCase = true)
+                val filtered = if (query.isBlank()) {
+                    uiState.value.categories
+                } else {
+                    uiState.value.categories.filter {
+                        it.category.name.contains(query, ignoreCase = true)
+                    }
                 }
 
-                // 2. Update UIState dengan hasil filter dan hilangkan status loading
-                uiState = uiState.copy(
-                    filteredCategories = filtered,
-                    currentSearchQuery = query, // Menyimpan query yang sudah di-filter
-                    isLoading = false // ✅ Selesai “loading” pencarian
-                )
+                _uiState.update { current ->
+                    current.copy(
+                        filteredCategories = filtered,
+                        currentSearchQuery = query,
+                        isLoading = false
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -64,32 +104,35 @@ class SetupCuisineViewModel : ViewModel() {
     fun onSearchTextChanged(newText: String) {
         _searchQuery.value = newText
 
-        uiState = if (newText.isBlank()) {
-            uiState.copy(
-                filteredCategories = uiState.categories,
-                isLoading = false,
-                currentSearchQuery = ""
-            )
-        } else {
-            uiState.copy(isLoading = true)
+        _uiState.update { current ->
+            if (newText.isBlank()) {
+                current.copy(
+                    filteredCategories = current.categories,
+                    isLoading = false,
+                    currentSearchQuery = ""
+                )
+            } else {
+                current.copy(isLoading = true)
+            }
         }
     }
 
+
     fun toggleCategorySelection(categoryId: String) {
-        val current = uiState.selectedCategoryIds.toMutableList()
+        val current = uiState.value.selectedCategoryIds.toMutableList()
         if (current.contains(categoryId)) {
             current.remove(categoryId)
         } else {
             current.add(categoryId)
         }
-        uiState = uiState.copy(selectedCategoryIds = current)
+        _uiState.update {  it.copy(selectedCategoryIds = current) }
     }
 
     fun setError(message: String?) {
-        uiState = uiState.copy(errorMessage = message)
+        _uiState.update { it.copy(errorMessage = message) }
     }
 
     fun clearSelection() {
-        uiState = uiState.copy(selectedCategoryIds = emptyList())
+        _uiState.update { it.copy(selectedCategoryIds = emptyList()) }
     }
 }

@@ -1,64 +1,67 @@
 package com.example.tassty.screen.search
 
+import com.example.core.data.model.Resource
 import com.example.core.ui.model.CategoryUiModel
+import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
+import com.example.tassty.buildSummaryChips
 import com.example.tassty.model.ChipFilterOption
+import com.example.tassty.model.FilterKey
 import com.example.tassty.model.FilterState
+import com.example.tassty.model.SummaryFilterChip
 
-sealed class SearchUiState {
-    // Initial State (When the query is empty and the keyboard is not yet active)
-    data class Initial(
-        val data: DataState,
-        val status: StatusState
-    ) : SearchUiState()
+data class SearchUiState(
+    val history: Resource<List<ChipFilterOption>> = Resource(),
+    val popular: Resource<List<ChipFilterOption>> = Resource(),
+    val categories: Resource<List<CategoryUiModel>> = Resource(),
+    val restaurants: Resource<List<RestaurantUiModel>> = Resource(),
+    val menus: Resource<List<MenuUiModel>> = Resource(),
+    val queryResult: Resource<List<RestaurantMenuUiModel>> = Resource(emptyList()),
+    val errorMessage: String? = null,
+    val isSearching: Boolean = false,
+    val query: String = "",
 
-    // State when a query is being processed (Global Loading).
-    // Carries old dataState for a smooth Loading + Data UX.
-    data class QueryLoading(
-        val data: DataState,
-        val status: StatusState
-    ) : SearchUiState()
+    val activeFilters: FilterState = FilterState(),
+    val sortBy: FilterOptionUi? = null,
 
-    // State when the query or filter results have been fetched/displayed.
-    data class Result(
-        val data: DataState,
-        val status: StatusState
-    ) : SearchUiState()
+    val isFilterSheetVisible: Boolean = false,
+    val isSortSheetVisible: Boolean = false,
 
-    // State when a fatal error occurs during the main process (e.g., primary API failure)
-    data class ErrorFatal(
-        val data: DataState,
-        val status: StatusState,
-        val message: String
-    ) : SearchUiState()
+    val sortList : List<FilterOptionUi> = emptyList(),
+    val rupiahPriceRanges: List<FilterOptionUi> = emptyList(),
+    val restoRatingsOptions: List<FilterOptionUi> = emptyList(),
+    val discountOptions: List<FilterOptionUi> = emptyList(),
+    val modesOptions: List<FilterOptionUi> = emptyList(),
+    val cuisineOption: List<FilterOptionUi> = emptyList(),
+){
+    val activeSummaryChips: List<SummaryFilterChip>
+        get() = buildSummaryChips(
+            sort = sortBy ,
+            activeFilters = activeFilters
+        )
 }
 
-// Resource: Wrapper State for individual data items (Local Loading, Error, Data)
-data class Resource<T>(
-    val data: T? = null,
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null
-)
 
-// StatusState: Global status affecting the entire UI (Input, Active Filters)
-data class StatusState(
-    val queryText: String = "",
-    val activeFilters: FilterState = FilterState(),
-    val isGlobalLoading: Boolean = false, // Loading for major transitions/refresh
-    val errorMessage: String? = null
-)
+sealed interface SearchEvent {
+    data class ChangeQuery(val query: String) : SearchEvent
+    object Refresh : SearchEvent
+    object Retry : SearchEvent
+    object ClearError : SearchEvent
 
-// DataState: All list data being loaded. Each list is wrapped in Resource<T>
-data class DataState(
-    // Initial Content
-    val history: Resource<List<ChipFilterOption>> = Resource(emptyList()),
-    val popularSearches: Resource<List<ChipFilterOption>> = Resource(emptyList()),
-    val categories: Resource<List<CategoryUiModel>> = Resource(emptyList()),
-    val rest : Resource<List<RestaurantUiModel>> = Resource(emptyList()),
-    val menus: Resource<List<MenuUiModel>> = Resource(emptyList()),
+    object ShowSortSheet : SearchEvent
+    data class UpdateDraftSort(val sortKey: String): SearchEvent
+    object ResetFilter: SearchEvent
+    object ApplySort : SearchEvent
 
-    // Search Results
-    val queryResult: Resource<List<RestaurantUiModel>> = Resource(emptyList()),
-    val filterResult: Resource<List<RestaurantUiModel>> = Resource(emptyList())
-)
+    object ShowFilterSheet : SearchEvent
+
+    data class UpdateDraftFilter(
+        val filterKey: FilterKey,
+        val value: String
+    ) : SearchEvent
+
+    object ResetSort: SearchEvent
+    object ApplyFilters : SearchEvent
+}

@@ -152,7 +152,8 @@ fun CategoryTextHeader(
 
 @Composable
 fun CategoryAndDescriptionHeader(
-    category: String
+    category: String,
+    imageUrl: String
 ){
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -160,7 +161,7 @@ fun CategoryAndDescriptionHeader(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         CategoryTextHeader(title = category, subtitle = "Some lunch boosters!")
-        CategoryCard(category = categoriesItem)
+        CategoryCard(categoryName = category, imageUrl = imageUrl, onClick = {})
     }
 }
 

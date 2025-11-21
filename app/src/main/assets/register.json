@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "code": 200,
+    "status": "success",
+    "message": "Registrasi berhasil. Silakan cek email Anda untuk verifikasi.",
+    "traceId": "abcd1234"
+  },
+  "data": {
+    "email": "atifiorenza24@gmail.com",
+    "token": "abc123def456",
+    "name": "Atifa Fiorenza",
+    "profileImage": "",
+    "addressName": ""
+  }
+}

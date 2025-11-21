@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import android.widget.Space
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.ui.theme.Neutral20
 
 @Composable
@@ -63,6 +65,47 @@ fun ShimmerRestaurantGridCard (){
                         .shimmerLoadingAnimation()
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun ShimmerRestaurantTinyGridCard (
+){
+    Card(
+        modifier = Modifier.width(140.dp), // Adjust width as needed
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20)
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .size(124.dp,120.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .shimmerLoadingAnimation()
+            )
+
+            Column {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth().clip(RoundedCornerShape(20.dp))
+                        .height(12.dp)
+                        .shimmerLoadingAnimation()
+                )
+
+                Spacer(Modifier.height(8.dp))
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth().clip(RoundedCornerShape(20.dp))
+                        .height(12.dp)
+                        .shimmerLoadingAnimation()
+                )
+            }
+
         }
     }
 }

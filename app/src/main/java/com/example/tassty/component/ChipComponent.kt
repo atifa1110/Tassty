@@ -31,8 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
-import com.example.tassty.model.ChipOption
-import com.example.tassty.restoRatingsOptions
+import com.example.tassty.model.SummaryFilterChip
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -83,22 +82,9 @@ fun Personal50Chip(){
     )
 }
 
-//@Composable
-//fun CustomFilterChip(
-//    filter: Filter
-//) {
-//    CustomShortChip(
-//        image = filter.iconId,
-//        color = Neutral20,
-//        iconColor = Neutral70,
-//        label = filter.label,
-//        labelColor = Neutral70
-//    )
-//}
-
 @Composable
 fun CustomShortChip(
-    image : Int,
+    image : Int?,
     label : String,
     labelColor : Color,
     color: Color,
@@ -113,13 +99,15 @@ fun CustomShortChip(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 11.dp)
         ) {
-            Icon(
-                painter = painterResource(id = image),
-                contentDescription = "",
-                tint = iconColor,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(Modifier.width(if(label.isNotEmpty()) 8.dp else 0.dp))
+            image?.let {
+                Icon(
+                    painter = painterResource(id = it),
+                    contentDescription = "",
+                    tint = iconColor,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+            }
             Text(
                 text = label,
                 style = LocalCustomTypography.current.bodyMediumMedium,
@@ -211,16 +199,17 @@ fun CustomSearchChip(
 
 @Composable
 fun CustomFilterChip(
-    option: ChipOption,
+    option: SummaryFilterChip,
     onClick: () -> Unit,
 ) {
+    val config = option.type
     CustomShortChip(
-        image = option.icon?:0,
-        color = if(option.isSelected) option.selectedColor else Neutral20,
-        iconColor = if(option.isSelected) option.selectedIconColor else Neutral70,
+        image = option.icon,
+        color = if(option.isSelected) config.selectedColor else Neutral20,
+        iconColor = if(option.isSelected) config.selectedIconColor else Neutral70,
         label = option.label,
-        labelColor = if(option.isSelected) option.selectedLabelColor else Neutral70,
-        modifier = Modifier.border(1.dp,if(option.isSelected) option.selectedBorderColor else Color.Transparent,
+        labelColor = if(option.isSelected) config.selectedLabelColor else Neutral70,
+        modifier = Modifier.border(1.dp,if(option.isSelected) config.selectedBorderColor else Color.Transparent,
             RoundedCornerShape(100.dp)
         ).clickable(onClick = onClick)
     )
@@ -242,10 +231,10 @@ fun PreviewFilterScreen() {
             onClick = {}
         )
 
-        ChipFilterSection(
-            title = "Resto ratings",
-            options = restoRatingsOptions,
-            selectedKeys = setOf("Rated 2.0+", "tea", "juice")
-        ) { }
+//        ChipFilterSection(
+//            title = "Resto ratings",
+//            options = restoRatingsOptions,
+//            selectedKeys = setOf("Rated 2.0+", "tea", "juice")
+//        ) { }
     }
 }

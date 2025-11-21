@@ -7,10 +7,9 @@ data class Review(
     val date: String,
     val rating: Int,
     val reviewText: String,
-    val profilePicture: String // Gunakan Int untuk resource ID gambar
+    val profilePicture: String
 )
 
-// 1. Data Class untuk Opsi Individual (Chicken Thigh, Eggs, dll.)
 data class MenuItemOption(
     val id: String,
     val name: String,

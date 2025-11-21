@@ -1,9 +1,10 @@
 package com.example.tassty
 
-import androidx.compose.ui.graphics.Color
 import com.example.core.domain.model.Category
+import com.example.core.domain.model.CollectionListItem
 import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.LocationDetails
+import com.example.core.domain.model.Menu
 import com.example.core.domain.model.MenuStatus
 import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.Restaurant
@@ -14,6 +15,8 @@ import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
 import com.example.core.domain.model.VoucherType
 import com.example.core.ui.model.CategoryUiModel
+import com.example.core.ui.model.CollectionUiModel
+import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantDetailUiModel
 import com.example.core.ui.model.RestaurantStatusResult
@@ -21,25 +24,21 @@ import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.model.AddressType
 import com.example.tassty.model.Cart
 import com.example.tassty.model.ChipFilterOption
-import com.example.tassty.model.ChipOption
+import com.example.tassty.model.ChipType
 import com.example.tassty.model.CollectionUiItem
+import com.example.tassty.model.FilterState
 import com.example.tassty.model.MenuChoiceSection
 import com.example.tassty.model.MenuItemOption
-import com.example.tassty.model.RadioFilterOption
 import com.example.tassty.model.Review
+import com.example.tassty.model.SummaryFilterChip
 import com.example.tassty.model.UserAddress
-import com.example.tassty.ui.theme.Blue500
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Orange50
-import com.example.tassty.ui.theme.Orange500
-import com.example.tassty.ui.theme.Pink500
 import java.util.Locale
 import org.threeten.bp.LocalDate
-import org.threeten.bp.format.DateTimeFormatter
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
+
+
 
 fun hashUrl(url: String): String {
     return url.hashCode().toString()
@@ -74,59 +73,6 @@ val addresses = listOf(
     )
 )
 
-val baseChips = listOf(
-    ChipOption(
-        key = "sort",
-        label = "Sort",
-        icon = R.drawable.arrow_down,
-        selectedColor = Orange50,
-        selectedLabelColor = Neutral100,
-        selectedIconColor = Orange500,
-        selectedBorderColor = Orange500,
-        isSelected = false // default aktif
-    ),
-    ChipOption(
-        key = "rated",
-        label = "Rating",
-        icon = R.drawable.star,
-        selectedColor = Orange500,
-        selectedLabelColor = Neutral10,
-        selectedIconColor = Neutral10,
-        selectedBorderColor = Color.Transparent,
-        isSelected = false
-    ),
-    ChipOption(
-        key = "promo",
-        label = "Promo available",
-        icon = R.drawable.promo,
-        selectedColor = Blue500,
-        selectedLabelColor = Neutral10,
-        selectedIconColor = Neutral10,
-        selectedBorderColor = Color.Transparent,
-        isSelected = false
-    ),
-    ChipOption(
-        key = "delivery",
-        label = "Delivery",
-        icon = R.drawable.hand,
-        selectedColor = Pink500,
-        selectedLabelColor = Neutral10,
-        selectedIconColor = Neutral10,
-        selectedBorderColor = Color.Transparent,
-        isSelected = false
-    )
-)
-
-val restoRatingsOptions = listOf(
-    ChipFilterOption("Rated 4.0+", R.drawable.star),
-    ChipFilterOption("Rated 4.5+", R.drawable.star)
-)
-val discountOptions = listOf(
-    ChipFilterOption("All type promo", R.drawable.promo),
-    ChipFilterOption("Membership", R.drawable.users),
-    ChipFilterOption("Credit card payments", R.drawable.tag)
-)
-
 val historyOptions = listOf(
     ChipFilterOption("Chicken", R.drawable.history),
     ChipFilterOption("KFC", R.drawable.history),
@@ -142,22 +88,65 @@ val popularOptions = listOf(
     ChipFilterOption("Flower", R.drawable.history)
 )
 
-val modesOptions = listOf(
-    ChipFilterOption("Delivery", R.drawable.hand),
-    ChipFilterOption("Pickup", R.drawable.hand)
-)
+fun buildSummaryChips(
+    sort: FilterOptionUi?,
+    activeFilters: FilterState,
+    alwaysShow: List<Pair<String, ChipType>> = listOf(
+        "sort" to ChipType.SORT,
+        "rating" to ChipType.RATING,
+        "promo" to ChipType.PROMO,
+        "delivery" to ChipType.DELIVERY
+    )
+): List<SummaryFilterChip> {
+    val chips = mutableListOf<SummaryFilterChip>()
+    // Always show filters
+    alwaysShow.forEach { (key, type) ->
+        val activeOption = when (key) {
+            "sort" -> sort
+            "rating" -> activeFilters.restoRating
+            "promo" -> activeFilters.discounts
+            "delivery" -> activeFilters.mode
+            else -> null
+        }
 
-val cuisineOptions = listOf(
-    RadioFilterOption("Beverages", "cuisine_beverages"),
-    RadioFilterOption("Snacks", "cuisine_snacks")
-)
+        val isSelected = activeOption?.isSelected ?: false
+        val label = activeOption?.label ?: type.defaultLabel
+        val icon = activeOption?.iconRes ?: type.defaultIcon
 
-val rupiahPriceRanges = listOf(
-    RadioFilterOption("Di bawah Rp20.000", "below_20"),
-    RadioFilterOption("Rp20.000 ~ Rp50.000", "range_20_50"),
-    RadioFilterOption("Rp50.000 ~ Rp200.000", "range_50_200"),
-    RadioFilterOption("Di atas Rp200.000", "above_200")
-)
+        chips.add(
+            SummaryFilterChip(
+                type = type,
+                key = key,
+                label = label,
+                icon = icon,
+                isSelected = isSelected
+            )
+        )
+    }
+
+    // Conditional filters: price & cuisine
+    listOf("price" to ChipType.PRICE, "cuisine" to ChipType.CUISINE).forEach { (key, type) ->
+        val activeOption = when (key) {
+            "price" -> activeFilters.priceRange
+            "cuisine" -> activeFilters.cuisine
+            else -> null
+        }
+
+        activeOption?.takeIf { it.isSelected }?.let {
+            chips.add(
+                SummaryFilterChip(
+                    type = type,
+                    key = key,
+                    label = it.label,
+                    icon = it.iconRes ?: type.defaultIcon,
+                    isSelected = true
+                )
+            )
+        }
+    }
+
+    return chips
+}
 
 var menuSections = listOf(
     MenuChoiceSection(
@@ -200,9 +189,12 @@ val operationalHours = listOf(
     OperationalDay("Sunday", "Off Day")
 )
 
-val collection = CollectionUiItem(
-    collectionId = "1",name = "Favorite Salad",
-    itemCount = 2, thumbnailUrl = "",isSelected = false
+val collection = CollectionUiModel(
+    collection = CollectionListItem(
+        collectionId = 1,name = "Favorite Salad",
+        menuCount = 2, firstItemImageUrl = ""
+    ),
+    isSelected = false
 )
 
 val collections = listOf(
@@ -234,8 +226,8 @@ val reviews = listOf(
 )
 val menus = listOf(
     MenuUiModel(
-        menu = com.example.core.domain.model.Menu(
-            id = "RES-001", // karena tidak ada "id" di JSON, tapi ada "restaurantId"
+        menu = Menu(
+            id = "RES-001",
             name = "Shabu Premium Set",
             description = "",
             imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
@@ -249,14 +241,14 @@ val menus = listOf(
             rank = 1,
             distanceMeters = 750,
             maxOrderQuantity = 3,
-            operationalHours = emptyList() // karena tidak ada datanya di JSON
+            operationalHours = emptyList()
         ),
         status = MenuStatus.CLOSED,
         isWishlist = false
     ),
     MenuUiModel(
-        menu = com.example.core.domain.model.Menu(
-            id = "RES-002", // karena tidak ada "id" di JSON, tapi ada "restaurantId"
+        menu = Menu(
+            id = "RES-002",
             name = "Shabu Premium Set",
             description = "",
             imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
@@ -276,6 +268,9 @@ val menus = listOf(
         isWishlist = false
     )
 )
+
+val menuItem = menus[0]
+
 
 val carts = listOf(
     Cart(id = "1", name = "Fresh Salad", price = 28000, quantity = 1, isChecked = false, stock=4, note = listOf("Notes: Add more cheese","Choice of protein: Beef", "Choice of dressing: Caesar, Balsamic vinaigrette"),
@@ -285,30 +280,6 @@ val carts = listOf(
         imageUrl = "https://i.gojekapi.com/darkroom/gofood-indonesia/v2/images/uploads/ad2ab90b-ecd0-46f7-b172-48be7b70f922_Combo-Asik-Berdua.jpg?auto=format"),
 )
 
-val menuItem =
-    MenuUiModel(
-        menu = com.example.core.domain.model.Menu(
-            id = "RES-001", // karena tidak ada "id" di JSON, tapi ada "restaurantId"
-            name = "Shabu Premium Set",
-            description = "",
-            imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
-            originalPrice = 150000,
-            discountPrice = 130000,
-            isAvailable = true,
-            rating = 4.8,
-            soldCount = 120,
-            isBestSeller = true,
-            isRecommended = true,
-            rank = 1,
-            distanceMeters = 750,
-            maxOrderQuantity = 3,
-            operationalHours = emptyList() // karena tidak ada datanya di JSON
-        ),
-        status = MenuStatus.CLOSED,
-        isWishlist = false
-    )
-
-
 val restaurantDetails = listOf(
     RestaurantDetail(
         restaurant = Restaurant(
@@ -317,9 +288,9 @@ val restaurantDetails = listOf(
             imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
             category = listOf("Bakery", "Martabak", "Western"),
             rating = 4.9,
-            reviewCount = 1250, // Nilai reviewCount diisi
+            reviewCount = 1250,
             deliveryTime = "10-20 min",
-            locationDetails = LocationDetails( // city dan koordinat dipindahkan ke sini
+            locationDetails = LocationDetails(
                 fullAddress = "Jl. Sudirman No. 10",
                 latitude = -6.2088,
                 longitude = 106.8456,
@@ -437,14 +408,6 @@ val restaurantDetailItem = RestaurantDetailUiModel(
     isWishlist = false,
     operationalStatus = RestaurantStatusResult(RestaurantStatus.CLOSED,"")
 )
-
-val userCurrentLocation = LocationDetails(
-    fullAddress = "Lokasi Pengguna",
-    latitude = -6.2150,
-    longitude = 106.8400,
-    city = "Jakarta"
-)
-
 
 
 /**
@@ -711,10 +674,10 @@ fun markToday(operationalHours: List<OperationalDay>): List<OperationalDay> {
 
 val categories = listOf(
     CategoryUiModel(category = Category("1","Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format")),
-    CategoryUiModel(category = Category("2","Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format"))
+    CategoryUiModel(category = Category("2","Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format")),
 )
 
-val categoriesItem = CategoryUiModel(category = Category("1","Martabak","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format"))
+val categoriesItem = categories[0]
 
 fun getSampleVouchers(): List<VoucherUiModel> {
     return listOf(
@@ -770,11 +733,6 @@ fun filterVouchersByRestaurant(targetRestaurantId: String): List<VoucherUiModel>
         // Kriteria 1: Voucher GLOBAL selalu disertakan
         val isGlobal = voucher.voucher.scope == VoucherScope.GLOBAL
 
-        // Kriteria 2: Voucher RESTAURANT disertakan HANYA jika ID target cocok
-//        val isRestaurantSpecificMatch = voucher.voucher.scope == VoucherScope.RESTAURANT &&
-//                voucher.restaurantIds.contains(targetRestaurantId)
-
-        // Gabungkan kedua kriteria: (GLOBAL) ATAU (RESTAURANT dan ID cocok)
         isGlobal //|| isRestaurantSpecificMatch
     }
 }
@@ -788,25 +746,4 @@ fun placeholder() = Restaurant(
     reviewCount = 0
 )
 
-val voucherItem = VoucherUiModel(
-    voucher = Voucher(
-        id = "VCHR001",
-        code =  "DISKON20",
-        imageUrl = "https://example.com/images/voucher_discount_20.png",
-        title =  "Diskon 20% Semua Menu",
-        description= "Nikmati diskon 20% untuk semua menu tanpa minimum pembelian.",
-        type= VoucherType.DISCOUNT,
-        discountType= DiscountType.PERCENTAGE,
-        scope = VoucherScope.RESTAURANT,
-        discountValue = 20,
-        maxDiscount= 50000,
-        minOrderValue = 50000,
-        minOrderLabel ="Tanpa minimum pembelian",
-        startDate= LocalDate.of(2024,10,24),
-        expiryDate=LocalDate.of(2024,10,24),
-        status= VoucherStatus.AVAILABLE,
-        terms = "Tidak dapat digabung dengan promo lain. Berlaku untuk semua restoran yang berpartisipasi."
-    ),
-    isUsable = true,
-    isSelected = false
-)
+val voucherItem = getSampleVouchers()[0]

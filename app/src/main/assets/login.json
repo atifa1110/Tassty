@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "code": 200,
+    "status": "success",
+    "message": "Login berhasil",
+    "traceId": "abcd1234"
+  },
+  "data": {
+    "email": "atifiorenza24@gmail.com",
+    "token": "abc123def456",
+    "name": "Atifa Fiorenza",
+    "profileImage": "https://example.com/profile.jpg",
+    "addressName": "My House"
+  }
+}

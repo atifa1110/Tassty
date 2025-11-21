@@ -1,14 +1,17 @@
 package com.example.core.data.repository
 
-import com.example.core.data.cache.CategoryCache
+import com.example.core.data.source.local.cache.CategoryCache
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.source.remote.datasource.CategoryNetworkDataSource
 import com.example.core.data.source.remote.network.Meta
-import com.example.core.data.source.remote.network.ResultWrapper
+import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Category
 import com.example.core.domain.repository.CategoryRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class CategoryRepositoryImpl @Inject constructor(
@@ -20,30 +23,40 @@ class CategoryRepositoryImpl @Inject constructor(
         private const val META_KEY_CATEGORY = "all_categories"
     }
 
-    override suspend fun getAllCategories(): ResultWrapper<List<Category>> {
-        return withContext(Dispatchers.IO) {
-            val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_CATEGORY)
-            if (cachedData.isNotEmpty()) {
-                return@withContext ResultWrapper.Success(
-                    cachedData.map { it.toDomain() },
-                    cachedMeta ?: Meta(0, "", "", null)
+    override fun getAllCategories(): Flow<TasstyResponse<List<Category>>> = flow {
+        emit(TasstyResponse.Loading)
+        // Erase when using real api
+        delay(1000)
+
+        // Cek cache
+        val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_CATEGORY)
+        if (cachedData.isNotEmpty()) {
+            emit(
+                TasstyResponse.Success(
+                    data = cachedData.map { it.toDomain() },
+                    meta = cachedMeta ?: Meta(0, "", "", null)
+                )
+            )
+            return@flow
+        }
+
+        // Take from remote
+        when (val result = remoteDataSource.getAllCategories()) {
+            is TasstyResponse.Success -> {
+                // save to cache
+                cache.saveAll(META_KEY_CATEGORY, result.data?:emptyList())
+                cache.saveMeta(META_KEY_CATEGORY, result.meta)
+
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
                 )
             }
-
-            val result = remoteDataSource.getAllCategories()
-            return@withContext when (result) {
-                is ResultWrapper.Success -> {
-                    cache.saveAll(META_KEY_CATEGORY, result.data)
-                    cache.saveMeta(META_KEY_CATEGORY, result.meta)
-
-                    ResultWrapper.Success(
-                        result.data.map { it.toDomain() },
-                        result.meta
-                    )
-                }
-                is ResultWrapper.Error -> result
-                is ResultWrapper.Loading -> result
-            }
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
         }
-    }
+    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+
 }

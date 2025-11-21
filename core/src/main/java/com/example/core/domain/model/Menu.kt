@@ -27,3 +27,15 @@ data class MenuBusinessInfo(
     val isWishlist: Boolean = false,
     val status: MenuStatus
 )
+
+// C. Domain Model: Data Lengkap Menu dari Memory Cache (Digunakan di Repository)
+data class MenuFullDetail(
+    val serverId: String,
+    val name: String,
+    val price: Int,
+    val description: String?,
+    val imageUrl: String?,
+    val restaurantId: String,
+    val restaurantName: String,
+    val restaurantLocation: String
+)

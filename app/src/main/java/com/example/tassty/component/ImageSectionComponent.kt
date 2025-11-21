@@ -38,6 +38,7 @@ import coil.request.ImageRequest
 import com.example.core.domain.model.DisplayStatus
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.CategoryUiModel
+import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
@@ -79,10 +80,11 @@ fun <T : DisplayStatus> StatusItemImage(
 ) {
     val context = LocalContext.current
     val imageLoader = rememberImageLoader()
+    val safeImageUrl = imageUrl.ifBlank { null }
     val imageRequest = ImageRequest.Builder(context)
         .data(imageUrl)
-        .diskCacheKey("image_${hashUrl(imageUrl)}")
-        .memoryCacheKey("image_${hashUrl(imageUrl)}")
+        .diskCacheKey("image_${hashUrl(safeImageUrl ?: name)}")
+        .memoryCacheKey("image_${hashUrl(safeImageUrl ?: name)}")
         .diskCachePolicy(CachePolicy.ENABLED)
         .memoryCachePolicy(CachePolicy.ENABLED)
         .crossfade(true)
@@ -103,6 +105,7 @@ fun <T : DisplayStatus> StatusItemImage(
         modifier = modifier,
         placeholder = placeholder,
         error = placeholder,
+        fallback = placeholder,
         colorFilter = filter
     )
 }
@@ -140,11 +143,12 @@ fun CommonImage(
 
 @Composable
 fun CategoryImageCircle(
-    category: CategoryUiModel
+    categoryName: String,
+    imageUrl: String
 ){
     CommonImage(
-        imageUrl = category.category.imageUrl,
-        name = category.category.name,
+        imageUrl = imageUrl,
+        name = categoryName,
         modifier = Modifier.size(24.dp)
             .clip(CircleShape)
     )
@@ -180,12 +184,12 @@ fun FoodImageRound(
 
 @Composable
 fun CollectionImageRound(
-    collection: CollectionUiItem,
+    collection: CollectionUiModel,
     modifier: Modifier = Modifier
 ){
     CommonImage(
-        imageUrl = collection.thumbnailUrl,
-        name = collection.name,
+        imageUrl = collection.collection.firstItemImageUrl?:"",
+        name = collection.collection.name,
         modifier = modifier.fillMaxSize()
             .clip(RoundedCornerShape(10))
     )

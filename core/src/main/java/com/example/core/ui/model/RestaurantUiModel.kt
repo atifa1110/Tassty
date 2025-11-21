@@ -22,12 +22,6 @@ data class RestaurantUiModel(
     val long : Double get() = restaurant.locationDetails.longitude
 }
 
-//enum class RestaurantStatus {
-//    OPEN,
-//    CLOSED,
-//    OFFDAY
-//}
-
 data class RestaurantStatusResult(
     val status: RestaurantStatus,
     val message: String

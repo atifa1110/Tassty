@@ -2,10 +2,10 @@ package com.example.tassty
 
 import com.example.core.domain.model.LocationDetails
 import com.example.core.domain.model.Restaurant
+import com.example.core.domain.model.RestaurantStatus
 import com.example.core.domain.utils.calculateHaversine
 import com.example.core.domain.utils.getTodayStatus
 import com.example.core.ui.model.RestaurantUiModel
-
 
 val restaurants = listOf(
     Restaurant(
@@ -14,9 +14,9 @@ val restaurants = listOf(
         imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
         category = listOf("Bakery", "Martabak", "Western"),
         rating = 4.9,
-        reviewCount = 1250, // Nilai reviewCount diisi
+        reviewCount = 1250,
         deliveryTime = "10-20 min",
-        locationDetails = LocationDetails( // city dan koordinat dipindahkan ke sini
+        locationDetails = LocationDetails(
             fullAddress = "Jl. Sudirman No. 10",
             latitude = -6.2088,
             longitude = 106.8456,
@@ -92,12 +92,10 @@ val restaurants = listOf(
 
 
 fun Restaurant.toUiModel(): RestaurantUiModel {
-    val statusResult = this.getTodayStatus()
-    val distance = calculateHaversine(userCurrentLocation,this.locationDetails)
     return RestaurantUiModel(
         restaurant = this,
-        distance = distance,
-        operationalStatus = statusResult
+        distance = 300,
+        operationalStatus = RestaurantStatus.OPEN
     )
 }
 

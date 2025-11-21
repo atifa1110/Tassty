@@ -51,6 +51,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig =true
+        viewBinding=true
     }
 }
 
@@ -64,6 +65,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -83,6 +88,9 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.compose.material)
 
+    implementation(libs.accompanist.navigation.material)
+    implementation(libs.accompanist.navigation.animation)
+
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     implementation(libs.threeten.abp)
@@ -97,6 +105,11 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    implementation(project(":core"))
+    implementation(libs.navigation.compose)
 
+    implementation(libs.core.splashscreen)
+    implementation(libs.core.ktx)
+
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(project(":core"))
 }

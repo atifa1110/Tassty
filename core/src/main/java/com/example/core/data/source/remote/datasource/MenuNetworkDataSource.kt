@@ -1,23 +1,30 @@
 package com.example.core.data.source.remote.datasource
 
 import com.example.core.data.model.MenuDto
-import com.example.core.data.source.remote.api.MenuApi
-import com.example.core.data.source.remote.network.ResultWrapper
-import com.example.core.data.source.remote.network.safeApiCall
+import com.example.core.data.source.remote.api.MenuApiService
+import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.data.source.remote.network.safeApiCall2
 import javax.inject.Inject
 
 class MenuNetworkDataSource @Inject constructor(
-    private val service: MenuApi
+    private val service: MenuApiService
 ){
-    suspend fun getRecommendedMenus() : ResultWrapper<List<MenuDto>>{
-        return safeApiCall {
+    suspend fun getRecommendedMenus() : TasstyResponse<List<MenuDto>>{
+        return safeApiCall2 {
             service.getRecommendedMenus()
         }
     }
 
-    suspend fun getSuggestedMenus() : ResultWrapper<List<MenuDto>>{
-        return safeApiCall {
+    suspend fun getSuggestedMenus() : TasstyResponse<List<MenuDto>>{
+        return safeApiCall2 {
             service.getSuggestedMenus()
         }
     }
+
+    suspend fun getSearchMenus() : TasstyResponse<List<MenuDto>>{
+        return safeApiCall2 {
+            service.getSearchMenus()
+        }
+    }
+
 }

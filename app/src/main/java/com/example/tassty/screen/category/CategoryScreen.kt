@@ -1,96 +1,112 @@
 package com.example.tassty.screen.category
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.domain.model.RestaurantStatus
-import com.example.tassty.R
 import com.example.tassty.component.*
 import com.example.tassty.model.FilterState
 import com.example.tassty.restaurantUiModel
 import com.example.tassty.screen.search.FilterSection
 import com.example.tassty.ui.theme.Neutral10
-import kotlin.collections.isNotEmpty
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryScreen(
-    category: String,
-    uiState: CategoryUiState,
+    categoryName: String,
+    imageUrl : String,
+    viewModel: CategoryViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
+    val  uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Extract active filters from uiState
-    val activeFilters = when (uiState) {
-        is CategoryUiState.Success -> uiState.activeFilters
-        is CategoryUiState.Error -> uiState.activeFilters
-        is CategoryUiState.Loading -> FilterState()
+    CategoryContent(
+        categoryName = categoryName,
+        imageUrl = imageUrl,
+        uiState = uiState,
+        onFilterClick = {viewModel.onEvent(CategoryEvent.ShowFilterSheet)},
+        onQueryChange = {viewModel.onEvent(CategoryEvent.onQueryChange(it))}
+    )
+
+    CustomBottomSheet(
+        visible = uiState.isFilterSheetVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        FilterContent(
+            rupiahPriceRanges = uiState.rupiahPriceRanges,
+            restoRatingsOptions = uiState.restoRatingsOptions,
+            discountOptions = uiState.discountOptions,
+            modesOptions = uiState.modesOptions,
+            cuisineOption = uiState.cuisineOption,
+            onUpdateDraftFilter = {key, value-> viewModel.onEvent(CategoryEvent.UpdateDraftFilter(key,value))},
+            onApplyFilter = {viewModel.onEvent(CategoryEvent.ApplyFilters)},
+            onResetFilter = {viewModel.onEvent(CategoryEvent.ResetFilter)}
+        )
     }
+}
 
+@Composable
+fun CategoryContent(
+    categoryName: String,
+    imageUrl : String,
+    uiState: CategoryUiState,
+    onFilterClick:()-> Unit,
+    onQueryChange: (String) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
         item {
-            // 1. Header Image with Parallax effect
             ScrollableHeaderContent(
-                imageUrl = "https://i.gojekapi.com/darkroom/butler-id/v2/images/images/bf94423b-8781-440d-ad51-c37d4cd75add_cuisine-martabak-banner.png?auto=format",
+                imageUrl = imageUrl,
                 status = RestaurantStatus.OPEN,
-                category = category
+                category = categoryName,
+                onFilterClick = onFilterClick
             )
         }
-        // Sticky search bar and filters
+
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth().padding(horizontal = 24.dp)
                     .offset(y=-(24).dp)
             ) {
-                SearchBarWhiteSection(value = "", onValueChange = {})
+                SearchBarWhiteSection(value = uiState.query,
+                    onValueChange = onQueryChange)
             }
         }
 
         item{
-            FilterSection(filterState = activeFilters)
+            FilterSection(
+                activeSummaryChips = uiState.activeSummaryChips,
+                onSortClick = {}
+            )
             Divider32()
         }
 
-        // Content based on uiState
-        when (uiState) {
-            is CategoryUiState.Loading -> item { LoadingScreen() }
-            is CategoryUiState.Error -> item { ErrorScreen() }
-            is CategoryUiState.Success -> {
-                if (uiState.restaurants.isNotEmpty()) {
-                    restaurantMenuListBlock(
-                        itemCount = uiState.totalCount,
-                        headerText = context.getString(R.string.restos_that_have, category),
-                        restaurantItems = uiState.restaurants
-                    )
-                } else {
-                    item {
-                        EmptySearchResult(title = context.getString(R.string.restos_that_have, category))
-                    }
-                }
-            }
-        }
+        filterListSection(
+            resource = uiState.queryResult,
+            onRetry = {}
+        )
     }
 }
 
+
 @Composable
 fun ScrollableHeaderContent(
+    modifier: Modifier = Modifier,
     imageUrl: String,
     status: RestaurantStatus,
     category: String,
-    modifier: Modifier = Modifier
+    onFilterClick: () -> Unit
 ) {
     val imageHeight = 304.dp
 
@@ -99,7 +115,6 @@ fun ScrollableHeaderContent(
             .fillMaxWidth()
             .height(imageHeight)
     ) {
-        // A. Header Image with status overlay
         StatusItemImage(
             imageUrl = imageUrl,
             name = "category header image",
@@ -110,7 +125,6 @@ fun ScrollableHeaderContent(
                 .align(Alignment.TopCenter)
         )
 
-        // B. Category card overlay at bottom of header
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,12 +139,12 @@ fun ScrollableHeaderContent(
                         end = 24.dp, top = 24.dp,
                         bottom = 48.dp)
             ) {
-                CategoryAndDescriptionHeader(category = category)
+                CategoryAndDescriptionHeader(category = category, imageUrl = imageUrl)
             }
         }
 
         CategoryTopAppBar(
-            onFilterClick = {},
+            onFilterClick = onFilterClick,
             onBackClick = {},
             modifier = Modifier.align(Alignment.TopCenter)
         )
@@ -140,12 +154,15 @@ fun ScrollableHeaderContent(
 @Preview(showBackground = true)
 @Composable
 fun PreviewCategoryScreenSuccess() {
-    CategoryScreen(
-        category = "Ramen",
-        uiState = CategoryUiState.Success(
+    CategoryContent(
+        categoryName = "Ramen",
+        imageUrl = "",
+        uiState = CategoryUiState(
             restaurants = restaurantUiModel,
             totalCount = 0,
-            activeFilters = FilterState(sort = "Nearest")
-        )
+            activeFilters = FilterState()
+        ),
+        onFilterClick = {},
+        onQueryChange = {}
     )
 }
