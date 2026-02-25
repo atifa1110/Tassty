@@ -9,7 +9,10 @@ data class AuthStatus(
     val email: String? = null,
     val name: String? = null,
     val profileImage: String?= null,
-    val addressName: String? = null
+    val addressName: String? = null,
+    val accessToken: String?=null,
+    val refreshToken: String?=null,
+    val steamToken: String?=null
 )
 
 enum class RegistrationStep {

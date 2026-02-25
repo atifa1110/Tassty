@@ -2,13 +2,19 @@ package com.example.core.data.repository
 
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.model.AuthStatus
+import com.example.core.data.model.RegistrationStep
 import com.example.core.data.source.local.datastore.AuthDataStore
 import com.example.core.data.source.remote.datasource.AuthNetworkDataSource
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.AuthUser
+import com.example.core.domain.model.UserAddress
 import com.example.core.domain.repository.AuthRepository
+import com.example.core.ui.mapper.toRequestDto
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -17,6 +23,7 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository{
 
     override val authStatus: Flow<AuthStatus> = authDataStore.authStatus
+
     override suspend fun updateAuthStatus(transform: (AuthStatus) -> AuthStatus) {
         authDataStore.updateAuthStatus(transform)
     }
@@ -39,13 +46,21 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun register(
         email: String,
         password: String,
-        fullName: String
+        fullName: String,
+        role: String
     ): Flow<TasstyResponse<AuthUser>> = flow {
         emit(TasstyResponse.Loading)
-        val response = authNetworkDataSource.register(email, password, fullName)
+        val response = authNetworkDataSource.register(email, password, fullName, role)
         when (response) {
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
+                authDataStore.updateAuthStatus { current ->
+                    current.copy(
+                        registrationStep = RegistrationStep.AWAITING_CONFIRMATION,
+                        email = email,
+                        name = current.name
+                    )
+                }
                 emit(TasstyResponse.Success(response.data?.toDomain(), response.meta))
             }
             else -> {}
@@ -55,9 +70,33 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun verify(
         email: String,
         verifyCode: String
-    ): Flow<TasstyResponse<String>> = flow {
+    ): Flow<TasstyResponse<AuthUser>> = flow {
         emit(TasstyResponse.Loading)
         val response = authNetworkDataSource.verification(email,verifyCode)
+        when(response){
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
+            is TasstyResponse.Success -> {
+                val authData = response.data
+
+                if (authData != null) {
+                    authDataStore.updateAuthStatus { current ->
+                        current.copy(
+                            accessToken = authData.accessToken,
+                            refreshToken = authData.refreshToken,
+                            isVerified = true,
+                            registrationStep = RegistrationStep.VERIFIED
+                        )
+                    }
+                }
+                emit(TasstyResponse.Success(authData?.toDomain(), response.meta))
+            }
+            else -> {}
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override suspend fun resend(email: String): Flow<TasstyResponse<String>> = flow {
+        emit(TasstyResponse.Loading)
+        val response = authNetworkDataSource.resend(email)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
@@ -66,4 +105,25 @@ class AuthRepositoryImpl @Inject constructor(
             else -> {}
         }
     }
+
+    override suspend fun setupAccount(address: UserAddress, cuisines: List<String>): Flow<TasstyResponse<String>> = flow {
+        emit(TasstyResponse.Loading)
+
+        val request = address.toRequestDto(cuisines)
+        val response = authNetworkDataSource.setupAccount(request)
+        when(response){
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
+            is TasstyResponse.Success -> {
+                authDataStore.updateAuthStatus { current ->
+                    current.copy(
+                        hasCompletedSetup = true,
+                        addressName = request.addressName
+                    )
+                }
+                emit(TasstyResponse.Success(response.meta.message,response.meta))
+            }
+            else -> {}
+        }
+    }.flowOn(Dispatchers.IO)
 }
+

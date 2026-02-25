@@ -1,4 +1,5 @@
 package com.example.core.data.source.local.datastore
+
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -27,6 +28,9 @@ class AuthDataStore @Inject constructor(
         val PROFILE_IMAGE = stringPreferencesKey("profile_image")
         val NAME = stringPreferencesKey("name")
         val ADDRESS_NAME = stringPreferencesKey("address_name")
+        val ACCESS_TOKEN = stringPreferencesKey("access_token")
+        val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        val STEAM_TOKEN = stringPreferencesKey("steam_token")
     }
 
     // Flow to read authentication data
@@ -46,7 +50,10 @@ class AuthDataStore @Inject constructor(
             email = preferences[PreferencesKeys.EMAIL],
             profileImage = preferences[PreferencesKeys.PROFILE_IMAGE],
             name = preferences[PreferencesKeys.NAME],
-            addressName = preferences[PreferencesKeys.ADDRESS_NAME]
+            addressName = preferences[PreferencesKeys.ADDRESS_NAME],
+            accessToken = preferences[PreferencesKeys.ACCESS_TOKEN],
+            refreshToken = preferences[PreferencesKeys.REFRESH_TOKEN],
+            steamToken = preferences[PreferencesKeys.STEAM_TOKEN]
         )
     }
 
@@ -55,16 +62,42 @@ class AuthDataStore @Inject constructor(
         dataStore.edit { preferences ->
             val currentStatus = authStatus.first()
             val newStatus = transform(currentStatus)
+
             preferences[PreferencesKeys.IS_LOGGED_IN] = newStatus.isLoggedIn
             preferences[PreferencesKeys.IS_VERIFIED] = newStatus.isVerified
             preferences[PreferencesKeys.REGISTRATION_STEP] = newStatus.registrationStep.name
             preferences[PreferencesKeys.HAS_COMPLETED_SETUP] = newStatus.hasCompletedSetup
-            preferences[PreferencesKeys.EMAIL] = newStatus.email ?: ""
-            preferences[PreferencesKeys.PROFILE_IMAGE] = newStatus.profileImage ?: ""
-            preferences[PreferencesKeys.NAME] = newStatus.name ?: ""
-            preferences[PreferencesKeys.ADDRESS_NAME] = newStatus.addressName ?: ""
+
+            newStatus.email?.let {
+                preferences[PreferencesKeys.EMAIL] = it
+            }
+
+            newStatus.profileImage?.let {
+                preferences[PreferencesKeys.PROFILE_IMAGE] = it
+            }
+
+            newStatus.name?.let {
+                preferences[PreferencesKeys.NAME] = it
+            }
+
+            newStatus.addressName?.let {
+                preferences[PreferencesKeys.ADDRESS_NAME] = it
+            }
+
+            newStatus.accessToken?.let {
+                preferences[PreferencesKeys.ACCESS_TOKEN] = it
+            }
+
+            newStatus.refreshToken?.let {
+                preferences[PreferencesKeys.REFRESH_TOKEN] = it
+            }
+
+            newStatus.steamToken?.let {
+                preferences[PreferencesKeys.STEAM_TOKEN] = it
+            }
         }
     }
+
 
     // Erase all
     suspend fun clearAuthStatus() {
