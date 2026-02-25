@@ -5,8 +5,8 @@ import org.threeten.bp.LocalDate
 data class Voucher (
     val id: String,
     val code: String,
-    val imageUrl: String,
     val title: String,
+    val imageUrl: String,
     val description: String,
     val type: VoucherType,
     val discountType: DiscountType,
@@ -17,7 +17,6 @@ data class Voucher (
     val minOrderLabel: String,
     val startDate: LocalDate,
     val expiryDate: LocalDate,
-    val terms: String,
     val status: VoucherStatus
 )
 

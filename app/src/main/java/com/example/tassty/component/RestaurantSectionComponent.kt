@@ -217,17 +217,17 @@ fun RestaurantSmallListCardContent(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = restaurant.restaurant.name,
+            text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.restaurant.cityName,
+            city = restaurant.locationDetail.city,
             distance = restaurant.formattedDistance
         )
 
-        RatingText(rating = restaurant.restaurant.rating)
+        RatingText(rating = restaurant.rating)
     }
 }
 
@@ -239,22 +239,22 @@ fun RestaurantLargeListCardContent(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = restaurant.restaurant.name,
+            text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
 
         RestaurantCategoryText(
-            category = restaurant.formattedCategories
+            category = restaurant.categories
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.restaurant.cityName,
+            city = restaurant.locationDetail.city,
             distance = restaurant.formattedDistance
         )
 
         RatingText(
-            rating = restaurant.restaurant.rating
+            rating = restaurant.rating
         )
     }
 }
@@ -268,7 +268,7 @@ fun RestaurantTinyGridCardContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = restaurant.restaurant.name,
+            text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
@@ -277,8 +277,8 @@ fun RestaurantTinyGridCardContent(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            RatingText(rating = restaurant.restaurant.rating)
-            CityText(city = restaurant.restaurant.cityName)
+            RatingText(rating = restaurant.rating)
+            CityText(city = restaurant.locationDetail.city)
         }
     }
 }
@@ -292,18 +292,20 @@ fun RestaurantGridCardContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = restaurant.restaurant.name,
+            text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100,
-            maxLines = 1
+            maxLines = 2,
+            minLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.restaurant.cityName,
+            city = restaurant.locationDetail.city,
             distance = restaurant.formattedDistance
         )
 
-        RatingText(rating = restaurant.restaurant.rating)
+        RatingText(rating = restaurant.rating)
     }
 }
 
@@ -316,7 +318,7 @@ fun RestaurantLargeGridCardContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = restaurant.restaurant.name,
+            text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100,
             maxLines = 1,
@@ -324,11 +326,11 @@ fun RestaurantLargeGridCardContent(
         )
 
         RestaurantCityAndDistanceText(
-            city = restaurant.restaurant.cityName,
+            city = restaurant.locationDetail.city,
             distance = restaurant.formattedDistance
         )
 
-        RatingDeliverTimeText(rating = restaurant.restaurant.rating,
-            deliveryTime = restaurant.restaurant.deliveryTime)
+        RatingDeliverTimeText(rating = restaurant.rating,
+            deliveryTime = restaurant.deliveryTime)
     }
 }

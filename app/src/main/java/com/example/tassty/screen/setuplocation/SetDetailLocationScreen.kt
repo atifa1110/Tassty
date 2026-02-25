@@ -96,7 +96,6 @@ fun SetLocationModal(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                // Google Map fullscreen
                 val cameraPositionState = rememberCameraPositionState {
                     val lat = uiState.userAddress.latitude
                     val lng = uiState.userAddress.longitude
@@ -160,8 +159,9 @@ fun SetLocationModal(
                                 color = Neutral100
                             )
                             Row(
+                                modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Image(
                                     painter = painterResource(R.drawable.location),
@@ -179,7 +179,8 @@ fun SetLocationModal(
 
                         Column(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -188,6 +189,7 @@ fun SetLocationModal(
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Start,
+                                    color = Neutral100,
                                     text = stringResource(R.string.address_name),
                                     style = LocalCustomTypography.current.h5Bold,
                                 )
@@ -209,6 +211,7 @@ fun SetLocationModal(
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Start,
+                                    color = Neutral100,
                                     text = stringResource(R.string.landmark_detail),
                                     style = LocalCustomTypography.current.h5Bold,
                                 )
@@ -226,13 +229,14 @@ fun SetLocationModal(
 
 
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Start,
                                     text = "Address type",
+                                    color = Neutral100,
                                     style = LocalCustomTypography.current.h5Bold,
                                 )
 
@@ -242,9 +246,8 @@ fun SetLocationModal(
                                 )
                             }
 
-                            Spacer(Modifier.height(16.dp))
-
                             ButtonComponent(
+                                modifier = Modifier.width(220.dp),
                                 enabled = true,
                                 labelResId = R.string.save_address,
                                 onClick = onSaveAddress

@@ -8,8 +8,8 @@
     <string name="show_password">Show Password</string>
     <string name="text_error">Name is Empty</string>
     <string name="register">Register</string>
-    <string name="create_an_account_to_start_looking_for_the">Create an account to start looking for the \nfood you like.</string>
-    <string name="create_your_new_account">Create your \nnew account.</string>
+    <string name="create_an_account_to_start_looking_for_the">Create an account to start looking the food you like.</string>
+    <string name="create_your_new_account">Create your new account.</string>
     <string name="full_name">Full Name</string>
     <string name="email_address">Email address</string>
     <string name="password">Password</string>
@@ -86,4 +86,6 @@
     <string name="chat">Chat</string>
     <string name="profile">Profile</string>
     <string name="cart">Cart</string>
+    <string name="add_to_cart">Add to cart</string>
+    <string name="update_cart">Update Cart</string>
 </resources>

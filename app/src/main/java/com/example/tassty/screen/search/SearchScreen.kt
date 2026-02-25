@@ -2,17 +2,13 @@ package com.example.tassty.screen.search
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,10 +23,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.core.data.model.Resource
+import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.MenuUiModel
-import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.categories
@@ -38,14 +33,12 @@ import com.example.tassty.component.CategoryList
 import com.example.tassty.component.ChipSearchExpandSection
 import com.example.tassty.component.ChipSearchSection
 import com.example.tassty.component.CustomBottomSheet
-import com.example.tassty.component.CustomFilterChip
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorListState
-import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.FilterContent
+import com.example.tassty.component.FilterSection
 import com.example.tassty.component.FoodNameGridCard
 import com.example.tassty.component.HorizontalTitleSection
-import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.RestaurantTinyGridCard
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.ShimmerCategoryStaggeredList
@@ -54,13 +47,10 @@ import com.example.tassty.component.ShimmerRestaurantTinyGridCard
 import com.example.tassty.component.SortContent
 import com.example.tassty.component.TopBarButton
 import com.example.tassty.component.filterListSection
-import com.example.tassty.component.restaurantMenuListBlock
+import com.example.tassty.defaultFilter
 import com.example.tassty.historyOptions
-import com.example.tassty.menus
+import com.example.tassty.menusItem
 import com.example.tassty.model.ChipFilterOption
-import com.example.tassty.model.ChipType
-import com.example.tassty.model.FilterState
-import com.example.tassty.model.SummaryFilterChip
 import com.example.tassty.popularOptions
 import com.example.tassty.restaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -71,6 +61,7 @@ import com.example.tassty.ui.theme.Orange500
 
 @Composable
 fun SearchRoute(
+    onNavigateToDetail:(String) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -79,7 +70,8 @@ fun SearchRoute(
         uiState = uiState,
         onQueryChange = {viewModel.onEvent(SearchEvent.ChangeQuery(it))},
         onFilterClick = {viewModel.onEvent(SearchEvent.ShowFilterSheet)},
-        onSortClick = {viewModel.onEvent(SearchEvent.ShowSortSheet)}
+        onSortClick = {viewModel.onEvent(SearchEvent.ShowSortSheet)},
+        onNavigateToDetail = onNavigateToDetail
     )
 
     CustomBottomSheet(
@@ -88,12 +80,11 @@ fun SearchRoute(
         onDismiss = {}
     ) {
         FilterContent(
-            rupiahPriceRanges = uiState.rupiahPriceRanges,
-            restoRatingsOptions = uiState.restoRatingsOptions,
-            discountOptions = uiState.discountOptions,
+            rupiahPriceRanges = uiState.priceRanges,
+            restoRatingsOptions = uiState.ratingsOptions,
             modesOptions = uiState.modesOptions,
-            cuisineOption = uiState.cuisineOption,
-            onUpdateDraftFilter = {key, value-> viewModel.onEvent(SearchEvent.UpdateDraftFilter(key,value))},
+            cuisineOption = uiState.cuisineOptions,
+            onUpdateDraftFilter = {category,key -> viewModel.onEvent(SearchEvent.UpdateDraftFilter(category,key))},
             onApplyFilter = {viewModel.onEvent(SearchEvent.ApplyFilters)},
             onResetFilter = {viewModel.onEvent(SearchEvent.ResetFilter)}
         )
@@ -106,7 +97,7 @@ fun SearchRoute(
     ) {
         SortContent(
             sortList = uiState.sortList,
-            onSortSelected = {viewModel.onEvent(SearchEvent.UpdateDraftSort(it))},
+            onUpdateDraftFilter = {category , key->viewModel.onEvent(SearchEvent.UpdateDraftFilter(category,key))},
             onApplySort = {viewModel.onEvent(SearchEvent.ApplySort)},
             onResetSort = {viewModel.onEvent(SearchEvent.ResetSort)}
         )
@@ -119,9 +110,9 @@ fun SearchScreen(
     uiState: SearchUiState,
     onQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit,
-    onSortClick: () -> Unit
+    onSortClick: () -> Unit,
+    onNavigateToDetail:(String) -> Unit
 ) {
-
     Scaffold(
         containerColor = Neutral10,
         topBar = {
@@ -177,8 +168,8 @@ fun SearchScreen(
                     Column {
                         if (isSearching) {
                             Spacer(Modifier.height(12.dp))
-                            FilterSection(
-                                activeSummaryChips = uiState.activeSummaryChips,
+                            FilterSection (
+                                option = uiState.activeFilters,
                                 onSortClick = onSortClick
                             )
                             Divider32()
@@ -190,7 +181,7 @@ fun SearchScreen(
             if (uiState.isSearching) {
                 filterListSection(
                     resource = uiState.queryResult,
-                    onRetry = {}
+                    onNavigateToDetail = onNavigateToDetail
                 )
             } else {
                 item {
@@ -312,7 +303,7 @@ fun RestaurantSection(
             ) {
                 items(
                     items = items,
-                    key = { it.restaurant.id }
+                    key = { it.id }
                 ) { restaurant ->
                     RestaurantTinyGridCard(
                         restaurant = restaurant
@@ -351,7 +342,7 @@ fun MenuSection(
             ) {
                 items(
                     items = items,
-                    key = { it.menu.id }
+                    key = { it.id }
                 ) { menu ->
                     FoodNameGridCard(
                         menu = menu
@@ -362,28 +353,28 @@ fun MenuSection(
     }
 }
 
-@Composable
-fun FilterSection(
-    activeSummaryChips : List<SummaryFilterChip>,
-    onSortClick: () -> Unit
-) {
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(activeSummaryChips) { option ->
-            CustomFilterChip(
-                option = option,
-                onClick = {
-                    if(option.type == ChipType.SORT){
-                        onSortClick()
-                    }
-                }
-            )
-        }
-    }
-}
+//@Composable
+//fun FilterSection(
+//    options : List<FilterOptionUi>,
+//    onSortClick: () -> Unit
+//) {
+//    LazyRow(
+//        modifier = Modifier.fillMaxWidth(),
+//        contentPadding = PaddingValues(horizontal = 24.dp),
+//        horizontalArrangement = Arrangement.spacedBy(8.dp)
+//    ) {
+//        items(options) { option ->
+//            CustomFilterChip(
+//                option = option,
+//                onClick = {
+//                    if(option.category == FilterCategory.SORT){
+//                        onSortClick()
+//                    }
+//                }
+//            )
+//        }
+//    }
+//}
 
 @Preview(showBackground = true)
 @Composable
@@ -396,12 +387,13 @@ fun PreviewSearchInitialScreen() {
             categories = Resource(data = categories,
                 isLoading = false, errorMessage = "Network Error"),
             restaurants = Resource(data = restaurantUiModel, isLoading = false),
-            menus = Resource(data = menus, isLoading = false),
-            activeFilters = FilterState(),
+            menus = Resource(data = menusItem, isLoading = false),
+            activeFilters = defaultFilter,
         ),
         onQueryChange = {},
         onFilterClick = {},
-        onSortClick = {}
+        onSortClick = {},
+        onNavigateToDetail = {}
     )
 }
 
@@ -416,12 +408,13 @@ fun PreviewSearchErrorScreen() {
             categories = Resource(data = categories,
                 isLoading = false, errorMessage = "Network Error"),
             restaurants = Resource(data = restaurantUiModel, isLoading = false),
-            menus = Resource(data = menus, isLoading = false),
-            activeFilters = FilterState(),
+            menus = Resource(data = menusItem, isLoading = false),
+            activeFilters = defaultFilter,
             query = "burger"
         ),
         onQueryChange = {},
         onFilterClick = {},
-        onSortClick = {}
+        onSortClick = {},
+        onNavigateToDetail = {}
     )
 }

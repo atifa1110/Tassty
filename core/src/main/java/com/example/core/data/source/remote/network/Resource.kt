@@ -1,4 +1,4 @@
-package com.example.core.data.model
+package com.example.core.data.source.remote.network
 
 data class Resource<T>(
     val data: T? = null,

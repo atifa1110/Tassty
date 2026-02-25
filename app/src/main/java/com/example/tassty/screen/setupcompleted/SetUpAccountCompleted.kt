@@ -65,6 +65,7 @@ fun SetUpCompletedContent (
                 HorizontalDivider(color = Neutral30)
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     ButtonComponent(
+                        modifier= Modifier.fillMaxWidth(),
                         enabled = true,
                         labelResId = R.string.explore_home,
                         onClick = onExploreButtonClick

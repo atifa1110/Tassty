@@ -5,7 +5,19 @@ import com.example.core.ui.model.UserAddressUiModel
 import com.google.android.gms.maps.model.LatLng
 
 data class SetUpLocationUiState(
-    val userAddress: UserAddressUiModel = UserAddressUiModel(),
+    val userAddress: UserAddressUiModel = UserAddressUiModel("","","","",0.0,0.0,
+        AddressType.NONE,false,false),
+    val isModalVisible: Boolean = false,
+    val tempAddressName: String = "",
+    val tempLandmark: String = "",
+    val tempFullAddress: String = "Choose your location",
+    val tempAddressType: AddressType = AddressType.NONE,
+    val selectedLatLng: LatLng? = null,
+    val isLoading: Boolean = false,
+    val errorMessage : String? = null
+)
+
+data class SetUpLocationInternalState(
     val isModalVisible: Boolean = false,
     val tempAddressName: String = "",
     val tempLandmark: String = "",
@@ -15,7 +27,6 @@ data class SetUpLocationUiState(
     val isLoading: Boolean = false,
     val errorMessage : String? = null
 )
-
 sealed class SetUpLocationEvent{
     object OnNavigateToComplete : SetUpLocationEvent()
     data class ShowToast(val message: String) : SetUpLocationEvent()

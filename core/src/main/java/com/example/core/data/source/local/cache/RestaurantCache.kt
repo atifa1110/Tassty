@@ -20,7 +20,7 @@ class RestaurantCache @Inject constructor() : BaseCache<RestaurantDto>() {
                 globalMap[menu.id] = menu
             }
         }
-        Log.d("Diana", globalMap.toString())
+        //Log.d("Diana", globalMap.toString())
     }
 
     suspend fun getById(id: String): RestaurantDto? = mutex.withLock {

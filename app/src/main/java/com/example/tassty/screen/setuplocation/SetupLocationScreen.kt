@@ -1,5 +1,6 @@
 package com.example.tassty.screen.setuplocation
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -19,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,10 +31,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.domain.model.AddressType
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.tassty.R
-import com.example.tassty.component.ButtonSmallComponent
+import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.LoadingScreen
-import com.example.tassty.component.LocationBox
 import com.example.tassty.component.SetupTopAppBar
+import com.example.tassty.component.UserAddressBox
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -46,14 +49,17 @@ fun SetupLocationRoute(
     onNavigateToComplete:() -> Unit,
     viewModel: SetUpLocationViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel.events) {
         viewModel.events.collect { event ->
             when(event){
-                is SetUpLocationEvent.OnNavigateToComplete -> {onNavigateToComplete()}
+                is SetUpLocationEvent.OnNavigateToComplete -> {
+                    onNavigateToComplete()
+                }
                 is SetUpLocationEvent.ShowToast -> {
-
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -106,7 +112,8 @@ fun SetupLocationScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                ButtonSmallComponent(
+                ButtonComponent(
+                    modifier = Modifier.width(220.dp),
                     enabled = true,
                     labelResId = R.string.submit,
                     onClick = onSubmitClick
@@ -174,8 +181,9 @@ fun SetupLocationScreen(
                             color = Orange500
                         )
                     }
-                    LocationBox(
-                        resource = uiState.userAddress,
+
+                    UserAddressBox (
+                        address = uiState.userAddress,
                         onCardClick = {}
                     )
                 }
@@ -191,8 +199,8 @@ fun SetupLocationScreen(
 fun PreviewSetupAccountScreen() {
     SetupLocationScreen (
         uiState = SetUpLocationUiState(
-            UserAddressUiModel("","",0.0,0.0,
-            "","", AddressType.NONE)
+            UserAddressUiModel("","","","",
+            0.0,0.0, AddressType.NONE,false,false)
         ),
         onBackClick = {},
         onSkipClick={},

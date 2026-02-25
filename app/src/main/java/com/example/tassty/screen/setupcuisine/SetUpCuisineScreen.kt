@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -27,22 +29,19 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.categories
-import com.example.tassty.component.ButtonSmallComponent
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.SetupTopAppBar
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.core.ui.model.CategoryUiModel
+import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CategoryFoundHeader
 import com.example.tassty.component.Divider32
-import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.FoodCategoryCard
 
 @Composable
@@ -114,7 +113,8 @@ fun SetupCuisineScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                ButtonSmallComponent(
+                ButtonComponent(
+                    modifier = Modifier.width(220.dp),
                     enabled = uiState.canProceed,
                     labelResId = R.string.next,
                     onClick = onNextClick
@@ -212,9 +212,9 @@ fun CategoriesContent(
                 ) {
                     rowItems.forEachIndexed { itemIndexInRow, item ->
                         FoodCategoryCard(
-                            isSelected = selectedCategoryIds.contains(item.category.id),
+                            isSelected = selectedCategoryIds.contains(item.id),
                             category = item,
-                            onCardClick = { onSelectedCategory(item.category.id) }
+                            onCardClick = { onSelectedCategory(item.id) }
                         )
                     }
                 }

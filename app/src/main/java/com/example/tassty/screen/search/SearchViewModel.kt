@@ -2,296 +2,231 @@ package com.example.tassty.screen.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.core.data.model.Resource
-import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.usecase.GetAllCategoriesUseCase
 import com.example.core.domain.usecase.GetFilterOptionsUseCase
-import com.example.core.domain.usecase.GetSearchFilterUseCase
-import com.example.core.domain.usecase.GetSearchMenusUseCase
+import com.example.core.domain.usecase.GetMenuYouSearchUseCase
+import com.example.core.domain.usecase.GetRestaurantYouSearchUseCase
 import com.example.core.domain.usecase.GetSearchRestaurantUseCase
+import com.example.core.domain.utils.RestaurantSearchFilter
+import com.example.core.domain.utils.mapToResource
+import com.example.core.domain.utils.toListState
+import com.example.core.ui.FilterManager
+import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.toUiModel
-import com.example.tassty.historyOptions
-import com.example.tassty.model.FilterKey
-import com.example.tassty.model.FilterState
-import com.example.tassty.model.toUi
-import com.example.tassty.popularOptions
-import com.example.tassty.screen.home.toListState
+import com.example.tassty.model.mapToActiveFilters
+import com.example.tassty.screen.category.FilterState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.map
 
-interface EventHandler<E> {
-    fun onEvent(event: E)
-}
+/**
+ * UI Architecture Pattern:
+ * - **MVI (Model-View-Intent)**: The UI sends "Events" (Intents) and observes a single "State".
+ * - **_internalState**: Holds temporary UI logic state (e.g., query text, visibility of sheets).
+ * - **uiState**: The final, immutable state exposed to the UI, combined from all data streams.
+ */
 
+/**
+ * ViewModel for the Search screen that orchestrates the entire search and discovery experience.
+ * * This class handles:
+ * - **Filter Management**: Delegates filter logic to [filterManager] to set selected filters into active states seamlessly.
+ * - **Discovery Content**: Populates the initial page by fetching categories, featured restaurants, and menus through dedicated UseCases.
+ * - **Dynamic Searching**: Powering the search page by handling real-time, debounced restaurant queries and complex filtering.
+ * - **State Synchronization**: Merging multiple data streams into a single, reactive [uiState] for the UI to consume.
+ */
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val getSearchFilterUseCase: GetSearchFilterUseCase,
+    private val filterManager: FilterManager,
     private val getAllCategoriesUseCase: GetAllCategoriesUseCase,
-    private val getSearchMenusUseCase: GetSearchMenusUseCase,
     private val getSearchRestaurantUseCase: GetSearchRestaurantUseCase,
+    private val getRestaurantUseCase: GetRestaurantYouSearchUseCase,
+    private val getMenuSearchUseCase: GetMenuYouSearchUseCase,
     private val getFilterOptionsUseCase: GetFilterOptionsUseCase
-) : ViewModel(), EventHandler<SearchEvent>{
+) : ViewModel(), FilterManager by filterManager {
 
-    private val _uiState = MutableStateFlow(SearchUiState(
-        history = Resource(data = historyOptions),
-        popular = Resource(data = popularOptions)
-    ))
-    val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
+    private val _internalState = MutableStateFlow(SearchInternalState())
 
-    private var searchJob: Job? = null
-    private val SEARCH_DELAY = 800L
+    /**
+     * Loads and prepares the master filter options from the server.
+     * Transforms raw filter data (sort, price, ratings, etc.) into UI-ready models.
+     */
+    private val filterFlow = getFilterOptionsUseCase().map {
+        it.mapToResource { data->
+            FilterState(
+                sortList = data.sortOptions.map { it.toUiModel(FilterCategory.SORT) },
+                priceRanges = data.priceRangeOptions.map { it.toUiModel(FilterCategory.PRICE) },
+                ratingsOptions = data.ratingOptions.map { it.toUiModel(FilterCategory.RATING) },
+                modesOptions = data.modeOptions.map { it.toUiModel(FilterCategory.MODE) },
+                cuisineOptions = data.cuisineOptions.map { it.toUiModel(FilterCategory.CUISINE) }
+            )
+        }
+    }
 
-    override fun onEvent(event: SearchEvent) {
+    /**
+     * Combines multiple data sources (Categories, Featured Restaurants, and Menus).
+     * Provides the default "Discovery" content shown before the user starts searching.
+     */
+    private val contentFlow = combine(
+        getAllCategoriesUseCase(),
+        getRestaurantUseCase(),
+        getMenuSearchUseCase()
+    ) { categories, restaurants, menus ->
+        SearchContent(
+            categories = categories.toListState { it.toUiModel() },
+            restaurants = restaurants.toListState { it.toUiModel() },
+            menus = menus.toListState { it.toUiModel() }
+        )
+    }
+
+    /**
+     * Automatically manages search results based on user input and selected filters.
+     * * Logic Flow:
+     * 1. Monitoring: Watches for changes in the search text and filter options.
+     * 2. Instant Feedback: Immediately triggers a 'loading' state when the user types.
+     * 3. Efficiency: Uses an 800ms debounce to wait for the user to finish typing before calling the API.
+     * 4. Cancellation: Automatically cancels old search requests if a new one is started.
+     * 5. Cleanup: Returns an empty result instantly if the search box is cleared.
+     */
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    private val searchResultFlow = _internalState
+        .map { it.query }
+        .distinctUntilChanged()
+        .flatMapLatest { query ->
+            if (query.isBlank()) {
+                flowOf(Resource(data = emptyList()))
+            } else {
+                filterData.flatMapLatest { filters ->
+                    flow {
+                        emit(Resource(isLoading = true))
+                        delay(800L)
+
+                        val finalFilter = RestaurantSearchFilter(
+                            keyword = query,
+                            sorting = filters.appliedSort,
+                            priceRange = filters.appliedPrice,
+                            minRating = filters.appliedRating,
+                            mode = filters.appliedMode,
+                            cuisineId = filters.appliedCuisine
+                        )
+
+                        getSearchRestaurantUseCase(finalFilter).collect { response ->
+                            emit(response.mapToResource { data ->
+                                data.map { it.toUiModel() }
+                            })
+                        }
+                    }
+                }
+            }
+        }
+
+    /**
+     * Merges all data streams into a single source of truth for the UI.
+     * Consolidates search results, filter selections, and discovery content.
+     */
+    val uiState: StateFlow<SearchUiState> = combine(
+        _internalState,
+        filterFlow,
+        filterData,
+        contentFlow,
+        searchResultFlow
+    ){ internal, filterMaster, filterData, content, search ->
+        val data = filterMaster.data?: return@combine SearchUiState()
+
+        val sortedList = data.sortList.map { it.copy(isSelected = it.key == filterData.selectedSort) }
+        val priceList = data.priceRanges.map { it.copy(isSelected = it.key == filterData.selectedPrice) }
+        val ratingList = data.ratingsOptions.map { it.copy(isSelected = it.key == filterData.selectedRating) }
+        val modeList = data.modesOptions.map { it.copy(isSelected = it.key == filterData.selectedMode) }
+        val cuisineList = data.cuisineOptions.map { it.copy(isSelected = it.key == filterData.selectedCuisine) }
+
+        SearchUiState(
+            isSearching = internal.query.isNotEmpty(),
+            isSortSheetVisible = internal.isSortSheetVisible,
+            isFilterSheetVisible = internal.isFilterSheetVisible,
+            queryResult = search,
+            categories = content.categories,
+            restaurants = content.restaurants,
+            menus = content.menus,
+            sortList = sortedList,
+            priceRanges = priceList,
+            ratingsOptions = ratingList,
+            modesOptions = modeList,
+            cuisineOptions = cuisineList,
+            query = internal.query,
+            activeFilters = mapToActiveFilters(filterData,data)
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SearchUiState()
+    )
+
+    fun onEvent(event: SearchEvent) {
         when(event){
             is SearchEvent.ChangeQuery -> onQueryChange(event.query)
             is SearchEvent.Refresh -> {}
             is SearchEvent.Retry -> {}
             is SearchEvent.ClearError -> {}
-            is SearchEvent.ShowFilterSheet -> {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isFilterSheetVisible = true,
-                        rupiahPriceRanges = currentState.rupiahPriceRanges.map { option ->
-                            option.copy(isSelected = option.key == currentState.activeFilters.priceRange?.key)
-                        },
-                        restoRatingsOptions = currentState.restoRatingsOptions.map { option ->
-                            option.copy(isSelected = option.key == currentState.activeFilters.priceRange?.key)
-                        },
-                        discountOptions = currentState.discountOptions.map { option ->
-                            option.copy(isSelected = option.key == currentState.activeFilters.discounts?.key)
-                        },
-                        modesOptions = currentState.modesOptions.map { option ->
-                            option.copy(isSelected = option.key == currentState.activeFilters.mode?.key)
-                        },
-                        cuisineOption = currentState.cuisineOption.map { option ->
-                            option.copy(isSelected = option.key == currentState.activeFilters.cuisine?.key)
-                        }
-                    )
-                }
-            }
-
-            is SearchEvent.UpdateDraftFilter -> {
-                onFilterSelected(event.filterKey,event.value)
-            }
-
+            is SearchEvent.ShowFilterSheet -> _internalState.update { it.copy(isFilterSheetVisible = true) }
+            is SearchEvent.UpdateDraftFilter -> onFilterSelected(event.category,event.value)
             is SearchEvent.ApplyFilters -> {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        activeFilters = FilterState(
-                            priceRange = currentState.rupiahPriceRanges.firstOrNull{it.isSelected},
-                            restoRating = currentState.restoRatingsOptions.firstOrNull{it.isSelected},
-                            discounts = currentState.discountOptions.firstOrNull{it.isSelected},
-                            mode = currentState.modesOptions.firstOrNull{it.isSelected},
-                            cuisine = currentState.cuisineOption.firstOrNull{it.isSelected}
-                        ),
-                        isFilterSheetVisible = false
-                    )
-                }.also {
-                    search()
+                _internalState.update {
+                    applyFilters()
+                    it.copy(isFilterSheetVisible = false)
                 }
             }
 
-            is SearchEvent.ResetFilter->{
-                _uiState.update {
-                    it.copy(activeFilters = FilterState(), isFilterSheetVisible = false)
+            is SearchEvent.ResetFilter -> {
+                _internalState.update {
+                    resetFilters()
+                    it.copy(isFilterSheetVisible = false)
                 }
             }
             // Sort
-            is SearchEvent.ShowSortSheet -> {
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isSortSheetVisible = true,
-                        sortList = currentState.sortList.map { option ->
-                            option.copy(isSelected = option.key == currentState.sortBy?.key)
-                        }
-                    )
-                }
-            }
-
-            is SearchEvent.UpdateDraftSort -> {
-                _uiState.update { currentState ->
-                   currentState.copy(
-                       sortList = currentState.sortList.map { option ->
-                           option.copy(isSelected = option.key == event.sortKey)
-                       }
-                   )
-                }
-            }
-
+            is SearchEvent.ShowSortSheet -> _internalState.update { it.copy(isSortSheetVisible = true) }
             is SearchEvent.ApplySort -> {
-                _uiState.update { currentState ->
-                    val currentActiveFilters = currentState.activeFilters.copy()
-                    currentState.copy(
-                        activeFilters = currentActiveFilters,
-                        sortBy = currentState.sortList.firstOrNull{it.isSelected},
-                        isSortSheetVisible = false
-                    )
-                }.also {
-                    search()
+                _internalState.update {
+                    applySort()
+                    it.copy(isSortSheetVisible = false)
                 }
             }
 
             is SearchEvent.ResetSort -> {
-                _uiState.update {
-                    it.copy(sortBy = null, isSortSheetVisible = false)
+                _internalState.update {
+                    resetSort()
+                    it.copy(isSortSheetVisible = false)
                 }
             }
 
-        }
-    }
-
-    init {
-        loadInitialData()
-        loadFilterData()
-    }
-
-    private fun loadFilterData(){
-        viewModelScope.launch {
-            getFilterOptionsUseCase.invoke().collect { result->
-                when(result){
-                    is TasstyResponse.Error -> _uiState.update { it.copy(errorMessage = result.meta.message) }
-                    is TasstyResponse.Loading -> {}
-                    is TasstyResponse.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                sortList = result.data?.sortOptions?.map { it.toUi() } ?:emptyList(),
-                                rupiahPriceRanges = result.data?.priceRangeOptions?.map { it.toUi() } ?:emptyList(),
-                                restoRatingsOptions = result.data?.ratingOptions?.map { it.toUi() } ?:emptyList(),
-                                discountOptions = result.data?.discountOptions?.map { it.toUi() } ?:emptyList(),
-                                modesOptions = result.data?.modeOptions?.map { it.toUi() } ?:emptyList(),
-                                cuisineOption = result.data?.cuisineOptions?.map { it.toUi() } ?:emptyList(),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-    /**
-     * Load initial cached/home content (only once)
-     */
-    private fun loadInitialData() {
-        viewModelScope.launch {
-            combine(
-                getAllCategoriesUseCase(),
-                getSearchRestaurantUseCase(),
-                getSearchMenusUseCase()
-            ) { categories, restaurant,menus, ->
-                Triple(categories, restaurant,menus)
-            }.collect { (categories, restaurants, menus) ->
-                _uiState.update {
-                    it.copy(
-                        categories = categories.toListState { it.toUiModel() },
-                        restaurants = restaurants.toListState { it.toUiModel() },
-                        menus = menus.toListState { it.toUiModel() }
-                    )
-                }
-            }
-        }
-    }
-
-    fun onFilterSelected(filterKey: FilterKey, optionKey: String) {
-        _uiState.update { current ->
-            when (filterKey) {
-                FilterKey.PriceRange -> current.copy(
-                    rupiahPriceRanges = current.rupiahPriceRanges.map {
-                        it.copy(isSelected = it.key == optionKey) // radio
-                    }
-                )
-                FilterKey.RestoRating -> current.copy(
-                    restoRatingsOptions = current.restoRatingsOptions.map {
-                        it.copy(isSelected = it.key == optionKey) // radio
-                    }
-                )
-                FilterKey.Discount -> current.copy(
-                    discountOptions = current.discountOptions.map {
-                        it.copy(isSelected = it.key == optionKey) // chip
-                    }
-                )
-                FilterKey.Mode -> current.copy(
-                    modesOptions = current.modesOptions.map {
-                        it.copy(isSelected = it.key == optionKey) // radio
-                    }
-                )
-                FilterKey.Cuisine -> current.copy(
-                    cuisineOption = current.cuisineOption.map {
-                        it.copy(isSelected = it.key == optionKey) // chip
-                    }
-                )
-            }
         }
     }
 
     /**
-     * Called every time search text changes (from user input).
-     * Handles debounce and decides which state to show.
+     * Updates the search query and toggles the search screen visibility.
+     * Determines whether to show discovery content or search results.
      */
     private fun onQueryChange(query: String) {
         val isSearching = query.isNotBlank()
-        _uiState.update {
+        _internalState.update {
             it.copy(
                 query = query,
-                isSearching = isSearching,
-                queryResult = if (isSearching) Resource(isLoading = true) else Resource(emptyList())
+                isSearching = isSearching
             )
-        }
-        searchDebounced()
-    }
-
-    private fun searchDebounced() {
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            delay(SEARCH_DELAY)
-            search()
-        }
-    }
-
-    private fun search(){
-        viewModelScope.launch {
-            val currentUiState = uiState.value
-            val query = currentUiState.query
-            val filter = currentUiState.activeFilters
-            val sort = currentUiState.sortBy
-
-            if (query.isBlank()) {
-                _uiState.update { it.copy(queryResult = Resource(emptyList())) }
-                return@launch
-            }
-
-            getSearchFilterUseCase.invoke().collect { result ->
-                when(result){
-                    is TasstyResponse.Error -> {
-                        _uiState.update { it.copy(queryResult = Resource(isLoading = false),
-                            errorMessage = result.meta.message)
-                        }
-                    }
-                    is TasstyResponse.Loading -> {
-                        _uiState.update {
-                            it.copy(queryResult = Resource(isLoading = true))
-                        }
-                    }
-                    is TasstyResponse.Success -> {
-                        val data = result.data?.map { data-> data.toUiModel() }
-                        val filtered = data
-                            ?.filter { it.restaurant.restaurant.name.contains(query, ignoreCase = true) }
-
-                        _uiState.update {
-                            it.copy(
-                                queryResult = Resource(
-                                    isLoading = false, data = filtered)
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 }
+

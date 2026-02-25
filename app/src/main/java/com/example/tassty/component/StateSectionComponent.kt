@@ -1,6 +1,7 @@
 package com.example.tassty.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,10 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
@@ -79,7 +84,12 @@ fun EmptySearchContent(){
 }
 
 @Composable
-fun EmptyCartContent(){
+fun EmptyContent(
+    title: String,
+    subtitle: String,
+    buttonText: String,
+    icon: Int,
+){
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -87,56 +97,102 @@ fun EmptyCartContent(){
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         Image(
-            painter = painterResource(R.drawable.empty_cart),
-            contentDescription = "Empty Cart",
+            painter = painterResource(icon),
+            contentDescription = title,
+            modifier = Modifier.size(260.dp)
         )
 
         Spacer(Modifier.height(12.dp))
 
-        Row(Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = stringResource(R.string.your_cart_is_empty),
-                style = LocalCustomTypography.current.h2Bold,
-                color = Neutral100
+                text = buildAnnotatedString {
+                    withStyle(
+                        style = LocalCustomTypography.current.h2Bold.toSpanStyle()
+                            .copy(color = Neutral100)
+                    ) {
+                        append(title)
+                    }
+                    withStyle(
+                        style = LocalCustomTypography.current.h2Bold.toSpanStyle()
+                            .copy(color = Orange500)
+                    ) {
+                        append("!")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
             Text(
-                text = stringResource(R.string.exclamation),
-                style = LocalCustomTypography.current.h2Bold,
-                color = Orange500
+                textAlign = TextAlign.Center,
+                text = subtitle,
+                style = LocalCustomTypography.current.bodyMediumRegular,
+                color = Neutral70
             )
-        }
 
-        Spacer(Modifier.height(10.dp))
-
-        Text(
-            textAlign = TextAlign.Center,
-            text = stringResource(R.string.start_exploring_your_favorite),
-            style = LocalCustomTypography.current.bodyMediumRegular,
-            color = Neutral70
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        Row(Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Find recommended restaurants",
-                style = LocalCustomTypography.current.bodyMediumMedium,
-                color = Orange500
-            )
-            Spacer(Modifier.width(4.dp))
-            Icon(
-                painter = painterResource(R.drawable.arrow_left_up),
-                contentDescription = "Arrow To Restaurant",
-                tint = Orange500,
-                modifier = Modifier.size(16.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = buttonText,
+                    style = LocalCustomTypography.current.bodyMediumMedium,
+                    color = Orange500
+                )
+                Spacer(Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(R.drawable.arrow_left_up),
+                    contentDescription = "arrow click",
+                    tint = Orange500,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
+}
+
+@Composable
+fun EmptyCartContent(){
+    EmptyContent(
+        title = stringResource(R.string.your_cart_is_empty),
+        subtitle = stringResource(R.string.start_exploring_your_favorite),
+        buttonText = "Find recommended restaurants",
+        icon = R.drawable.empty_cart
+    )
+}
+
+@Composable
+fun EmptyCollectionContent(){
+    EmptyContent(
+        title = "Your collection \nis empty",
+        subtitle = "You can add your favorite menus by clicking the love button on the menu details page.",
+        buttonText = "Find menus",
+        icon = R.drawable.empty_cart
+    )
+}
+
+@Composable
+fun EmptyFavoriteContent(){
+    EmptyContent(
+        title = "Your list is empty",
+        subtitle = "You can add your favorite restaurants by clicking the love button on the restaurant details page.",
+        buttonText = "Find restaurants",
+        icon = R.drawable.phone_boarding
+    )
+}
+
+@Composable
+fun EmptyVoucherContent(){
+    EmptyContent(
+        title = "Your list is empty",
+        subtitle = "You don't have any available voucher right now, please stay tune",
+        buttonText = "",
+        icon = R.drawable.phone_boarding
+    )
 }
 
 @Composable
@@ -280,5 +336,16 @@ fun ErrorListState(
                 color = Neutral70
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ErrorPreview(){
+    Column (modifier = Modifier.fillMaxSize().background(Neutral10),
+
+    ){
+        EmptyCollectionContent()
+        EmptyFavoriteContent()
     }
 }

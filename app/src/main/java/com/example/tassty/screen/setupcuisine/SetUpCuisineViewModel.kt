@@ -79,14 +79,14 @@ class SetupCuisineViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     private fun observeSearchQueryWithDebounce() {
         _searchQuery
-            .debounce(500) // tunggu 500ms user berhenti mengetik
+            .debounce(500)
             .distinctUntilChanged()
             .onEach { query ->
                 val filtered = if (query.isBlank()) {
                     uiState.value.categories
                 } else {
                     uiState.value.categories.filter {
-                        it.category.name.contains(query, ignoreCase = true)
+                        it.name.contains(query, ignoreCase = true)
                     }
                 }
 

@@ -25,8 +25,6 @@ class VoucherRepositoryImpl @Inject constructor(
 
     override suspend fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>> = flow {
         emit(TasstyResponse.Loading)
-        // Erase when using real api
-        delay(1000)
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_TODAY)
         if (cachedData.isNotEmpty()) {
@@ -56,6 +54,42 @@ class VoucherRepositoryImpl @Inject constructor(
             is TasstyResponse.Error -> emit(result)
             is TasstyResponse.Loading -> emit(result)
         }
-    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+    }.flowOn(Dispatchers.IO)
+
+    override suspend fun getRestaurantVouchers(id: String): Flow<TasstyResponse<List<Voucher>>>  = flow {
+        emit(TasstyResponse.Loading)
+
+        when (val result = remoteDataSource.getRestaurantVouchers(id)) {
+            is TasstyResponse.Success -> {
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
+                )
+            }
+
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override suspend fun getUserVouchers(): Flow<TasstyResponse<List<Voucher>>>  = flow {
+        emit(TasstyResponse.Loading)
+
+        when (val result = remoteDataSource.getUserVouchers()) {
+            is TasstyResponse.Success -> {
+                emit(
+                    TasstyResponse.Success(
+                        data = result.data?.map { it.toDomain() },
+                        meta = result.meta
+                    )
+                )
+            }
+
+            is TasstyResponse.Error -> emit(result)
+            is TasstyResponse.Loading -> emit(result)
+        }
+    }.flowOn(Dispatchers.IO)
 
 }

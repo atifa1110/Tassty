@@ -1,6 +1,5 @@
 package com.example.tassty.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -9,16 +8,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.core.data.model.RegistrationStep
-import com.example.tassty.AuthViewModel
+import com.example.tassty.MainViewModel
 
 @Composable
 fun TasstyNavHost(
     navController: NavHostController,
-    onBackButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel()
 ) {
-
     val authStatus by viewModel.authState.collectAsStateWithLifecycle()
 
     val startDestination = if (authStatus.isLoggedIn) {
@@ -55,7 +52,9 @@ fun TasstyNavHost(
         )
         authGraph(
             startAuthDestination = startAuthDestination,
-            onBackButtonClick = onBackButtonClick,
+            onBackButtonClick = {
+                navController.popBackStack()
+            },
             onNavigateToLogin = {
                 navController.navigate(LoginDestination.route){
                     popUpTo(RegisterDestination.route){
@@ -90,20 +89,51 @@ fun TasstyNavHost(
             }
         )
         mainGraph(
-            onNavigateToDetail = {
-                navController.navigate(DetailRestaurantDestination.route)
+            onNavigateBack = {
+                navController.popBackStack()
+            },
+            onNavigateToDetail = { id ->
+                navController.navigate(DetailRestaurantDestination.createRoute(id))
             },
             onNavigateToSearch = {
                 navController.navigate(SearchDestination.route)
             },
-            onNavigateToCategory = {name,image->
-                navController.navigate(CategoryDestination.createRoute(name,image))
+            onNavigateToCategory = { id, name, image ->
+                navController.navigate(CategoryDestination.createRoute(id,name,image))
             },
             onNavigateToRecommended = {
                 navController.navigate(RecommendedDestination.route)
             },
             onNavigateToNearbyRestaurant = {
                 navController.navigate(NearbyDestination.route)
+            },
+            onNavigateToCollection = {
+                navController.navigate(CollectionDestination.route)
+            },
+            onNavigateToDetailCollection = { id, name, image ->
+                navController.navigate(CollectionDetailDestination.createRoute(id,name,image))
+            },
+            onAddCartSuccess = { _, message ->
+                viewModel.showSnackbar(message)
+            },
+            onDeleteSuccess = { message ->
+                navController.getBackStackEntry(CollectionDestination.route)
+                    .savedStateHandle["snack_message"] = message
+            },
+            onNavigateToFavorite = {
+                navController.navigate(FavoriteDestination.route)
+            },
+            onNavigateToDetailMenu = { id->
+                navController.navigate(DetailMenuDestination.createRoute(id))
+            },
+            onNavigateToBestSeller = { id->
+                navController.navigate(BestSellerDestination.createRoute(id))
+            },
+            onNavigateToVoucher = {
+                navController.navigate(VoucherDestination.route)
+            },
+            onNavigateToAddress = {
+                navController.navigate(AddressDestination.route)
             }
         )
     }

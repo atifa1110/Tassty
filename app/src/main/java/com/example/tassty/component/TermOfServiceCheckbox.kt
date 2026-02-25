@@ -3,6 +3,7 @@ package com.example.tassty.component
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Checkbox
@@ -14,11 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
+import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
@@ -61,6 +65,36 @@ fun TermsOfServiceCheckbox(
                 onTermsClick()
             }
         )
-
     }
+}
+
+@Composable
+fun TermsAndConditionsText(
+    onClickTerms: () -> Unit
+) {
+    val annotatedString = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = Neutral70)) {
+            append("By adding a card, you’ve read & agree to our ")
+        }
+        pushStringAnnotation(tag = "terms", annotation = "terms_url")
+        withStyle(style = SpanStyle(
+            color = Orange500,
+            fontWeight = FontWeight.Medium
+        )) {
+            append("\nTerms and conditions")
+        }
+        pop()
+    }
+
+    Text(
+        text = annotatedString,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClickTerms()
+            },
+        style = LocalCustomTypography.current.bodySmallRegular.copy(
+            textAlign = TextAlign.Center,
+        )
+    )
 }

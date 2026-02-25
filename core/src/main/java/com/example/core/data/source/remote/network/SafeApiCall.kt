@@ -2,20 +2,15 @@ package com.example.core.data.source.remote.network
 
 import kotlinx.coroutines.CancellationException
 
-suspend fun <T> safeApiCall2(
+suspend fun <T> safeApiCall(
     apiCall: suspend () -> BaseResponse<T>
 ): TasstyResponse<T> {
     return try {
         val response = apiCall()
 
         if (response.meta.code in 200..299) {
-
-            val safeData = when {
-                response.data == null && List::class.java.isAssignableFrom(response.data?.javaClass) -> emptyList<T>() as T
-                else -> response.data
-            }
             TasstyResponse.Success(
-                data = safeData,
+                data = response.data,
                 meta = response.meta
             )
         } else {

@@ -20,7 +20,7 @@
     "rating_options": [
       {"key": "4.5_UP", "label": "Rated 4.5+"},
       {"key": "4.0_UP", "label": "Rated 4.0+"}
-    ],
+    ],  b
     "price_range_options": [
       { "key": "below_20000", "label": "Di bawah Rp20.000" },
       { "key": "20000_50000", "label": "Rp20.000 ~ Rp50.000" },

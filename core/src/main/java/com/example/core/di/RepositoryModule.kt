@@ -1,20 +1,28 @@
 package com.example.core.di
 
 import com.example.core.data.repository.AuthRepositoryImpl
+import com.example.core.data.repository.CartRepositoryImpl
 import com.example.core.data.repository.CategoryRepositoryImpl
 import com.example.core.data.repository.CollectionRepositoryImpl
+import com.example.core.data.repository.DetailRepositoryImpl
+import com.example.core.data.repository.FavoriteRepositoryImpl
 import com.example.core.data.repository.LocationRepositoryImpl
 import com.example.core.data.repository.MenuRepositoryImpl
 import com.example.core.data.repository.RestaurantRepositoryImpl
+import com.example.core.data.repository.ReviewRepositoryImpl
 import com.example.core.data.repository.SearchRepositoryImpl
 import com.example.core.data.repository.UserRepositoryImpl
 import com.example.core.data.repository.VoucherRepositoryImpl
 import com.example.core.domain.repository.AuthRepository
+import com.example.core.domain.repository.CartRepository
 import com.example.core.domain.repository.CategoryRepository
 import com.example.core.domain.repository.CollectionRepository
+import com.example.core.domain.repository.DetailRepository
+import com.example.core.domain.repository.FavoriteRepository
 import com.example.core.domain.repository.LocationRepository
 import com.example.core.domain.repository.MenuRepository
 import com.example.core.domain.repository.RestaurantRepository
+import com.example.core.domain.repository.ReviewRepository
 import com.example.core.domain.repository.SearchRepository
 import com.example.core.domain.repository.UserRepository
 import com.example.core.domain.repository.VoucherRepository
@@ -79,10 +87,35 @@ abstract class RepositoryModule {
         locationRepositoryImpl: LocationRepositoryImpl
     ): LocationRepository
 
-
     @Binds
     @Singleton
     abstract fun bindSearchRepository(
         searchRepositoryImpl: SearchRepositoryImpl
     ): SearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDetailRepository(
+        detailRepositoryImpl: DetailRepositoryImpl
+    ): DetailRepository
+
+
+    @Binds
+    @Singleton
+    abstract fun bindFavoriteRepository(
+        favoriteRepositoryImpl: FavoriteRepositoryImpl
+    ): FavoriteRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCartRepository(
+        cartRepositoryImpl: CartRepositoryImpl
+    ): CartRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReviewRepository(
+        reviewRepositoryImpl: ReviewRepositoryImpl
+    ): ReviewRepository
+
 }

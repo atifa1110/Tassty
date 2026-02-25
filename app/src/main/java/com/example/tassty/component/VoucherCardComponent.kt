@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.RestaurantStatus
@@ -39,13 +40,14 @@ import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-import com.example.tassty.voucherItem
+import com.example.tassty.voucherUiModel
 
 @Composable
 fun VoucherCard(
@@ -53,7 +55,7 @@ fun VoucherCard(
     status: RestaurantStatus
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.width(320.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Neutral10
@@ -71,8 +73,8 @@ fun VoucherCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DiscountFoodContent(title = voucher.voucher.title,
-                    description = voucher.voucher.description)
+                DiscountFoodContent(title = voucher.title,
+                    description = voucher.description)
                 HorizontalDivider(color = Neutral30)
                 DateAndMinTransactionContent(
                     date = voucher.expireLabel,
@@ -107,8 +109,8 @@ fun VoucherSelectorCard(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DiscountFoodContent(
-                    title = voucher.voucher.title,
-                    description = voucher.voucher.description
+                    title = voucher.title,
+                    description = voucher.description
                 )
                 HorizontalDivider(color =  if(voucher.isSelected) Neutral40 else Neutral30)
                 DateAndMinTransactionContent(
@@ -170,7 +172,7 @@ fun VoucherLargeCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = voucher.voucher.title,
+                        text = voucher.title,
                         style = LocalCustomTypography.current.h5Bold,
                         color = Neutral100,
                         maxLines = 1
@@ -187,12 +189,14 @@ fun VoucherLargeCard(
 }
 
 @Composable
-fun VoucherExtraLargeCard() {
+fun VoucherExtraLargeCard(
+    voucher: VoucherUiModel
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral10
+            containerColor = Neutral20
         ),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -216,9 +220,15 @@ fun VoucherExtraLargeCard() {
             ) {
                 PromoIcon(status = RestaurantStatus.OPEN)
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    DiscountFoodContent()
+                    DiscountFoodContent(
+                        title = voucher.title,
+                        description = voucher.description
+                    )
                     HorizontalDivider(Modifier.padding(vertical = 12.dp))
-                    DateAndMinTransactionContent()
+                    DateAndMinTransactionContent(
+                        date = voucher.expireLabel,
+                        minTransaction = voucher.formatMinOrder
+                    )
                 }
             }
         }
@@ -294,13 +304,16 @@ fun DiscountFoodContent(
         Text(
             text = title,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = Neutral100,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             text = description,
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Neutral70,
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -332,11 +345,11 @@ fun PreviewVoucherScreen() {
         modifier = Modifier.fillMaxWidth().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        VoucherCard(voucher = voucherItem, status = RestaurantStatus.CLOSED)
-        VoucherLargeCard(voucher = voucherItem)
-        VoucherExtraLargeCard()
+        VoucherCard(voucher = voucherUiModel[0], status = RestaurantStatus.CLOSED)
+        VoucherLargeCard(voucher = voucherUiModel[0])
+        VoucherExtraLargeCard(voucher = voucherUiModel[0])
         VoucherSelectorCard(
-            voucher = voucherItem ,
+            voucher = voucherUiModel[0] ,
             onCheckedChange = {})
     }
 }

@@ -1,4 +1,4 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.review
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.ReviewUiModel
 import com.example.tassty.component.AllReviewChip
 import com.example.tassty.component.BackTopAppBar
 import com.example.tassty.component.Personal30Chip
@@ -48,7 +49,9 @@ import com.example.tassty.reviews
 import com.example.tassty.ui.theme.Neutral10
 
 @Composable
-fun ReviewScreen(){
+fun ReviewScreen(
+    reviews: List<ReviewUiModel>
+){
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
@@ -89,10 +92,8 @@ fun ReviewScreen(){
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 24.dp)
             ) {
-                items(items = reviews , key ={it.id}) { item ->
-                    ReviewLargeCard(
-                        review = item
-                    )
+                items(items = reviews, key ={it.id}) { item ->
+                    ReviewLargeCard(review = item)
                 }
             }
         }
@@ -208,5 +209,5 @@ fun RatingSummaryCard(
 @Preview(showBackground = true)
 @Composable
 fun ReviewPreviewScreen(){
-    ReviewScreen()
+    ReviewScreen(reviews = reviews)
 }
