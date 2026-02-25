@@ -1,12 +1,18 @@
 package com.example.core.data.model
 
+import com.google.gson.annotations.SerializedName
+
 data class FilterOptionsDto(
-    val sort_options: List<FilterOptionDto>,
-    val discount_options: List<FilterOptionDto>,
-    val rating_options: List<FilterOptionDto>,
-    val price_range_options: List<FilterOptionDto>,
-    val cuisine_options: List<FilterOptionDto>,
-    val mode_options: List<FilterOptionDto>
+    @SerializedName("sort_options")
+    val sortOptions: List<FilterOptionDto>,
+    @SerializedName("rating_options")
+    val ratingOptions: List<FilterOptionDto>,
+    @SerializedName("price_range_options")
+    val priceOptions: List<FilterOptionDto>,
+    @SerializedName("cuisine_options")
+    val cuisineOptions: List<FilterOptionDto>,
+    @SerializedName("mode_options")
+    val modeOptions: List<FilterOptionDto>
 )
 
 data class FilterOptionDto(

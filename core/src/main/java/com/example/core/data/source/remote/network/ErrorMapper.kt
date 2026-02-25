@@ -21,21 +21,26 @@ object ErrorMapper {
             is IOException -> Meta(
                 code = ErrorCode.NETWORK_IO.code,
                 status = "error",
-                message = "Network error: ${throwable.localizedMessage ?: "Connection failed"}",
+                message = "No internet connection. Please try again.",
                 traceId = traceId
             )
 
             is HttpException -> {
                 val body = throwable.response()?.errorBody()?.string()
                 val message = try {
-                    org.json.JSONObject(body ?: "{}").optString("message", throwable.message())
+                    val json = org.json.JSONObject(body ?: "{}")
+                    json.getJSONObject("meta").optString(
+                        "message",
+                        throwable.message()
+                    )
                 } catch (e: Exception) {
                     throwable.message()
                 }
+
                 Meta(
                     code = throwable.code(),
                     status = "error",
-                    message = "Server error: $message",
+                    message = message,
                     traceId = traceId
                 )
             }

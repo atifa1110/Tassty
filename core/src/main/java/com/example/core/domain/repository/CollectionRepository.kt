@@ -1,23 +1,35 @@
 package com.example.core.domain.repository
 
-import com.example.core.data.source.local.database.entity.CollectionWithMenus
-import com.example.core.data.source.remote.network.ResultWrapper
-import com.example.core.domain.model.CollectionListItem
+import com.example.core.data.source.local.database.entity.MenuEntity
+import com.example.core.data.source.local.database.entity.RestaurantEntity
+import com.example.core.data.source.local.database.model.MenuWithRestaurant
+import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.model.Collection
+import com.example.core.domain.model.CollectionRestaurantWithMenu
 import kotlinx.coroutines.flow.Flow
 
 interface CollectionRepository {
+    suspend fun addCollection(title: String)
+    suspend fun updateCollectionName(collectionId: String,name: String)
+    suspend fun initializeSystemCollections()
+    fun getCollections(): Flow<TasstyResponse<List<Collection>>>
+    suspend fun getCollectionIdsByMenu(menuId: String): List<String>
 
-    suspend fun getCollectionIdsForMenu(menuId: String): List<Int>
-    fun getCollectionListForView(): Flow<List<CollectionListItem>>
+    fun getMenuCollectionById(collectionId: String) : Flow<List<CollectionRestaurantWithMenu>>
 
-    suspend fun createNewCollectionOnly(collectionName: String): ResultWrapper<String>
+    fun observeFavoriteMenuIds(): Flow<Set<String>>
+    fun observeIsMenuFavorite(menuId: String): Flow<Boolean>
 
-    suspend fun saveMenuToCollections(
+    suspend fun addWishlist(
+        menu: MenuEntity,
+        restaurant: RestaurantEntity,
+        collectionIds: List<String>
+    )
+
+    suspend fun removeWishlist(
         menuId: String,
-        selectedCollectionIds: List<Int>
-    ): ResultWrapper<String>
+        collectionIds: List<String>
+    )
 
-    fun getCollectionDetail(collectionId: Int): Flow<CollectionWithMenus>
-
-    suspend fun checkMenuWishlistStatus(menuId: String): Boolean
+    suspend fun deleteCollectionById(collectionId: String)
 }

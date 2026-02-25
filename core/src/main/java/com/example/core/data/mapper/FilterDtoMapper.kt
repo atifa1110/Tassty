@@ -8,12 +8,11 @@ import com.example.core.domain.model.OptionType
 
 fun FilterOptionsDto.toDomain(): FilterOptions {
     return FilterOptions(
-        sortOptions = sort_options.map { it.toDomain(type = OptionType.RADIO) },
-        discountOptions = discount_options.map { it.toDomain(type = OptionType.CHIP) },
-        ratingOptions = rating_options.map { it.toDomain(type = OptionType.CHIP) },
-        priceRangeOptions = price_range_options.map { it.toDomain(type = OptionType.RADIO) },
-        cuisineOptions = cuisine_options.map { it.toDomain(type = OptionType.RADIO) },
-        modeOptions = mode_options.map { it.toDomain(type = OptionType.CHIP) }
+        sortOptions = sortOptions.map { it.toDomain(type = OptionType.RADIO) },
+        ratingOptions = ratingOptions.map { it.toDomain(type = OptionType.CHIP) },
+        priceRangeOptions = priceOptions.map { it.toDomain(type = OptionType.RADIO) },
+        cuisineOptions = cuisineOptions.map { it.toDomain(type = OptionType.RADIO) },
+        modeOptions = modeOptions.map { it.toDomain(type = OptionType.CHIP) }
     )
 }
 

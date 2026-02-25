@@ -2,7 +2,6 @@ package com.example.core.domain.model
 
 data class FilterOptions(
     val sortOptions: List<FilterOption>,
-    val discountOptions: List<FilterOption>,
     val ratingOptions: List<FilterOption>,
     val priceRangeOptions: List<FilterOption>,
     val cuisineOptions: List<FilterOption>,

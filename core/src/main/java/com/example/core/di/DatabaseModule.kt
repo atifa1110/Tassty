@@ -2,7 +2,14 @@ package com.example.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.core.data.source.local.database.dao.CartDao
+import com.example.core.data.source.local.database.dao.CleanupDao
+import com.example.core.data.source.local.database.dao.CollectionDao
+import com.example.core.data.source.local.database.dao.CollectionMenuDao
+import com.example.core.data.source.local.database.dao.FavoriteQueryDao
+import com.example.core.data.source.local.database.dao.FavoriteRestaurantDao
 import com.example.core.data.source.local.database.dao.MenuDao
+import com.example.core.data.source.local.database.dao.RestaurantDao
 import com.example.core.data.source.local.database.db.AppDatabase
 import dagger.Module
 import dagger.Provides
@@ -23,8 +30,14 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "menu_collection_db"
+            "tassty_db"
         ).build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRestaurantDao(database: AppDatabase): RestaurantDao {
+        return database.restaurantDao()
     }
 
     @Singleton
@@ -32,4 +45,42 @@ object DatabaseModule {
     fun provideMenuDao(database: AppDatabase): MenuDao {
         return database.menuDao()
     }
+
+    @Singleton
+    @Provides
+    fun provideCollectionMenuDao(database: AppDatabase): CollectionMenuDao{
+        return database.collectionMenuDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideFavoriteDao(database: AppDatabase): FavoriteQueryDao {
+        return database.favoriteQueryDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideCollectionDao(database: AppDatabase): CollectionDao {
+        return database.collectionDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideFavoriteRestaurantDao(database: AppDatabase): FavoriteRestaurantDao {
+        return database.favoriteRestaurantDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideCleanupDao(database: AppDatabase): CleanupDao {
+        return database.cleanupDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideCartDao(database: AppDatabase): CartDao {
+        return database.cartDao()
+    }
+
+
 }
