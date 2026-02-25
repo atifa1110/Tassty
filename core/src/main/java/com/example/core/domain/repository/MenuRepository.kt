@@ -1,14 +1,19 @@
 package com.example.core.domain.repository
 
-import com.example.core.data.source.remote.network.ResultWrapper
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Menu
-import com.example.core.domain.model.Restaurant
 import kotlinx.coroutines.flow.Flow
 
 interface MenuRepository {
-    suspend fun getRecommendedMenus(): Flow<TasstyResponse<List<Menu>>>
-    suspend fun getSuggestedMenus(): Flow<TasstyResponse<List<Menu>>>
+    fun getRecommendedMenus(): Flow<TasstyResponse<List<Menu>>>
+    fun getSuggestedMenus(): Flow<TasstyResponse<List<Menu>>>
 
     suspend fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>>
+
+    fun getDetailBestSellerMenu(id:String): Flow<TasstyResponse<List<Menu>>>
+
+    fun getDetailRecommendedMenu(id:String): Flow<TasstyResponse<List<Menu>>>
+    fun getDetailAllMenu(id:String): Flow<TasstyResponse<List<Menu>>>
+
+    suspend fun runDatabaseMaintenance()
 }

@@ -5,6 +5,6 @@ import com.example.core.data.source.remote.network.BaseResponse
 import retrofit2.http.GET
 
 interface CategoryApiService {
-    @GET("category")
+    @GET("restaurants/category/all")
     suspend fun getAllCategories(): BaseResponse<List<CategoryDto>>
 }

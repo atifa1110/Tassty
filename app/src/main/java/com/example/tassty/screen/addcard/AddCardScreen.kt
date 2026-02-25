@@ -1,7 +1,6 @@
 package com.example.tassty.screen.addcard
 
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,7 +67,6 @@ fun AddCardScreen(
             when (result) {
                 is PaymentResult.Completed -> {
                     // Di sini Luna panggil finalize ke ViewModel
-                    viewModel.onStripeValidationSuccess()
                 }
                 is PaymentResult.Failed -> {
                     // Handle error (misal: kartu ditolak)

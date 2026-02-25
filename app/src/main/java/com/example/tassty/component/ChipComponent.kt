@@ -1,24 +1,16 @@
 package com.example.tassty.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ChipDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,8 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
-import com.example.tassty.model.SummaryFilterChip
+import com.example.tassty.model.getFilterDrawable
+import com.example.tassty.model.getFilterPalette
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -199,17 +193,18 @@ fun CustomSearchChip(
 
 @Composable
 fun CustomFilterChip(
-    option: SummaryFilterChip,
+    option: FilterOptionUi,
     onClick: () -> Unit,
 ) {
-    val config = option.type
+    val image = getFilterDrawable(option.iconRes)
+    val pallet = getFilterPalette(option.category)
     CustomShortChip(
-        image = option.icon,
-        color = if(option.isSelected) config.selectedColor else Neutral20,
-        iconColor = if(option.isSelected) config.selectedIconColor else Neutral70,
+        image = image,
+        color = if(option.isSelected) pallet.backgroundColor else Neutral20,
+        iconColor = if(option.isSelected) pallet.iconColor else Neutral70,
         label = option.label,
-        labelColor = if(option.isSelected) config.selectedLabelColor else Neutral70,
-        modifier = Modifier.border(1.dp,if(option.isSelected) config.selectedBorderColor else Color.Transparent,
+        labelColor = if(option.isSelected) pallet.labelColor else Neutral70,
+        modifier = Modifier.border(1.dp,if(option.isSelected) pallet.borderColor else Color.Transparent,
             RoundedCornerShape(100.dp)
         ).clickable(onClick = onClick)
     )

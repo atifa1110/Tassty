@@ -29,11 +29,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.utils.toCleanRupiahFormat
+import com.example.core.ui.model.CartItemUiModel
+import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
-import com.example.tassty.carts
-import com.example.tassty.model.Cart
-import com.example.tassty.model.UserAddress
+import com.example.tassty.cartUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -50,16 +50,16 @@ import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun CartListCard(
-    cart: Cart,
-    onCheckedChange: (Cart)-> Unit,
+    cart: CartItemUiModel,
+    onCheckedChange: (String)-> Unit,
     onIncrementQuantity:() -> Unit,
     onDecrementQuantity:() -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(width = 1.dp, if(cart.isChecked) Orange500 else Color.Transparent),
-        colors = CardDefaults.cardColors(containerColor = if(cart.isChecked) Orange50 else Neutral20)
+        border = BorderStroke(width = 1.dp, if(cart.isSelected) Orange500 else Color.Transparent),
+        colors = CardDefaults.cardColors(containerColor = if(cart.isSelected) Orange50 else Neutral20)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -85,12 +85,17 @@ fun CartListCard(
                             style = LocalCustomTypography.current.h5Bold,
                             color = Neutral100
                         )
-                        NotesText(notes = cart.note?.joinToString("\n")?:"No Notes")
+                        val notesDisplay = if (cart.summary.isNotEmpty()) {
+                            cart.formattedDisplay
+                        } else {
+                            "Notes: -"
+                        }
+                        NotesText(notes = notesDisplay)
                     }
 
                     Checkbox(
-                        checked = cart.isChecked,
-                        onCheckedChange =  { onCheckedChange(cart) },
+                        checked = cart.isSelected,
+                        onCheckedChange =  { onCheckedChange(cart.cartId) },
                         enabled = true,
                         colors = CheckboxDefaults.colors(
                             checkedColor = Orange500,
@@ -100,7 +105,7 @@ fun CartListCard(
                     )
                 }
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
 
                 FoodPriceText(
                     price = cart.price.toCleanRupiahFormat(),
@@ -128,7 +133,7 @@ fun CartListCard(
 
 @Composable
 fun SelectLocationCard(
-    address: UserAddress?= null,
+    address: UserAddressUiModel?= null,
     onClick: () -> Unit
 ){
     if(address!= null){
@@ -214,12 +219,12 @@ fun VoucherApplyCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = voucher.voucher.title,
+                    text = voucher.title,
                     style = LocalCustomTypography.current.h6Bold,
                     color = Neutral100
                 )
                 Text(
-                    text = voucher.voucher.description,
+                    text = voucher.description,
                     style = LocalCustomTypography.current.bodySmallMedium,
                     color = Neutral70
                 )
@@ -374,7 +379,7 @@ fun OrderSummaryCard(
 fun PreviewCartCardComponent() {
     Column (Modifier.fillMaxWidth()){
         CartListCard(
-            cart = carts[0],
+            cart = cartUiModel.menus[0],
             onCheckedChange = {},
             onIncrementQuantity = {},
             onDecrementQuantity = {}

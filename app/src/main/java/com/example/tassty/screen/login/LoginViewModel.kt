@@ -2,7 +2,6 @@ package com.example.tassty.screen.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.core.data.source.remote.network.ResultWrapper
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.LoginEmailPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,8 +48,6 @@ class LoginViewModel @Inject constructor(
 
     fun resetLoginInput(){
         _uiState.update { it.copy(
-            email = "",
-            password = "",
             isBottomSheetVisible = false,
             bottomSheetMessage = null
         ) }
@@ -71,7 +68,6 @@ class LoginViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val startTime = System.currentTimeMillis()
             loginEmailPasswordUseCase.invoke(uiState.value.email, uiState.value.password)
                 .collect { result ->
                     when(result) {
@@ -81,7 +77,6 @@ class LoginViewModel @Inject constructor(
                                     it.copy(bottomSheetMessage = result.meta.message)
                                 }
 
-                                handleMinimumDelay(startTime)
                                   _uiState.update { it.copy(isLoading = false) }
 
                                 // 4. Emit Event: Sinyal untuk Composable agar tampilkan sheet
@@ -90,7 +85,6 @@ class LoginViewModel @Inject constructor(
 
                         is TasstyResponse.Loading -> _uiState.update { it.copy(isLoading = true) }
                         is TasstyResponse.Success -> {
-                            handleMinimumDelay(startTime)
                             _uiState.update { it.copy(isLoading = false) }
                             _events.emit(LoginEvent.NavigateToHome)
                         }
@@ -101,12 +95,12 @@ class LoginViewModel @Inject constructor(
 }
 
 private val MINIMUM_LOADING_TIME = 500L
-suspend fun handleMinimumDelay(startTime: Long) {
-    val elapsedTime = System.currentTimeMillis() - startTime
-    val requiredDelay = MINIMUM_LOADING_TIME - elapsedTime
-
-    if (requiredDelay > 0) {
-        // Tunda hanya jika waktu pemrosesan API lebih cepat dari batas minimum
-        delay(requiredDelay)
-    }
-}
+//suspend fun handleMinimumDelay(startTime: Long) {
+//    val elapsedTime = System.currentTimeMillis() - startTime
+//    val requiredDelay = MINIMUM_LOADING_TIME - elapsedTime
+//
+//    if (requiredDelay > 0) {
+//        // Tunda hanya jika waktu pemrosesan API lebih cepat dari batas minimum
+//        delay(requiredDelay)
+//    }
+//}

@@ -1,7 +1,6 @@
 package com.example.tassty
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -10,7 +9,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
@@ -20,34 +18,33 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.tassty.component.ErrorScreen
 import com.example.tassty.navigation.TasstyNavHost
 import com.example.tassty.screen.SplashScreen
-import com.example.tassty.screen.home.HomeScreen
 import com.example.tassty.ui.theme.TasstyTheme
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.getValue
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: AuthViewModel by viewModels()
     // 1. Define the Permission Launcher and its callback
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -65,8 +62,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //WindowCompat.setDecorFitsSystemWindows(window, false)
         // 2. Start the permission check as soon as the Activity is created
         checkAndRequestLocationPermission()
     }
@@ -100,31 +95,46 @@ class MainActivity : ComponentActivity() {
     // 3. The logic that runs ONLY after permission is granted or already existed
     private fun startLocationDependentLogic() {
         setContent {
+            val viewModel: MainViewModel by  viewModels()
+            val snackHostState = remember { SnackbarHostState() }
             val isAuthLoaded by viewModel.isAuthLoaded.collectAsState()
 
             TasstyTheme {
+                LaunchedEffect(isAuthLoaded) {
+                    if (isAuthLoaded) {
+                        viewModel.snackbarMessage.collect { message ->
+                            snackHostState.showSnackbar(message)
+                        }
+                    }
+                }
                 Box(modifier = Modifier.fillMaxSize()) {
-                    // ✅ SplashScreen muncul saat belum load
+                    // SplashScreen muncul saat belum load
                     AnimatedVisibility(
                         visible = !isAuthLoaded,
                         enter = fadeIn(),
                         exit = fadeOut() + slideOutVertically { -80 }
                     ) {
-                        SplashScreen() // sudah termasuk gradient background kamu
+                        SplashScreen()
                     }
 
-                    // ✅ Main content muncul setelah authLoaded
+                    // Main content muncul setelah authLoaded
                     AnimatedVisibility(
                         visible = isAuthLoaded,
                         enter = fadeIn() + slideInVertically { 80 },
                         exit = fadeOut()
                     ) {
                         TransparentStatusBar(true)
-                        val navController = rememberNavController()
-                        TasstyNavHost(
-                            navController = navController,
-                            onBackButtonClick = { navController.popBackStack() }
-                        )
+
+                        Scaffold (
+                            snackbarHost = {
+                                SnackbarHost(hostState = snackHostState)
+                            }
+                        ) { innerPadding ->
+                                TasstyNavHost(
+                                    modifier = Modifier.padding(innerPadding),
+                                    navController = rememberNavController()
+                                )
+                        }
                     }
                 }
             }

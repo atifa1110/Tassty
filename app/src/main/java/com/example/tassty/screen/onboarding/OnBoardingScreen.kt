@@ -197,12 +197,12 @@ fun PagerScreen(
 
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun OnBoardingPreview() {
-    OnBoardingScreen(
-        onNavigateToAuth = {}
-    )
-}
-
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun OnBoardingPreview() {
+//    OnBoardingScreen(
+//        onNavigateToAuth = {}
+//    )
+//}
+//

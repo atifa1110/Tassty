@@ -5,6 +5,9 @@ import com.example.core.ui.model.CategoryUiModel
 
 fun Category.toUiModel() : CategoryUiModel {
     return CategoryUiModel(
-        category = this
+        id=id,
+        name=name,
+        imageUrl=imageUrl,
+        isSelected = false
     )
 }

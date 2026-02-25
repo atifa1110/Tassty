@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.icons.Icons
@@ -40,7 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
-import com.example.tassty.component.ButtonLogout
+import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CircleImageIcon
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.ProfileTopAppBar
@@ -55,17 +56,40 @@ import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Green600
+import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral80
 import com.example.tassty.ui.theme.Orange100
 import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange600
 import com.example.tassty.ui.theme.Orange900
 import com.example.tassty.ui.theme.Pink100
+import com.example.tassty.ui.theme.Pink50
+import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
 
 @Composable
 fun ProfileScreen(
-    onNavigateBack: () -> Unit = {}
+    onNavigateToCollection: () -> Unit = {},
+    onNavigateToFavorite:() -> Unit = {},
+    onNavigateToVoucher:()-> Unit = {},
+    onNavigateToAddress: () -> Unit = {},
+    onLogout:() -> Unit = {}
+) {
+    ProfileContent (
+        onNavigateToCollection = onNavigateToCollection,
+        onNavigateToFavorite = onNavigateToFavorite,
+        onNavigateToVoucher = onNavigateToVoucher,
+        onNavigateToAddress = onNavigateToAddress,
+        onLogout = onLogout,
+    )
+}
+@Composable
+fun ProfileContent(
+    onNavigateToCollection: () -> Unit,
+    onNavigateToFavorite:() -> Unit,
+    onNavigateToVoucher: () -> Unit,
+    onNavigateToAddress: () -> Unit,
+    onLogout:() -> Unit
 ) {
     Scaffold (
         containerColor = Neutral10,
@@ -75,7 +99,7 @@ fun ProfileScreen(
     ){ padding ->
         LazyColumn(
             modifier = Modifier.padding(padding).fillMaxSize().background(Neutral10)
-                .padding(vertical = 12.dp),
+                .padding(top = 12.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
@@ -87,7 +111,12 @@ fun ProfileScreen(
             }
             
             item {
-                ProfileMenuSection()
+                ProfileMenuSection(
+                    onNavigateToCollection = onNavigateToCollection,
+                    onNavigateToFavorite = onNavigateToFavorite,
+                    onNavigateToVoucher = onNavigateToVoucher,
+                    onNavigateToAddress = onNavigateToAddress
+                )
             }
 
             item {
@@ -99,12 +128,20 @@ fun ProfileScreen(
             }
 
             item{
-                ButtonLogout(
+                ButtonComponent(
                     enabled = true,
                     labelResId = R.string.logout,
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    onClick = {}
+                    onClick = {},
+                    modifier = Modifier.fillMaxWidth()
+                        .height(50.dp).padding(horizontal = 24.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Pink50,
+                        contentColor = Pink500,
+                        disabledContentColor = Neutral100,
+                        disabledContainerColor = Neutral40
+                    )
                 )
+
             }
         }
     }
@@ -256,7 +293,12 @@ fun ProfileHeaderSection() {
 }
 
 @Composable
-fun ProfileMenuSection() {
+fun ProfileMenuSection(
+    onNavigateToCollection: () -> Unit,
+    onNavigateToFavorite:() -> Unit,
+    onNavigateToVoucher: () -> Unit,
+    onNavigateToAddress: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -294,7 +336,7 @@ fun ProfileMenuSection() {
                     iconColor = Orange600,
                     boxColor = Orange100,
                     title = "Vouchers",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToVoucher
                 )
                 
                 HorizontalDivider(
@@ -318,7 +360,7 @@ fun ProfileMenuSection() {
                     iconColor = Pink600,
                     boxColor = Pink100,
                     title = "Collections",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToCollection
                 )
                 
                 HorizontalDivider(
@@ -330,7 +372,7 @@ fun ProfileMenuSection() {
                     iconColor = Pink600,
                     boxColor = Pink100,
                     title = "Favorite Restaurants",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToFavorite
                 )
                 
                 HorizontalDivider(
@@ -354,7 +396,7 @@ fun ProfileMenuSection() {
                     iconColor = Blue500,
                     boxColor = Blue100,
                     title = "My Addresses",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToAddress
                 )
 
                 HorizontalDivider(

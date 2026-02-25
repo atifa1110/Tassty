@@ -55,7 +55,6 @@ fun LoginRoute(
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // LaunchedEffect
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -237,20 +236,20 @@ fun LoginScreen(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun LoginPreview() {
-    LoginScreen(
-        email= "",
-        emailError ="",
-        onEmailChanged = { },
-        password = "",
-        passwordError = "",
-        onPasswordChanged = {},
-        onLoginClick = {},
-        onRegisterClick = {},
-        onForgotClick = {},
-        isButtonEnable = false,
-        isLoading = false
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun LoginPreview() {
+//    LoginScreen(
+//        email= "",
+//        emailError ="",
+//        onEmailChanged = { },
+//        password = "",
+//        passwordError = "",
+//        onPasswordChanged = {},
+//        onLoginClick = {},
+//        onRegisterClick = {},
+//        onForgotClick = {},
+//        isButtonEnable = false,
+//        isLoading = false
+//    )
+//}

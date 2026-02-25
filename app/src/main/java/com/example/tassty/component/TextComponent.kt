@@ -1,14 +1,15 @@
 package com.example.tassty.component
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,9 +56,7 @@ fun TextComponent(
     textError: String = ""
 ) {
     OutlinedTextField(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(54.dp),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(30.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = Neutral100,
@@ -261,57 +261,187 @@ fun SearchBarWhiteSection(
 }
 
 @Composable
-fun NotesBarSection(
+fun UnifiedSearchBar(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    icon : Int = R.drawable.clipboard_list,
-    placeholder: String = stringResource(R.string.places_notes_here),
+    placeholder: String = stringResource(R.string.search_for_something),
+    enabled: Boolean = true,
+    isTransparentMode: Boolean = false // Flag untuk bedain Home vs White section
 ) {
-    Card(modifier = modifier
-        .border(
-            width = 1.dp,
-            color = Neutral30, 
-            shape = RoundedCornerShape(99.dp)
-        ),
+    val containerColor = if (isTransparentMode) Neutral10.copy(alpha = 0.10f) else Neutral10
+    val borderColor = if (isTransparentMode) Color.White.copy(alpha = 0.32f) else Neutral30
+    val iconColor = if (isTransparentMode) Neutral10 else Orange500
+    val textColor = if (isTransparentMode) Neutral10 else Neutral100
+    val placeholderColor = if (isTransparentMode) Neutral10.copy(alpha = 0.50f) else Neutral60
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(99.dp)
+            ),
         shape = RoundedCornerShape(99.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Neutral10
-        )) {
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+    ) {
         TextField(
             value = value,
-            onValueChange = { onValueChange(it) },
+            onValueChange = onValueChange,
+            enabled = enabled,
             placeholder = {
                 Text(
                     text = placeholder,
                     style = LocalCustomTypography.current.bodyMediumRegular,
+                    color = placeholderColor
                 )
             },
-            textStyle = if (value.isNotEmpty()) {
-                LocalCustomTypography.current.bodyMediumMedium
-            } else {
-                LocalCustomTypography.current.bodyMediumRegular
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = iconColor
+                )
             },
             modifier = Modifier.fillMaxWidth(),
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = "notes",
-                    tint = Neutral70,
-                    modifier = Modifier.size(20.dp)
-                )
-            },
+            textStyle = LocalCustomTypography.current.bodyMediumMedium.copy(color = textColor),
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Neutral10,
-                unfocusedContainerColor = Neutral10,
-                unfocusedTextColor = Neutral100,
-                focusedTextColor = Neutral100,
-                unfocusedPlaceholderColor = Neutral60,
-                focusedPlaceholderColor = Neutral60,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
+                disabledIndicatorColor = Color.Transparent,
+                focusedTextColor = textColor,
+                unfocusedTextColor = textColor,
+                disabledTextColor = textColor.copy(alpha = 0.5f)
+            )
+        )
+    }
+}
+
+@Composable
+fun CapsuleTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholderText: String = "",
+    icon: Int = R.drawable.clipboard_list,
+    isMultiLine: Boolean = true
+) {
+    val cornerSize = if (value.lines().size <= 1) 99.dp else 20.dp
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = {
+            if (isMultiLine) {
+                onValueChange(it)
+            } else {
+                onValueChange(it.replace("\n", ""))
+            }
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .animateContentSize(), 
+        placeholder = {
+            Text(
+                text = placeholderText,
+                style = LocalCustomTypography.current.bodyMediumRegular,
+            )
+        },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = Neutral70,
+                modifier = Modifier.size(20.dp)
+            )
+        },
+        singleLine = !isMultiLine,
+        minLines = 1,
+        maxLines = if (isMultiLine) 5 else 1,
+        textStyle = if (value.isNotEmpty()) {
+            LocalCustomTypography.current.bodyMediumMedium
+        } else {
+            LocalCustomTypography.current.bodyMediumRegular
+        },
+
+        shape = RoundedCornerShape(cornerSize),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = Neutral10,
+            unfocusedContainerColor = Neutral10,
+            focusedBorderColor = Neutral30,
+            unfocusedBorderColor = Neutral30,
+            focusedTextColor = Neutral100,
+            unfocusedTextColor = Neutral100,
+            focusedPlaceholderColor = Neutral60,
+            unfocusedPlaceholderColor = Neutral60,
+            cursorColor = Neutral100
+        )
+    )
+}
+
+
+
+@Composable
+fun CollectionNameEditText(
+    value: String,
+    onValueChange: (String) -> Unit,
+){
+    CapsuleTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholderText = "Enter name..",
+        icon = R.drawable.collection,
+        isMultiLine = false
+    )
+}
+
+@Composable
+fun CartNotesEditText(
+    value: String,
+    onValueChange: (String) -> Unit,
+){
+    CapsuleTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholderText = "Write your notes here...",
+        icon = R.drawable.note,
+        isMultiLine = true
+    )
+}
+
+@Composable
+fun DetailNotesEditText(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(Modifier.fillMaxWidth()) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "Notes",
+                style = LocalCustomTypography.current.h5Bold,
+                color = Neutral100
+            )
+            Text(
+                text = "${value.length} / 100",
+                style = LocalCustomTypography.current.bodyMediumRegular,
+                color = Neutral70
+            )
+        }
+        CapsuleTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholderText = "Place your notes here...",
+            icon = R.drawable.clipboard_list,
+            isMultiLine = true
         )
     }
 }
@@ -529,6 +659,35 @@ fun NotesText(
     }
 }
 
+@Composable
+fun TextInputForm(
+    modifier: Modifier = Modifier,
+    title: String,
+    text: String,
+    placeholder: String,
+    leadingIcon: Int,
+    onTextChanged: (String) -> Unit
+){
+    Column(
+        modifier=  modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            textAlign = TextAlign.Start,
+            text = title,
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100
+        )
+
+        TextComponent(
+            text = text,
+            placeholder = placeholder,
+            leadingIcon = leadingIcon,
+            onTextChanged = onTextChanged
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewAllComponents() {
@@ -559,9 +718,18 @@ fun PreviewAllComponents() {
             onValueChange = {}
         )
 
-        NotesBarSection(
+        UnifiedSearchBar(
             value = "",
-            onValueChange = {}
+            onValueChange = {  },
+            placeholder = stringResource(R.string.search_delicacies),
+            isTransparentMode = true,
+            enabled = false
+        )
+
+        UnifiedSearchBar(
+            value = "",
+            onValueChange = {} ,
+            isTransparentMode = false
         )
 
         FoodPriceText(price = "Rp25.000", color = Neutral100)
@@ -571,5 +739,8 @@ fun PreviewAllComponents() {
         FoodPriceBigText(price = "Rp25.000", color = Orange500)
 
         FoodPriceLineText(price = "Rp25.000", color = Neutral60)
+
+        CollectionNameEditText(value = "") { }
+        CartNotesEditText(value = "") { }
     }
 }

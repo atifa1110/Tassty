@@ -1,6 +1,5 @@
 package com.example.core.domain.usecase
 
-import com.example.core.data.source.remote.network.ResultWrapper
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Category
 import com.example.core.domain.repository.CategoryRepository

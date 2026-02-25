@@ -26,8 +26,12 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -35,26 +39,27 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.core.data.model.Resource
+import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.MenuUiModel
-import com.example.core.ui.model.RestaurantDetailUiModel
-import com.example.core.ui.model.RestaurantStatusResult
+import com.example.core.ui.model.ReviewUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.CartAddItemButton
+import com.example.tassty.component.CollectionContent
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DetailScheduleContent
 import com.example.tassty.component.DetailTopAppBar
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorListState
-import com.example.tassty.component.ErrorScreen
-import com.example.tassty.component.FoodGridCard
+import com.example.tassty.component.FoodGridSoldCard
 import com.example.tassty.component.GridMenuListSection
 import com.example.tassty.component.HorizontalTitleButtonSection
 import com.example.tassty.component.HorizontalTitleItemCountButtonSection
 import com.example.tassty.component.LoadingRowState
+import com.example.tassty.component.MenuAddToCartContent
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.RankBadgeIcon
 import com.example.tassty.component.RestaurantCloseModal
@@ -65,35 +70,51 @@ import com.example.tassty.component.StatusItemImage
 import com.example.tassty.component.SuccessImage
 import com.example.tassty.component.VoucherCard
 import com.example.tassty.component.menuItemCountVerticalListBlock
-import com.example.tassty.getSampleVouchers
-import com.example.tassty.menus
-import com.example.tassty.model.Review
+import com.example.tassty.menuDetailItem
+import com.example.tassty.menusItem
 import com.example.tassty.restaurantDetailItem
 import com.example.tassty.reviews
-import com.example.tassty.screen.DetailSearchScreen
+import com.example.tassty.screen.detailmenu.UiEvent
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.voucherUiModel
 import kotlin.collections.orEmpty
 
 @Composable
 fun DetailRestaurantScreen(
-    viewModel: DetailRestaurantViewModel = viewModel()
+    snackHostState : SnackbarHostState,
+    onNavigateToDetailMenu:(String) -> Unit = {},
+    onNavigateToBestSeller:(String) -> Unit = {},
+    viewModel: DetailRestaurantViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchResult by viewModel.searchResultsUiState.collectAsStateWithLifecycle()
+    val detailMenu by viewModel.detailMenuFlow.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel.uiEffect) {
+        viewModel.uiEffect.collect { event ->
+            when(event) {
+                is UiEvent.NavigateBackWithResult -> TODO()
+                is UiEvent.ShowSnackbar -> {
+                    snackHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
 
     DetailRestaurantContent(
+        snackHostState = snackHostState,
         uiState = uiState,
-        status = uiState.status?: RestaurantStatusResult(RestaurantStatus.CLOSED,""),
         onShowSchedule = { viewModel.onEvent(DetailRestaurantEvent.OnShowScheduleSheet) },
         onRestaurantFavoriteClick = { viewModel.onEvent(DetailRestaurantEvent.OnRestaurantFavoriteSheet) },
-        onAllMenuFavoriteClick = { viewModel.onEvent(DetailRestaurantEvent.OnAllMenuFavorite(it))},
-        onRecommendedFavoriteClick = { viewModel.onEvent(DetailRestaurantEvent.OnRecommendedFavorite(it))},
-        onBestSellerFavorite = { viewModel.onEvent(DetailRestaurantEvent.OnBestSellerFavorite(it))},
-        onAddToCart = { menu -> viewModel.onEvent(DetailRestaurantEvent.OnAddToCart(menu))},
-        onShowSearchSheet = { viewModel.onEvent(DetailRestaurantEvent.OnShowSearchSheet) }
+        onMenuFavoriteClick = { viewModel.onEvent(DetailRestaurantEvent.OnMenuFavoriteClick(it))},
+        onShowSearchSheet = { viewModel.onEvent(DetailRestaurantEvent.OnShowSearchSheet) },
+        onMenuAddToCartClick = {viewModel.onEvent(DetailRestaurantEvent.OnMenuAddToCartClick(it))},
+        onNavigateToDetailMenu = onNavigateToDetailMenu,
+        onNavigateToBestSeller = onNavigateToBestSeller
     )
 
     CustomBottomSheet(
@@ -101,7 +122,19 @@ fun DetailRestaurantScreen(
         onDismiss = { viewModel.onEvent(DetailRestaurantEvent.OnDismissScheduleSheet)}
     ) {
         DetailScheduleContent(
-            operationalHours = uiState.restaurantResource.data?.detail?.restaurant?.operationalHours?:emptyList()
+            restaurant = uiState.restaurantResource.data
+        )
+    }
+
+    CustomBottomSheet(
+        visible = uiState.isCollectionSheetVisible,
+        onDismiss = { viewModel.onEvent(DetailRestaurantEvent.OnDismissCollectionSheet) }
+    ) {
+        CollectionContent(
+            resource = uiState.collectionsResource,
+            onCollectionSelected = {id, check -> viewModel.onEvent(DetailRestaurantEvent.OnCollectionCheckChange(id,check))},
+            onSaveCollectionClick = {viewModel.onEvent(DetailRestaurantEvent.OnSaveToCollection)},
+            onAddCollectionClick = { viewModel.onEvent(DetailRestaurantEvent.OnShowAddCollectionSheet) }
         )
     }
 
@@ -114,13 +147,27 @@ fun DetailRestaurantScreen(
     }
 
     CustomBottomSheet(
+        visible = uiState.isDetailMenuModalVisible,
+        onDismiss = {viewModel.onEvent(DetailRestaurantEvent.OnDismissDetailMenuSheet)}
+    ) {
+        MenuAddToCartContent(
+            isEditMode = uiState.isEditMode,
+            quantity = uiState.quantity,
+            resource = detailMenu,
+            onIncreaseQuantity = {viewModel.onEvent(DetailRestaurantEvent.OnQuantityIncrease(uiState.quantity))},
+            onDecreaseQuantity = {viewModel.onEvent(DetailRestaurantEvent.OnQuantityDecrease(uiState.quantity))},
+            onAddToCart = {viewModel.onEvent(DetailRestaurantEvent.OnAddToCart(it))}
+        )
+    }
+
+    CustomBottomSheet(
         visible = uiState.isFavoriteModalVisible,
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
         ModalStatusContent(
             title = "Saved to my favorite restaurants!",
-            subtitle = "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit, sed do eiusmod.",
+            subtitle = "Your favorite preference has been updated.",
             buttonTitle ="Confirm",
             onClick = { viewModel.onEvent(DetailRestaurantEvent.OnRestaurantDismissFavoriteSheet) }
         ){
@@ -128,22 +175,22 @@ fun DetailRestaurantScreen(
         }
     }
 
-    if (uiState.showSearch) {
+    if (uiState.isSearchModalVisible) {
         AnimatedVisibility(
-            visible = uiState.showSearch,
+            visible = uiState.isSearchModalVisible,
             enter = slideInHorizontally(
-                initialOffsetX = { fullWidth -> fullWidth }, // masuk dari kanan
+                initialOffsetX = { fullWidth -> fullWidth },
                 animationSpec = tween(300)
             ) + fadeIn(animationSpec = tween(200)),
             exit = slideOutHorizontally(
-                targetOffsetX = { fullWidth -> fullWidth }, // keluar ke kanan lagi
+                targetOffsetX = { fullWidth -> fullWidth },
                 animationSpec = tween(300)
             ) + fadeOut(animationSpec = tween(200))
         ) {
             DetailSearchScreen(
                 query = uiState.searchQuery,
-                status = uiState.status?.status ?: RestaurantStatus.CLOSED,
-                resource = uiState.searchResultsResource,
+                status = uiState.restaurantResource.data?.statusResult?.status ?: RestaurantStatus.CLOSED,
+                resource = searchResult,
                 onQueryChange = { viewModel.onEvent(DetailRestaurantEvent.OnSearchQueryChange(it)) },
                 onClose = { viewModel.onEvent(DetailRestaurantEvent.OnDismissSearchSheet) }
             )
@@ -153,99 +200,100 @@ fun DetailRestaurantScreen(
 
 @Composable
 fun DetailRestaurantContent(
+    snackHostState : SnackbarHostState,
     uiState: DetailRestaurantUiState,
-    status : RestaurantStatusResult,
-    onRestaurantFavoriteClick : () -> Unit,
-    onAllMenuFavoriteClick: (String) -> Unit,
-    onRecommendedFavoriteClick: (String) -> Unit,
-    onBestSellerFavorite: (String) -> Unit,
-    onAddToCart: (MenuUiModel) -> Unit,
-    onShowSchedule : () -> Unit,
-    onShowSearchSheet : () -> Unit,
+    onRestaurantFavoriteClick: () -> Unit,
+    onMenuFavoriteClick: (MenuUiModel) -> Unit,
+    onMenuAddToCartClick:(MenuUiModel)-> Unit,
+    onShowSchedule: () -> Unit,
+    onShowSearchSheet: () -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit,
+    onNavigateToBestSeller:(String) -> Unit
 ) {
-    Scaffold (
+    Scaffold(
         containerColor = Neutral10,
+        snackbarHost = { SnackbarHost(snackHostState) },
         bottomBar = {
-            if(uiState.cartItemsResource.isNotEmpty()) {
+            if (uiState.totalItems>0) {
                 ShoppingCartBottomBar(
-                    itemCount = uiState.cartItemCount,
-                    totalPrice = uiState.cartTotalPrice,
+                    itemCount = uiState.totalItems,
+                    totalPrice = uiState.totalPrice,
                     onCartClick = {}
                 )
             }
         }
-    ){ padding->
-        if(uiState.restaurantResource.errorMessage!=null){
-            ErrorScreen()
-        }else {
-            LazyColumn(
-                modifier = Modifier.padding(padding)
-                    .fillMaxSize().background(Neutral10),
-            ) {
-                // 1. Header Section (Single Item)
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(Neutral10),
+        ) {
+            val restaurantResource = uiState.restaurantResource
+            // Header Section
+            restaurantResource.data?.let { restaurant ->
                 item {
                     HeaderWithVoucherSection(
-                        restaurant = uiState.restaurantResource.data,
-                        voucherResource = uiState.voucherResource,
-                        status = status,
-                        isFavorite = uiState.isFavorite,
-                        operationalHour = uiState.todayHoursString,
+                        restaurant = restaurant,
+                        voucherResource = uiState.vouchersResource,
                         onFavoriteClick = onRestaurantFavoriteClick,
                         onShowSearch = onShowSearchSheet,
                         onShowSchedule = onShowSchedule
                     )
                 }
 
-                // 2. Divider Section (Single Item)
-                item {
-                    Divider32()
-                }
+                // Divider
+                item { Divider32() }
 
-                // 3. Our Best Seller (Single Item - Horizontal LazyRow inside)
+                // Best Seller Section
                 item {
                     BestSellerSection(
-                        resource = uiState.bestSellersResource,
-                        onFavoriteClick = onBestSellerFavorite,
-                        onAddToCart = onAddToCart
+                        resource = uiState.bestSellerMenusResource,
+                        onFavoriteClick = onMenuFavoriteClick,
+                        onAddToCartClick = onMenuAddToCartClick,
+                        onNavigateToDetailMenu = onNavigateToDetailMenu,
+                        onSeeAllClick = { onNavigateToBestSeller(restaurant.id) }
                     )
-                    Spacer(Modifier.height(32.dp))
-                }
-
-                // 4. Reviews Section
-                item {
-                    ReviewSection(resource = uiState.reviewsResource)
-                    Spacer(Modifier.height(32.dp))
-                }
-
-                item {
-                    RecommendedMenuSection(
-                        resource = uiState.recommendedMenusResource,
-                        onFavoriteClick = onRecommendedFavoriteClick
-                    )
-                    Divider32()
-                }
-
-                allMenuSection(
-                    resource = uiState.allMenusResource,
-                    status = status.status,
-                    onFavoriteClick = onAllMenuFavoriteClick
-                )
-
-                item {
                     Spacer(Modifier.height(32.dp))
                 }
             }
+
+            // Reviews Section
+            item {
+                ReviewSection(resource = uiState.reviewsResource)
+                Spacer(Modifier.height(32.dp))
+            }
+
+            // Recommended Menu Section
+            item {
+                RecommendedMenuSection(
+                    resource = uiState.recommendedMenusResource,
+                    onFavoriteClick = onMenuFavoriteClick,
+                    onAddToCartClick = onMenuAddToCartClick,
+                    onNavigateToDetailMenu = onNavigateToDetailMenu
+                )
+                Divider32()
+            }
+
+            // All Menu Section
+            allMenuSection(
+                resource = uiState.allMenusResource,
+                onFavoriteClick = onMenuFavoriteClick,
+                onAddToCart = onMenuAddToCartClick,
+                onNavigateToDetailMenu = onNavigateToDetailMenu
+            )
+
+            // Bottom spacer
+            item { Spacer(Modifier.height(32.dp)) }
         }
     }
 }
 
+
 @Composable
 fun HeaderWithVoucherSection(
-    restaurant: RestaurantDetailUiModel?,
+    restaurant: DetailRestaurantUiModel,
     voucherResource: Resource<List<VoucherUiModel>>,
-    status: RestaurantStatusResult,
-    isFavorite: Boolean,
-    operationalHour: String,
     onFavoriteClick: () -> Unit,
     onShowSearch: () -> Unit,
     onShowSchedule: () -> Unit,
@@ -256,8 +304,8 @@ fun HeaderWithVoucherSection(
     val cardHeight = headerHeight * 0.55f
 
     Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(headerHeight + 80.dp)
+        .fillMaxWidth()
+        .height(headerHeight + 80.dp)
     ) {
         Box(
             modifier = Modifier
@@ -288,15 +336,15 @@ fun HeaderWithVoucherSection(
                     .height(imageHeight)
             ) {
                 StatusItemImage(
-                    imageUrl = restaurant?.detail?.restaurant?.imageUrl?:"",
+                    imageUrl = restaurant.imageUrl,
                     name = "detail header image",
-                    status = status.status,
+                    status = restaurant.statusResult.status,
                     modifier = Modifier
                         .fillMaxSize()
                 )
-                // ==== Top Bar ====
+
                 DetailTopAppBar(
-                    isFavorite = isFavorite,
+                    isFavorite = restaurant.isWishlist,
                     onShowSearch = onShowSearch,
                     onBackClick = {},
                     onFavoriteClick = onFavoriteClick,
@@ -306,7 +354,7 @@ fun HeaderWithVoucherSection(
 
             Box(
                 modifier = Modifier
-                .background(Neutral10.copy(alpha = 0.9f))
+                    .background(Neutral10.copy(alpha = 0.9f))
                     .fillMaxWidth()
                     .height(cardHeight)
                     .align(Alignment.BottomCenter)
@@ -328,7 +376,7 @@ fun HeaderWithVoucherSection(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = restaurant?.detail?.restaurant?.name?:"",
+                                text = restaurant.name,
                                 style = LocalCustomTypography.current.h3Bold,
                                 color = Neutral100
                             )
@@ -336,7 +384,7 @@ fun HeaderWithVoucherSection(
                         }
 
                         Text(
-                            text = restaurant?.formattedCategories?:"",
+                            text = restaurant.categories,
                             style = LocalCustomTypography.current.bodySmallMedium,
                             color = Neutral70
                         )
@@ -349,8 +397,8 @@ fun HeaderWithVoucherSection(
                     ) {
                         items(1) {
                             RestaurantInfoCard(
-                                restaurant = restaurantDetailItem,
-                                operationalHour = operationalHour,
+                                restaurant = restaurant,
+                                operationalHour = restaurant.todayHour?:"",
                                 onReviewsClick = {},
                                 onLocationClick = {},
                                 onScheduleClick = onShowSchedule
@@ -359,14 +407,14 @@ fun HeaderWithVoucherSection(
                     }
                 }
 
-                if (status.status == RestaurantStatus.CLOSED) {
+                if (restaurant.statusResult.status == RestaurantStatus.CLOSED) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .offset(y = (-24).dp)
                             .padding(horizontal = 24.dp)
                     ) {
-                        RestaurantCloseStatus(statusMessage = status.message)
+                        RestaurantCloseStatus(statusMessage =restaurant.statusResult.message)
                     }
                 }
             }
@@ -378,7 +426,7 @@ fun HeaderWithVoucherSection(
         ) {
             VoucherSection(
                 resource = voucherResource,
-                status = status.status
+                status = restaurant.statusResult.status
             )
         }
     }
@@ -405,7 +453,7 @@ fun VoucherSection(
                 title = "Vouchers",
                 onClick = {}
             ) {
-                items(voucher, key = {it.voucher.id}) { item ->
+                items(voucher, key = {it.id}) { item ->
                     VoucherCard(
                         voucher = item,
                         status = status
@@ -424,8 +472,8 @@ fun ShoppingCartBottomBar(
 ) {
     Row(
         modifier = Modifier.padding(top=24.dp,
-        bottom = 36.dp,start=24.dp,end=24.dp)
-        .background(Neutral10).clickable{onCartClick()}
+            bottom = 36.dp,start=24.dp,end=24.dp)
+            .background(Neutral10).clickable{onCartClick()}
     ) {
         CartAddItemButton(
             totalPrice = totalPrice,
@@ -436,7 +484,7 @@ fun ShoppingCartBottomBar(
 
 @Composable
 fun ReviewSection(
-    resource : Resource<List<Review>>
+    resource : Resource<List<ReviewUiModel>>
 ){
     val reviewItems = resource.data.orEmpty()
     when{
@@ -455,7 +503,7 @@ fun ReviewSection(
                     title = "What people say about us",
                     onClick = {}
                 ) {
-                    items(reviews, key = { it.userName }) { item ->
+                    items(items = reviewItems, key = { it.id}) { item ->
                         ReviewCard(review = item)
                     }
                 }
@@ -467,8 +515,9 @@ fun ReviewSection(
 
 fun LazyListScope.allMenuSection(
     resource: Resource<List<MenuUiModel>>,
-    status: RestaurantStatus,
-    onFavoriteClick: (String) -> Unit
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCart: (MenuUiModel) -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit
 ) {
     val menuItems = resource.data.orEmpty()
     when{
@@ -497,7 +546,9 @@ fun LazyListScope.allMenuSection(
             menuItemCountVerticalListBlock(
                 headerText = "All menus",
                 menus = menuItems,
-                onFavoriteClick = onFavoriteClick
+                onFavoriteClick = onFavoriteClick,
+                onAddToCart = onAddToCart,
+                onNavigateToDetailMenu = onNavigateToDetailMenu
             )
         }
     }
@@ -506,8 +557,10 @@ fun LazyListScope.allMenuSection(
 @Composable
 fun BestSellerSection(
     resource: Resource<List<MenuUiModel>>,
-    onFavoriteClick: (String) -> Unit,
-    onAddToCart: (MenuUiModel) -> Unit
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCartClick:(MenuUiModel)-> Unit,
+    onNavigateToDetailMenu:(String) -> Unit,
+    onSeeAllClick:() -> Unit = {}
 ) {
     val menuItems = resource.data.orEmpty()
     when {
@@ -525,13 +578,16 @@ fun BestSellerSection(
         else -> {
             HorizontalTitleButtonSection(
                 title = "Our best seller",
-                onClick = {}
+                onClick = onSeeAllClick
             ) {
                 items(menuItems) { item ->
-                    FoodGridCard(
+                    FoodGridSoldCard(
                         menu = item,
                         onFavoriteClick = onFavoriteClick,
-                        onAddToCart = onAddToCart
+                        onAddToCart = {
+                            if(item.customizable) onNavigateToDetailMenu(item.id)
+                            else onAddToCartClick(item)
+                        }
                     )
                 }
             }
@@ -542,7 +598,9 @@ fun BestSellerSection(
 @Composable
 fun RecommendedMenuSection(
     resource: Resource<List<MenuUiModel>>,
-    onFavoriteClick: (String) -> Unit,
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCartClick:(MenuUiModel)-> Unit,
+    onNavigateToDetailMenu:(String) -> Unit,
 ) {
     val menuItems = resource.data.orEmpty()
 
@@ -567,9 +625,12 @@ fun RecommendedMenuSection(
 
         else ->{
             GridMenuListSection(
+                isDetail = true,
                 title = "Our recommended menu",
                 menuItems = menuItems,
-                onFavoriteClick = onFavoriteClick
+                onFavoriteClick = onFavoriteClick,
+                onAddToCartClick=onAddToCartClick,
+                onNavigateToDetailMenu = onNavigateToDetailMenu
             )
         }
     }
@@ -579,23 +640,26 @@ fun RecommendedMenuSection(
 @Preview(showBackground = true)
 @Composable
 fun DetailClosePreview() {
+    val snackHostState = remember { SnackbarHostState() }
     DetailRestaurantContent(
+        snackHostState = snackHostState,
         uiState = DetailRestaurantUiState(
             restaurantResource = Resource(data = restaurantDetailItem,isLoading = false),
-            bestSellersResource = Resource(data = menus,isLoading = false),
-            recommendedMenusResource = Resource(data = menus,isLoading = false),
-            allMenusResource = Resource(data = menus,isLoading = false),
             reviewsResource = Resource(data = reviews,isLoading = false),
-            voucherResource = Resource(data= getSampleVouchers(),isLoading = false)
+            vouchersResource = Resource(data= voucherUiModel,isLoading = false),
+            bestSellerMenusResource = Resource(data = menusItem,isLoading = false),
+            recommendedMenusResource = Resource(data = menusItem,isLoading = false),
+            allMenusResource = Resource(data = menusItem,isLoading = false),
+            totalItems = 10,
+            totalPrice = 100000,
         ),
-        status = RestaurantStatusResult(RestaurantStatus.OPEN,""),
         onRestaurantFavoriteClick = {},
         onShowSearchSheet = {},
         onShowSchedule = {},
-        onAllMenuFavoriteClick = {},
-        onRecommendedFavoriteClick = {},
-        onBestSellerFavorite = {},
-        onAddToCart = {}
+        onMenuFavoriteClick = {},
+        onMenuAddToCartClick = {},
+        onNavigateToDetailMenu = {},
+        onNavigateToBestSeller = {},
     )
 }
 

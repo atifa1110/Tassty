@@ -25,13 +25,14 @@ import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
+import com.example.tassty.model.getFilterDrawable
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange500
 import kotlin.collections.forEach
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChipFilterSection(
     title: String,
@@ -53,7 +54,7 @@ fun ChipFilterSection(
             options.forEach { option ->
                 CustomBorderChip(
                     label = option.label,
-                    icon = option.iconRes?:0,
+                    icon = getFilterDrawable(option.iconRes)?:0,
                     selected = option.isSelected,
                     onClick = { onToggleOption(option.key) }
                 )
@@ -90,7 +91,6 @@ fun ChipSearchSection(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChipSearchExpandSection(
     title: String,
@@ -110,7 +110,7 @@ fun ChipSearchExpandSection(
             val visibleOptions = if (expanded || options.size <= 5) {
                 options
             } else {
-                options.take(maxVisible - 1) // show 4 chip + 1 expand button
+                options.take(maxVisible - 1)
             }
 
             visibleOptions.forEach { option ->
@@ -184,6 +184,7 @@ fun RadioFilterItem(
     ) {
         Text(
             text = label,
+            color = Neutral100,
             style = LocalCustomTypography.current.h6Regular,
             modifier = Modifier.weight(1f)
         )

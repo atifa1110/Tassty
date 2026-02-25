@@ -12,23 +12,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.core.domain.model.RestaurantStatus
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.domain.model.MenuStatus
+import com.example.core.ui.model.OptionGroupUiModel
 import com.example.tassty.component.CartAddButton
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionContent
@@ -36,19 +42,17 @@ import com.example.tassty.component.CollectionSaveContent
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DashedDivider
 import com.example.tassty.component.DetailMenuTopAppBar
+import com.example.tassty.component.DetailNotesEditText
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodPriceBigText
 import com.example.tassty.component.FoodPriceLineText
 import com.example.tassty.component.MenuStockStatus
-import com.example.tassty.component.NotesBarSection
 import com.example.tassty.component.OptionCard
-import com.example.tassty.component.QuantityButton
+import com.example.tassty.component.QuantityTextButton
 import com.example.tassty.component.RestaurantMenuInfoCard
 import com.example.tassty.component.StatusItemImage
-import com.example.tassty.menuSections
-import com.example.tassty.menus
-import com.example.tassty.model.MenuChoiceSection
-import com.example.tassty.model.MenuItemOption
+import com.example.tassty.getPickMenuSubtitle
+import com.example.tassty.menuDetailItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -58,42 +62,67 @@ import com.example.tassty.ui.theme.Orange500
 
 @Composable
 fun DetailMenuScreen(
-    viewModel: DetailMenuViewModel = viewModel()
+    onNavigateBack:()-> Unit,
+    onAddCartSuccess:(String,String) -> Unit,
+    viewModel: DetailMenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel.uiEffect) {
+        viewModel.uiEffect.collect { event ->
+            when(event){
+                is UiEvent.ShowSnackbar -> {
+                    snackHostState.showSnackbar(event.message)
+                }
+
+                is UiEvent.NavigateBackWithResult -> {
+                    onAddCartSuccess(event.id,event.message)
+                    onNavigateBack()
+                }
+            }
+        }
+    }
 
     DetailMenuContent(
         uiState = uiState,
-        onOptionToggle = { section,option ->
-            viewModel.onEvent(DetailMenuEvent.OnOptionToggle(section,option))},
+        snackHostState = snackHostState,
+        onOptionToggle = { group,option ->
+            viewModel.onEvent(DetailMenuEvent.OnOptionToggle(group,option))},
         onIncrementQuantity = {viewModel.onEvent(DetailMenuEvent.OnQuantityIncrease(it))},
         onDecreaseQuantity = {viewModel.onEvent(DetailMenuEvent.OnQuantityDecrease(it))},
         onNotesChange = {viewModel.onEvent(DetailMenuEvent.OnNotesChange(it))},
         onShowCollectionSheet = {viewModel.onEvent(DetailMenuEvent.OnShowCollectionSheet)},
-        onAddToCartClick = {viewModel.onEvent(DetailMenuEvent.OnAddToCartClick)}
+        onAddToCartClick = {viewModel.onEvent(DetailMenuEvent.OnAddToCartClick)},
+        onNavigateBack = onNavigateBack
     )
 
     CustomBottomSheet(
         visible = uiState.isCollectionSheetVisible,
         onDismiss = { viewModel.onEvent(DetailMenuEvent.OnDismissCollectionSheet)}
     ) {
-//        CollectionContent(
-//            collections = uiState.collections,
-//            onCollectionSelected = { id -> viewModel.onEvent(DetailMenuEvent.OnCollectionSelected(id))},
-//            onSaveCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnSaveCollectionClick)},
-//            onAddCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnShowAddCollectionSheet)}
-//        )
+        CollectionContent(
+            resource = uiState.collections,
+            onCollectionSelected = { id, isCheck -> viewModel.onEvent(DetailMenuEvent.OnCollectionCheckChange(id,isCheck))},
+            onSaveCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnSaveCollectionClick)},
+            onAddCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnShowAddCollectionSheet)}
+        )
     }
 
+    val successTitle = if (uiState.savedCollectionName.isEmpty()) {
+        "Successfully updated your collections!"
+    } else {
+        "Saved to “${uiState.savedCollectionName}” Collection!"
+    }
     CustomBottomSheet(
         visible = uiState.isSuccessSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
         CollectionSaveContent(
-            title = "Saved to “${uiState.savedCollectionName}” Collection!",
-            subtitle = "Lorem ipsum dolor sit amet, consectetur \nadipiscing elit, sed do eiusmod.",
-            onCheckCollection = {},
+            title = successTitle,
+            subtitle = "Your menu collection preference has been updated.",
+            onCheckCollection = {viewModel.onEvent(DetailMenuEvent.OnShowCollectionSheet)},
             onConfirmClick = { viewModel.onEvent(DetailMenuEvent.OnDismissSuccessSheet)}
         )
     }
@@ -103,33 +132,43 @@ fun DetailMenuScreen(
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
-//        CollectionAddContent(
-//            onDismissClick = { viewModel.onEvent(DetailMenuEvent.OnDismissAddCollectionSheet)}
-//        )
+        CollectionAddContent (
+            collectionName = uiState.newCollectionName,
+            onValueName = {viewModel.onEvent(DetailMenuEvent.OnNewCollectionNameChange(it))},
+            onDismissClick = { viewModel.onEvent(DetailMenuEvent.OnDismissAddCollectionSheet) },
+            onAddCollection = {viewModel.onEvent(DetailMenuEvent.OnCreateCollection)}
+        )
     }
 }
 
 @Composable
 fun DetailMenuContent(
     uiState: DetailMenuUiState,
-    onOptionToggle:(MenuChoiceSection,MenuItemOption) -> Unit,
+    snackHostState: SnackbarHostState,
+    onOptionToggle:(String, String) -> Unit,
     onDecreaseQuantity: (Int) -> Unit,
     onIncrementQuantity: (Int) -> Unit,
     onNotesChange:(String) -> Unit,
     onShowCollectionSheet: () -> Unit,
-    onAddToCartClick: () -> Unit
+    onAddToCartClick: () -> Unit,
+    onNavigateBack:()-> Unit,
 ) {
     Scaffold(
         containerColor = Neutral10,
+        snackbarHost = { SnackbarHost(snackHostState) },
         bottomBar = {
-            ProductAddToCartBottomBar(
-                quantity = uiState.quantity,
-                enableDecrease = uiState.quantity >= 1,
-                totalPrice = uiState.cartTotalPrice,
-                onIncreaseQuantity = { onIncrementQuantity(uiState.quantity) },
-                onDecreaseQuantity = { onDecreaseQuantity(uiState.quantity) },
-                onAddToCartClick = onAddToCartClick
-            )
+            uiState.detail.data?.let { menu ->
+                if(menu.menuStatus == MenuStatus.AVAILABLE) {
+                    ProductAddToCartBottomBar(
+                        buttonText = uiState.addToCartButtonText,
+                        quantity = uiState.quantity,
+                        totalPrice = uiState.cartTotalPrice,
+                        onIncreaseQuantity = { onIncrementQuantity(uiState.quantity) },
+                        onDecreaseQuantity = { onDecreaseQuantity(uiState.quantity) },
+                        onAddToCartClick = onAddToCartClick
+                    )
+                }
+            }
         }
     ) { padding ->
         LazyColumn(
@@ -138,116 +177,108 @@ fun DetailMenuContent(
                 .fillMaxSize(),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-            item {
-                Box(Modifier.height(370.dp).fillMaxWidth()) {
-                    StatusItemImage(
-                        imageUrl = uiState.menu.menu.imageUrl,
-                        name = uiState.menu.menu.name,
-                        status = if(uiState.menu.menu.isAvailable) RestaurantStatus.OPEN else RestaurantStatus.CLOSED,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    DetailMenuTopAppBar(
-                        isFavorite = uiState.menu.isWishlist,
-                        onBackClick = {},
-                        onShareClick = {},
-                        onFavoriteClick = onShowCollectionSheet
-                    )
+            uiState.detail.data?.let { menu ->
+                item {
+                    Box(Modifier.height(370.dp).fillMaxWidth()) {
+                        StatusItemImage(
+                            imageUrl = menu.imageUrl,
+                            name = menu.name,
+                            status = menu.menuStatus,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        DetailMenuTopAppBar(
+                            isFavorite = menu.isWishlist,
+                            onBackClick = onNavigateBack,
+                            onShareClick = {},
+                            onFavoriteClick = onShowCollectionSheet
+                        )
 
-                    if(!uiState.menu.menu.isAvailable) {
-                        Box(modifier = Modifier.padding(horizontal = 24.dp)
-                            .align(Alignment.BottomCenter)
-                            .offset(y=20.dp)
-                        ) {
-                            MenuStockStatus()
-                        }
-                    }
-                }
-            }
-
-            item {
-                Column(
-                    modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = if(!uiState.menu.menu.isAvailable) 24.dp else 40.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = uiState.menu.menu.name,
-                                style = LocalCustomTypography.current.h3Bold,
-                                color = Neutral100
-                            )
-                            Text(
-                                text = uiState.menu.menu.description,
-                                style = LocalCustomTypography.current.bodyMediumRegular,
-                                color = Neutral70
-                            )
-                        }
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-
-                            FoodPriceBigText(
-                                price = uiState.menu.formatPrice,
-                                color = Orange500
-                            )
-
-                            if(uiState.menu.menu.formatDiscountPrice>0) {
-                                FoodPriceLineText(
-                                    price = uiState.menu.formatOriginalPrice,
-                                    color = Neutral60
-                                )
+                        if (menu.menuStatus != MenuStatus.AVAILABLE) {
+                            Box(
+                                modifier = Modifier.padding(horizontal = 24.dp)
+                                    .align(Alignment.BottomCenter)
+                                    .offset(y = 20.dp)
+                            ) {
+                                MenuStockStatus()
                             }
                         }
                     }
-                    RestaurantMenuInfoCard(onReviewsClick = {})
                 }
-            }
 
-            // --- Divider 1 ---
-            item {
-                Divider32()
-            }
+                item {
+                    Column(
+                        modifier = Modifier.padding(
+                            start = 24.dp,
+                            end = 24.dp,
+                            top = if (menu.menuStatus == MenuStatus.AVAILABLE) 24.dp else 44.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = menu.name,
+                                    style = LocalCustomTypography.current.h3Bold,
+                                    color = Neutral100
+                                )
+                                Text(
+                                    text = menu.description,
+                                    style = LocalCustomTypography.current.bodyMediumRegular,
+                                    color = Neutral70
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                FoodPriceBigText(
+                                    price = menu.formatPriceDiscount,
+                                    color = Orange500
+                                )
 
-            itemsIndexed(uiState.menuChoiceSections) { index, section ->
-                ChoiceSection(
-                    section = section,
-                    onSectionUpdated = onOptionToggle
-                )
-
-                // Divider di antara Choice Sections
-                if (index < menuSections.lastIndex) {
-                    Divider32()
-                }
-            }
-
-            item {
-                Divider32()
-            }
-
-            // 5. Notes Section
-            item {
-                Column(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = "Notes",
-                            style = LocalCustomTypography.current.h5Bold,
-                            color = Neutral100
-                        )
-                        Text(
-                            text = "${uiState.notesValue.length} / 100",
-                            style = LocalCustomTypography.current.bodyMediumRegular,
-                            color = Neutral70
+                                if (menu.promo) {
+                                    FoodPriceLineText(
+                                        price = menu.formatPrice,
+                                        color = Neutral60
+                                    )
+                                }
+                            }
+                        }
+                        RestaurantMenuInfoCard(
+                            rating = menu.restaurant.formatRating,
+                            review = menu.restaurant.formatReviewCount,
+                            deliveryCost = menu.formatDeliveryCost,
+                            deliveryTime = menu.restaurant.deliveryTime,
+                            onReviewsClick = {}
                         )
                     }
-                    NotesBarSection(
+                }
+
+                item {
+                    Divider32()
+                }
+
+                itemsIndexed(menu.optionGroups) { index, group ->
+                    ChoiceSection(group = group, onOptionToggle = onOptionToggle)
+                    if (index < menu.optionGroups.lastIndex) {
+                        Divider32()
+                    }
+                }
+
+                item {
+                    Divider32()
+                }
+
+                item {
+                    DetailNotesEditText(
+                        modifier = Modifier.padding(horizontal = 24.dp),
                         value = uiState.notesValue,
                         onValueChange = onNotesChange
                     )
@@ -259,8 +290,8 @@ fun DetailMenuContent(
 
 @Composable
 fun ChoiceSection(
-    section: MenuChoiceSection,
-    onSectionUpdated: (MenuChoiceSection, MenuItemOption) -> Unit
+    group: OptionGroupUiModel,
+    onOptionToggle:(String, String) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()
         .padding(horizontal = 24.dp)
@@ -270,29 +301,42 @@ fun ChoiceSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = section.title,
+                text = buildAnnotatedString {
+                    append(group.title)
+                    if (group.required) {
+                        append(" ")
+                        withStyle(
+                            style = SpanStyle(color = Orange500)
+                        ) {
+                            append("*")
+                        }
+                    }
+                },
                 style = LocalCustomTypography.current.h5Bold,
                 color = Neutral100
             )
+
             Text(
-                text = if(section.maxSelection > 1) "pick 2" else section.subtitle,
+                text = getPickMenuSubtitle(group.required,group.maxPick),
                 style = LocalCustomTypography.current.bodyMediumRegular,
-                color = Color.Gray
+                color = Neutral70
             )
         }
 
         Spacer(Modifier.height(8.dp))
 
         // List of options
-        section.options.forEachIndexed { index, option ->
+        group.options.forEachIndexed { index, option ->
             OptionCard(
+                maxPick = group.maxPick,
+                enabled = option.isAvailable,
                 option = option,
-                section = section,
-                isSelected = section.selectedOptions.contains(option),
-                onOptionToggled = {onSectionUpdated(section,it)}
+                onClick = {
+                    onOptionToggle(group.id,option.id)
+                }
             )
 
-            if (index < section.options.lastIndex) {
+            if (index < group.options.size-1) {
                 DashedDivider(
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
@@ -303,8 +347,8 @@ fun ChoiceSection(
 
 @Composable
 fun ProductAddToCartBottomBar(
+    buttonText: String,
     quantity : Int,
-    enableDecrease: Boolean,
     totalPrice : Int,
     onIncreaseQuantity: () -> Unit,
     onDecreaseQuantity: () -> Unit,
@@ -314,63 +358,38 @@ fun ProductAddToCartBottomBar(
         modifier = Modifier
             .fillMaxWidth().background(Neutral10)
             .padding(start= 24.dp, end = 24.dp,top = 24.dp, bottom = 36.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ){
-        // 1. Quantity Selector
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Quantity",
-                style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100,
-                modifier = Modifier.weight(1f)
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Decrease Button
-                QuantityButton(
-                    onClick = onDecreaseQuantity,
-                    enabled = enableDecrease,
-                    icons = Icons.Filled.Remove,
-                    contentDescription = "Decrease Quantity"
-                )
-
-                // Quantity Text
-                Text(
-                    text = quantity.toString(),
-                    style = LocalCustomTypography.current.h5Bold,
-                    color = Neutral100,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                // Increase Button
-                QuantityButton(
-                    onClick = onIncreaseQuantity,
-                    enabled = true,
-                    icons = Icons.Filled.Add,
-                    contentDescription = "Increase Quantity"
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-        CartAddButton(totalPrice = totalPrice, onClick = onAddToCartClick)
+        QuantityTextButton(
+            quantity = quantity,
+            onIncreaseQuantity = onIncreaseQuantity,
+            onDecreaseQuantity = onDecreaseQuantity
+        )
+        CartAddButton(
+            buttonText = buttonText,
+            totalPrice = totalPrice,
+            onClick = onAddToCartClick
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DetailMenuPreview() {
+    val snackHostState = remember { SnackbarHostState() }
     DetailMenuContent(
         uiState = DetailMenuUiState(
-            menu = menus[0],
-            menuChoiceSections = menuSections
+            isEditMode = true,
+            addToCartButtonText = "Update Order",
+            detail = Resource(data=menuDetailItem)
         ),
+        snackHostState = snackHostState,
         onOptionToggle = {_,_->},
         onIncrementQuantity = {},
         onDecreaseQuantity = {},
         onNotesChange = {},
         onAddToCartClick = {},
-        onShowCollectionSheet = {}
+        onShowCollectionSheet = {},
+        onNavigateBack = {}
     )
 }

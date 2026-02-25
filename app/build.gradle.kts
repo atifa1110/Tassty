@@ -30,6 +30,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -69,6 +71,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.lifecycle.process)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -105,11 +108,20 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+    // Hilt Extension untuk WorkManager
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+
     implementation(libs.navigation.compose)
 
     implementation(libs.core.splashscreen)
     implementation(libs.core.ktx)
 
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.compose.runtime.livedata)
+    implementation(libs.stripe.android)
+
     implementation(project(":core"))
 }

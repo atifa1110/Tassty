@@ -10,8 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,22 +24,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.R
-import com.example.tassty.categoriesItem
+import com.example.tassty.categories
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral20
+import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun HeaderWithOverlap(
@@ -152,7 +163,7 @@ fun CategoryTextHeader(
 
 @Composable
 fun CategoryAndDescriptionHeader(
-    category: String,
+    title: String,
     imageUrl: String
 ){
     Row(
@@ -160,8 +171,8 @@ fun CategoryAndDescriptionHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        CategoryTextHeader(title = category, subtitle = "Some lunch boosters!")
-        CategoryCard(categoryName = category, imageUrl = imageUrl, onClick = {})
+        CategoryTextHeader(title = title, subtitle = "Some lunch boosters!")
+        CategoryCard(title = title, image = imageUrl, onClick = {})
     }
 }
 
@@ -334,37 +345,119 @@ fun HeaderListItemCountTitleButton(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewHeader(){
-//    Column (Modifier.fillMaxWidth().padding(24.dp),
-//        verticalArrangement = Arrangement.spacedBy(16.dp)){
-//
-//        HeaderListTitleButton(
-//            title = "Recommended Restaurants",
-//            titleColor = Neutral100,
-//            onClick = {}
-//        )
-//
-//        HeaderListTitleSubtitleButton(
-//            title = "Recommended Restaurants",
-//            subtitle = "Our recommended cafes to explore!",
-//            onClick = {}
-//        )
-//
-//        HeaderListBlackTitle(
-//            title = "Suggested menus for you!"
-//        )
-//
-//        HeaderListItemCountTitle(
-//            itemCount = 24,
-//            title = "Search founds"
-//        )
-//
-//        HeaderListItemCountTitleButton(
-//            itemCount = 24,
-//            title = "Search founds",
-//            onClick = {}
-//        )
-//    }
-//}
+@Composable
+fun HeaderRestaurantCollection(
+    modifier: Modifier = Modifier,
+    restaurantName: String,
+    rating: String,
+    city: String
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Nama Resto - Gunakan fill = false agar tidak "serakah" mengambil sisa space
+        Text(
+            text = restaurantName,
+            style = LocalCustomTypography.current.h6Bold,
+            color = Neutral100,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = true)
+        )
+
+        // Dot Separator (Opsional, berdasarkan gambar ada titik abu-abu)
+        Text(
+            text = " • ",
+            color = Neutral70,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+
+        // ⭐ Rating
+        Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = null,
+            tint = Orange500,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = rating,
+            style = LocalCustomTypography.current.bodySmallMedium,
+            color = Neutral70,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+
+        Text(
+            text = " • ",
+            color = Neutral70,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+
+        // 📍 City
+        Icon(
+            painter = painterResource(R.drawable.location),
+            contentDescription = null,
+            tint = Pink500,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = city,
+            style = LocalCustomTypography.current.bodySmallMedium,
+            color = Neutral70,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+
+        // Spacer ini akan mendorong "See resto" ke ujung kanan jika masih ada sisa ruang
+        Spacer(Modifier.weight(0.3f))
+
+        // RIGHT ACTION
+        Text(
+            text = "See resto",
+            style = LocalCustomTypography.current.bodySmallMedium,
+            color = Orange500,
+            modifier = Modifier.padding(start = 12.dp)
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewHeader(){
+    Column (Modifier.fillMaxWidth().padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)){
+
+        HeaderListTitleButton(
+            title = "Recommended Restaurants",
+            titleColor = Neutral100,
+            onClick = {}
+        )
+
+        HeaderListTitleSubtitleButton(
+            title = "Recommended Restaurants",
+            subtitle = "Our recommended cafes to explore!",
+            onClick = {}
+        )
+
+        HeaderListBlackTitle(
+            title = "Suggested menus for you!"
+        )
+
+        HeaderListItemCountTitle(
+            itemCount = 24,
+            title = "Search founds"
+        )
+
+        HeaderListItemCountTitleButton(
+            itemCount = 24,
+            title = "Search founds",
+            onClick = {}
+        )
+
+        HeaderRestaurantCollection(
+            restaurantName = "Indomie Upnormal Habatusausa›",
+            rating = "4.9",
+            city = "Jakarta Selatan"
+        )
+    }
+}

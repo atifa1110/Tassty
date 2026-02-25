@@ -5,18 +5,25 @@ import com.example.core.domain.model.MenuStatus
 import com.example.core.domain.utils.toCleanRupiahFormat
 
 data class MenuUiModel(
-    val menu: Menu,
-    val status: MenuStatus,
-    val isWishlist : Boolean = false
+    val id: String,
+    val name: String,
+    val imageUrl: String,
+    val description: String,
+    val price: Int,
+    val soldCount: Int,
+    val rank: Int,
+    val customizable: Boolean,
+    val isAvailable: Boolean,
+    val maxQuantity: Int,
+    val menuStatus: MenuStatus,
+    val restaurant: RestaurantUiModel,
+    val isWishlist : Boolean
 ){
-    val formatPrice : String get() = menu.price.toCleanRupiahFormat()
-    val formatOriginalPrice : String get() = menu.price.toCleanRupiahFormat()
-    val formatSoldCount : String get() =  "${menu.soldCount}x"
+    val formatPrice : String get() = price.toCleanRupiahFormat()
+    val formatRating: String get() = restaurant.rating.toString()
+    val formatSoldCount : String get() = "${soldCount}x"
     val formattedDistance: String
-        get() = menu.distanceMeters?.let { meters ->
+        get() = restaurant.distance.let { meters ->
             if (meters < 1000) "$meters m" else "%.1f km".format(meters / 1000.0)
-        } ?: "N/A"
-
-    val formatRating : Double
-        get()= menu.rating?:0.0
+        }
 }

@@ -62,5 +62,12 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+    // Hilt Extension untuk WorkManager
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+
+    implementation(libs.stripe.android)
     implementation(libs.androidx.datastore.preferences)
 }

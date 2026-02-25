@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -24,42 +25,39 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.core.ui.model.ReviewUiModel
 import com.example.tassty.R
-import com.example.tassty.model.Review
 import com.example.tassty.reviews
-import com.example.tassty.ui.theme.Neutral10 // Asumsi Neutral10 adalah warna latar belakang card (putih)
-import com.example.tassty.ui.theme.Neutral100 // Asumsi Neutral100 adalah warna teks utama (hitam)
-import com.example.tassty.ui.theme.Neutral70 // Asumsi Neutral70 adalah warna teks sekunder (abu-abu)
-import com.example.tassty.ui.theme.Orange500 // Asumsi Orange500 adalah warna bintang
-import com.example.tassty.ui.theme.LocalCustomTypography // Asumsi untuk tipografi kustom
+import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Pink500
-import kotlin.contracts.contract
 
 @Composable
 fun ReviewCard(
-    review: Review,
+    review: ReviewUiModel,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.width(250.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral10), // Background putih
+        colors = CardDefaults.cardColors(containerColor = Neutral10),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Bagian Profil dan Tanggal
             Row {
                 CommonImage(
-                    imageUrl = "",
-                    name= "Profile picture of ${review.userName}",
+                    imageUrl = review.profileImage,
+                    name= "Profile picture of ${review.username}",
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
@@ -69,50 +67,47 @@ fun ReviewCard(
                     modifier = Modifier.padding(start = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // Bagian Bintang (Rating)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        // Tampilkan bintang sesuai rating
                         repeat(review.rating) {
                             Icon(
                                 painter = painterResource(R.drawable.star),
                                 contentDescription = null,
-                                tint = Orange500, // Warna emas/oranye untuk bintang
+                                tint = Orange500,
                                 modifier = Modifier.size(12.dp)
                             )
                         }
                     }
 
-                    // Nama Pengguna dan Tanggal
+
                     Row (horizontalArrangement = Arrangement.spacedBy(4.dp)){
                         Text(
-                            text = review.userName,
-                            style = LocalCustomTypography.current.h8Bold, // Asumsi bodyMediumBold
+                            text = review.username,
+                            style = LocalCustomTypography.current.h7Bold,
                             color = Neutral100
                         )
                         Text(
                             text = " • ",
-                            style = LocalCustomTypography.current.bodyTinyMedium, // Asumsi bodyMediumMedium
+                            style = LocalCustomTypography.current.bodyTinyMedium,
                             color = Neutral70
                         )
 
                         Text(
                             text = review.date,
-                            style = LocalCustomTypography.current.bodyTinyMedium, // Asumsi bodyMediumMedium
+                            style = LocalCustomTypography.current.bodyTinyMedium,
                             color = Neutral70
                         )
                     }
 
-                    Spacer(Modifier.height(4.dp)) // Jarak antara profil dan teks ulasan
-
-                    // Teks Ulasan
                     Text(
-                        text = review.reviewText,
+                        text = review.comment,
                         style = LocalCustomTypography.current.bodyXtraSmallRegular,
                         color = Neutral70,
-                        lineHeight = 16.sp
+                        maxLines = 2,
+                        minLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -123,7 +118,7 @@ fun ReviewCard(
 
 
 @Composable
-fun ReviewLargeCard(review: Review) {
+fun ReviewLargeCard(review: ReviewUiModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -147,7 +142,6 @@ fun ReviewLargeCard(review: Review) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    // Tampilkan bintang sesuai rating
                     repeat(review.rating) {
                         Icon(
                             painter = painterResource(R.drawable.star),
@@ -158,10 +152,9 @@ fun ReviewLargeCard(review: Review) {
                     }
                 }
 
-                // Nama Pengguna dan Tanggal
                 Row (horizontalArrangement = Arrangement.spacedBy(4.dp)){
                     Text(
-                        text = review.userName,
+                        text = review.username,
                         style = LocalCustomTypography.current.h5Bold, // Asumsi bodyMediumBold
                         color = Neutral100
                     )
@@ -180,22 +173,19 @@ fun ReviewLargeCard(review: Review) {
             }
         }
 
-        // 🟢 Area tempat Segitiga akan muncul (sekitar foto profil)
-        val triangleOffset = 16.dp // (Setengah tinggi foto 44.dp) + (Padding Kiri 16.dp)
+        val triangleOffset = 16.dp
 
-        // 🟢 Menggunakan Box dengan Padding untuk menempatkan Segitiga
         Box(modifier = Modifier.fillMaxWidth()
         ) {
-            // Konten Ulasan (Kotak Abu-abu Utama)
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .drawBehind {
                         drawBubbleTail(
-                            // Posisi horizontal di mana segitiga menunjuk
                             xOffset = triangleOffset.toPx(),
                             yOffset = 0f,
-                            color = Neutral20 // Warna yang sama dengan latar belakang kotak
+                            color = Neutral20
                         )
                     }
                     .clip(RoundedCornerShape(12.dp))
@@ -210,7 +200,6 @@ fun ReviewLargeCard(review: Review) {
             }
         }
 
-        // ... (Bagian Order tetap sama) ...
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)){
@@ -225,7 +214,7 @@ fun ReviewLargeCard(review: Review) {
                 color = Neutral100
             )
             Text(
-                text = "Salad, Steak, etc",
+                text = review.orderItems,
                 style = LocalCustomTypography.current.bodyXtraSmallMedium,
                 color = Neutral70
             )
@@ -233,7 +222,6 @@ fun ReviewLargeCard(review: Review) {
     }
 }
 
-// 2. Fungsi untuk Menggambar Segitiga Kecil (Bubble Tail)
 fun DrawScope.drawBubbleTail(xOffset: Float, yOffset: Float, color: Color) {
     val tailWidth = 10.dp.toPx()
     val tailHeight = 8.dp.toPx()
@@ -246,11 +234,9 @@ fun DrawScope.drawBubbleTail(xOffset: Float, yOffset: Float, color: Color) {
         lineTo(xOffset, yOffset - tailHeight) // Naik ke puncak
         // Pindah ke sudut kiri bawah segitiga
         lineTo(xOffset - tailWidth / 2f, yOffset)
-        // Tutup jalur
         close()
     }
 
-    // Gambar segitiga
     drawPath(path, color = color)
 }
 

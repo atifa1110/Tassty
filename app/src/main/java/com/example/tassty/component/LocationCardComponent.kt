@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,13 +26,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.painter.ColorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.example.core.ui.model.UserAddressUiModel
+import com.example.tassty.BuildConfig
 import com.example.tassty.R
 import com.example.tassty.addresses
-import com.example.tassty.model.AddressType
-import com.example.tassty.model.UserAddress
+import com.example.tassty.getStaticMapUrl
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -47,7 +53,7 @@ import com.example.tassty.ui.theme.Pink600
 
 @Composable
 fun LocationCard(
-    address: UserAddress
+    address: UserAddressUiModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -79,7 +85,7 @@ fun LocationCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = address.fullStreetAddress,
+                    text = address.fullAddress,
                     style = LocalCustomTypography.current.bodySmallMedium,
                     color = Neutral70
                 )
@@ -89,21 +95,20 @@ fun LocationCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-                    NotesText(" - ")
+                    NotesText("Notes: -")
                     NotesBoxButton(
                         title = "Notes",
                         onClick = {}
                     )
                 }
             }
-
         }
     }
 }
 
 @Composable
 fun LocationSelectorCard(
-    address: UserAddress,
+    address: UserAddressUiModel,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
@@ -119,10 +124,11 @@ fun LocationSelectorCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
-            Box(
+            LocationImage(
+                imageUrl = getStaticMapUrl(address.latitude,address.longitude),
+                name = address.addressName,
                 modifier = Modifier.size(94.dp,104.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Neutral60)
             )
             Spacer(Modifier.width(8.dp))
             Column(
@@ -139,7 +145,7 @@ fun LocationSelectorCard(
                     verticalAlignment = Alignment.Top,
                     icon = R.drawable.location,
                     iconColor = Pink600,
-                    value = address.fullStreetAddress
+                    value = address.fullAddress
                 )
                 Spacer(Modifier.height(12.dp))
                 LocationContent(
@@ -185,6 +191,64 @@ fun LocationContent(
     }
 }
 
+@Composable
+fun LocationLardCard(
+    address: UserAddressUiModel,
+){
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = {}),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Neutral20
+        )
+    ) {
+        Column(modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 12.dp)) {
+
+            LocationImage(
+                imageUrl = getStaticMapUrl(address.latitude,address.longitude),
+                name = "location address",
+                modifier = Modifier.fillMaxWidth().height(200.dp),
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CircleImageIcon(
+                    boxColor = Pink100,
+                    icon = R.drawable.location,
+                    iconColor = Pink600,
+                    iconSize = 16.dp,
+                    contentDescription = "location icon",
+                    modifier = Modifier.size(32.dp)
+                )
+
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = address.addressName,
+                        style = LocalCustomTypography.current.h5Bold,
+                        color = Neutral100
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = address.fullAddress,
+                        style = LocalCustomTypography.current.bodySmallMedium,
+                        color = Neutral70
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    LocationContent(
+                        icon = R.drawable.person,
+                        iconColor = Blue500,
+                        value = address.addressType.displayName
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewLocationCard() {
@@ -195,5 +259,6 @@ fun PreviewLocationCard() {
             address = addresses[0],
             onCheckedChange = {}
         )
+        LocationLardCard(addresses[0])
     }
 }

@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,13 +15,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.domain.utils.toCleanRupiahFormat
+import com.example.core.ui.model.CollectionMenuUiModel
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.ui.model.OptionUiModel
 import com.example.tassty.R
+import com.example.tassty.collectionMenuUiModel
+import com.example.tassty.collectionUiModel
 import com.example.tassty.menuItem
-import com.example.tassty.menuSections
-import com.example.tassty.model.MenuChoiceSection
-import com.example.tassty.model.MenuItemOption
+import com.example.tassty.optionGroups
+import com.example.tassty.screen.detailrestaurant.DetailRestaurantEvent
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -30,7 +33,6 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodTinyGridCard(
     menu : MenuUiModel
@@ -53,12 +55,11 @@ fun FoodTinyGridCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodGridCard(
     menu: MenuUiModel,
-    onFavoriteClick: (String) -> Unit,
-    onAddToCart:(MenuUiModel) -> Unit
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCart:() -> Unit
 ) {
     Card(
         modifier = Modifier.width(140.dp),
@@ -70,16 +71,41 @@ fun FoodGridCard(
         ){
             FoodCircleImageWithOverlays(
                 menu = menu,
-                onFavoriteClick = { onFavoriteClick(menu.menu.id) },
+                onFavoriteClick = { onFavoriteClick(menu) },
                 modifier = Modifier.height(120.dp)
             )
 
-            FoodGridCardContent(menu = menu,onAddToCart = {})
+            FoodGridCardContent(menu = menu,onAddToCart = onAddToCart)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@Composable
+fun FoodGridSoldCard(
+    menu: MenuUiModel,
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCart:() -> Unit
+) {
+    Card(
+        modifier = Modifier.width(140.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20),
+    ) {
+        Column (modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ){
+            FoodCircleImageWithOverlays(
+                menu = menu,
+                onFavoriteClick = { onFavoriteClick(menu) },
+                modifier = Modifier.height(120.dp)
+            )
+
+            FoodGridSoldCardContent(menu = menu,onAddToCart = onAddToCart)
+        }
+    }
+}
+
 @Composable
 fun FoodNameGridCard(
     menu: MenuUiModel
@@ -106,8 +132,10 @@ fun FoodNameGridCard(
 @Composable
 fun FoodLargeGridCard(
     modifier: Modifier = Modifier,
+    isDetail: Boolean = false,
     menu: MenuUiModel,
-    onFavoriteClick: () -> Unit
+    onFavoriteClick: () -> Unit,
+    onAddToCart: () -> Unit
 ){
     Card(
         modifier = modifier.width(157.dp), // Adjust width as needed
@@ -125,7 +153,7 @@ fun FoodLargeGridCard(
                 modifier = Modifier.height(137.dp)
             )
 
-            FoodGridCardContent(menu = menu, onAddToCart = {})
+            FoodGridCardContent(isDetail = isDetail, menu = menu, onAddToCart = onAddToCart)
         }
     }
 }
@@ -133,34 +161,8 @@ fun FoodLargeGridCard(
 @Composable
 fun FoodListCard(
     menu: MenuUiModel,
-    onFavoriteClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            FoodRoundImageWithOverlays(
-                menu = menu,
-                modifier = Modifier.size(100.dp, 84.dp)
-            )
-
-            FoodListCardContent(
-                menu = menu,
-                onFavoriteClick = onFavoriteClick
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FoodWideListCard(
-    menu: MenuUiModel
+    onFavoriteClick: () -> Unit,
+    onAddToCart:() -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -176,16 +178,70 @@ fun FoodWideListCard(
                 modifier = Modifier.size(100.dp)
             )
 
-            FoodWideListCardContent(
+            FoodListCardContent(
                 menu = menu,
-                isWishlist = menu.isWishlist,
-                onFavoriteClick = {}
+                onFavoriteClick = onFavoriteClick,
+                onAddToCart = onAddToCart
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FoodWideListCard(
+    menu: MenuUiModel,
+    onFavoriteClick: () -> Unit,
+    onAddToCart: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            FoodRoundImageWithOverlays(
+                menu = menu,
+                modifier = Modifier.size(120.dp,)
+            )
+
+            FoodWideListCardContent(
+                menu = menu,
+                onFavoriteClick = onFavoriteClick,
+                onAddToCart = onAddToCart
+            )
+        }
+    }
+}
+
+@Composable
+fun FoodCollectionCard(
+    collection: CollectionMenuUiModel
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            FoodRoundImageWithOverlays(
+                collection = collection,
+                modifier = Modifier.size(100.dp)
+            )
+
+            FoodListCollectionCardContent(
+                collection = collection
+            )
+        }
+    }
+}
+
 @Composable
 fun OrderFoodListCard(
     menu: MenuUiModel
@@ -211,54 +267,64 @@ fun OrderFoodListCard(
 
 @Composable
 fun OptionCard(
-    option: MenuItemOption,
-    section: MenuChoiceSection,
-    isSelected: Boolean,
-    onOptionToggled: (MenuItemOption) -> Unit
+    maxPick: Int,
+    enabled: Boolean,
+    option: OptionUiModel,
+    onClick: () -> Unit
 ){
     Row(
-        modifier = Modifier
-            .fillMaxWidth().clickable { onOptionToggled(option) }
+        modifier = Modifier.fillMaxWidth().clickable(enabled = enabled) {
+                onClick()
+            }
             .padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = option.name,
             style = LocalCustomTypography.current.h6Regular,
-            color = Neutral100,
+            color = if(option.isAvailable) Neutral100 else Neutral70,
             modifier = Modifier.weight(1f)
         )
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "+${option.priceAddon.toCleanRupiahFormat()}",
-                style = LocalCustomTypography.current.h6Regular,
-                color = Neutral70
-            )
-            Spacer(Modifier.width(8.dp))
-            if (section.maxSelection>1) {
-                // Checkbox: if maxSelection > 1
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onOptionToggled(option) },
-                    //enabled = isSelected || section.selectedOptions.size < section.maxSelection,
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = Orange500,
-                        uncheckedColor = Neutral40
-                    ),
-                    modifier = Modifier.padding(0.dp).size(24.dp)
+        if(option.isAvailable) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = option.extraPriceText,
+                    style = LocalCustomTypography.current.h6Regular,
+                    color = Neutral70
                 )
-            } else {
-                RadioButton(
-                    selected = isSelected,
-                    onClick = { onOptionToggled(option) },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = Orange500,
-                        unselectedColor = Neutral40
-                    ),
-                    modifier = Modifier.padding(0.dp).size(24.dp)
-                )
+                Spacer(Modifier.width(8.dp))
+                if (maxPick > 1) {
+                    // Checkbox: if maxSelection > 1
+                    Checkbox(
+                        checked = option.isSelected,
+                        onCheckedChange = null,
+                        enabled = enabled,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Orange500,
+                            uncheckedColor = Neutral40
+                        ),
+                        modifier = Modifier.padding(0.dp).size(24.dp)
+                    )
+                } else {
+                    RadioButton(
+                        selected = option.isSelected,
+                        onClick = null,
+                        enabled = enabled,
+                        colors = RadioButtonDefaults.colors(
+                            selectedColor = Orange500,
+                            unselectedColor = Neutral40
+                        ),
+                        modifier = Modifier.padding(0.dp).size(24.dp)
+                    )
+                }
             }
+        }else{
+            Text(
+                text = "Out of stock",
+                style = LocalCustomTypography.current.h6Regular,
+                color = Pink500
+            )
         }
     }
 }
@@ -309,16 +375,12 @@ fun FoodGridCardPreview() {
     ){
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FoodTinyGridCard(menu = menuItem)
-            FoodNameGridCard(menu = menuItem)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodGridCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
             FoodGridCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodLargeGridCard(menu = menuItem,onFavoriteClick = {})
-            FoodLargeGridCard(menu = menuItem,onFavoriteClick = {})
+            FoodLargeGridCard(menu = menuItem,onFavoriteClick = {}, onAddToCart = {})
+            FoodGridSoldCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
         }
     }
 }
@@ -329,21 +391,22 @@ fun FoodListCardPreview() {
     Column (modifier = Modifier.fillMaxWidth().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        FoodListCard(menu = menuItem, onFavoriteClick = {})
-        FoodListCard(menu = menuItem, onFavoriteClick = {})
+        FoodListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
+        FoodWideListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
+        FoodCollectionCard(collection = collectionMenuUiModel[0])
         OrderFoodListCard(menu = menuItem)
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun OptionCardPreview() {
-    Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        OptionCard(
-            option = MenuItemOption("1","Rare",4000),
-            section = menuSections[0],
-            isSelected = false,
-            onOptionToggled = {}
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun OptionCardPreview() {
+//    Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
+//        OptionCard(
+//            maxPick = 1,
+//            enabled = true,
+//            option = optionGroups[0].options[0],
+//            onClick = {}
+//        )
+//    }
+//}

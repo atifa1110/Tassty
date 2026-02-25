@@ -1,27 +1,25 @@
 package com.example.tassty.screen.cart
 
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.ui.model.CartGroupUiModel
+import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.VoucherUiModel
-import com.example.tassty.model.Cart
-import com.example.tassty.model.UserAddress
+import com.example.core.ui.model.UserAddressUiModel
 
-data class CartState(
+data class CartUiState(
     // Data Keranjang & Restoran
-    val carts: List<Cart> = emptyList(),
-    val restaurantName: String = "Indah Cafe",
-    val restaurantCity: String = "Praya",
-    val restaurantRating: Double = 4.4,
+    val carts: Resource<CartGroupUiModel> = Resource(),
+    val cartItemToRemove: CartItemUiModel? = null,
 
     // Status Seleksi
     val isSelectAll: Boolean = false,
 
     // Informasi Pengiriman & Promo
-    val selectedAddress: UserAddress? = null,
-    val availableAddresses: List<UserAddress> = emptyList(),
+    val selectedAddress: UserAddressUiModel? = null,
+    val availableAddresses:  Resource<List<UserAddressUiModel>> = Resource(),
 
     val selectedVoucher: VoucherUiModel? = null,
-    val availableVouchers: List<VoucherUiModel> = emptyList(),
-
-    val cartItemToRemove: Cart? = null,
+    val availableVouchers: Resource<List<VoucherUiModel>> = Resource(),
 
     // Perhitungan Total
     val subtotal: Int = 0,
@@ -33,29 +31,41 @@ data class CartState(
     val isLocationSheetVisible: Boolean = false,
     val isVoucherSheetVisible: Boolean = false,
     val isRemoveItemSheetVisible: Boolean = false,
+    val isDoubleCheckSheetVisible: Boolean = false,
 
     // Status UI Lainnya
-    val isLoading: Boolean = false,
     val isCheckoutButtonEnabled: Boolean = false
+)
+
+data class CartInternalState(
+    val selectedCartIds: Set<String> = emptySet(),
+    val selectedAddressId: String? = null,
+    val selectedVoucherId: String? = null,
+    val isSelectAll: Boolean = false,
+    val isLocationSheetVisible: Boolean = false,
+    val isDoubleCheckSheetVisible: Boolean = false,
+    val isVoucherSheetVisible: Boolean = false,
+    val isRemoveItemSheetVisible: Boolean = false,
+    val cartItemToRemove: CartItemUiModel? = null
 )
 
 sealed class CartUiEvent {
     // Interaksi Keranjang
-    data class OnCartSelectionChange(val cart: Cart) : CartUiEvent()
+    data class OnCartSelectionChange(val cartId: String) : CartUiEvent()
     object OnSelectAllClicked : CartUiEvent()
     object OnDeleteAllClicked : CartUiEvent()
 
     // Interaksi Kuantitas Baru
-    data class OnIncrementQuantity(val cart: Cart) : CartUiEvent()
-    data class OnDecrementQuantity(val cart: Cart) : CartUiEvent()
+    data class OnIncrementQuantity(val cartId: String) : CartUiEvent()
+    data class OnDecrementQuantity(val cartId: String) : CartUiEvent()
 
-    data class OnShowRemoveItemSheet(val cart: Cart) : CartUiEvent()
+    data class OnShowRemoveItemSheet(val cartId: String) : CartUiEvent()
     object OnDismissRemoveItemSheet : CartUiEvent()
-    data class OnRemoveCartItem(val cart: Cart) : CartUiEvent()
+    data class OnRemoveCartItem(val cartId: String) : CartUiEvent()
 
     // Interaksi Lokasi
-    object OnShowLocationSheet : CartUiEvent() // Open Sheet Location
-    object OnDismissLocationSheet : CartUiEvent() // Close Sheet Location
+    object OnShowLocationSheet : CartUiEvent()
+    object OnDismissLocationSheet : CartUiEvent()
     object OnSetLocationClicked : CartUiEvent() // Choose one of the address
     data class OnAddressSelectionChanged(val addressId: String) : CartUiEvent() // Check Address from list
 
@@ -68,4 +78,7 @@ sealed class CartUiEvent {
     // Finalisasi
     object OnCheckoutClicked : CartUiEvent()
     object OnAddMoreClicked : CartUiEvent()
+
+    object OnShowDoubleCheckSheet : CartUiEvent()
+    object OnDismissDoubleCheckSheet : CartUiEvent()
 }

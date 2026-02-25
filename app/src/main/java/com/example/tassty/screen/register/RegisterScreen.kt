@@ -78,7 +78,6 @@ fun RegisterRoute(
 
     RegisterScreen(
         uiState = uiState,
-        isButtonEnable = viewModel.isRegisterEnable.collectAsState().value,
         onTextChange = {viewModel.onFullNameChange(it)},
         onEmailChange = {viewModel.onEmailChange(it)},
         onPasswordChange = {viewModel.onPasswordChange(it)},
@@ -110,7 +109,6 @@ fun RegisterRoute(
 @Composable
 fun RegisterScreen(
     uiState: RegisterUiState,
-    isButtonEnable: Boolean,
     onTextChange : (String) -> Unit,
     onEmailChange : (String) -> Unit,
     onPasswordChange : (String) -> Unit,
@@ -131,7 +129,7 @@ fun RegisterScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(10.dp))
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -217,20 +215,20 @@ fun RegisterScreen(
                             onPasswordChange(it)
                         }
                     )
-
-                    TermsOfServiceCheckbox(
-                        checked = uiState.isTermSelected,
-                        onCheckedChange = onTermCheckChange,
-                        onTermsClick = {}
-                    )
                 }
+
+                TermsOfServiceCheckbox(
+                    checked = uiState.isTermSelected,
+                    onCheckedChange = onTermCheckChange,
+                    onTermsClick = {}
+                )
             }
 
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
             ) {
                 LoadingButtonComponent (
-                    enabled = isButtonEnable,
+                    enabled = uiState.isRegisterButtonEnabled,
                     labelResId = R.string.register,
                     onClick = onRegisterClick,
                     isLoading = uiState.isLoading
@@ -274,7 +272,6 @@ fun RegisterPreview() {
             fullName = "atifa",
             isTermSelected = true
         ),
-        isButtonEnable = false,
         onTermCheckChange = {},
         onRegisterClick = {},
         onLoginClick = {},

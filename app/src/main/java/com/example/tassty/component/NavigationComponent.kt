@@ -5,12 +5,10 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
@@ -31,10 +29,10 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.example.tassty.R
 import com.example.tassty.navigation.TasstyNavigationDestination
-import com.example.tassty.screen.main.CartDestination
-import com.example.tassty.screen.main.ChatDestination
-import com.example.tassty.screen.main.HomeDestination
-import com.example.tassty.screen.main.ProfileDestination
+import com.example.tassty.screen.dashboard.CartDestination
+import com.example.tassty.screen.dashboard.ChatDestination
+import com.example.tassty.screen.dashboard.HomeDestination
+import com.example.tassty.screen.dashboard.ProfileDestination
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral70

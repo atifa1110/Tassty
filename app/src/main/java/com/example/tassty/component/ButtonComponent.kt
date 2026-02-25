@@ -3,6 +3,7 @@ package com.example.tassty.component
 import android.graphics.drawable.Icon
 import androidx.annotation.Size
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,16 +11,23 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,15 +35,22 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,13 +61,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Neutral80
@@ -98,79 +116,26 @@ fun LoadingButtonComponent(
 
 @Composable
 fun ButtonComponent(
+    modifier : Modifier = Modifier,
     enabled : Boolean,
     @StringRes labelResId: Int,
+    colors: ButtonColors = ButtonDefaults.buttonColors( // default warna primary
+        containerColor = Orange500,
+        contentColor = Color.White,
+        disabledContentColor = Neutral100,
+        disabledContainerColor = Neutral40
+    ),
     onClick:() -> Unit,
 ) {
     Button(
         enabled = enabled,
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Orange500,
-            contentColor = Color.White,
-            disabledContentColor = Neutral100,
-            disabledContainerColor = Neutral40
-        )
+        modifier = modifier.height(60.dp),
+        colors = colors
     ) {
         Text(text = stringResource(labelResId),
             style=LocalCustomTypography.current.bodyMediumSemiBold
         )
-    }
-}
-
-@Composable
-fun ButtonSmallComponent(
-    enabled : Boolean,
-    @StringRes labelResId: Int,
-    onClick:() -> Unit,
-) {
-    Button(
-        enabled = enabled,
-        onClick = onClick,
-        modifier = Modifier
-            .size(220.dp,60.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Orange500,
-            contentColor = Color.White,
-            disabledContentColor = Neutral100,
-            disabledContainerColor = Neutral40
-        )
-    ) {
-        Text(text = stringResource(labelResId),
-            style=LocalCustomTypography.current.bodyMediumSemiBold
-        )
-    }
-}
-
-@Composable
-fun ButtonLogout(
-    enabled : Boolean,
-    @StringRes labelResId: Int,
-    onClick:() -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        Button(
-            enabled = enabled,
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Pink50,
-                contentColor = Pink500,
-                disabledContentColor = Neutral100,
-                disabledContainerColor = Neutral40
-            )
-        ) {
-            Text(
-                text = stringResource(labelResId),
-                style = LocalCustomTypography.current.bodyMediumSemiBold
-            )
-        }
     }
 }
 
@@ -202,16 +167,21 @@ fun ButtonLogin(){
 }
 
 @Composable
-fun CartAddItemButton(
+fun CartButtonBase(
+    leftContent: @Composable RowScope.() -> Unit,
     totalPrice: Int,
-    itemCount: Int
-){
+    onClick: (() -> Unit)? = null
+) {
     Surface(
         shape = RoundedCornerShape(100.dp),
         color = Orange500,
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            .then(
+                if (onClick != null) Modifier.clickable { onClick() }
+                else Modifier
+            )
     ) {
         Row(
             modifier = Modifier
@@ -221,125 +191,120 @@ fun CartAddItemButton(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(
-                    painter = painterResource(R.drawable.shopping_bag),
-                    contentDescription = "Shopping Cart",
-                    tint = Neutral10
-                )
-                Text(
-                    text = "Cart",
-                    color = Neutral10, // Warna teks putih
-                    style = LocalCustomTypography.current.bodyMediumBold
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                content = leftContent
+            )
 
-                Text(
-                    text = " • ",
-                    style = LocalCustomTypography.current.bodySmallMedium,
-                    color = Neutral10
-                )
-
-                Text(
-                    text = "$itemCount Item",
-                    color = Color.White, // Warna teks putih
-                    style = LocalCustomTypography.current.bodyMediumMedium
-                )
-            }
             FoodPriceText(
                 price = totalPrice.toCleanRupiahFormat(),
                 color = Neutral10
             )
         }
     }
+}
+
+@Composable
+fun CartAddItemButton(
+    totalPrice: Int,
+    itemCount: Int
+) {
+    CartButtonBase(
+        totalPrice = totalPrice,
+        leftContent = {
+            Icon(
+                painter = painterResource(R.drawable.shopping_bag),
+                contentDescription = "Shopping Cart",
+                tint = Neutral10
+            )
+
+            Text(
+                text = "Cart",
+                color = Neutral10,
+                style = LocalCustomTypography.current.bodyMediumBold
+            )
+
+            Text(
+                text = " • ",
+                style = LocalCustomTypography.current.bodySmallMedium,
+                color = Neutral10
+            )
+
+            Text(
+                text = "$itemCount Item",
+                color = Neutral10,
+                style = LocalCustomTypography.current.bodyMediumMedium
+            )
+        }
+    )
 }
 
 @Composable
 fun CartAddButton(
+    buttonText: String,
     totalPrice: Int,
     onClick: () -> Unit
-){
-    Surface(
-        shape = RoundedCornerShape(100.dp),
-        color = Orange500,
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight().clickable(onClick = onClick)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 19.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+) {
+    CartButtonBase(
+        totalPrice = totalPrice,
+        onClick = onClick,
+        leftContent = {
+            Icon(
+                painter = painterResource(R.drawable.shopping_bag),
+                contentDescription = "Shopping Cart",
+                tint = Neutral10
+            )
 
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(
-                    painter = painterResource(R.drawable.shopping_bag),
-                    contentDescription = "Shopping Cart",
-                    tint = Neutral10
-                )
-                Text(
-                    text = "Add to Cart",
-                    color = Neutral10, // Warna teks putih
-                    style = LocalCustomTypography.current.bodyMediumBold
-                )
-            }
-            FoodPriceText(
-                price = totalPrice.toCleanRupiahFormat(),
-                color = Neutral10
+            Text(
+                text = buttonText,
+                color = Neutral10,
+                style = LocalCustomTypography.current.bodyMediumBold
+            ) }
+    )
+}
+
+@Composable
+fun QuantityTextButton(
+    quantity: Int,
+    onDecreaseQuantity: ()-> Unit,
+    onIncreaseQuantity: () -> Unit
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Quantity",
+            style = LocalCustomTypography.current.h5Bold,
+            color = Neutral100,
+            modifier = Modifier.weight(1f)
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Decrease Button
+            QuantityButton(
+                onClick = onDecreaseQuantity,
+                enabled = quantity >= 1,
+                icons = Icons.Filled.Remove,
+                contentDescription = "Decrease Quantity"
+            )
+
+            // Quantity Text
+            Text(
+                text = quantity.toString(),
+                style = LocalCustomTypography.current.h5Bold,
+                color = Neutral100,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            // Increase Button
+            QuantityButton(
+                onClick = onIncreaseQuantity,
+                enabled = true,
+                icons = Icons.Filled.Add,
+                contentDescription = "Increase Quantity"
             )
         }
-    }
-}
-
-@Composable
-fun QuantityButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    icons : ImageVector,
-    contentDescription: String
-){
-    Button(
-        onClick = onClick,
-        enabled = enabled, // Disable when quantity is 1
-        // Make it small and circular (similar to the image)
-        modifier = Modifier.size(30.dp),
-        contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Neutral80,
-            contentColor = Color.White
-        ),
-        shape = CircleShape
-    ) {
-        Icon(imageVector = icons, contentDescription = contentDescription)
-    }
-}
-
-
-@Composable
-fun QuantitySmallButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    icons : ImageVector,
-    contentDescription: String
-){
-    Button(
-        onClick = onClick,
-        enabled = enabled, // Disable when quantity is 1
-        // Make it small and circular (similar to the image)
-        modifier = Modifier.size(24.dp),
-        contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if(enabled) Neutral80 else Neutral70,
-            contentColor = Color.White
-        ),
-        shape = CircleShape
-    ) {
-        Icon(imageVector = icons, contentDescription = contentDescription,
-            modifier= Modifier.size(12.dp))
     }
 }
 
@@ -374,6 +339,52 @@ fun QuantityCartContent(
             icons = Icons.Filled.Add,
             contentDescription = "Increase Quantity"
         )
+    }
+}
+
+@Composable
+fun QuantityButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    icons : ImageVector,
+    contentDescription: String
+){
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.size(30.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Neutral80,
+            contentColor = Color.White
+        ),
+        shape = CircleShape
+    ) {
+        Icon(imageVector = icons, contentDescription = contentDescription)
+    }
+}
+
+
+@Composable
+fun QuantitySmallButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    icons : ImageVector,
+    contentDescription: String
+){
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.size(24.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if(enabled) Neutral80 else Neutral70,
+            contentColor = Color.White
+        ),
+        shape = CircleShape
+    ) {
+        Icon(imageVector = icons, contentDescription = contentDescription,
+            modifier= Modifier.size(12.dp))
     }
 }
 
@@ -426,12 +437,11 @@ fun NotesBoxButton(
 
         Text(
             text = title,
-            style = LocalCustomTypography.current.h8Regular,
+            style = LocalCustomTypography.current.h6Regular,
             color = Neutral100
         )
     }
 }
-
 
 
 @Composable
@@ -503,6 +513,7 @@ fun RankBadgeIcon(
 
 @Composable
 fun RankBadge(
+    rank: Int,
     horizontal : Dp,
     vertical : Dp,
     modifier: Modifier = Modifier
@@ -513,12 +524,11 @@ fun RankBadge(
                 append("#")
             }
             withStyle(style = LocalCustomTypography.current.bodySmallSemiBold.toSpanStyle().copy(color = Color.White)) {
-                append("1")
+                append("$rank")
             }
         },
         textAlign = TextAlign.Center,
         color = Color.White,
-        style = LocalCustomTypography.current.bodySmallSemiBold,
         modifier = modifier
             .background(
                 color = Color(0xFFEE8E1E).copy(0.8f),
@@ -570,3 +580,75 @@ fun ResetButton(
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun ButtonPreview(){
+    Column (
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ){
+        ResetButton {  }
+        TextButton(text = "Add",
+            textColor = Neutral100,
+            onClick = {})
+        RankBadge(
+            rank = 2,
+            horizontal = 20.dp,
+            vertical = 16.dp
+        )
+        RankBadgeIcon(
+            modifier = Modifier.width(60.dp)
+        )
+        FavoriteButton(isWishlist = false) { }
+        NotesBoxButton(
+            title = "Edit",
+            onClick = {}
+        )
+        FloatingAddButton(
+            actionSize = 40.dp,
+            iconSize = 16.dp,
+            onClick = {}
+        )
+        QuantityCartContent(
+            itemCount = 2,
+            enabled = true,
+            onIncrement = {}
+        ) { }
+        QuantityTextButton(
+            quantity = 2,
+            onIncreaseQuantity = {},
+            onDecreaseQuantity = {}
+        )
+        ButtonLogin()
+        ButtonComponent(
+            enabled = true,
+            labelResId = R.string.logout,
+            onClick = {},
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Pink50,
+                contentColor = Pink500,
+                disabledContentColor = Neutral100,
+                disabledContainerColor = Neutral40
+            )
+        )
+        ButtonComponent(
+            modifier = Modifier
+                .width(220.dp),
+            enabled = true,
+            labelResId = R.string.logout,
+            onClick = {}
+        )
+        ButtonComponent(
+            modifier = Modifier.fillMaxWidth(),
+            enabled = true,
+            labelResId = R.string.logout,
+            onClick = {}
+        )
+
+    }
+}
+
+
+

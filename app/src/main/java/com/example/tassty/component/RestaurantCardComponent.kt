@@ -27,8 +27,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.domain.model.OperationalDay
-import com.example.core.ui.model.RestaurantDetailUiModel
+import com.example.core.ui.model.DetailRestaurantUiModel
+import com.example.core.ui.model.OperationalDayUi
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.restaurantUiModel
@@ -69,10 +69,11 @@ fun RestaurantSmallListCard (
 
 @Composable
 fun RestaurantLargeListCard(
-    restaurant: RestaurantUiModel
+    restaurant: RestaurantUiModel,
+    onClick: () -> Unit
 ){
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Neutral20)
     ) {
@@ -142,10 +143,11 @@ fun RestaurantGridCard (
 
 @Composable
 fun RestaurantLargeGridCard (
-    restaurant : RestaurantUiModel
+    restaurant : RestaurantUiModel,
+    onClick: () -> Unit
 ){
     Card(
-        modifier = Modifier.width(196.dp), // Adjust width as needed
+        modifier = Modifier.width(196.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Neutral20)
     ) {
@@ -205,7 +207,7 @@ fun RestaurantCloseStatus(
 
 @Composable
 fun RestaurantInfoCard(
-    restaurant: RestaurantDetailUiModel,
+    restaurant: DetailRestaurantUiModel,
     operationalHour: String,
     onLocationClick:() -> Unit,
     onReviewsClick:() -> Unit,
@@ -269,12 +271,12 @@ fun RestaurantInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = restaurant.detail.restaurant.rating.toString(),
+                        text = restaurant.formatRating,
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
                     Text(
-                        text = "(200+)",
+                        text = restaurant.formatReviewCount,
                         style = LocalCustomTypography.current.h8Regular,
                         color = Neutral70
                     )
@@ -299,7 +301,7 @@ fun RestaurantInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "${restaurant.formattedDistance} • ${restaurant.detail.restaurant.deliveryTime}",
+                        text = "${restaurant.formatDistance} • ${restaurant.deliveryTime}",
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
@@ -443,6 +445,10 @@ fun RestaurantShortInfoCard(
 
 @Composable
 fun RestaurantMenuInfoCard(
+    rating: String,
+    review: String,
+    deliveryCost: String,
+    deliveryTime: String,
     onReviewsClick:() -> Unit,
 ) {
     Card(
@@ -473,12 +479,12 @@ fun RestaurantMenuInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "4.8",
+                        text = rating,
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
                     Text(
-                        text = "(200+)",
+                        text = review,
                         style = LocalCustomTypography.current.h8Regular,
                         color = Neutral70
                     )
@@ -504,7 +510,7 @@ fun RestaurantMenuInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Free",
+                        text = deliveryCost,
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
@@ -533,7 +539,7 @@ fun RestaurantMenuInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "10-25 min",
+                        text = deliveryTime,
                         style = LocalCustomTypography.current.h6Bold,
                         color = Neutral100
                     )
@@ -550,7 +556,7 @@ fun RestaurantMenuInfoCard(
 }
 
 @Composable
-fun RestaurantOperationalCard(day: OperationalDay) {
+fun RestaurantOperationalCard(day: OperationalDayUi) {
     val isToday = day.isToday
 
     // Warna background dan ikon jika hari ini
@@ -624,7 +630,7 @@ fun RestaurantListCardPreview() {
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         RestaurantSmallListCard(restaurant = restaurantUiModel[0])
-        RestaurantLargeListCard(restaurant = restaurantUiModel[0])
+        RestaurantLargeListCard(restaurant = restaurantUiModel[0], onClick = {})
     }
 }
 
@@ -638,6 +644,6 @@ fun RestaurantGridCardPreview() {
             RestaurantTinyGridCard(restaurant = restaurantUiModel[0])
             RestaurantGridCard(restaurant = restaurantUiModel[0], onNavigateToDetail = {})
         }
-        RestaurantLargeGridCard(restaurant = restaurantUiModel[0])
+        RestaurantLargeGridCard(restaurant = restaurantUiModel[0], onClick = {})
     }
 }

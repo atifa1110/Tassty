@@ -1,41 +1,35 @@
 package com.example.core.domain.model
 
-// Domain Model
-data class Menu (
+data class Menu(
     val id: String,
     val name: String,
-    val description: String,
     val imageUrl: String,
-    val originalPrice: Int,
-    val discountPrice: Int? = null,
+    val description: String,
+    val price: Int,
+    val soldCount: Int,
+    val rank: Int,
+    val customizable: Boolean,
     val isAvailable: Boolean,
-    val rating: Double? = null,
-    val soldCount: Int? = null,
-    val isBestSeller: Boolean = false,
-    val isRecommended: Boolean = false,
-    val rank: Int? = null,
-    val distanceMeters: Int? = null,
-    val maxOrderQuantity: Int? = null,
-    val operationalHours: List<OperationalDay> = emptyList()
+    val maxQuantity: Int,
+    val stockStatus: String,
+    val stockLabel: String,
+    val restaurant: Restaurant,
+    val isWishlist: Boolean = false
 ){
-    val price : Int = discountPrice?: originalPrice
-    val formatDiscountPrice : Int = discountPrice?:0
+    val menuStatus: MenuStatus
+        get() = getMenuStatus(isAvailable, restaurant.statusResult.status)
 }
 
-data class MenuBusinessInfo(
+fun getMenuStatus(isAvailable: Boolean, restaurantStatus: RestaurantStatus): MenuStatus {
+    return when {
+        restaurantStatus != RestaurantStatus.OPEN -> MenuStatus.CLOSED   // restoran tutup
+        isAvailable -> MenuStatus.AVAILABLE                              // menu habis / disable
+        else -> MenuStatus.SOLDOUT                                  // resto buka, menu ready
+    }
+}
+
+data class MenuWithWishlist(
     val menu: Menu,
-    val isWishlist: Boolean = false,
-    val status: MenuStatus
+    val isWishlist: Boolean,
 )
 
-// C. Domain Model: Data Lengkap Menu dari Memory Cache (Digunakan di Repository)
-data class MenuFullDetail(
-    val serverId: String,
-    val name: String,
-    val price: Int,
-    val description: String?,
-    val imageUrl: String?,
-    val restaurantId: String,
-    val restaurantName: String,
-    val restaurantLocation: String
-)

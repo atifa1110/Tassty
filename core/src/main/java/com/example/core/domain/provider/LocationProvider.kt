@@ -1,7 +1,12 @@
 package com.example.core.domain.provider
 
-import com.example.core.domain.model.LocationDetails
+import com.example.core.domain.model.LocationDetail
+import kotlinx.coroutines.flow.Flow
+
 
 interface LocationProvider {
-    suspend fun getCurrentLocation(): LocationDetails
+
+    fun getCurrentLocation(): Flow<LocationDetail>
+
+    suspend fun syncLocation()
 }

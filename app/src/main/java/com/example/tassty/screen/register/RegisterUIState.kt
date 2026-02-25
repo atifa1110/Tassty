@@ -11,7 +11,14 @@ data class RegisterUiState (
     val isLoading: Boolean = false,
     val isBottomSheetVisible: Boolean = false,
     val bottomSheetMessage: String? = null
-)
+){
+    val isRegisterButtonEnabled: Boolean
+        get() = fullName.isNotBlank() &&
+                email.isNotBlank() &&
+                password.isNotBlank() &&
+                isTermSelected &&
+                !isLoading
+}
 
 sealed interface RegisterEvent {
     data object ShowBottomSheet : RegisterEvent

@@ -1,4 +1,4 @@
-package com.example.tassty.screen
+package com.example.tassty.screen.nearby
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -33,9 +33,7 @@ import com.example.tassty.restaurants
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.RestaurantLargeListCard
 import com.example.tassty.component.RestaurantSmallListCard
-import com.example.tassty.model.FilterState
 import com.example.tassty.restaurantUiModel
-import com.example.tassty.screen.search.FilterSection
 
 @Composable
 fun NearbyRestaurantScreen() {
@@ -51,7 +49,8 @@ fun NearbyRestaurantScreen() {
         // Draggable Search Bar
         DraggableSearchBar(
             modifier = Modifier.align(Alignment.BottomCenter),
-            status = RestaurantStatus.OPEN)
+            status = RestaurantStatus.OPEN
+        )
     }
 }
 
@@ -176,9 +175,9 @@ fun DraggableSearchBar(
                 ) {
                     items(
                         items = restaurantUiModel,
-                        key = { it.restaurant.id }
+                        key = { it.id }
                     ) { restaurant ->
-                        RestaurantLargeListCard(restaurant = restaurant)
+                        RestaurantLargeListCard(restaurant = restaurant, onClick = {})
                     }
                 }
             }

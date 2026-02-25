@@ -1,365 +1,333 @@
 package com.example.tassty.screen.detailrestaurant
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.core.data.model.Resource
-import com.example.core.domain.model.RestaurantStatus
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.domain.usecase.AddCartMenuUseCase
+import com.example.core.domain.usecase.AddFavoriteRestaurantUseCase
+import com.example.core.domain.usecase.GetCartsByRestaurantIdUseCase
+import com.example.core.domain.usecase.GetCollectionsByIdUseCase
+import com.example.core.domain.usecase.GetCollectionsUseCase
+import com.example.core.domain.usecase.GetDetailAllMenuUseCase
+import com.example.core.domain.usecase.GetDetailBestSellerMenuUseCase
+import com.example.core.domain.usecase.GetDetailMenuUseCase
+import com.example.core.domain.usecase.GetDetailRecommendedMenuUseCase
+import com.example.core.domain.usecase.GetDetailRestaurantUseCase
+import com.example.core.domain.usecase.GetRestaurantVouchersUseCase
+import com.example.core.domain.usecase.GetReviewsByRestaurantIdUseCase
+import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
+import com.example.core.domain.usecase.RemoveFavoriteRestaurantUseCase
+import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
+import com.example.core.domain.utils.mapToResource
+import com.example.core.domain.utils.toListState
+import com.example.core.ui.mapper.toDomain
+import com.example.core.ui.mapper.toDomainDetail
+import com.example.core.ui.mapper.toUiModel
+import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
-import com.example.tassty.calculateRestaurantStatus
-import com.example.tassty.filterVouchersByRestaurant
-import com.example.tassty.getTodayOperatingHoursString
-import com.example.tassty.markToday
-import com.example.tassty.menus
-import com.example.tassty.model.Cart
-import com.example.tassty.restaurantDetails
-import com.example.tassty.reviews
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.example.tassty.navigation.DetailRestaurantDestination
+import com.example.tassty.screen.detailmenu.UiEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import kotlin.collections.map
 
-class DetailRestaurantViewModel (): ViewModel() {
+@HiltViewModel
+class DetailRestaurantViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val getDetailRestaurantUseCase: GetDetailRestaurantUseCase,
+    private val getDetailBestSellerMenuUseCase: GetDetailBestSellerMenuUseCase,
+    private val getDetailRecommendedMenuUseCase: GetDetailRecommendedMenuUseCase,
+    private val getDetailAllMenuUseCase: GetDetailAllMenuUseCase,
+    private val getRestaurantVouchersUseCase: GetRestaurantVouchersUseCase,
+    private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase,
+    private val getCollectionsByIdUseCase: GetCollectionsByIdUseCase,
+    private val getCollectionsUseCase: GetCollectionsUseCase,
+    private val getReviewsByRestaurantIdUseCase: GetReviewsByRestaurantIdUseCase,
+    private val addFavoriteRestaurantUseCase: AddFavoriteRestaurantUseCase,
+    private val removeFavoriteRestaurantUseCase: RemoveFavoriteRestaurantUseCase,
+    private val getCartsByRestaurantIdUseCase: GetCartsByRestaurantIdUseCase,
+    private val getDetailMenuUseCase: GetDetailMenuUseCase,
+    private val observeCartByMenuIdUseCase: ObserveCartByMenuIdUseCase,
+    private val addCartMenuUseCase: AddCartMenuUseCase
+): ViewModel() {
 
-    // Persistent State
-    private val _uiState = MutableStateFlow(
-        DetailRestaurantUiState()
-    )
-    val uiState: StateFlow<DetailRestaurantUiState> = _uiState.asStateFlow()
+    val id = DetailRestaurantDestination.getId(savedStateHandle)
 
-    init {
-        loadAllData()
+    private val _internalState = MutableStateFlow(DetailInternalState())
+
+    private val _uiEffect = Channel<UiEvent>(Channel.BUFFERED)
+    val uiEffect = _uiEffect.receiveAsFlow()
+
+    private val restaurantFlow = getDetailRestaurantUseCase(id).map {
+        it.mapToResource { detail -> detail.toUiModel() }
     }
+
+    private val collectionsFlow = getCollectionsUseCase().map {
+        it.toListState { collection -> collection.toUiModel() }
+    }
+
+    private val cartFlow = getCartsByRestaurantIdUseCase(id).map {
+        it.toUiModel()
+    }
+
+    private val contentSectionFlow = combine(
+        getDetailAllMenuUseCase(id),
+        getDetailRecommendedMenuUseCase(id),
+        getDetailBestSellerMenuUseCase(id),
+        getReviewsByRestaurantIdUseCase(id),
+        getRestaurantVouchersUseCase(id),
+    ){ all, recommended, best, review, voucher ->
+        DetailListContent(
+            allMenus = all.toListState { it.toUiModel() },
+            recommendedMenus = recommended.toListState { it.toUiModel() },
+            bestSellerMenus = best.toListState { it.toUiModel() },
+            reviews = review.toListState { it.toUiModel() },
+            vouchers = voucher.toListState { it.toUiModel() }
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        DetailListContent()
+    )
+
+    val uiState: StateFlow<DetailRestaurantUiState> = combine(
+        _internalState,
+        restaurantFlow,
+        contentSectionFlow,
+        collectionsFlow,
+        cartFlow
+    ) { internal, detail, content, collections, cart ->
+
+        val items = cart.menus.sumOf { it.quantity }
+        val price = cart.menus.sumOf { it.quantity * it.price }
+
+        DetailRestaurantUiState(
+            restaurantResource = detail,
+            reviewsResource = content.reviews,
+            vouchersResource = content.vouchers,
+            allMenusResource = content.allMenus,
+            recommendedMenusResource = content.recommendedMenus,
+            bestSellerMenusResource = content.bestSellerMenus,
+            collectionsResource = collections.copy(
+                data = collections.data?.map { model ->
+                    model.copy(isSelected = internal.selectedCollectionIds.contains(model.id))
+                }
+            ),
+            // Internal State (User Interaction)
+            isScheduleModalVisible = internal.isScheduleModalVisible,
+            isFavoriteModalVisible = internal.isFavoriteModalVisible,
+            isCollectionSheetVisible = internal.isCollectionSheetVisible,
+            isShowCloseModalVisible = internal.isShowCloseModalVisible,
+            isSearchModalVisible = internal.isSearchModalVisible,
+            isDetailMenuModalVisible = internal.isDetailMenuModalVisible,
+            menu = internal.selectedMenu,
+            searchQuery = internal.searchQuery,
+            quantity = internal.quantity,
+            totalItems = items,
+            totalPrice = price,
+            isEditMode = internal.isEditMode
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = DetailRestaurantUiState()
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val detailMenuFlow = _internalState
+        .map { it.selectedMenu?.id }
+        .distinctUntilChanged()
+        .flatMapLatest { menuId ->
+            if (menuId.isNullOrEmpty()) {
+                flowOf(Resource(isLoading = false))
+            } else {
+                getDetailMenuUseCase(menuId).map {
+                    it.mapToResource { it.toUiModel(false) }
+                }
+            }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = Resource(isLoading = true)
+    )
 
     fun onEvent(event: DetailRestaurantEvent) {
         when (event) {
-            DetailRestaurantEvent.OnDismissScheduleSheet -> _uiState.update {
-                it.copy(isScheduleModalVisible = false)
-            }
-
-            DetailRestaurantEvent.OnShowScheduleSheet -> _uiState.update {
-                it.copy(isScheduleModalVisible = true)
-            }
-
-            DetailRestaurantEvent.OnRestaurantFavoriteSheet -> handleRestaurantFavoriteClick()
-            DetailRestaurantEvent.OnRestaurantDismissFavoriteSheet -> _uiState.update {
-                it.copy(isFavoriteModalVisible = false)
-            }
-
-            is DetailRestaurantEvent.OnAllMenuFavorite -> handleAllMenuItemWishlist(event.menuId)
-            is DetailRestaurantEvent.OnRecommendedFavorite -> handleRecommendedMenuItemWishlist(event.menuId)
-            is DetailRestaurantEvent.OnBestSellerFavorite -> handleBestSellerMenuItemWishlist(event.menuId)
-            is DetailRestaurantEvent.OnAddToCart -> handleAddToCart(event.menu)
-
-            DetailRestaurantEvent.OnDismissSearchSheet -> _uiState.update { it.copy(showSearch = false) }
-            DetailRestaurantEvent.OnShowSearchSheet -> _uiState.update { it.copy(showSearch = true) }
+            is DetailRestaurantEvent.OnDismissScheduleSheet -> _internalState.update { it.copy(isScheduleModalVisible = false) }
+            is DetailRestaurantEvent.OnShowScheduleSheet -> _internalState.update { it.copy(isScheduleModalVisible = true) }
+            is DetailRestaurantEvent.OnRestaurantFavoriteSheet -> handleRestaurantFavoriteClick()
+            is DetailRestaurantEvent.OnRestaurantDismissFavoriteSheet -> _internalState.update { it.copy(isFavoriteModalVisible = false) }
+            is DetailRestaurantEvent.OnDismissAddCollectionSheet -> TODO()
+            is DetailRestaurantEvent.OnShowAddCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = false) }
+            is DetailRestaurantEvent.OnMenuFavoriteClick -> handleMenuFavoriteClick(event.menu)
+            is DetailRestaurantEvent.OnShowCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = true) }
+            is DetailRestaurantEvent.OnDismissCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = false) }
+            is DetailRestaurantEvent.OnCollectionCheckChange -> handleCollectionCheckChange(event.collectionId)
+            is DetailRestaurantEvent.OnSaveToCollection -> handleSaveToCollection()
+            is DetailRestaurantEvent.OnDismissSearchSheet -> _internalState.update { it.copy(isSearchModalVisible = false) }
+            is DetailRestaurantEvent.OnShowSearchSheet -> _internalState.update { it.copy(isSearchModalVisible = true) }
             is DetailRestaurantEvent.OnSearchQueryChange -> handleSearchQueryChange(event.newQuery)
-            DetailRestaurantEvent.OnDismissCloseSheet -> _uiState.update { it.copy(isShowCloseModalVisible = false) }
-        }
-    }
-
-    private fun loadAllData() {
-        loadRestaurantDetails()
-        loadAllMenus()
-        loadBestSellers()
-        loadRecommendedMenus()
-        loadReviews()
-        loadVouchers()
-    }
-
-    private fun loadRestaurantDetails() {
-        viewModelScope.launch {
-            try {
-                // Simulation call api
-                val restaurant = restaurantDetails.find { it.restaurant.id == "2" }
-
-                if (restaurant == null) {
-                    throw Exception("Restaurant data not found on server.")
-                }
-
-                val markedOperationalHours = markToday(restaurant.restaurant.operationalHours)
-                val currentStatus = calculateRestaurantStatus(markedOperationalHours)
-                val hoursString = getTodayOperatingHoursString(markedOperationalHours)
-                val updatedRestaurant = restaurant.restaurant.copy(operationalHours = markedOperationalHours)
-
-                _uiState.update { currentState ->
-                    currentState.copy(
-                       // restaurantResource = Resource(data = updatedRestaurant, isLoading = false),
-                        status = currentStatus,
-                        todayHoursString = hoursString,
-                        cartItemsResource = emptyList()
-                    )
-                }
-            } catch (e: Exception) {
-                // Global error
-                Log.e("DetailVM", "FATAL Error loading restaurant: ${e.message}")
-                _uiState.update {
-                    it.copy(
-                        restaurantResource = Resource(
-                            errorMessage = "Failed to load restaurant details. Check your connection or retry.",
-                            isLoading = false
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private fun loadAllMenus() = viewModelScope.launch {
-        // Check Global Error
-        if (_uiState.value.restaurantResource.errorMessage != null) return@launch
-
-        try {
-            delay(5000)
-            val menuList = menus
-
-            _uiState.update { it.copy(
-                allMenusResource = Resource(data = menuList, isLoading = false)
-            ) }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(
-                allMenusResource = Resource(errorMessage = "Failed to load all menu list.", isLoading = false)
-            ) }
-        }
-    }
-
-    private fun loadBestSellers() = viewModelScope.launch {
-        if (_uiState.value.restaurantResource.errorMessage != null) return@launch
-        try {
-            delay(5000)
-            val bestSellerList = menus
-
-            _uiState.update { it.copy(
-                bestSellersResource = Resource(data = bestSellerList, isLoading = false)
-            ) }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(
-                bestSellersResource = Resource(errorMessage = "Failed to load Best Sellers.", isLoading = false)
-            ) }
-        }
-    }
-
-    private fun loadRecommendedMenus() = viewModelScope.launch {
-        if (_uiState.value.restaurantResource.errorMessage != null) return@launch
-        try {
-            delay(5000)
-            val restaurant = restaurantDetails.find { it.restaurant.id == "2" }
-            val recommendedList = menus.take(4)
-
-            _uiState.update { it.copy(
-                recommendedMenusResource = Resource(data = recommendedList, isLoading = false)
-            ) }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(
-                recommendedMenusResource = Resource(errorMessage = "Failed to load Recommended Menus.", isLoading = false)
-            ) }
-        }
-    }
-
-    private fun loadReviews() = viewModelScope.launch {
-        if (_uiState.value.restaurantResource.errorMessage != null) return@launch
-        try {
-            delay(5000)
-            val reviewList = reviews
-
-            _uiState.update { it.copy(
-                reviewsResource = Resource(data = reviewList, isLoading = false)
-            ) }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(
-                reviewsResource = Resource(errorMessage = "Failed to load reviews.", isLoading = false)
-            ) }
-        }
-    }
-
-    private fun loadVouchers() = viewModelScope.launch {
-        if (_uiState.value.restaurantResource.errorMessage != null) return@launch
-        try {
-            delay(5000)
-            val voucherList = filterVouchersByRestaurant("2")
-
-            _uiState.update { it.copy(
-                voucherResource = Resource(data = voucherList, isLoading = false)
-            ) }
-        } catch (e: Exception) {
-            _uiState.update { it.copy(
-                reviewsResource = Resource(errorMessage = "Failed to load vouchers.", isLoading = false)
-            ) }
+            is DetailRestaurantEvent.OnDismissCloseSheet -> _internalState.update { it.copy(isShowCloseModalVisible = false) }
+            is DetailRestaurantEvent.OnDismissDetailMenuSheet -> _internalState.update { it.copy(isDetailMenuModalVisible = false) }
+            is DetailRestaurantEvent.OnMenuAddToCartClick -> handleMenuAddToCartClick(event.menu)
+            is DetailRestaurantEvent.OnAddToCart -> handleAddToCart(event.menu)
+            is DetailRestaurantEvent.OnQuantityDecrease -> handleQuantity(-1)
+            is DetailRestaurantEvent.OnQuantityIncrease -> handleQuantity(1)
         }
     }
 
     fun handleRestaurantFavoriteClick() {
         viewModelScope.launch {
-            _uiState.update { currentState ->
-                val oldFavoriteStatus = currentState.isFavorite
-                val newFavoriteStatus = !oldFavoriteStatus
-                val shouldShowModal = !oldFavoriteStatus && newFavoriteStatus
+            val restaurant = uiState.value.restaurantResource.data?: return@launch
+            val isFavorite = restaurant.isWishlist
 
-                currentState.copy(
-                    isFavorite = newFavoriteStatus,
-                    isFavoriteModalVisible = shouldShowModal
-                )
-            }
-
-        }
-    }
-
-    private fun handleAllMenuItemWishlist(menuId: String) {
-        _uiState.update { currentState ->
-            val updatedMenus = currentState.allMenusResource.data?.map { menu ->
-                if (menu.menu.id == menuId) {
-                    menu.copy(isWishlist = !menu.isWishlist)
-                } else {
-                    menu
-                }
-            }
-
-            currentState.copy(
-                allMenusResource = Resource(data = updatedMenus)
-            )
-        }
-    }
-
-    private fun handleBestSellerMenuItemWishlist(menuId: String) {
-        _uiState.update { currentState ->
-            val updatedMenus = currentState.bestSellersResource.data?.map { menu ->
-                if (menu.menu.id == menuId) {
-                    menu.copy(isWishlist = !menu.isWishlist)
-                } else {
-                    menu
-                }
-            }
-
-            currentState.copy(
-                bestSellersResource = Resource(updatedMenus)
-            )
-        }
-    }
-
-    private fun handleRecommendedMenuItemWishlist(menuId: String) {
-        _uiState.update { currentState ->
-            val updatedMenus = currentState.recommendedMenusResource.data?.map { menu ->
-                if (menu.menu.id == menuId) {
-                    menu.copy(isWishlist = !menu.isWishlist)
-                } else {
-                    menu
-                }
-            }
-
-            currentState.copy(
-                recommendedMenusResource = Resource(data = updatedMenus)
-            )
-        }
-    }
-
-    private fun handleAddToCart(menu: MenuUiModel) {
-        viewModelScope.launch {
-            val ui = _uiState.value
-
-            // Check restaurant close status
-            val restaurantStatus = ui.status?.status ?: RestaurantStatus.CLOSED
-            if (restaurantStatus == RestaurantStatus.CLOSED) {
-                _uiState.update { current ->
-                    current.copy(
-                        isShowCloseModalVisible = true
-                    )
-                }
-                return@launch
-            }
-
-            // Get cart resource
-            val currentCart = ui.cartItemsResource
-
-            // Check if item exist
-            val existingItem = currentCart.find { it.id == menu.menu.id }
-
-            val newCartList = if (existingItem != null) {
-                currentCart.map { item ->
-                    if (item.id == menu.menu.id) {
-                        item.copy(quantity = item.quantity + 1)
-                    } else {
-                        item
-                    }
-                }
+            if (isFavorite) {
+                removeFavoriteRestaurantUseCase(id)
             } else {
-                // add cart if empty
-                currentCart + Cart(
-                    id = menu.menu.id,
-                    name = menu.menu.name,
-                    imageUrl = menu.menu.imageUrl,
-                    price = menu.menu.originalPrice,
-                    quantity = 1,
-                    note = null,
-                    isSwipeActionVisible = false,
-                    isChecked = false
-                )
-            }
-
-            // Update UiState
-            _uiState.update { currentState ->
-                currentState.copy(
-                    cartItemsResource = newCartList
-                )
+                val domain = restaurant.toDomainDetail()
+                addFavoriteRestaurantUseCase(domain)
+                _internalState.update { it.copy(isFavoriteModalVisible = true) }
             }
         }
     }
 
-    private var searchJob: Job? = null
+    private fun handleMenuAddToCartClick(menu: MenuUiModel) {
+        viewModelScope.launch {
+            val cartItem = observeCartByMenuIdUseCase(menu.id).firstOrNull()
+            val existsInCart = cartItem != null
+            val initialQuantity = cartItem?.quantity ?: 1
 
-    private fun handleSearchQueryChange(newQuery: String) {
-        // Cancel job before running
-        searchJob?.cancel()
-
-        // Always update state query and set LOADING
-        _uiState.update {
-            it.copy(
-                searchQuery = newQuery,
-                searchResultsResource = it.searchResultsResource.copy(isLoading = true)
-            )
-        }
-
-        // 3. Logika Bersyarat dan Debounce
-        if (newQuery.isNotBlank()) {
-            // Set new Job (Debounce dan Filter)
-            searchJob = viewModelScope.launch {
-                delay(500L)
-
-                // Check if Job cancel when delay (if user need to type)
-                if (!isActive) return@launch
-
-                // Do filter
-                filterMenus(newQuery)
-            }
-        } else {
-            // Empty Query : Reset without delay
-            val allMenus = _uiState.value.allMenusResource.data
-            _uiState.update {
-                it.copy(
-                    searchResultsResource = Resource(data = allMenus, isLoading = false)
+            _internalState.update { state ->
+                state.copy(
+                    isDetailMenuModalVisible = true,
+                    selectedMenu = menu,
+                    quantity = initialQuantity,
+                    isEditMode = existsInCart
                 )
             }
         }
     }
 
-    private fun filterMenus(query: String) {
-        // Ambil data menu utama yang sudah dimuat
-        val allMenus = _uiState.value.allMenusResource.data.orEmpty()
-
-        val filteredList = allMenus.filter { menu ->
-            menu.menu.name.contains(query, ignoreCase = true)
-        }
-
-        // Update hasil search dan matikan loading
-        _uiState.update { currentState ->
-            currentState.copy(
-                searchResultsResource = Resource(data = filteredList, isLoading = false)
-            )
+    private fun handleQuantity(delta: Int) {
+        _internalState.update { state ->
+            val max = detailMenuFlow.value.data?.maxQuantity ?: 10
+            val newQty = (state.quantity + delta).coerceIn(1, max)
+            state.copy(quantity = newQty)
         }
     }
 
+    private fun handleAddToCart(menu: DetailMenuUiModel) = viewModelScope.launch {
+        val state = uiState.value
+        val menu = menu.toDomain()
+        val restaurant = menu.restaurant
+
+        addCartMenuUseCase(menu , restaurant,state.quantity,"", "")
+        _internalState.update {
+            it.copy(isDetailMenuModalVisible = false, selectedMenu = null)
+        }
+        _uiEffect.send(UiEvent.ShowSnackbar("Berhasil masuk keranjang!"))
+    }
+
+    private fun handleMenuFavoriteClick(menu: MenuUiModel) {
+        viewModelScope.launch {
+            val savedIds = getCollectionsByIdUseCase(menu.id)
+            _internalState.update { state ->
+                state.copy(
+                    isCollectionSheetVisible = true,
+                    selectedMenu = menu,
+                    selectedCollectionIds = savedIds.toSet()
+                )
+            }
+        }
+    }
+
+    private fun handleSaveToCollection() {
+        val state = uiState.value
+        val menu = state.menu ?: return
+        val restaurant = state.restaurantResource.data ?: return
+
+        val selectedCollectionIds =
+            state.collectionsResource.data
+                ?.filter { it.isSelected }
+                ?.map { it.id }
+                ?: emptyList()
+
+        viewModelScope.launch {
+            try {
+                saveMenuCollectionsUseCase(
+                    menu = menu.toDomain(),
+                    restaurant = restaurant.toDomain(),
+                    selectedCollectionIds = selectedCollectionIds
+                )
+                _internalState.update {
+                    it.copy(isCollectionSheetVisible = false)
+                }
+            } catch (e: Exception) {
+                Log.e("DetailRestaurantViewModel", e.message.toString())
+            }
+        }
+    }
+
+    private fun handleCollectionCheckChange(id: String) {
+        _internalState.update { state ->
+            val current = state.selectedCollectionIds.toMutableSet()
+            if (current.contains(id)) current.remove(id) else current.add(id)
+            state.copy(selectedCollectionIds = current)
+        }
+    }
+
+    fun handleSearchQueryChange(newQuery: String) {
+        _internalState.update {
+            it.copy(searchQuery = newQuery)
+        }
+    }
+
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val searchResultsUiState: StateFlow<Resource<List<MenuUiModel>>> = combine(
+        uiState.map { it.allMenusResource },
+        uiState.map { it.searchQuery }
+            .debounce(500)
+            .distinctUntilChanged()
+    ) { menuResource, query ->
+        when {
+            menuResource.isLoading ->
+                Resource(isLoading = true)
+
+            menuResource.errorMessage != null ->
+                Resource(errorMessage = menuResource.errorMessage)
+
+            query.isBlank() ->
+                menuResource
+
+            else -> {
+                val filteredData = menuResource.data?.filter {
+                    it.name.contains(query, ignoreCase = true)
+                }
+                Resource(data = filteredData, isLoading = false)
+            }
+        }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        Resource(isLoading = true)
+    )
 }
-

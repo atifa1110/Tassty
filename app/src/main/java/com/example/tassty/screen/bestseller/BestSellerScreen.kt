@@ -15,11 +15,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.BestSellerHeader
 import com.example.tassty.component.CategoryTopAppBar
@@ -27,19 +31,35 @@ import com.example.tassty.component.FoodWideListCard
 import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.StatusItemImage
 import com.example.tassty.menus
+import com.example.tassty.menusItem
 import com.example.tassty.screen.detailrestaurant.ShoppingCartBottomBar
 import com.example.tassty.ui.theme.Neutral10
 
 @Composable
-fun BestSellerScreen() {
+fun BestSellerScreen(
+    viewModel: BestSellerViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    BestSellerContent(
+        uiState = uiState
+    )
+}
+
+@Composable
+fun BestSellerContent(
+    uiState: BestSellerUiState
+) {
     Scaffold (
         containerColor = Neutral10,
         bottomBar = {
-            ShoppingCartBottomBar(
-                itemCount = 4,
-                totalPrice = 25000,
-                onCartClick = {}
-            )
+            if (uiState.totalItems>0){
+                ShoppingCartBottomBar(
+                    itemCount = uiState.totalItems,
+                    totalPrice = uiState.totalPrice,
+                    onCartClick = {}
+                )
+            }
         }
     ) { padding ->
         LazyColumn(
@@ -57,13 +77,13 @@ fun BestSellerScreen() {
                         .fillMaxWidth().padding(horizontal = 24.dp)
                         .offset(y=-(24).dp)
                 ) {
-                    SearchBarWhiteSection(value = "", onValueChange = {})
+                    SearchBarWhiteSection(value = uiState.query, onValueChange = {})
                 }
             }
 
-            items(items = menus, key ={it.menu.id} ) { item ->
+            items(items = uiState.menus.data.orEmpty(), key = {it.id} ) { item ->
                 Column(Modifier.padding(horizontal = 24.dp)) {
-                    FoodWideListCard(menu = item)
+                    FoodWideListCard(menu = item, onFavoriteClick = {} ,onAddToCart = {})
                     Spacer(Modifier.height(12.dp))
                 }
             }
@@ -84,7 +104,6 @@ fun ScrollableBestHeaderContent(
             .fillMaxWidth()
             .height(imageHeight)
     ) {
-        // A. Header Image with status overlay
         StatusItemImage(
             imageUrl = imageUrl,
             name = "category header image",
@@ -95,7 +114,6 @@ fun ScrollableBestHeaderContent(
                 .align(Alignment.TopCenter)
         )
 
-        // B. Category card overlay at bottom of header
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,5 +143,11 @@ fun ScrollableBestHeaderContent(
 @Preview(showBackground = true)
 @Composable
 fun BestSellerPreview(){
-    BestSellerScreen()
+    BestSellerContent(
+        uiState = BestSellerUiState(
+            menus = Resource(data = menusItem),
+            totalItems = 0,
+            totalPrice = 120000
+        )
+    )
 }

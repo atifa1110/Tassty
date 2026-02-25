@@ -9,6 +9,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,18 +29,22 @@ import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.R
 import com.example.core.ui.model.UserAddressUiModel
+import com.example.tassty.addresses
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberMarkerState
 
 
 @Composable
-fun LocationBox(
-    modifier: Modifier = Modifier,
-    resource: UserAddressUiModel,
+fun UserAddressBox(
+    address: UserAddressUiModel,
     onCardClick:() -> Unit
 ){
     Card(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .clickable {
@@ -58,17 +64,13 @@ fun LocationBox(
                 .padding(top = 8.dp, bottom = 14.dp, start = 8.dp, end = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ){
-            LocationMapBox(
-                fullAddress = resource.fullAddress,
-                latitude = resource.latitude,
-                longitude = resource.longitude
-            )
+            LocationMapBox(address = address)
             Column (
                 modifier = Modifier.padding(horizontal=6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = resource.formatAddressName,
+                    text = address.formatAddressName,
                     style = LocalCustomTypography.current.h5Bold,
                     color = Neutral100
                 )
@@ -81,7 +83,7 @@ fun LocationBox(
                         contentDescription = "location"
                     )
                     Text(
-                        text = resource.formatFullAddress,
+                        text = address.formatFullAddress,
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Neutral70
                     )
@@ -96,7 +98,7 @@ fun LocationBox(
                         contentDescription = "flag"
                     )
                     Text(
-                        text = resource.formatAddressType,
+                        text = address.formatAddressType,
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Neutral70
                     )
@@ -107,13 +109,23 @@ fun LocationBox(
 }
 
 @Composable
-fun ListMapBox(
+fun NearbyMapBox(
     restaurant: List<RestaurantUiModel>
 ) {
-    val cameraPositionState = rememberCameraPositionState {
+    val cameraPositionState = rememberCameraPositionState()
+
+    val mapOptions = remember {
+        GoogleMapOptions().liteMode(true)
+    }
+
+    LaunchedEffect(restaurant) {
         if (restaurant.isNotEmpty()) {
-            position = CameraPosition.fromLatLngZoom(
-                LatLng(restaurant.first().lat, restaurant.first().long), 14f
+            val firstLocation = LatLng(
+                restaurant.first().locationDetail.latitude,
+                restaurant.first().locationDetail.longitude
+            )
+            cameraPositionState.move(
+                CameraUpdateFactory.newLatLngZoom(firstLocation, 14f)
             )
         }
     }
@@ -122,16 +134,29 @@ fun ListMapBox(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
+            .clip(RoundedCornerShape(16.dp)) // Opsional: agar Map melengkung rapi
     ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+            cameraPositionState = cameraPositionState,
+            googleMapOptionsFactory = { mapOptions },
+            uiSettings = MapUiSettings(
+                zoomControlsEnabled = false,
+                scrollGesturesEnabled = false,
+                zoomGesturesEnabled = false,
+                rotationGesturesEnabled = false,
+                tiltGesturesEnabled = false,
+                myLocationButtonEnabled = false
+            )
         ) {
+            // 4. Render markers dengan rememberMarkerState
             restaurant.forEach { resto ->
+                val position = remember(resto.id) {
+                    LatLng(resto.locationDetail.latitude, resto.locationDetail.longitude)
+                }
                 Marker(
-                    state = MarkerState(position = LatLng(resto.lat, resto.long)),
-                    title = resto.restaurant.name,
-                    snippet = resto.restaurant.locationDetails.fullAddress // Optional
+                    state = rememberMarkerState(position = position),
+                    title = resto.name
                 )
             }
         }
@@ -141,32 +166,39 @@ fun ListMapBox(
 
 @Composable
 fun LocationMapBox(
-    latitude : Double,
-    longitude: Double,
-    fullAddress: String,
+    address: UserAddressUiModel
 ) {
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            LatLng(latitude, longitude),
-            13f
-        )
-    }
+    val cameraPositionState = rememberCameraPositionState()
 
+    LaunchedEffect(address.latitude, address.longitude) {
+        if (address.latitude!= 0.0 && address.longitude != 0.0) {
+            cameraPositionState.animate(
+                update = CameraUpdateFactory.newLatLngZoom(
+                    LatLng(address.latitude, address.longitude),
+                    15f
+                ),
+                durationMs = 1000
+            )
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
     ) {
         GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            cameraPositionState = cameraPositionState,
+            uiSettings = MapUiSettings(zoomControlsEnabled = false)
         ) {
-            if (fullAddress.isNotEmpty()) {
+
+            if (address.latitude != 0.0) {
                 Marker(
-                    state = MarkerState(position = LatLng(latitude,
-                        longitude)),
-                    title = fullAddress,
-                    snippet = fullAddress
+                    state = MarkerState(position = LatLng(address.latitude, address.longitude)),
+                    title = address.fullAddress
                 )
             }
         }
@@ -177,11 +209,8 @@ fun LocationMapBox(
 @Preview(showBackground = true)
 @Composable
 fun PreviewBoxLocation() {
-    LocationBox(
-        resource = UserAddressUiModel(
-            "","",0.0,0.0,
-            "", "", AddressType.NONE
-        ),
+    UserAddressBox(
+        address = addresses[0],
         onCardClick = {}
     )
 }

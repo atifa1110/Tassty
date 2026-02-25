@@ -1,6 +1,5 @@
-package com.example.tassty.screen.main
+package com.example.tassty.screen.dashboard
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -12,8 +11,6 @@ import com.example.tassty.component.BottomLevelDestination
 import com.example.tassty.component.NavigationBottomBar
 import com.example.tassty.navigation.InternalNavHost
 import com.example.tassty.navigation.TasstyNavigationDestination
-
-
 
 object HomeDestination : TasstyNavigationDestination {
     override val route: String = "home_destination"
@@ -37,12 +34,17 @@ object ProfileDestination : TasstyNavigationDestination {
 
 
 @Composable
-fun MainRoute(
-    onNavigateToDetail: () -> Unit,
+fun DashboardScreen(
+    onNavigateToDetail: (String) -> Unit,
     onNavigateToSearch: () -> Unit,
-    onNavigateToCategory:(String, String) -> Unit,
+    onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,
     onNavigateToNearbyRestaurant:() -> Unit,
+    onNavigateToCollection:() -> Unit,
+    onNavigateToFavorite:() -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit,
+    onNavigateToVoucher:()-> Unit,
+    onNavigateToAddress: () -> Unit,
 ){
 
     val bottomNavController = rememberNavController()
@@ -62,13 +64,18 @@ fun MainRoute(
         }
     ) { padding ->
         InternalNavHost(
-            navController = bottomNavController,
             modifier = Modifier.padding(padding),
+            navController = bottomNavController,
             onNavigateToSearch = onNavigateToSearch,
             onNavigateToDetail = onNavigateToDetail,
             onNavigateToCategory = onNavigateToCategory,
             onNavigateToRecommended = onNavigateToRecommended,
-            onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant
+            onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
+            onNavigateToCollection = onNavigateToCollection,
+            onNavigateToFavorite = onNavigateToFavorite,
+            onNavigateToDetailMenu = onNavigateToDetailMenu,
+            onNavigateToVoucher = onNavigateToVoucher,
+            onNavigateToAddress = onNavigateToAddress
         )
     }
 }

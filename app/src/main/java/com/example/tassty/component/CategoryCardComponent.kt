@@ -92,7 +92,7 @@ fun FoodCategoryCard(
                     .padding(10.dp)
             ) {
                 Text(
-                    text = category.category.name,
+                    text = category.name,
                     style = LocalCustomTypography.current.h6Bold,
                     color = Neutral100
                 )
@@ -103,7 +103,7 @@ fun FoodCategoryCard(
                 .offset(x = 10.dp, y = (-10).dp)
             ) {
                 CommonImage(
-                    imageUrl = category.category.imageUrl,
+                    imageUrl = category.imageUrl,
                     name = "Category Image",
                     modifier = Modifier.size(86.dp).clip(CircleShape)
                 )

@@ -1,6 +1,6 @@
 package com.example.tassty.component
 
-import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -20,8 +20,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,27 +32,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.data.model.Resource
-import com.example.core.domain.model.OperationalDay
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.domain.model.MenuStatus
+import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.mapper.FilterCategory
+import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.CollectionUiModel
+import com.example.core.ui.model.DetailMenuUiModel
+import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.FilterOptionUi
+import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
-import com.example.tassty.model.Cart
-import com.example.tassty.model.FilterKey
-import com.example.tassty.model.UserAddress
+import com.example.tassty.menuDetailItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
+import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
 
-@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun CustomBottomSheet(
     visible: Boolean,
@@ -132,7 +134,7 @@ fun CustomBottomSheet(
 @Composable
 fun CollectionContent(
     resource: Resource<List<CollectionUiModel>>,
-    onCollectionSelected: (Int, Boolean) -> Unit,
+    onCollectionSelected: (String, Boolean) -> Unit,
     onSaveCollectionClick:() -> Unit,
     onAddCollectionClick: () -> Unit
 ){
@@ -190,10 +192,10 @@ fun CollectionContent(
                     ErrorListState("") { }
                 }
                 else -> {
-                    items.takeLast(2).forEach { collection ->
+                    items.forEach { collection ->
                         CollectionCard(
                             collection = collection,
-                            onCheckedChange = {onCollectionSelected(collection.collection.collectionId,it)}
+                            onCheckedChange = {onCollectionSelected(collection.id,it)}
                         )
                         Spacer(Modifier.height(8.dp))
                     }
@@ -201,6 +203,7 @@ fun CollectionContent(
             }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
                 enabled = items.isNotEmpty(),
                 labelResId = R.string.save,
                 onClick = onSaveCollectionClick
@@ -253,14 +256,13 @@ fun CollectionAddContent(
                 color = Neutral100
             )
             Spacer(Modifier.height(16.dp))
-            NotesBarSection(
-                value=collectionName,
-                onValueChange = onValueName,
-                icon = R.drawable.icon,
-                placeholder = stringResource(R.string.add_collection_name)
+            CollectionNameEditText(
+                value = collectionName,
+                onValueChange = onValueName
             )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
                 enabled = collectionName.isNotEmpty(),
                 labelResId = R.string.create,
                 onClick = onAddCollection
@@ -268,6 +270,130 @@ fun CollectionAddContent(
         }
     }
 }
+
+@Composable
+fun CollectionEditContent(
+    collectionName: String,
+    onValueName: (String) -> Unit,
+    onDismissClick:() -> Unit,
+    onUpdateCollection: () -> Unit
+){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(
+            RoundedCornerShape(
+                topStart = 24.dp,
+                topEnd = 24.dp
+            )
+        )
+        .background(Neutral20)
+        .padding(top = 24.dp, bottom = 24.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text= "Edit collection",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100
+            )
+
+            TopBarButton(icon = R.drawable.x,
+                boxColor = Neutral10, iconColor = Neutral100
+            ) { onDismissClick() }
+        }
+
+        HorizontalDivider(Modifier.padding(vertical = 32.dp))
+
+        Column(Modifier.padding(horizontal = 24.dp)) {
+            Text(
+                text= "Collection Name",
+                style = LocalCustomTypography.current.h5Bold,
+                color = Neutral100
+            )
+            Spacer(Modifier.height(16.dp))
+            CollectionNameEditText(
+                value = collectionName,
+                onValueChange = onValueName
+            )
+            Spacer(Modifier.height(24.dp))
+            ButtonComponent(
+                enabled = collectionName.isNotEmpty(),
+                labelResId = R.string.update,
+                onClick = onUpdateCollection
+            )
+        }
+    }
+}
+
+@Composable
+fun CollectionDeleteContent(
+    collectionImage: String,
+    onDismissClick:() -> Unit,
+    onDeleteCollection: () -> Unit
+){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        .background(Neutral20)
+        .padding(top = 24.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp)
+    ) {
+        OverlapImage(imageUrl = collectionImage)
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Neutral100)) {
+                        append("Are you sure want to \ndelete this collection")
+                    }
+                    withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Pink500)) {
+                        append("?")
+                    }
+                },
+                style = LocalCustomTypography.current.h2Bold
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            Text(
+                text = "You can’t undo this action.",
+                style = LocalCustomTypography.current.bodyMediumRegular,
+                color = Neutral70,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        HorizontalDivider(color = Neutral40)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            TextButton(
+                text = "Cancel",
+                textColor = Pink500,
+                onClick = onDismissClick,
+                modifier = Modifier.weight(0.5f)
+            )
+
+            TextButton(
+                text = "Delete",
+                textColor = Neutral70,
+                onClick = onDeleteCollection,
+                modifier = Modifier.weight(0.5f)
+            )
+        }
+    }
+}
+
 
 @Composable
 fun CollectionSaveContent(
@@ -337,8 +463,9 @@ fun ModalStatusContent(
 
 @Composable
 fun DetailScheduleContent(
-    operationalHours: List<OperationalDay>
+    restaurant: DetailRestaurantUiModel?
 ){
+    val operational = restaurant?.operationalDay.orEmpty()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -355,8 +482,8 @@ fun DetailScheduleContent(
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatusItemImage(
-                    imageUrl = "",
-                    status = RestaurantStatus.OPEN,
+                    imageUrl = restaurant?.imageUrl?:"",
+                    status = restaurant?.statusResult?.status?: RestaurantStatus.CLOSED,
                     name = "Restaurant Modal Popup",
                     modifier = Modifier
                         .size(44.dp)
@@ -365,12 +492,12 @@ fun DetailScheduleContent(
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        text = stringResource(R.string.dummy_restaurant_name),
+                        text = restaurant?.name?:"Unknown",
                         style = LocalCustomTypography.current.h3Bold,
                         color = Neutral100
                     )
                     Text(
-                        text = stringResource(R.string.dummy_location),
+                        text =restaurant?.fullAddress?:"No Address",
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Neutral70
                     )
@@ -393,7 +520,7 @@ fun DetailScheduleContent(
                 color = Neutral100
             )
             Spacer(Modifier.height(12.dp))
-            operationalHours.forEach { day ->
+            operational.forEach { day ->
                 RestaurantOperationalCard(day)
             }
         }
@@ -404,7 +531,7 @@ fun DetailScheduleContent(
 @Composable
 fun SortContent(
     sortList: List<FilterOptionUi>,
-    onSortSelected: (String) -> Unit,
+    onUpdateDraftFilter: (FilterCategory, String) -> Unit,
     onApplySort: () -> Unit,
     onResetSort: () -> Unit
 ){
@@ -436,11 +563,12 @@ fun SortContent(
             title = "",
             isTitleShown = false,
             options = sortList,
-        ) { key -> onSortSelected(key) }
+        ) { key -> onUpdateDraftFilter(FilterCategory.SORT,key) }
 
         Column (Modifier.padding(horizontal = 24.dp)){
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
                 enabled = true,
                 labelResId = R.string.apply,
                 onClick = onApplySort
@@ -453,10 +581,9 @@ fun SortContent(
 fun FilterContent(
     rupiahPriceRanges: List<FilterOptionUi>,
     restoRatingsOptions: List<FilterOptionUi>,
-    discountOptions: List<FilterOptionUi>,
     modesOptions: List<FilterOptionUi>,
     cuisineOption: List<FilterOptionUi>,
-    onUpdateDraftFilter: (FilterKey,String) -> Unit,
+    onUpdateDraftFilter: (FilterCategory, String) -> Unit,
     onApplyFilter:() -> Unit,
     onResetFilter:() -> Unit
 ){
@@ -493,7 +620,7 @@ fun FilterContent(
             RadioFilterTitleSection(
                 title = "Price range",
                 options = rupiahPriceRanges,
-            ) { key -> onUpdateDraftFilter(FilterKey.PriceRange,key) }
+            ) { key -> onUpdateDraftFilter(FilterCategory.PRICE,key) }
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
@@ -503,17 +630,7 @@ fun FilterContent(
             ChipFilterSection(
                 title = stringResource(R.string.resto_ratings),
                 options = restoRatingsOptions,
-            ) { key -> onUpdateDraftFilter(FilterKey.RestoRating,key) }
-        }
-
-        item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
-
-        // Discounts
-        item {
-            ChipFilterSection(
-                title = "Discounts",
-                options = discountOptions,
-            ) { key ->  onUpdateDraftFilter(FilterKey.Discount,key)}
+            ) { key -> onUpdateDraftFilter(FilterCategory.RATING,key) }
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
@@ -523,7 +640,7 @@ fun FilterContent(
             ChipFilterSection(
                 title = "Modes",
                 options = modesOptions,
-            ) { key ->  onUpdateDraftFilter(FilterKey.Mode,key)}
+            ) { key ->  onUpdateDraftFilter(FilterCategory.MODE,key)}
         }
 
         item { HorizontalDivider(Modifier.padding(vertical = 32.dp)) }
@@ -533,12 +650,13 @@ fun FilterContent(
             RadioFilterTitleSection(
                 title = "Cuisines type",
                 options = cuisineOption,
-            ) { key->  onUpdateDraftFilter(FilterKey.Cuisine,key)}
+            ) { key->  onUpdateDraftFilter(FilterCategory.CUISINE,key)}
         }
 
         item{
             Column (Modifier.padding(horizontal = 24.dp, vertical = 16.dp)){
                 ButtonComponent(
+                    modifier = Modifier.fillMaxWidth(),
                     enabled = true,
                     labelResId = R.string.apply
                 ) { onApplyFilter() }
@@ -549,8 +667,8 @@ fun FilterContent(
 
 @Composable
 fun CartRemoveMenuContent(
-    cart:Cart?=null,
-    onRemoveCartItem: (Cart) -> Unit,
+    cart: CartItemUiModel?=null,
+    onRemoveCartItem: (String) -> Unit,
     onDismiss: () -> Unit
 ){
     if(cart!=null){
@@ -611,7 +729,7 @@ fun CartRemoveMenuContent(
                 TextButton(
                     text = "Remove",
                     textColor = Neutral70,
-                    onClick = {onRemoveCartItem(cart)},
+                    onClick = {onRemoveCartItem(cart.cartId)},
                     modifier = Modifier.weight(0.5f)
                 )
             }
@@ -659,10 +777,7 @@ fun CartEditContent(){
                 color = Neutral100
             )
             Spacer(Modifier.height(16.dp))
-            NotesBarSection(
-                value = "",
-                onValueChange = {}
-            )
+            CartNotesEditText(value = "") { }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
                 enabled = true,
@@ -674,11 +789,12 @@ fun CartEditContent(){
 
 @Composable
 fun CartDeliveryLocationContent(
-    address: List<UserAddress>,
+    resource: Resource<List<UserAddressUiModel>>,
     onAddressChange: (String) -> Unit,
     onSetLocationClicked:() -> Unit,
     onDismiss: () -> Unit
 ){
+    val items = resource.data.orEmpty()
     Column(modifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
@@ -726,11 +842,11 @@ fun CartDeliveryLocationContent(
         ) {
             HeaderListItemCountTitleButton(
                 title = "Addresses",
-                itemCount = address.size,
+                itemCount = items.size,
                 textButton = "Go to My Addresses"
             ) { }
             Spacer(Modifier.height(12.dp))
-            address.forEach { address ->
+            items.forEach { address ->
                 LocationSelectorCard(
                     address = address,
                     onCheckedChange = { onAddressChange(address.id) }
@@ -739,6 +855,7 @@ fun CartDeliveryLocationContent(
             }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
                 enabled = true,
                 labelResId = R.string.confirm
             ) { onSetLocationClicked() }
@@ -748,11 +865,13 @@ fun CartDeliveryLocationContent(
 
 @Composable
 fun CartPromoContent(
-    voucher: List<VoucherUiModel>,
+    resource: Resource<List<VoucherUiModel>>,
     onVoucherSelectionChanged: (String) -> Unit,
     onApplyVoucherClicked: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val items = resource.data.orEmpty()
+    Log.d("ModalComponent",items.size.toString())
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -781,19 +900,17 @@ fun CartPromoContent(
         }
 
         HorizontalDivider(color = Neutral40)
-
         VerticalTitleItemCountSection(
-            itemCount = voucher.size,
+            itemCount = items.size,
             headerText = "Vouchers"
         ) {
-            items(items=voucher, key = {it.voucher.id}) { item ->
-                VoucherSelectorCard (
+            items(items = items, key = { it.id }) { item ->
+                VoucherSelectorCard(
                     voucher = item,
-                    onCheckedChange = { onVoucherSelectionChanged(item.voucher.id) }
+                    onCheckedChange = { onVoucherSelectionChanged(item.id) }
                 )
             }
         }
-
         Column(Modifier.padding(horizontal = 24.dp)) {
             ButtonComponent(
                 enabled = true,
@@ -805,6 +922,8 @@ fun CartPromoContent(
 
 @Composable
 fun CartDoubleCheckContent(
+    onRecheck: () -> Unit,
+    onContinueToPayment:() -> Unit
 ){
     Column(
         modifier = Modifier
@@ -821,10 +940,10 @@ fun CartDoubleCheckContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TextButton(text = "Recheck", textColor = Neutral70,
-                onClick = {},
+                onClick = onRecheck,
                 modifier = Modifier.weight(1f))
             TextButton(text = "Continue Payment", textColor = Orange500,
-                onClick = {}, modifier = Modifier.weight(1f)
+                onClick = onContinueToPayment, modifier = Modifier.weight(1f)
             )
         }
     }
@@ -854,6 +973,94 @@ fun RestaurantCloseModal(
     }
 }
 
+@Composable
+fun MenuAddToCartContent(
+    isEditMode: Boolean,
+    quantity : Int,
+    resource: Resource<DetailMenuUiModel>,
+    onIncreaseQuantity:() -> Unit,
+    onDecreaseQuantity:() -> Unit,
+    onAddToCart:(DetailMenuUiModel)-> Unit
+){
+    val menu = resource.data?:return
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .background(Neutral20).padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .padding(16.dp)
+        ) {
+            StatusItemImage(
+                imageUrl = menu.imageUrl,
+                name = menu.name,
+                status = menu.menuStatus,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = menu.name,
+                        style = LocalCustomTypography.current.h3Bold,
+                        color = Neutral100
+                    )
+                    Text(
+                        text = menu.description,
+                        style = LocalCustomTypography.current.bodyMediumRegular,
+                        color = Neutral70
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    FoodPriceBigText(
+                        price = menu.formatPriceDiscount,
+                        color = Orange500
+                    )
+
+                    if (menu.promo) {
+                        FoodPriceLineText(
+                            price = menu.formatPrice,
+                            color = Neutral60
+                        )
+                    }
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)){
+                QuantityTextButton(
+                    quantity = quantity,
+                    onIncreaseQuantity = onIncreaseQuantity,
+                    onDecreaseQuantity = onDecreaseQuantity
+                )
+                ButtonComponent(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = menu.menuStatus == MenuStatus.AVAILABLE,
+                    labelResId = if(isEditMode) R.string.update_cart else R.string.add_to_cart
+                ) { onAddToCart(menu) }
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -864,14 +1071,13 @@ fun PreviewModalDialog() {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        FilterContent(
-            rupiahPriceRanges = emptyList(),
-            restoRatingsOptions = emptyList(),
-            discountOptions = emptyList(),
-            modesOptions = emptyList(),
-            cuisineOption = emptyList(),
-            onApplyFilter = {},
-            onResetFilter = {}, onUpdateDraftFilter = {_,_->}
+        MenuAddToCartContent(
+            isEditMode = false,
+            quantity = 1,
+            resource = Resource(menuDetailItem),
+            onIncreaseQuantity = {},
+            onDecreaseQuantity = {},
+            onAddToCart = {}
         )
     }
 }

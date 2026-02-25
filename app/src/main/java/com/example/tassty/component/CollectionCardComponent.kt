@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,14 +20,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CollectionUiModel
-import com.example.tassty.collection
-import com.example.tassty.model.CollectionUiItem
+import com.example.tassty.collectionUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
@@ -58,12 +60,12 @@ fun CollectionCard(
 
                 Column (verticalArrangement = Arrangement.Center){
                     Text(
-                        text = collection.collection.name,
+                        text = collection.title,
                         style = LocalCustomTypography.current.h5Bold,
                         color = Neutral100
                     )
                     Spacer(Modifier.height(6.dp))
-                    CollectionText(itemCount = collection.collection.menuCount)
+                    CollectionText(itemCount = collection.menuCount)
                 }
             }
 
@@ -80,14 +82,54 @@ fun CollectionCard(
     }
 }
 
+@Composable
+fun CollectionVerticalCard(
+    collection: CollectionUiModel,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.width(160.dp).clickable{
+            onClick()
+        },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20)
+    ) {
+        Column (
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            CollectionImageRound(
+                collection = collection,
+                modifier = Modifier.height(140.dp)
+            )
+
+            Column (
+                modifier = Modifier.padding(4.dp).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ){
+                Text(
+                    text = collection.title,
+                    style = LocalCustomTypography.current.h5Bold,
+                    color = Neutral100,
+                    minLines = 1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                CollectionText(itemCount = collection.menuCount)
+            }
+        }
+    }
+}
 
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewCollectionCard() {
-    Column(modifier = Modifier.fillMaxWidth()
-        .padding(24.dp)
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .padding(24.dp)
     ) {
-        CollectionCard(collection = collection, onCheckedChange = {})
+        CollectionCard(collection = collectionUiModel[0], onCheckedChange = {})
+        CollectionVerticalCard(collectionUiModel[1], onClick = {})
     }
 }

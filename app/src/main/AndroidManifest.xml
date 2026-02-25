@@ -8,6 +8,7 @@
 
     <application
         android:name=".MyApp"
+        android:networkSecurityConfig="@xml/network_security"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,9 +18,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Tassty"
         tools:targetApi="31">
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="remove" />
 
         <activity
             android:name=".MainActivity"

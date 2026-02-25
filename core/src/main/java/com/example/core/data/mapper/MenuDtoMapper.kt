@@ -2,59 +2,41 @@ package com.example.core.data.mapper
 
 import com.example.core.data.model.MenuDto
 import com.example.core.data.model.MenuShortDto
-import com.example.core.data.model.OperationalDayDto
-import com.example.core.data.model.RestaurantDto
 import com.example.core.domain.model.Menu
-import com.example.core.domain.model.MenuFullDetail
+import com.example.core.domain.model.Restaurant
 
-fun MenuDto.toDomain(operationalHours : List<OperationalDayDto>): Menu {
+fun MenuDto.toDomain(): Menu {
     return Menu(
-        id = id,
-        name = name,
-        description = description,
-        imageUrl = imageUrl,
-        originalPrice = originalPrice,
-        discountPrice = discountPrice,
-        isAvailable = isAvailable,
-        rating = rating,
-        soldCount = soldCount,
-        isBestSeller = isBestSeller,
-        isRecommended = isRecommended,
-        rank = rank,
-        distanceMeters = distanceMeters,
-        maxOrderQuantity = maxOrderQuantity,
-        operationalHours = operationalHours.map { it.toDomain() }
+        id = this.id,
+        name = this.name,
+        imageUrl = this.imageUrl?:"",
+        description = this.description?:"",
+        price = this.price?:0,
+        soldCount = this.soldCount?:0,
+        rank = this.rank?:0,
+        customizable = this.customizable,
+        isAvailable = this.isAvailable,
+        maxQuantity = this.maxQuantity?:0,
+        stockStatus = this.stockStatus,
+        stockLabel = this.stockLabel?:"",
+        restaurant = this.restaurant?.toDomain()?:dummyRestaurant
     )
 }
 
-fun MenuShortDto.toDomain() : Menu{
+fun MenuShortDto.toDomain(restaurant: Restaurant) : Menu{
     return Menu(
-        id = id,
-        name = name,
+        id = this.id,
+        name = this.name,
+        imageUrl = this.imageUrl?:"",
         description = "",
-        imageUrl = imageUrl,
-        originalPrice = originalPrice,
-        discountPrice = discountPrice,
-        isAvailable = false,
-        rating = 0.0,
+        price = this.price?:0,
         soldCount = 0,
-        isBestSeller = false,
-        isRecommended = false,
         rank = 0,
-        distanceMeters = 0,
-        maxOrderQuantity = 0,
-        operationalHours = emptyList()
-    )
-}
-fun mapToMenuFullDetail(menuDto: MenuDto, restaurantDto: RestaurantDto): MenuFullDetail {
-    return MenuFullDetail(
-        serverId = menuDto.id,
-        name = menuDto.name,
-        price = menuDto.discountPrice?:menuDto.originalPrice,
-        description = menuDto.description,
-        imageUrl = menuDto.imageUrl,
-        restaurantId = restaurantDto.id,
-        restaurantName = restaurantDto.name,
-        restaurantLocation = restaurantDto.city
+        customizable = this.customizable,
+        isAvailable = this.isAvailable,
+        maxQuantity = this.maxQuantity?:0,
+        stockStatus = this.stockStatus,
+        stockLabel = this.stockLabel?:"",
+        restaurant = restaurant
     )
 }

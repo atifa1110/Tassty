@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -109,8 +110,7 @@ fun BackTopAppBar(
 }
 
 @Composable
-fun ProfileTopAppBar(
-) {
+fun ProfileTopAppBar() {
     CustomBarSpaceBetween {
         Row{
             Text(
@@ -140,6 +140,57 @@ fun ProfileTopAppBar(
 }
 
 @Composable
+fun CollectionTopAppBar(
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit,
+    onAddClick: () -> Unit
+) {
+    CustomBarSpaceBetween(modifier = modifier) {
+        TopBarButton(icon = R.drawable.arrow_left,
+            boxColor = Neutral20, iconColor = Neutral100
+        ) { onBackClick() }
+
+        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
+            TopBarButton(
+                icon = R.drawable.search,
+                boxColor = Neutral20,
+                iconColor = Neutral100
+            ) { }
+
+            TopBarButton(icon = R.drawable.add,
+                boxColor =  Orange500, iconColor = Neutral10
+            ) {  onAddClick() }
+        }
+    }
+}
+
+@Composable
+fun CollectionDetailTopAppBar(
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onRemoveClick: () -> Unit
+) {
+    CustomBarSpaceBetween(modifier = modifier) {
+        TopBarButton(icon = R.drawable.arrow_left,
+            boxColor = Neutral20, iconColor = Neutral100
+        ) { onBackClick() }
+
+        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
+            TopBarButton(
+                icon = R.drawable.pencil,
+                boxColor = Neutral20,
+                iconColor = Neutral100
+            ) {onEditClick() }
+
+            TopBarButton(icon = R.drawable.trash,
+                boxColor =  Pink500, iconColor = Neutral10
+            ) {  onRemoveClick() }
+        }
+    }
+}
+
+@Composable
 fun CategoryTopAppBar(
     modifier: Modifier = Modifier,
     onBackClick : () -> Unit,
@@ -155,6 +206,41 @@ fun CategoryTopAppBar(
         ) { onFilterClick() }
     }
 }
+
+@Composable
+fun AddTopAppBar(
+    modifier: Modifier = Modifier,
+    onBackClick : () -> Unit,
+    onAddClick : () -> Unit
+) {
+    CustomBarSpaceBetween(modifier = modifier) {
+        TopBarButton(icon = R.drawable.arrow_left,
+            boxColor = Neutral10.copy(0.9f), iconColor = Neutral100
+        ) { onBackClick() }
+
+        TopBarButton(icon = R.drawable.add,
+            boxColor =  Orange500, iconColor = Neutral10
+        ) { onAddClick }
+    }
+}
+
+@Composable
+fun AddCardTopAppBar(
+    modifier: Modifier = Modifier,
+    onBackClick : () -> Unit,
+    onAddClick : () -> Unit
+) {
+    CustomBarSpaceBetween(modifier = modifier) {
+        TopBarButton(icon = R.drawable.arrow_left,
+            boxColor = Neutral10.copy(0.9f), iconColor = Neutral100
+        ) { onBackClick() }
+
+        TopBarButton(icon = Icons.Default.CameraAlt,
+            boxColor =  Orange500, iconColor = Neutral10
+        ) { onAddClick }
+    }
+}
+
 
 @Composable
 fun CartTopAppBar(
@@ -207,6 +293,22 @@ fun SetupTopAppBar(
 
 @Composable
 fun MapSearchTopAppBar(
+    onBackClick: () -> Unit,
+    onSearchClick: () -> Unit
+) {
+    CustomBarSpaceBetween {
+        TopBarButton(icon = R.drawable.arrow_left,
+            boxColor = Neutral10, iconColor = Neutral100
+        ) { onBackClick() }
+
+        TopBarButton(icon = Icons.Default.Search,
+            boxColor = Neutral10, iconColor = Neutral100
+        ) { onSearchClick() }
+    }
+}
+
+@Composable
+fun FavoriteTopAppBar(
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
@@ -309,6 +411,8 @@ fun TopAppBarPreview() {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
+        CollectionTopAppBar(onBackClick = {}, onAddClick = {})
+        CollectionDetailTopAppBar(onBackClick = {}, onEditClick = {}, onRemoveClick = {})
         AuthTopAppBar()
         BackTopAppBar(onBackClick = {})
         CategoryTopAppBar (onBackClick = {}, onFilterClick = {})

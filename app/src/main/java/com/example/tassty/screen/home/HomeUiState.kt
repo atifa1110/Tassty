@@ -1,6 +1,6 @@
 package com.example.tassty.screen.home
 
-import com.example.core.data.model.Resource
+import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.MenuUiModel
@@ -8,41 +8,59 @@ import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.VoucherUiModel
 
 data class HomeUiState(
+    val userName: String ="",
+    val profileImage: String="",
+    val addressName: String="",
+
     val allCategories: Resource<List<CategoryUiModel>> = Resource(),
     val recommendedRestaurants: Resource<List<RestaurantUiModel>> = Resource(),
     val nearbyRestaurants: Resource<List<RestaurantUiModel>> = Resource(),
-    val suggestedMenus: Resource<List<MenuUiModel>> = Resource(),
-    val recommendedMenus: Resource<List<MenuUiModel>> = Resource(),
     val todayVouchers: Resource<List<VoucherUiModel>> = Resource(),
-    val isRefreshing: Boolean = false,
-    val errorMessage: String? = null,
-
-    val isCollectionSheetVisible: Boolean = false,
+    val recommendedMenus: Resource<List<MenuUiModel>> = Resource(),
+    val suggestedMenus: Resource<List<MenuUiModel>> = Resource(),
     val collectionsResource: Resource<List<CollectionUiModel>> = Resource(isLoading = false),
 
+    val isRefreshing: Boolean = false,
+    val errorMessage: String? = null,
+    val isCollectionSheetVisible: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
-    val createCollectionResource: Resource<Boolean> = Resource(isLoading = false),
-
     val newCollectionName: String = "",
-    val menuIdToSave: String? = null,
+    val menu: MenuUiModel? = null,
+)
+
+data class HomeContent(
+    val categories: Resource<List<CategoryUiModel>> = Resource(),
+    val nearby: Resource<List<RestaurantUiModel>> = Resource(),
+    val recommended: Resource<List<RestaurantUiModel>> = Resource(),
+    val vouchers: Resource<List<VoucherUiModel>> = Resource()
+)
+
+data class HomeMenuSection(
+    val recommendedMenus: Resource<List<MenuUiModel>>,
+    val suggestedMenus: Resource<List<MenuUiModel>>
+)
+
+data class HomeInternalState(
+    val userName: String ="",
+    val profileImage: String="",
+    val addressName: String="",
+    val isAddCollectionSheet: Boolean = false,
+    val isCollectionSheetVisible: Boolean = false,
+    val newCollectionName: String = "",
+    val menu: MenuUiModel? = null,
+    val selectedCollectionIds: Set<String> = emptySet()
 )
 
 sealed class HomeEvent{
-
     data class ShowSnackbar(val message: String) : HomeEvent()
     object OnShowCollectionSheet : HomeEvent()
     object OnDismissCollectionSheet: HomeEvent()
+    data class OnFavoriteClick(val menu: MenuUiModel) : HomeEvent()
+    data class OnCollectionCheckChange(val collectionId: String, val isChecked: Boolean) : HomeEvent()
+    object OnSaveToCollection : HomeEvent()
 
     object OnShowAddCollectionSheet : HomeEvent()
     object OnDismissAddCollectionSheet : HomeEvent()
-
-    data class OnFavoriteClick(val menuId: String) : HomeEvent()
-
     data class OnNewCollectionNameChange(val name: String) : HomeEvent()
-
     object OnCreateCollection : HomeEvent()
-
-    data class OnCollectionCheckChange(val collectionId: Int, val isChecked: Boolean) : HomeEvent()
-
-    object OnSaveToCollection : HomeEvent()
 }

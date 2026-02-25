@@ -1,8 +1,30 @@
 package com.example.core.ui.model
 
-import com.example.core.domain.model.CollectionListItem
-
 data class CollectionUiModel (
-    val collection : CollectionListItem,
-    val isSelected: Boolean = false
+    val id: String,
+    val title: String,
+    val imageUrl: String,
+    val menuCount: Int,
+    val isSelected: Boolean
 )
+
+data class CollectionRestaurantUiModel(
+    val id: String,
+    val name: String,
+    val ratingText: String,
+    val city: String
+)
+
+data class CollectionMenuUiModel(
+    val id: String,
+    val name: String,
+    val imageUrl: String,
+    val description: String,
+    val priceText: String
+)
+
+data class CollectionRestaurantWithMenuUiModel(
+    val restaurant: CollectionRestaurantUiModel,
+    val menus: List<CollectionMenuUiModel>
+)
+

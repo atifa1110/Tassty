@@ -38,16 +38,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.core.data.model.Resource
-import com.example.core.domain.model.Category
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.ui.mapper.FilterCategory
+import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.CategoryUiModel
+import com.example.core.ui.model.CollectionMenuUiModel
+import com.example.core.ui.model.CollectionRestaurantUiModel
+import com.example.core.ui.model.CollectionRestaurantWithMenuUiModel
+import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
-import com.example.tassty.menus
-import com.example.tassty.model.Cart
-import com.example.tassty.model.ChipType
-import com.example.tassty.model.SummaryFilterChip
+import com.example.core.ui.model.UserAddressUiModel
+import com.example.core.ui.model.VoucherUiModel
+import com.example.tassty.categories
+import com.example.tassty.menusItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
@@ -225,7 +230,8 @@ fun HorizontalTitleSubtitleSection(
 fun LazyListScope.restaurantMenuListBlock(
     itemCount: Int,
     headerText: String,
-    restaurantItems: List<RestaurantMenuUiModel>
+    restaurantItems: List<RestaurantMenuUiModel>,
+    onNavigateToDetail: (String) -> Unit
 ) {
     item {
         HeaderListItemCountTitle(
@@ -238,33 +244,86 @@ fun LazyListScope.restaurantMenuListBlock(
 
     items(
         items = restaurantItems,
-        key = { it.restaurant.restaurant.id }
+        key = { it.restaurant.id }
     ) { restaurant ->
         RestaurantContentSection(
             restaurant = restaurant.restaurant,
-            menus = restaurant.menus
+            menus = restaurant.menus,
+            onNavigateToDetail = onNavigateToDetail
         )
         Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+fun LazyListScope.collectionList(
+    items: List<CollectionRestaurantWithMenuUiModel>
+){
+    val totalMenus = items.sumOf { it.menus.size }
+    item {
+        HeaderListItemCountTitle(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+            itemCount = totalMenus,
+            title = " Menus"
+        )
+    }
+
+    items.forEachIndexed { index, section ->
+        collectionMenuWithRestaurant(
+            restaurant = section.restaurant,
+            items = section.menus,
+            showDivider = index != 0
+        )
+    }
+}
+
+fun LazyListScope.collectionMenuWithRestaurant(
+    restaurant: CollectionRestaurantUiModel,
+    items: List<CollectionMenuUiModel>,
+    showDivider : Boolean = false
+) {
+    item {
+        if (showDivider) {
+            DashedDivider(modifier = Modifier.padding(24.dp))
+        }
+        HeaderRestaurantCollection(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            restaurantName = restaurant.name,
+            rating = restaurant.ratingText,
+            city = restaurant.city
+        )
+        Spacer(Modifier.height(12.dp))
+    }
+
+    items(
+        items = items,
+        key = {  menu ->"${restaurant.id}-${menu.id}" }
+    ) { item ->
+        Column (modifier = Modifier.padding(horizontal = 24.dp)){
+            FoodCollectionCard(item)
+            Spacer(modifier = Modifier.height(12.dp))
+        }
     }
 }
 
 @Composable
 fun RestaurantContentSection(
     restaurant: RestaurantUiModel,
-    menus: List<MenuUiModel>
+    menus: List<MenuUiModel>,
+    onNavigateToDetail: (String) -> Unit
 ) {
     Column (
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         Column (Modifier.padding(horizontal = 24.dp)){
-            RestaurantLargeListCard(restaurant = restaurant)
+            RestaurantLargeListCard(restaurant = restaurant,
+                onClick = {onNavigateToDetail(restaurant.id)})
         }
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(menus, key = { it.menu.id }) { menuItem ->
+            items(menus, key = { it.id }) { menuItem ->
                 FoodTinyGridCard(menu = menuItem)
             }
         }
@@ -272,19 +331,21 @@ fun RestaurantContentSection(
 }
 
 fun LazyListScope.cartVerticalListBlock(
-    cart : List<Cart>,
+    cart : List<CartItemUiModel>,
     selectAll: Boolean,
     headerText: String,
     onSelectAllClicked:(Boolean) -> Unit,
-    onCartSelectionChange:(Cart) -> Unit,
-    onIncrementQuantity:(Cart) -> Unit,
-    onDecrementQuantity:(Cart) -> Unit,
-    onRemoveItemClicked: (Cart) -> Unit,
+    onCartSelectionChange:(String) -> Unit,
+    onIncrementQuantity:(String) -> Unit,
+    onDecrementQuantity:(String) -> Unit,
+    onRemoveItemClicked: (String) -> Unit,
     onRevealChange: (Int, Boolean) -> Unit
 ){
     item {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             ItemCountTitleText(itemCount = cart.size, title = headerText)
@@ -304,7 +365,9 @@ fun LazyListScope.cartVerticalListBlock(
                         checkedColor = Orange500,
                         uncheckedColor = Neutral40
                     ),
-                    modifier = Modifier.padding(0.dp).size(24.dp)
+                    modifier = Modifier
+                        .padding(0.dp)
+                        .size(24.dp)
                 )
             }
         }
@@ -326,11 +389,16 @@ fun LazyListScope.cartVerticalListBlock(
                        modifier = Modifier
                            .fillMaxHeight()
                            .width(72.dp)
-                           .clip(RoundedCornerShape(topStart = 20.dp,
-                               bottomStart = 20.dp)).background(Pink500),
+                           .clip(
+                               RoundedCornerShape(
+                                   topStart = 20.dp,
+                                   bottomStart = 20.dp
+                               )
+                           )
+                           .background(Pink500),
                        contentAlignment = Alignment.Center
                    ) {
-                       IconButton(onClick = {onRemoveItemClicked(cartItem)}) {
+                       IconButton(onClick = {onRemoveItemClicked(cartItem.cartId)}) {
                            Icon(
                                imageVector = Icons.Default.Delete,
                                contentDescription = "Delete",
@@ -344,8 +412,8 @@ fun LazyListScope.cartVerticalListBlock(
                CartListCard(
                    cart = cartItem,
                    onCheckedChange = onCartSelectionChange,
-                   onIncrementQuantity = { onIncrementQuantity(cartItem) },
-                   onDecrementQuantity = { onDecrementQuantity(cartItem) }
+                   onIncrementQuantity = { onIncrementQuantity(cartItem.cartId) },
+                   onDecrementQuantity = { onDecrementQuantity(cartItem.cartId) }
                )
            }
        }
@@ -353,13 +421,40 @@ fun LazyListScope.cartVerticalListBlock(
     }
 }
 
+fun LazyListScope.restaurantRecommendedSection(
+    resource: Resource<List<RestaurantUiModel>>,
+    onNavigateToDetail: (String) -> Unit
+){
+    val items = resource.data.orEmpty()
+    when{
+        resource.isLoading ->{
+            item{
+                LoadingRowState()
+            }
+        }
+        resource.errorMessage!=null  ->{
+            item {
+                ErrorScreen()
+            }
+        }
+        else -> {
+            restaurantVerticalListBlock(
+                headerText = "Recommended Restaurants",
+                restaurantItems = items,
+                onNavigateToDetail = onNavigateToDetail
+            )
+        }
+    }
+}
+
 fun LazyListScope.restaurantVerticalListBlock(
     headerText: String,
-    restaurantItems: List<RestaurantUiModel>
+    restaurantItems: List<RestaurantUiModel>,
+    onNavigateToDetail: (String) -> Unit
 ) {
     item {
         HeaderListItemCountTitle(
-            itemCount = menus.size,
+            itemCount = restaurantItems.size,
             title = headerText,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -368,20 +463,77 @@ fun LazyListScope.restaurantVerticalListBlock(
 
     items(
         items = restaurantItems,
-        key = { it.restaurant.id }
+        key = { it.id }
     ) { restaurant ->
         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-            RestaurantLargeListCard(restaurant = restaurant)
+            RestaurantLargeListCard(
+                restaurant = restaurant,
+                onClick= { onNavigateToDetail(restaurant.id) }
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
+fun LazyListScope.voucherVerticalListBlock(
+    headerText: String,
+    voucherItems: List<VoucherUiModel>,
+    onNavigateToDetail: (String) -> Unit
+) {
+    item {
+        HeaderListItemCountTitle(
+            itemCount = voucherItems.size,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    items(
+        items = voucherItems,
+        key = { it.id }
+    ) { voucher ->
+        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+            VoucherExtraLargeCard(voucher = voucher)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+fun LazyListScope.addressVerticalListBlock(
+    headerText: String,
+    addressItems: List<UserAddressUiModel>,
+) {
+    item {
+        HeaderListItemCountTitle(
+            itemCount = addressItems.size,
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    items(
+        items = addressItems,
+        key = { it.id }
+    ) { address ->
+        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+            LocationLardCard(address)
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+
 fun LazyListScope.menuItemCountVerticalListBlock(
     headerText: String,
     menus : List<MenuUiModel>,
-    onFavoriteClick: (String) -> Unit,
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCart: (MenuUiModel) -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit
 ) {
     item {
         HeaderListItemCountTitle(
@@ -394,12 +546,16 @@ fun LazyListScope.menuItemCountVerticalListBlock(
 
     items(
         items = menus,
-        key = { it.menu.id }
+        key = { it.id }
     ) { menu ->
         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
             FoodListCard(
                 menu = menu,
-                onFavoriteClick = { onFavoriteClick(menu.menu.id) }
+                onFavoriteClick = { onFavoriteClick(menu) },
+                onAddToCart ={
+                    if(menu.customizable) onNavigateToDetailMenu(menu.id)
+                    else onAddToCart(menu)
+                }
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -408,9 +564,12 @@ fun LazyListScope.menuItemCountVerticalListBlock(
 
 @Composable
 fun GridMenuListSection(
+    isDetail: Boolean = false,
     title: String,
     menuItems: List<MenuUiModel>,
-    onFavoriteClick: (String) -> Unit,
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onAddToCartClick:(MenuUiModel)-> Unit,
+    onNavigateToDetailMenu:(String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -431,8 +590,12 @@ fun GridMenuListSection(
         ) {
             menuItems.forEach { item ->
                 FoodLargeGridCard(
+                    isDetail = isDetail,
                     menu = item,
-                    onFavoriteClick = { onFavoriteClick(item.menu.id) },
+                    onFavoriteClick = { onFavoriteClick(item) },
+                    onAddToCart = {
+                        if(item.customizable) onNavigateToDetailMenu(item.id) else onAddToCartClick(item)
+                    },
                     modifier = Modifier
                         .weight(1f, fill = true)
                 )
@@ -450,7 +613,9 @@ fun FoodCategoryGrid (
     modifier : Modifier = Modifier
 ){
     Column (
-        modifier.fillMaxSize().padding(horizontal = 24.dp),
+        modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ){
         CategoryFoundHeader(
@@ -465,11 +630,11 @@ fun FoodCategoryGrid (
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(filteredCategories) { category ->
-                val isSelected = selectedCategoryIds.contains(category.category.id)
+                val isSelected = selectedCategoryIds.contains(category.id)
                 FoodCategoryCard(
                     isSelected = isSelected,
                     category = category,
-                    onCardClick = { onSelectedCategory(category.category.id) }
+                    onCardClick = { onSelectedCategory(category.id) }
                 )
             }
         }
@@ -478,7 +643,7 @@ fun FoodCategoryGrid (
 
 @Composable
 fun FilterSection(
-    activeSummaryChips : List<SummaryFilterChip>,
+    option : List<FilterOptionUi>,
     onSortClick: () -> Unit
 ) {
     LazyRow(
@@ -486,11 +651,11 @@ fun FilterSection(
         contentPadding = PaddingValues(horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(activeSummaryChips) { option ->
+        items(option) { option ->
             CustomFilterChip(
                 option = option,
                 onClick = {
-                    if(option.type == ChipType.SORT){
+                    if(option.category == FilterCategory.SORT){
                         onSortClick()
                     }
                 }
@@ -501,7 +666,7 @@ fun FilterSection(
 
 fun LazyListScope.filterListSection(
     resource: Resource<List<RestaurantMenuUiModel>>,
-    onRetry: () -> Unit
+    onNavigateToDetail: (String) -> Unit
 ){
     val items = resource.data.orEmpty()
     when{
@@ -510,7 +675,7 @@ fun LazyListScope.filterListSection(
                 LoadingRowState()
             }
         }
-        resource.errorMessage!=null  ->{
+        resource.errorMessage!=null || items.isEmpty()->{
             item {
                 ErrorScreen()
             }
@@ -519,7 +684,8 @@ fun LazyListScope.filterListSection(
             restaurantMenuListBlock(
                 itemCount = items.size,
                 headerText = "Search founds",
-                restaurantItems = items
+                restaurantItems = items,
+                onNavigateToDetail = onNavigateToDetail
             )
         }
     }
@@ -532,17 +698,15 @@ fun PreviewList(){
     Column (Modifier.fillMaxSize()){
         GridMenuListSection(
             title = "Suggested menu for you!",
-            menuItems = menus,
-            onFavoriteClick = {}
+            menuItems = menusItem,
+            onFavoriteClick = {},
+            onAddToCartClick = {},
+            onNavigateToDetailMenu = {}
         )
 
         FoodCategoryGrid(
             searchQuery = "",
-            filteredCategories = listOf(
-                CategoryUiModel(Category("1","","Salad")),
-                CategoryUiModel(Category("2","","Burger")),
-                CategoryUiModel(Category("3","","Pizza")),
-            ),
+            filteredCategories = categories,
             selectedCategoryIds = arrayListOf("1","2","3"),
             onSelectedCategory = {}
         )
