@@ -13,12 +13,8 @@ class AddCardToStripeUseCase @Inject constructor(
     // Ambil Secret
     fun getSecret(): Flow<TasstyResponse<String>> = repository.getSetupIntentSecret()
 
-    // Jalankan Stripe (SDK)
-    fun launchStripe(activity: ComponentActivity, params: ConfirmSetupIntentParams) {
-        repository.confirmStripeSetup(activity, params)
-    }
 
     // Simpan Final ke Backend
-    fun finalize(id: String, color: String): Flow<TasstyResponse<String>> =
-        repository.saveCardInfo(id, color)
+    fun finalize(id: String, color: String, background: String): Flow<TasstyResponse<String>> =
+        repository.saveCardInfo(id, color,background)
 }

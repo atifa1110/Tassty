@@ -55,12 +55,9 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun confirmStripeSetup(activity: ComponentActivity, params: ConfirmSetupIntentParams) {
-        stripe.confirmSetupIntent(activity, params)
-    }
 
-    override fun saveCardInfo(paymentMethodId: String, color: String): Flow<TasstyResponse<String>> = flow {
-        val response = userNetworkDataSource.saveCardToBackend(paymentMethodId,color)
+    override fun saveCardInfo(paymentMethodId: String, color: String, background: String): Flow<TasstyResponse<String>> = flow {
+        val response = userNetworkDataSource.saveCardToBackend(paymentMethodId,color,background)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> emit(TasstyResponse.Success(response.meta.message,response.meta))

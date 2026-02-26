@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -39,6 +40,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
 import com.example.tassty.model.CardColorOption
+import com.example.tassty.model.PatternImage
+import com.example.tassty.model.patterns
 import com.example.tassty.ui.theme.Blue200
 import com.example.tassty.ui.theme.Blue50
 import com.example.tassty.ui.theme.Green100
@@ -60,7 +63,8 @@ fun DebitPaymentCard(
     cardNumber: String ="7786567890987654" ,
     cardName: String = "Rafiq Daniel",
     expireDate: String ="10/28",
-    @DrawableRes backgroundImage: Int = R.drawable.background_design_3,
+    @DrawableRes logo: Int = R.drawable.visa,
+    @DrawableRes backgroundImage: Int = R.drawable.card_pattern_3,
     borderColor : Color = Green100,
     boxBackground: Color = Green50
 ) {
@@ -81,8 +85,7 @@ fun DebitPaymentCard(
                 .weight(1.5f).background(boxBackground)
             ) {
                 Image(
-                    modifier = Modifier.fillMaxWidth().clipToBounds()
-                        .scale(2.0f),
+                    modifier = Modifier.fillMaxWidth().clipToBounds(),
                     painter = painterResource(id = backgroundImage),
                     contentDescription = cardName,
                     contentScale = ContentScale.Crop,
@@ -95,9 +98,10 @@ fun DebitPaymentCard(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.mastercard),
+                        painter = painterResource(id = logo),
                         contentDescription = "mastercard logo",
-                        modifier = Modifier.size(40.dp),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.size(45.dp,30.dp),
                     )
 
                     Text(
@@ -135,7 +139,7 @@ fun DebitPaymentCard(
 fun DebitSmallPaymentCard(
     cardNumber: String = "1234567890987654",
     cardName: String = "Rafiq Daniel",
-    @DrawableRes backgroundImage: Int = R.drawable.background_design_3,
+    @DrawableRes backgroundImage: Int = R.drawable.card_pattern_3,
     borderColor: Color = Pink200,
     boxBackground: Color = Pink50
 ) {
@@ -172,7 +176,7 @@ fun DebitSmallPaymentCard(
                     painter = painterResource(id = backgroundImage),
                     contentDescription = cardName,
                     modifier = Modifier.fillMaxSize().clipToBounds()
-                        .scale(2.5f),
+                        .scale(1.5f),
                     contentScale = ContentScale.Crop,
                     colorFilter = ColorFilter.tint(borderColor)
                 )
@@ -263,26 +267,26 @@ fun EWalletSmallPaymentCard(
 fun CardColorItem(
     option: CardColorOption,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: (CardColorOption) -> Unit
 ) {
     Box(
         modifier = Modifier
             .size(60.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(option.color)
+            .background(option.backgroundColor)
             .border(
                 width = 1.dp,
-                color = if (isSelected) option.selectedColor else Color.Transparent,
+                color = if (isSelected) option.borderColor else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable { onClick() },
+            .clickable { onClick(option) },
         contentAlignment = Alignment.Center
     ) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = null,
-                tint = option.selectedColor,
+                tint = option.borderColor,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -292,10 +296,10 @@ fun CardColorItem(
 @Composable
 fun CardBackgroundItem(
     modifier: Modifier = Modifier,
-    imageRes: Int,
+    patternImage: PatternImage,
     isSelected: Boolean,
     colorOption: CardColorOption,
-    onClick: () -> Unit
+    onClick: (PatternImage) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -303,19 +307,20 @@ fun CardBackgroundItem(
             .clip(RoundedCornerShape(12.dp))
             .border(
                 width = 1.dp,
-                color = if (isSelected) colorOption.selectedColor else Color.Transparent,
+                color = if (isSelected) colorOption.borderColor else Color.Transparent,
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable { onClick() }
+            .clickable { onClick(patternImage) }
     ) {
-        Box(modifier = Modifier.background(Neutral20)) {
+        Box(modifier = Modifier.size(100.dp,60.dp).background(
+            if (isSelected) colorOption.imageBackground else Neutral20)) {
             Image(
-                painter = painterResource(id = imageRes),
+                painter = painterResource(id = patternImage.imageRes),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize().clipToBounds().scale(1.5f),
                 contentScale = ContentScale.Crop,
                 colorFilter = ColorFilter.tint(
-                    if (isSelected) colorOption.selectedColor else Neutral60
+                    if (isSelected) colorOption.backgroundColor else Neutral60
                 )
             )
         }
@@ -324,7 +329,7 @@ fun CardBackgroundItem(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = null,
-                tint = colorOption.selectedColor,
+                tint = colorOption.borderColor,
                 modifier = Modifier.align(Alignment.Center).size(24.dp)
             )
         }
@@ -338,16 +343,21 @@ fun PaymentCardPreview() {
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        DebitPaymentCard()
         DebitPaymentCard(
+            logo = R.drawable.mastercard
+        )
+        DebitPaymentCard(
+            backgroundImage = R.drawable.card_pattern_1,
             boxBackground = Orange50,
             borderColor = Orange200
         )
         DebitPaymentCard(
+            logo = R.drawable.mastercard,
             boxBackground =Pink50,
             borderColor = Pink200
         )
         DebitPaymentCard(
+            backgroundImage = R.drawable.card_pattern_2,
             boxBackground = Blue50,
             borderColor = Blue200
         )
@@ -367,23 +377,16 @@ fun PaymentSmallCardPreview() {
             borderColor = Blue200
         )
         DebitSmallPaymentCard(
+            backgroundImage = R.drawable.card_pattern_2,
             boxBackground =Green50,
             borderColor = Green200
         )
         DebitSmallPaymentCard(
+            backgroundImage = R.drawable.card_pattern_1,
             boxBackground =Orange50,
             borderColor = Orange200
         )
-    }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun EWalletCardPreview() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
         EWalletSmallPaymentCard()
         EWalletSmallPaymentCard(
             cardName = "Dana E-Wallet",

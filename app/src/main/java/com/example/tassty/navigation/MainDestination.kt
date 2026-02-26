@@ -15,6 +15,7 @@ import androidx.navigation.navigation
 import com.example.tassty.navigation.CategoryDestination.idArg
 import com.example.tassty.navigation.CategoryDestination.imageArg
 import com.example.tassty.navigation.CategoryDestination.nameArg
+import com.example.tassty.screen.addcard.AddCardScreen
 import com.example.tassty.screen.address.AddressScreen
 import com.example.tassty.screen.bestseller.BestSellerScreen
 import com.example.tassty.screen.category.CategoryScreen
@@ -25,6 +26,7 @@ import com.example.tassty.screen.detailmenu.DetailMenuScreen
 import com.example.tassty.screen.detailrestaurant.DetailRestaurantScreen
 import com.example.tassty.screen.favorite.FavoriteScreen
 import com.example.tassty.screen.nearby.NearbyRestaurantScreen
+import com.example.tassty.screen.payment.PaymentScreen
 import com.example.tassty.screen.recommended.RecommendedRestaurantScreen
 import com.example.tassty.screen.search.SearchRoute
 import com.example.tassty.screen.voucher.VoucherScreen
@@ -174,10 +176,25 @@ object NearbyDestination : TasstyNavigationDestination {
     override val destination: String = "nearby"
 }
 
+
+
 object AddressDestination : TasstyNavigationDestination {
     override val route: String = "address"
     override val destination: String = "address"
 }
+
+
+object PaymentDestination : TasstyNavigationDestination {
+    override val route: String = "payment"
+    override val destination: String = "payment"
+}
+
+
+object AddCardDestination : TasstyNavigationDestination {
+    override val route: String = "add_card"
+    override val destination: String = "add_card"
+}
+
 
 fun NavGraphBuilder.mainGraph(
     onNavigateBack:() -> Unit,
@@ -194,7 +211,9 @@ fun NavGraphBuilder.mainGraph(
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToBestSeller:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
-    onNavigateToAddress: () -> Unit
+    onNavigateToAddress: () -> Unit,
+    onNavigateToPayment: ()-> Unit,
+    onNavigateToAddCard: ()-> Unit
 ) {
     navigation(
         route = MainGraph.route,
@@ -211,7 +230,8 @@ fun NavGraphBuilder.mainGraph(
                 onNavigateToFavorite = onNavigateToFavorite,
                 onNavigateToDetailMenu = onNavigateToDetailMenu,
                 onNavigateToVoucher = onNavigateToVoucher,
-                onNavigateToAddress = onNavigateToAddress
+                onNavigateToAddress = onNavigateToAddress,
+                onNavigateToPayment = onNavigateToPayment
             )
         }
 
@@ -350,6 +370,17 @@ fun NavGraphBuilder.mainGraph(
             AddressScreen()
         }
 
+        composable(
+            route = PaymentDestination.route,
+        ) {
+            PaymentScreen (onNavigateToAddCard = onNavigateToAddCard)
+        }
+
+        composable(
+            route = AddCardDestination.route,
+        ) {
+            AddCardScreen()
+        }
 
     }
 }

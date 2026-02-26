@@ -28,9 +28,8 @@ import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.BestSellerHeader
 import com.example.tassty.component.CategoryTopAppBar
 import com.example.tassty.component.FoodWideListCard
-import com.example.tassty.component.SearchBarWhiteSection
+import com.example.tassty.component.SearchBar
 import com.example.tassty.component.StatusItemImage
-import com.example.tassty.menus
 import com.example.tassty.menusItem
 import com.example.tassty.screen.detailrestaurant.ShoppingCartBottomBar
 import com.example.tassty.ui.theme.Neutral10
@@ -77,7 +76,7 @@ fun BestSellerContent(
                         .fillMaxWidth().padding(horizontal = 24.dp)
                         .offset(y=-(24).dp)
                 ) {
-                    SearchBarWhiteSection(value = uiState.query, onValueChange = {})
+                    SearchBar(value = uiState.query, onValueChange = {})
                 }
             }
 

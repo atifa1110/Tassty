@@ -96,8 +96,10 @@ fun CategoryContent(
                     .fillMaxWidth().padding(horizontal = 24.dp)
                     .offset(y=-(24).dp)
             ) {
-                SearchBarWhiteSection(value = uiState.query,
-                    onValueChange = onQueryChange)
+                SearchBar(
+                    value = uiState.query,
+                    onValueChange = onQueryChange
+                )
             }
         }
 

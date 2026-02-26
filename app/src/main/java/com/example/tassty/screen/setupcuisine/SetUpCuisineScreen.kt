@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.categories
-import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.SetupTopAppBar
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -43,6 +42,7 @@ import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CategoryFoundHeader
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodCategoryCard
+import com.example.tassty.component.SearchBar
 
 @Composable
 fun SetupCuisineRoute(
@@ -151,7 +151,7 @@ fun SetupCuisineScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    SearchBarWhiteSection(
+                    SearchBar(
                         value = searchText,
                         onValueChange = onSearchText
                     )

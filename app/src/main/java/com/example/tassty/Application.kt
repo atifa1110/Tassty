@@ -15,6 +15,7 @@ import com.example.core.data.observer.AppLifecycleObserver
 import com.example.core.data.source.local.cache.LocationManager
 import com.example.core.data.worker.DatabaseCleanupWorker
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.stripe.android.PaymentConfiguration
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +48,11 @@ class MyApp : Application(), Configuration.Provider, ImageLoaderFactory {
             .get()
             .lifecycle
             .addObserver(observer)
+
+        PaymentConfiguration.init(
+            applicationContext,
+            BuildConfig.STRIPE_PUBLISH_KEY
+        )
     }
 
     private fun setupInitialCleanup() {

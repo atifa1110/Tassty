@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,11 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -36,16 +31,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.component.AuthTopAppBar
-import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.ButtonLogin
 import com.example.tassty.component.CustomBottomSheet
-import com.example.tassty.component.EmailComponent
+import com.example.tassty.component.EmailSection
 import com.example.tassty.component.LoadingButtonComponent
 import com.example.tassty.component.ModalStatusContent
-import com.example.tassty.component.PasswordComponent
+import com.example.tassty.component.PasswordSection
 import com.example.tassty.component.TermsOfServiceCheckbox
-import com.example.tassty.component.TextComponent
-import com.example.tassty.screen.login.LoginEvent
+import com.example.tassty.component.TextSection
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -147,75 +140,28 @@ fun RegisterScreen(
                 )
             }
 
-            Column(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 24.dp),
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start,
-                        text = stringResource(R.string.full_name),
-                        style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
-                    )
+                TextSection(
+                    label = stringResource(R.string.full_name),
+                    text = uiState.fullName,
+                    textError = uiState.fullNameError?:"",
+                    leadingIcon = R.drawable.person,
+                    onTextChanged = onTextChange
+                )
 
-                    TextComponent(
-                        text = uiState.fullName,
-                        textError = uiState.fullNameError?:"",
-                        placeholder = "Enter name",
-                        leadingIcon = R.drawable.person,
-                        onTextChanged = {
-                            onTextChange(it)
-                        }
-                    )
-                }
+                EmailSection (
+                    email = uiState.email,
+                    emailError = uiState.emailError?:"",
+                    onEmailChanged = onEmailChange
+                )
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start,
-                        text = stringResource(R.string.email_address),
-                        style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
-                    )
-
-                    EmailComponent(
-                        email = uiState.email,
-                        emailError = uiState.emailError?:"",
-                        onEmailChanged = {
-                            onEmailChange(it)
-                        }
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start,
-                        text = stringResource(R.string.password),
-                        style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
-                    )
-
-                    PasswordComponent(
-                        password = uiState.password,
-                        passwordError = uiState.passwordError?:"",
-                        onPasswordChanged = {
-                            onPasswordChange(it)
-                        }
-                    )
-                }
+                PasswordSection(
+                    password = uiState.password,
+                    passwordError = uiState.passwordError?:"",
+                    onPasswordChanged = onPasswordChange
+                )
 
                 TermsOfServiceCheckbox(
                     checked = uiState.isTermSelected,
@@ -260,23 +206,23 @@ fun RegisterScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RegisterPreview() {
-    RegisterScreen(
-        uiState = RegisterUiState(
-            isLoading = false,
-            email = "a@gmail.com",
-            password = "123456",
-            passwordError = "Password is to weak",
-            fullName = "atifa",
-            isTermSelected = true
-        ),
-        onTermCheckChange = {},
-        onRegisterClick = {},
-        onLoginClick = {},
-        onTextChange = {},
-        onEmailChange = {},
-        onPasswordChange = {}
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun RegisterPreview() {
+//    RegisterScreen(
+//        uiState = RegisterUiState(
+//            isLoading = false,
+//            email = "",
+//            password = "123456",
+//            fullName = "",
+//            fullNameError = "",
+//            isTermSelected = true
+//        ),
+//        onTermCheckChange = {},
+//        onRegisterClick = {},
+//        onLoginClick = {},
+//        onTextChange = {},
+//        onEmailChange = {},
+//        onPasswordChange = {}
+//    )
+//}

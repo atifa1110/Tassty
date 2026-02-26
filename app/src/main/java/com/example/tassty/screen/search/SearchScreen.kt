@@ -40,7 +40,7 @@ import com.example.tassty.component.FilterSection
 import com.example.tassty.component.FoodNameGridCard
 import com.example.tassty.component.HorizontalTitleSection
 import com.example.tassty.component.RestaurantTinyGridCard
-import com.example.tassty.component.SearchBarWhiteSection
+import com.example.tassty.component.SearchBar
 import com.example.tassty.component.ShimmerCategoryStaggeredList
 import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
 import com.example.tassty.component.ShimmerRestaurantTinyGridCard
@@ -156,9 +156,10 @@ fun SearchScreen(
         ) {
             item {
                 Column(Modifier.padding(horizontal = 24.dp)) {
-                    SearchBarWhiteSection(
+                    SearchBar(
                         value = uiState.query,
-                        onValueChange = { onQueryChange(it) }
+                        onValueChange = { onQueryChange(it) },
+                        isTransparentMode = false
                     )
                 }
             }

@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.MenuStatus
 import com.example.core.ui.model.OptionGroupUiModel
+import com.example.tassty.R
 import com.example.tassty.component.CartAddButton
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionContent
@@ -42,7 +43,7 @@ import com.example.tassty.component.CollectionSaveContent
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DashedDivider
 import com.example.tassty.component.DetailMenuTopAppBar
-import com.example.tassty.component.DetailNotesEditText
+import com.example.tassty.component.DetailNotesSection
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodPriceBigText
 import com.example.tassty.component.FoodPriceLineText
@@ -51,6 +52,7 @@ import com.example.tassty.component.OptionCard
 import com.example.tassty.component.QuantityTextButton
 import com.example.tassty.component.RestaurantMenuInfoCard
 import com.example.tassty.component.StatusItemImage
+import com.example.tassty.component.TextSection
 import com.example.tassty.getPickMenuSubtitle
 import com.example.tassty.menuDetailItem
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -277,10 +279,10 @@ fun DetailMenuContent(
                 }
 
                 item {
-                    DetailNotesEditText(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        value = uiState.notesValue,
-                        onValueChange = onNotesChange
+                    DetailNotesSection(
+                        text = uiState.notesValue,
+                        onTextChanged = onNotesChange,
+                        modifier = Modifier.padding(horizontal = 24.dp)
                     )
                 }
             }

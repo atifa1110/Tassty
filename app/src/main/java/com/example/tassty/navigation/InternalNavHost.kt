@@ -33,7 +33,7 @@ fun InternalNavHost(
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
-
+    onNavigateToPayment: ()-> Unit
 ) {
     NavHost(
         navController = navController,
@@ -65,7 +65,8 @@ fun InternalNavHost(
                 onNavigateToVoucher = onNavigateToVoucher,
                 onNavigateToCollection = onNavigateToCollection,
                 onNavigateToFavorite= onNavigateToFavorite,
-                onNavigateToAddress= onNavigateToAddress
+                onNavigateToAddress= onNavigateToAddress,
+                onNavigateToPayment = onNavigateToPayment
             )
         }
     }

@@ -25,19 +25,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.component.AuthTopAppBar
-import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.ButtonLogin
 import com.example.tassty.component.CustomBottomSheet
-import com.example.tassty.component.EmailComponent
+import com.example.tassty.component.EmailSection
 import com.example.tassty.component.LoadingButtonComponent
 import com.example.tassty.component.ModalStatusContent
-import com.example.tassty.component.PasswordComponent
+import com.example.tassty.component.PasswordSection
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -145,58 +143,32 @@ fun LoginScreen(
                 )
             }
 
+
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start,
-                        text = "Username/Email",
-                        style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
-                    )
+                EmailSection(
+                    email = email,
+                    emailError = emailError,
+                    onEmailChanged = onEmailChanged
+                )
 
-                    EmailComponent(
-                        email = email,
-                        emailError = emailError,
-                        onEmailChanged = onEmailChanged
-                    )
-                }
+                PasswordSection(
+                    password = password,
+                    passwordError = passwordError,
+                    onPasswordChanged = onPasswordChanged
+                )
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start,
-                        text = "Password",
-                        style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
-                    )
+                Text(
+                    text = stringResource(R.string.forgot_password),
+                    style = LocalCustomTypography.current.bodyMediumMedium,
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable(onClick = onForgotClick),
+                    textAlign = TextAlign.Right,
+                    color = Orange500
+                )
 
-                    PasswordComponent(
-                        password = password,
-                        passwordError = passwordError,
-                        onPasswordChanged = onPasswordChanged
-                    )
-
-                    // Teks Forgot password
-                    Text(
-                        text = stringResource(R.string.forgot_password),
-                        style = LocalCustomTypography.current.bodyMediumMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onForgotClick),
-                        textAlign = TextAlign.Right,
-                        color = Orange500
-                    )
-                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -240,11 +212,11 @@ fun LoginScreen(
 //@Composable
 //fun LoginPreview() {
 //    LoginScreen(
-//        email= "",
-//        emailError ="",
+//        email= "atifafiorenza24@gmail.com",
+//        emailError ="email is empty",
 //        onEmailChanged = { },
-//        password = "",
-//        passwordError = "",
+//        password = "123456",
+//        passwordError = "password is empty",
 //        onPasswordChanged = {},
 //        onLoginClick = {},
 //        onRegisterClick = {},

@@ -134,6 +134,12 @@ fun TasstyNavHost(
             },
             onNavigateToAddress = {
                 navController.navigate(AddressDestination.route)
+            },
+            onNavigateToPayment = {
+                navController.navigate(PaymentDestination.route)
+            },
+            onNavigateToAddCard = {
+                navController.navigate(AddCardDestination.route)
             }
         )
     }

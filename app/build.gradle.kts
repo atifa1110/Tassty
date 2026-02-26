@@ -16,6 +16,7 @@ if (localFile.exists()) {
 }
 
 val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
+val publishApiKey: String = localProps.getProperty("STRIPE_PUBLISH_KEY") ?: ""
 
 android {
     namespace = "com.example.tassty"
@@ -32,6 +33,7 @@ android {
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        buildConfigField("String", "STRIPE_PUBLISH_KEY", "\"$publishApiKey\"")
     }
 
     buildTypes {

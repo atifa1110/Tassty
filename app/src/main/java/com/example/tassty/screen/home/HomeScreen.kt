@@ -61,7 +61,6 @@ import com.example.tassty.component.GridMenuListSection
 import com.example.tassty.component.HeaderListTitleButton
 import com.example.tassty.component.HorizontalTitleButtonSection
 import com.example.tassty.component.RestaurantGridCard
-import com.example.tassty.component.SearchBarHomeSection
 import com.example.tassty.component.VoucherLargeCard
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -83,6 +82,7 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.categories
@@ -91,6 +91,7 @@ import com.example.tassty.component.CollectionContent
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.NearbyMapBox
+import com.example.tassty.component.SearchBar
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerGridMenuListPlaceholder
 import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
@@ -411,10 +412,14 @@ fun HeaderSection(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        SearchBarHomeSection(
+
+        SearchBar(
             modifier = Modifier.clickable(onClick = onClick),
-            value= "",
-            onValueChange = {}
+            value = "",
+            onValueChange = {  },
+            placeholder = stringResource(R.string.search_delicacies),
+            isTransparentMode = true,
+            enabled = false
         )
     }
 }

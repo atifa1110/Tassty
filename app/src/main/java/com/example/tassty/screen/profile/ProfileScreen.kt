@@ -19,8 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
@@ -73,6 +73,7 @@ fun ProfileScreen(
     onNavigateToFavorite:() -> Unit = {},
     onNavigateToVoucher:()-> Unit = {},
     onNavigateToAddress: () -> Unit = {},
+    onNavigateToPayment: ()-> Unit = {},
     onLogout:() -> Unit = {}
 ) {
     ProfileContent (
@@ -80,6 +81,7 @@ fun ProfileScreen(
         onNavigateToFavorite = onNavigateToFavorite,
         onNavigateToVoucher = onNavigateToVoucher,
         onNavigateToAddress = onNavigateToAddress,
+        onNavigateToPayment = onNavigateToPayment,
         onLogout = onLogout,
     )
 }
@@ -89,6 +91,7 @@ fun ProfileContent(
     onNavigateToFavorite:() -> Unit,
     onNavigateToVoucher: () -> Unit,
     onNavigateToAddress: () -> Unit,
+    onNavigateToPayment: ()-> Unit,
     onLogout:() -> Unit
 ) {
     Scaffold (
@@ -115,7 +118,8 @@ fun ProfileContent(
                     onNavigateToCollection = onNavigateToCollection,
                     onNavigateToFavorite = onNavigateToFavorite,
                     onNavigateToVoucher = onNavigateToVoucher,
-                    onNavigateToAddress = onNavigateToAddress
+                    onNavigateToAddress = onNavigateToAddress,
+                    onNavigateToPayment = onNavigateToPayment
                 )
             }
 
@@ -297,7 +301,8 @@ fun ProfileMenuSection(
     onNavigateToCollection: () -> Unit,
     onNavigateToFavorite:() -> Unit,
     onNavigateToVoucher: () -> Unit,
-    onNavigateToAddress: () -> Unit
+    onNavigateToAddress: () -> Unit,
+    onNavigateToPayment: ()-> Unit
 ) {
     Column(
         modifier = Modifier
@@ -384,7 +389,7 @@ fun ProfileMenuSection(
                     iconColor = Pink600,
                     boxColor = Pink100,
                     title = "Payment Methods",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToPayment
                 )
 
                 HorizontalDivider(
@@ -593,5 +598,6 @@ fun ProfileMenuSwitchItem(
 @Preview(showBackground = true)
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen()
+    ProfileScreen(
+    )
 }

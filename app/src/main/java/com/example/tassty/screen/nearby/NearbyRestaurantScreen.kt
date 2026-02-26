@@ -30,9 +30,9 @@ import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.CategoryTopAppBar
 import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.restaurants
-import com.example.tassty.component.SearchBarWhiteSection
 import com.example.tassty.component.RestaurantLargeListCard
 import com.example.tassty.component.RestaurantSmallListCard
+import com.example.tassty.component.SearchBar
 import com.example.tassty.restaurantUiModel
 
 @Composable
@@ -116,11 +116,9 @@ fun DraggableSearchBar(
                 )
         ) {
             Column(Modifier.padding(dynamicSearchPadding)) {
-                SearchBarWhiteSection(
+                SearchBar(
                     value = "",
                     onValueChange = {},
-                    placeholder = "Search",
-                    modifier = Modifier.fillMaxWidth()
                 )
             }
 

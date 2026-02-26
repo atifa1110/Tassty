@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,11 +27,10 @@ import com.example.tassty.component.BackTopAppBar
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmailComponent
-import com.example.tassty.component.PasswordComponent
+import com.example.tassty.component.PasswordSection
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
 
 enum class PasswordResetStage {
@@ -114,6 +112,7 @@ fun ResetEmail(
                     .padding(24.dp)
             ) {
                 ButtonComponent(
+                    modifier = Modifier.fillMaxWidth(),
                     enabled = email.isNotEmpty(),
                     labelResId = R.string.send_otp,
                     onClick = onSendOtpClick
@@ -164,9 +163,9 @@ fun ResetEmail(
                 )
 
                 EmailComponent(
-                    email = email,
-                    emailError = emailError,
-                    onEmailChanged = onEmailChange
+                    text = email,
+                    textError = emailError,
+                    onTextChanged = onEmailChange
                 )
             }
         }
@@ -198,6 +197,7 @@ fun ResetNewPassword(
                     .padding(24.dp)
             ) {
                 ButtonComponent(
+                    modifier = Modifier.fillMaxWidth(),
                     enabled = password.isNotEmpty() && confirm.isNotEmpty(),
                     labelResId = R.string.change_password,
                     onClick = onChangePasswordClick
@@ -234,42 +234,22 @@ fun ResetNewPassword(
 
             Divider32()
 
-            Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "New Password",
-                    color = Neutral100,
-                    style = LocalCustomTypography.current.h5Bold,
-                )
-
-                PasswordComponent(
+                PasswordSection(
+                    placeholder = stringResource(R.string.new_password),
                     password = password,
                     passwordError = passwordError,
                     onPasswordChanged = onPasswordChange
                 )
-            }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Confirm Password",
-                    color = Neutral100,
-                    style = LocalCustomTypography.current.h5Bold,
-                )
-
-                PasswordComponent(
-                    password = confirm,
-                    passwordError = confirmError,
-                    onPasswordChanged = onConfirmChange
+                PasswordSection(
+                    placeholder = stringResource(R.string.confirm_password),
+                    password = password,
+                    passwordError = passwordError,
+                    onPasswordChanged = onPasswordChange
                 )
             }
         }

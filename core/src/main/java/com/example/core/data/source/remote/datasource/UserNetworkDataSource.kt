@@ -25,9 +25,9 @@ class UserNetworkDataSource@Inject constructor(
         return safeApiCall { userApiService.createSetupIntent() }
     }
 
-    suspend fun saveCardToBackend(paymentMethodId: String, color: String)  : TasstyResponse<Unit>{
+    suspend fun saveCardToBackend(paymentMethodId: String, color: String, background: String)  : TasstyResponse<Unit>{
         return safeApiCall { userApiService.saveCard(SaveCardRequest(paymentMethodId,
-            color))
+            color,background))
         }
     }
 }

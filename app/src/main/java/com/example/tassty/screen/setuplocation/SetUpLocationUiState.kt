@@ -14,7 +14,8 @@ data class SetUpLocationUiState(
     val tempAddressType: AddressType = AddressType.NONE,
     val selectedLatLng: LatLng? = null,
     val isLoading: Boolean = false,
-    val errorMessage : String? = null
+    val errorMessage : String? = null,
+    val buttonEnable: Boolean = false
 )
 
 data class SetUpLocationInternalState(

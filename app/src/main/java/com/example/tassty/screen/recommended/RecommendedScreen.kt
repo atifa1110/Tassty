@@ -34,13 +34,11 @@ import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.HorizontalTitleSubtitleSection
 import com.example.tassty.component.RestaurantLargeGridCard
-import com.example.tassty.component.SearchBarWhiteSection
+import com.example.tassty.component.SearchBar
 import com.example.tassty.component.TitleTopAppBar
 import com.example.tassty.component.restaurantRecommendedSection
-import com.example.tassty.component.restaurantVerticalListBlock
 import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.restaurantUiModel
-import com.example.tassty.screen.home.CategorySection
 import com.example.tassty.ui.theme.Neutral10
 
 @Composable
@@ -113,7 +111,7 @@ fun SearchHeader(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         Column( modifier = Modifier.padding(horizontal = 24.dp)) {
-            SearchBarWhiteSection(
+            SearchBar(
                 value = "",
                 onValueChange = {}
             )

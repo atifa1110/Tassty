@@ -49,11 +49,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.core.domain.model.AddressType
 import com.example.tassty.R
+import com.example.tassty.component.AddressTypeSection
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.MapSearchTopAppBar
-import com.example.tassty.component.TextComponent
-import com.example.tassty.component.TextComponentNoIcon
+import com.example.tassty.component.TextSection
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -149,7 +149,9 @@ fun SetLocationModal(
                     ) {
                         // Header (Set location and dash)
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
@@ -178,82 +180,42 @@ fun SetLocationModal(
                         Divider32()
 
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Start,
-                                    color = Neutral100,
-                                    text = stringResource(R.string.address_name),
-                                    style = LocalCustomTypography.current.h5Bold,
-                                )
+                            TextSection(
+                                label = stringResource(R.string.address_name),
+                                placeholder = "Enter name",
+                                text = uiState.tempAddressName,
+                                textError = "",
+                                onTextChanged = onAddressNameChanged
+                            )
 
-                                TextComponentNoIcon(
-                                    text = uiState.tempAddressName,
-                                    textError = "",
-                                    placeholder = "Enter name",
-                                    onTextChanged = {
-                                        onAddressNameChanged(it)
-                                    }
-                                )
-                            }
+                            TextSection(
+                                label = stringResource(R.string.landmark_detail),
+                                placeholder = stringResource(R.string.enter_landmark),
+                                text = uiState.tempLandmark,
+                                textError = "",
+                                leadingIcon = R.drawable.flag,
+                                onTextChanged = onLandmarkDetailChanged
+                            )
 
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Start,
-                                    color = Neutral100,
-                                    text = stringResource(R.string.landmark_detail),
-                                    style = LocalCustomTypography.current.h5Bold,
-                                )
-
-                                TextComponent(
-                                    text = uiState.tempLandmark,
-                                    textError = "",
-                                    placeholder = stringResource(R.string.enter_landmark),
-                                    leadingIcon = R.drawable.flag,
-                                    onTextChanged = {
-                                        onLandmarkDetailChanged(it)
-                                    }
-                                )
-                            }
-
-
-                            Column(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Start,
-                                    text = "Address type",
-                                    color = Neutral100,
-                                    style = LocalCustomTypography.current.h5Bold,
-                                )
-
-                                AddressTypeRow(
-                                    selectedType = uiState.tempAddressType,
-                                    onTypeSelected = onTypeSelected
-                                )
-                            }
+                            AddressTypeSection(
+                                addressType = uiState.tempAddressType,
+                                onTypeSelected = onTypeSelected
+                            )
 
                             ButtonComponent(
-                                modifier = Modifier.width(220.dp),
-                                enabled = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = uiState.buttonEnable,
                                 labelResId = R.string.save_address,
                                 onClick = onSaveAddress
                             )
                         }
                     }
+                }
 
                     Box(
                         modifier = Modifier
@@ -277,7 +239,7 @@ fun SetLocationModal(
                 MapSearchTopAppBar(onBackClick = onDismiss, onSearchClick = {})
             }
         }
-    }
+
 }
 
 @Composable
@@ -318,7 +280,7 @@ fun AddressTypeChip(
                 color = borderColor,
                 shape = RoundedCornerShape(30.dp)
             )
-            .clickable{
+            .clickable {
                 onClick()
             } ,
         shape = RoundedCornerShape(30.dp),
@@ -350,7 +312,13 @@ fun PreviewLocationModal(){
     SetLocationModal(
         isVisible = true,
         onDismiss = {},
-        uiState = SetUpLocationUiState(),
+        uiState = SetUpLocationUiState(
+            tempFullAddress = "Margonda No.5",
+            tempLandmark = "Deket Margo",
+            tempAddressType = AddressType.PERSONAL,
+            tempAddressName = "My Home",
+            buttonEnable = true
+        ),
         onAddressNameChanged = {},
         onTypeSelected = {},
         onLandmarkDetailChanged = {},

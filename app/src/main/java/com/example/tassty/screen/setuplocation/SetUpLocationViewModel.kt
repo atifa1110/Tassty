@@ -62,7 +62,11 @@ class SetUpLocationViewModel @Inject constructor(
             tempLandmark = inputs.tempLandmark,
             tempAddressName = inputs.tempAddressName,
             tempAddressType = inputs.tempAddressType,
-            tempFullAddress = inputs.tempFullAddress
+            tempFullAddress = inputs.tempFullAddress,
+            buttonEnable =inputs.tempAddressName.isNotEmpty() &&
+                    inputs.tempFullAddress.isNotEmpty() &&
+                    inputs.tempAddressType!= AddressType.NONE &&
+                    inputs.tempLandmark.isNotEmpty()
         )
     }.stateIn(
         scope = viewModelScope,

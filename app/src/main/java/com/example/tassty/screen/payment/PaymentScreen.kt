@@ -1,11 +1,5 @@
 package com.example.tassty.screen.payment
 
-import android.widget.Space
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,23 +29,25 @@ import com.example.tassty.component.EWalletSmallPaymentCard
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral70
 
 @Composable
 fun PaymentScreen(
-
+    onNavigateToAddCard: ()-> Unit
 ) {
-
+    PaymentContent(
+        onAddClick = onNavigateToAddCard
+    )
 }
 
 @Composable
 fun PaymentContent(
+    onAddClick:()-> Unit
 ) {
     Scaffold(
         containerColor = Neutral10,
         topBar = {
             AddTopAppBar (
-                onAddClick = {},
+                onAddClick = onAddClick,
                 onBackClick = {}
             )
         }
@@ -136,5 +132,7 @@ fun PaymentContent(
 @Composable
 fun PaymentPreview(
 ) {
-    PaymentContent()
+    PaymentContent(
+        onAddClick = {}
+    )
 }

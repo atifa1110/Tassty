@@ -88,4 +88,8 @@
     <string name="cart">Cart</string>
     <string name="add_to_cart">Add to cart</string>
     <string name="update_cart">Update Cart</string>
+    <string name="enter_password">Enter password</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm Password</string>
 </resources>

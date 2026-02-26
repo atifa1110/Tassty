@@ -36,7 +36,7 @@ import com.example.tassty.component.EmptySearchResult
 import com.example.tassty.component.FoodListCard
 import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.LoadingScreen
-import com.example.tassty.component.SearchBarWhiteSection
+import com.example.tassty.component.SearchBar
 import com.example.tassty.menusItem
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
@@ -102,7 +102,7 @@ fun SearchAppBarActive(
         verticalAlignment = Alignment.CenterVertically,
 
     ) {
-        SearchBarWhiteSection(
+        SearchBar(
             value = searchQuery,
             onValueChange = {
                 onQueryChange(it)

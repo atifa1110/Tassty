@@ -13,6 +13,5 @@ interface UserRepository {
     fun getUserAddress(): Flow<TasstyResponse<List<UserAddress>>>
     fun getUserProfile(): Flow<TasstyResponse<User>>
     fun getSetupIntentSecret(): Flow<TasstyResponse<String>>
-    fun confirmStripeSetup(activity: ComponentActivity, params: ConfirmSetupIntentParams)
-    fun saveCardInfo(paymentMethodId: String, color: String): Flow<TasstyResponse<String>>
+    fun saveCardInfo(paymentMethodId: String, color: String, background: String): Flow<TasstyResponse<String>>
 }

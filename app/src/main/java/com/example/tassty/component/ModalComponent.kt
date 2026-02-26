@@ -34,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.MenuStatus
-import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.CartItemUiModel
@@ -45,7 +44,6 @@ import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
-import com.example.tassty.menuDetailItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -250,15 +248,13 @@ fun CollectionAddContent(
         HorizontalDivider(Modifier.padding(vertical = 32.dp))
 
         Column(Modifier.padding(horizontal = 24.dp)) {
-            Text(
-                text= "Collection name",
-                style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100
-            )
-            Spacer(Modifier.height(16.dp))
-            CollectionNameEditText(
-                value = collectionName,
-                onValueChange = onValueName
+            TextSection(
+                label = "Collection Name",
+                placeholder = "Enter collection name",
+                leadingIcon = R.drawable.collection,
+                text = collectionName,
+                onTextChanged = onValueName,
+                textError = ""
             )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
@@ -309,18 +305,17 @@ fun CollectionEditContent(
         HorizontalDivider(Modifier.padding(vertical = 32.dp))
 
         Column(Modifier.padding(horizontal = 24.dp)) {
-            Text(
-                text= "Collection Name",
-                style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100
-            )
-            Spacer(Modifier.height(16.dp))
-            CollectionNameEditText(
-                value = collectionName,
-                onValueChange = onValueName
+            TextSection(
+                label = "Collection Name",
+                placeholder = "Enter collection name",
+                leadingIcon = R.drawable.collection,
+                text = collectionName,
+                onTextChanged = onValueName,
+                textError = ""
             )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
                 enabled = collectionName.isNotEmpty(),
                 labelResId = R.string.update,
                 onClick = onUpdateCollection
@@ -738,7 +733,11 @@ fun CartRemoveMenuContent(
 }
 
 @Composable
-fun CartEditContent(){
+fun CartEditContent(
+    text: String,
+    onTextChange:(String)-> Unit,
+    onUpdateCart: () -> Unit
+){
     Column(modifier = Modifier
         .fillMaxWidth()
         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
@@ -771,18 +770,21 @@ fun CartEditContent(){
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
         ){
-            Text(
-                text= "Notes",
-                style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100
+            TextSection(
+                text = text,
+                textError = "",
+                singleLine = false,
+                onTextChanged = onTextChange,
+                label = "Notes",
+                placeholder = "Write your notes here...",
+                leadingIcon = R.drawable.note,
             )
-            Spacer(Modifier.height(16.dp))
-            CartNotesEditText(value = "") { }
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
-                enabled = true,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = text.isNotEmpty(),
                 labelResId = R.string.update
-            ) { }
+            ) { onUpdateCart()}
         }
     }
 }
@@ -1071,13 +1073,17 @@ fun PreviewModalDialog() {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        MenuAddToCartContent(
-            isEditMode = false,
-            quantity = 1,
-            resource = Resource(menuDetailItem),
-            onIncreaseQuantity = {},
-            onDecreaseQuantity = {},
-            onAddToCart = {}
+        CollectionAddContent(
+            collectionName="",
+            onValueName={},
+            onDismissClick={},
+            onAddCollection={},
+        )
+
+        CartEditContent(
+            text = "",
+            onTextChange = {},
+            onUpdateCart = {}
         )
     }
 }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
@@ -37,12 +36,9 @@ import androidx.compose.ui.unit.lerp
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.R
-import com.example.tassty.categories
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
@@ -97,7 +93,7 @@ fun HeaderWithOverlap(
             }
         }
 
-        SearchBarWhiteSection(
+        SearchBar(
             value = "",
             onValueChange = {},
             modifier = Modifier

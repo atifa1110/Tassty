@@ -220,7 +220,7 @@ fun AddTopAppBar(
 
         TopBarButton(icon = R.drawable.add,
             boxColor =  Orange500, iconColor = Neutral10
-        ) { onAddClick }
+        ) { onAddClick() }
     }
 }
 
