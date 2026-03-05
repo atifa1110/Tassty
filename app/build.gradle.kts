@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
-// Baca dari local.properties
 val localProps = Properties()
 val localFile = rootProject.file("local.properties")
 if (localFile.exists()) {
@@ -17,6 +16,7 @@ if (localFile.exists()) {
 
 val mapsApiKey: String = localProps.getProperty("MAPS_API_KEY") ?: ""
 val publishApiKey: String = localProps.getProperty("STRIPE_PUBLISH_KEY") ?: ""
+val streamKey: String = localProps.getProperty("STREAM_API_KEY") ?: ""
 
 android {
     namespace = "com.example.tassty"
@@ -34,6 +34,7 @@ android {
 
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
         buildConfigField("String", "STRIPE_PUBLISH_KEY", "\"$publishApiKey\"")
+        buildConfigField("String", "STREAM_API_KEY", "\"$streamKey\"")
     }
 
     buildTypes {
@@ -74,6 +75,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -124,6 +126,10 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.compose.runtime.livedata)
     implementation(libs.stripe.android)
+
+    implementation(libs.lottie.compose)
+    implementation(libs.stream.chat.client)
+    implementation(libs.stream.chat.compose)
 
     implementation(project(":core"))
 }

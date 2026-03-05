@@ -1,14 +1,15 @@
 package com.example.tassty.component
 
-import android.graphics.drawable.Icon
-import androidx.annotation.Size
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -26,13 +27,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -40,22 +39,23 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -63,7 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.tassty.R
@@ -78,6 +78,7 @@ import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink200
 import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
+import kotlin.math.roundToInt
 
 @Composable
 fun LoadingButtonComponent(
@@ -119,7 +120,7 @@ fun ButtonComponent(
     modifier : Modifier = Modifier,
     enabled : Boolean,
     @StringRes labelResId: Int,
-    colors: ButtonColors = ButtonDefaults.buttonColors( // default warna primary
+    colors: ButtonColors = ButtonDefaults.buttonColors(
         containerColor = Orange500,
         contentColor = Color.White,
         disabledContentColor = Neutral100,
@@ -130,7 +131,7 @@ fun ButtonComponent(
     Button(
         enabled = enabled,
         onClick = onClick,
-        modifier = modifier.height(60.dp),
+        modifier = modifier.height(54.dp),
         colors = colors
     ) {
         Text(text = stringResource(labelResId),
@@ -147,7 +148,7 @@ fun ButtonLogin(){
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(id = R.drawable.google_logo), // Ganti dengan resource logo
+            painter = painterResource(id = R.drawable.google_logo),
             contentDescription = "Login with Google",
             modifier = Modifier.size(48.dp)
         )
@@ -450,9 +451,9 @@ fun FavoriteButton(
     isWishlist: Boolean,
     onClick: () -> Unit
 ){
-    var borderColor = if(isWishlist) Color.Transparent else Pink200
-    var iconColor = if(isWishlist) Neutral10 else Pink500
-    var buttonColor = if(isWishlist) Pink500 else Neutral10
+    val borderColor = if(isWishlist) Color.Transparent else Pink200
+    val iconColor = if(isWishlist) Neutral10 else Pink500
+    val buttonColor = if(isWishlist) Pink500 else Neutral10
 
     CircleImageIcon(
         boxColor = buttonColor,
@@ -569,8 +570,8 @@ fun ResetButton(
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(1.dp, Color(0xFFDEDEDE)),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Neutral10, // 2. Set the background color (Neutral10)
-            contentColor = Neutral70 // Set the color for the Text inside
+            containerColor = Neutral10,
+            contentColor = Neutral70
         ),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
     ) {
@@ -581,74 +582,173 @@ fun ResetButton(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun ButtonPreview(){
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ){
-        ResetButton {  }
-        TextButton(text = "Add",
-            textColor = Neutral100,
-            onClick = {})
-        RankBadge(
-            rank = 2,
-            horizontal = 20.dp,
-            vertical = 16.dp
-        )
-        RankBadgeIcon(
-            modifier = Modifier.width(60.dp)
-        )
-        FavoriteButton(isWishlist = false) { }
-        NotesBoxButton(
-            title = "Edit",
-            onClick = {}
-        )
-        FloatingAddButton(
-            actionSize = 40.dp,
-            iconSize = 16.dp,
-            onClick = {}
-        )
-        QuantityCartContent(
-            itemCount = 2,
-            enabled = true,
-            onIncrement = {}
-        ) { }
-        QuantityTextButton(
-            quantity = 2,
-            onIncreaseQuantity = {},
-            onDecreaseQuantity = {}
-        )
-        ButtonLogin()
-        ButtonComponent(
-            enabled = true,
-            labelResId = R.string.logout,
-            onClick = {},
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Pink50,
-                contentColor = Pink500,
-                disabledContentColor = Neutral100,
-                disabledContainerColor = Neutral40
+fun PaymentSwipeButton(
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean,
+    disabledText: String = "choose your payment method",
+    enabledText: String = "swipe to place order",
+    onSwiped: () -> Unit
+) {
+    val height = 60.dp
+    val thumbSize = 48.dp
+    val internalPadding = 6.dp
+
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    val animatedOffset by animateFloatAsState(
+        targetValue = offsetX,
+        label = "swipe_animation",
+        animationSpec = spring(stiffness = Spring.StiffnessLow)
+    )
+
+    BoxWithConstraints (
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .clip(CircleShape)
+            .background(if (isEnabled) Color.White else Neutral20)
+            .border(width = 1.dp, color = Neutral40, shape = CircleShape),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        val maxWidthPx = constraints.maxWidth.toFloat()
+        val thumbSizePx = with(LocalDensity.current) { thumbSize.toPx() }
+        val paddingPx = with(LocalDensity.current) { internalPadding.toPx() }
+        val maxRange = maxWidthPx - thumbSizePx - (paddingPx * 2)
+
+        // 1. Background Fill (Warna Oranye yang mengikuti slide)
+        if (isEnabled && offsetX > 0f) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(with(LocalDensity.current) {
+                        if (offsetX >= maxRange) maxWidthPx.toDp()
+                        else (animatedOffset + thumbSizePx + paddingPx).toDp()
+                    })
+                    .background(Orange500)
             )
-        )
-        ButtonComponent(
+        }
+
+        // 2. Teks Instruksi
+        Text(
+            text = if (isEnabled) enabledText else disabledText,
             modifier = Modifier
-                .width(220.dp),
-            enabled = true,
-            labelResId = R.string.logout,
-            onClick = {}
-        )
-        ButtonComponent(
-            modifier = Modifier.fillMaxWidth(),
-            enabled = true,
-            labelResId = R.string.logout,
-            onClick = {}
+                .align(Alignment.Center)
+                .graphicsLayer {
+                    alpha = (1f - (animatedOffset / (maxRange * 0.5f))).coerceIn(0f, 1f)
+                },
+            color = if (isEnabled) Neutral100 else Neutral70,
+            style = LocalCustomTypography.current.bodySmallRegular
         )
 
+        // 3. Thumb (Tombol Geser)
+        if (isEnabled) {
+            Box(
+                modifier = Modifier
+                    .padding(start = internalPadding)
+                    .offset { IntOffset(animatedOffset.roundToInt(), 0) }
+                    .size(thumbSize)
+                    .clip(CircleShape)
+                    .background(if (offsetX >= maxRange) Color.Transparent else Orange500)
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                if (offsetX > maxRange * 0.8f) {
+                                    offsetX = maxRange
+                                    onSwiped()
+                                } else {
+                                    offsetX = 0f
+                                }
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                val newOffset = offsetX + dragAmount.x
+                                offsetX = newOffset.coerceIn(0f, maxRange)
+                            }
+                        )
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = Neutral10
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(isEnabled) {
+        if (!isEnabled) offsetX = 0f
     }
 }
+//@Preview(showBackground = true)
+//@Composable
+//fun ButtonPreview(){
+//    Column (
+//        modifier = Modifier.fillMaxSize(),
+//        verticalArrangement = Arrangement.spacedBy(10.dp)
+//    ){
+//        ResetButton {  }
+//        TextButton(text = "Add",
+//            textColor = Neutral100,
+//            onClick = {})
+//        RankBadge(
+//            rank = 2,
+//            horizontal = 20.dp,
+//            vertical = 16.dp
+//        )
+//        RankBadgeIcon(
+//            modifier = Modifier.width(60.dp)
+//        )
+//        FavoriteButton(isWishlist = false) { }
+//        NotesBoxButton(
+//            title = "Edit",
+//            onClick = {}
+//        )
+//        FloatingAddButton(
+//            actionSize = 40.dp,
+//            iconSize = 16.dp,
+//            onClick = {}
+//        )
+//        QuantityCartContent(
+//            itemCount = 2,
+//            enabled = true,
+//            onIncrement = {}
+//        ) { }
+//        QuantityTextButton(
+//            quantity = 2,
+//            onIncreaseQuantity = {},
+//            onDecreaseQuantity = {}
+//        )
+//        ButtonLogin()
+//        ButtonComponent(
+//            enabled = true,
+//            labelResId = R.string.logout,
+//            onClick = {},
+//            modifier = Modifier.fillMaxWidth(),
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = Pink50,
+//                contentColor = Pink500,
+//                disabledContentColor = Neutral100,
+//                disabledContainerColor = Neutral40
+//            )
+//        )
+//        ButtonComponent(
+//            modifier = Modifier
+//                .width(220.dp),
+//            enabled = true,
+//            labelResId = R.string.logout,
+//            onClick = {}
+//        )
+//        ButtonComponent(
+//            modifier = Modifier.fillMaxWidth(),
+//            enabled = true,
+//            labelResId = R.string.logout,
+//            onClick = {}
+//        )
+//
+//    }
+//}
 
 
 

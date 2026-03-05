@@ -4,7 +4,6 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.DetailMenuUiModel
 
-// Private: Hanya untuk isi dapur ViewModel
 data class DetailMenuInternalState(
     val quantity: Int = 1,
     val notesValue: String = "",

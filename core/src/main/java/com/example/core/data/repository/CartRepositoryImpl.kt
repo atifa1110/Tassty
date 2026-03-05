@@ -26,24 +26,42 @@ class CartRepositoryImpl @Inject constructor(
         menu: Menu,
         restaurant: Restaurant,
         quantity: Int,
+        price: Int,
         summary: String,
         notes: String
     ) {
         val menuEntity = menu.toDatabase(restaurant.id)
         val restaurantEntity = restaurant.toDatabase()
-        return dataSource.addToCart(menuEntity,restaurantEntity,quantity,summary,notes)
+        return dataSource.addToCart(menuEntity,restaurantEntity,
+            quantity,price,summary,notes
+        )
     }
 
     override suspend fun removeCartById(cartId: String) {
         return dataSource.removeCartItem(cartId)
     }
 
+    override suspend fun removeCartsByIds(cartIds: List<String>) {
+        return dataSource.removeCartsByIds(cartIds)
+    }
+
     override suspend fun removeCartByRestaurantId(restaurantId: String) {
         return dataSource.removeCartItemByRestaurantId(restaurantId)
     }
 
+    override suspend fun removeHiddenCart() {
+        return dataSource.removeHiddenCart()
+    }
+
     override suspend fun updateCartQuantity(cartId: String, isIncrement: Boolean) {
         return dataSource.updateCartQuantity(cartId,isIncrement)
+    }
+
+    override suspend fun updateCartIsHidden(
+        cartId: List<String>,
+        isHidden: Boolean
+    ) {
+        return dataSource.updateIsHidden(cartId,isHidden)
     }
 
     override fun observeCartByMenuId(menuId: String): Flow<Cart?> {

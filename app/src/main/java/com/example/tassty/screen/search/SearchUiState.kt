@@ -27,12 +27,12 @@ data class SearchUiState(
     val isFilterSheetVisible: Boolean = false,
     val isSortSheetVisible: Boolean = false,
 
-    val sortList : List<FilterOptionUi> = emptyList(),
-    val priceRanges: List<FilterOptionUi> = emptyList(),
-    val ratingsOptions: List<FilterOptionUi> = emptyList(),
-    val modesOptions: List<FilterOptionUi> = emptyList(),
-    val cuisineOptions: List<FilterOptionUi> = emptyList(),
-    val activeFilters: List<FilterOptionUi> = emptyList(),
+    val sortList : List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val priceRanges: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val ratingsOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val modesOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val cuisineOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val activeFilters: List<FilterOptionUi<FilterCategory>> = emptyList(),
 )
 
 data class SearchInternalState(

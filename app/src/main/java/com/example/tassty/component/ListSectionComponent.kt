@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.FilterCategory
+import com.example.core.ui.model.CardUserUiModel
 import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.CollectionMenuUiModel
@@ -522,7 +523,6 @@ fun LazyListScope.addressVerticalListBlock(
         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
             LocationLardCard(address)
         }
-
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
@@ -643,7 +643,7 @@ fun FoodCategoryGrid (
 
 @Composable
 fun FilterSection(
-    option : List<FilterOptionUi>,
+    option : List<FilterOptionUi<FilterCategory>>,
     onSortClick: () -> Unit
 ) {
     LazyRow(
@@ -671,15 +671,25 @@ fun LazyListScope.filterListSection(
     val items = resource.data.orEmpty()
     when{
         resource.isLoading ->{
-            item{
-                LoadingRowState()
+            items(count = 4){
+                Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)){
+                    ShimmerRestaurantLargeListCard()
+                    Spacer(Modifier.height(12.dp))
+                }
             }
         }
-        resource.errorMessage!=null || items.isEmpty()->{
+        resource.errorMessage!=null->{
             item {
                 ErrorScreen()
             }
         }
+
+        items.isEmpty() && !resource.isLoading -> {
+            item {
+                EmptySearchContent()
+            }
+        }
+
         else -> {
             restaurantMenuListBlock(
                 itemCount = items.size,
@@ -692,23 +702,52 @@ fun LazyListScope.filterListSection(
 }
 
 
-@Preview(showBackground =true)
-@Composable
-fun PreviewList(){
-    Column (Modifier.fillMaxSize()){
-        GridMenuListSection(
-            title = "Suggested menu for you!",
-            menuItems = menusItem,
-            onFavoriteClick = {},
-            onAddToCartClick = {},
-            onNavigateToDetailMenu = {}
+fun LazyListScope.cardUserVerticalListBlock(
+    headerText: String,
+    cards : List<CardUserUiModel>
+) {
+    item {
+        HeaderListBlackTitle(
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
+        Spacer(Modifier.height(12.dp))
+    }
 
-        FoodCategoryGrid(
-            searchQuery = "",
-            filteredCategories = categories,
-            selectedCategoryIds = arrayListOf("1","2","3"),
-            onSelectedCategory = {}
+    items(
+        items = cards,
+        key = { it.id }
+    ) { card ->
+        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+            DebitPaymentCard(card = card, onCheckChanged = {})
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
+
+fun LazyListScope.cardUserSelectedVerticalListBlock(
+    headerText: String,
+    cards : List<CardUserUiModel>,
+    onCardSelected: (String) -> Unit
+) {
+    item {
+        HeaderListBlackTitle(
+            title = headerText,
+            modifier = Modifier.padding(horizontal = 24.dp)
         )
+        Spacer(Modifier.height(12.dp))
+    }
+
+    items(
+        items = cards,
+        key = { it.id }
+    ) { card ->
+        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+            DebitPaymentCard(
+                card = card, isSelected = true,
+                onCheckChanged = {onCardSelected(card.id)}
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }

@@ -79,7 +79,7 @@ fun CategoryContent(
     onNavigateToDetail: (String) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(bottom = 32.dp),
+        modifier = Modifier.fillMaxSize(),
     ) {
         item {
             ScrollableHeaderContent(
@@ -115,6 +115,10 @@ fun CategoryContent(
             resource = uiState.restaurants,
             onNavigateToDetail = onNavigateToDetail
         )
+
+        item {
+            Spacer(Modifier.height(32.dp))
+        }
     }
 }
 
@@ -177,7 +181,7 @@ fun PreviewCategoryScreenSuccess() {
         categoryName = "Ramen",
         imageUrl = "",
         uiState = CategoryUiState(
-            restaurants = Resource(restaurantMenuUiModel),
+            restaurants = Resource(emptyList(), isLoading = true),
             activeFilters = defaultFilter
         ),
         onFilterClick = {},

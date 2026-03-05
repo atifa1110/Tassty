@@ -5,6 +5,7 @@ import com.example.core.data.source.remote.api.AuthApiService
 import com.example.core.data.source.remote.api.CategoryApiService
 import com.example.core.data.source.remote.api.DetailApiService
 import com.example.core.data.source.remote.api.MenuApiService
+import com.example.core.data.source.remote.api.OrderApiService
 import com.example.core.data.source.remote.api.RestaurantApiService
 import com.example.core.data.source.remote.api.ReviewApiService
 import com.example.core.data.source.remote.api.SearchApiService
@@ -105,4 +106,8 @@ object NetworkModule {
     @Provides
     fun provideReviewApi(retrofit: Retrofit): ReviewApiService =
         retrofit.create(ReviewApiService::class.java)
+
+    @Provides
+    fun provideOrderApi(retrofit: Retrofit): OrderApiService =
+        retrofit.create(OrderApiService::class.java)
 }

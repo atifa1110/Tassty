@@ -3,6 +3,7 @@ package com.example.tassty.component
 import android.widget.Space
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,8 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.RestaurantUiModel
+import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 
 @Composable
@@ -70,8 +74,7 @@ fun ShimmerRestaurantGridCard (){
 }
 
 @Composable
-fun ShimmerRestaurantTinyGridCard (
-){
+fun ShimmerRestaurantTinyGridCard (){
     Card(
         modifier = Modifier.width(140.dp), // Adjust width as needed
         shape = RoundedCornerShape(20.dp),
@@ -108,4 +111,62 @@ fun ShimmerRestaurantTinyGridCard (
 
         }
     }
+}
+
+@Composable
+fun ShimmerRestaurantLargeListCard(){
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Neutral20)
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row (modifier = Modifier.fillMaxWidth()){
+                Spacer(
+                    modifier = Modifier.size(100.dp, 112.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .shimmerLoadingAnimation()
+                )
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth().clip(RoundedCornerShape(20.dp))
+                            .height(12.dp)
+                            .shimmerLoadingAnimation()
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .width(140.dp).clip(RoundedCornerShape(20.dp))
+                            .height(12.dp)
+                            .shimmerLoadingAnimation()
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .width(140.dp).clip(RoundedCornerShape(20.dp))
+                            .height(12.dp)
+                            .shimmerLoadingAnimation()
+                    )
+
+                    Spacer(
+                        modifier = Modifier
+                            .width(100.dp).clip(RoundedCornerShape(20.dp))
+                            .height(12.dp)
+                            .shimmerLoadingAnimation()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ShimmerRestaurantCardPreview(){
+    ShimmerRestaurantLargeListCard()
 }

@@ -3,7 +3,7 @@ package com.example.core.ui.mapper
 import com.example.core.domain.model.FilterOption
 import com.example.core.ui.model.FilterOptionUi
 
-fun FilterOption.toUiModel(category: FilterCategory,isSelected: Boolean = false): FilterOptionUi {
+fun FilterOption.toUiModel(category: FilterCategory,isSelected: Boolean = false): FilterOptionUi<FilterCategory> {
     return FilterOptionUi(
         key = this.key,
         label = this.label,
@@ -30,3 +30,4 @@ object FilterIconKeys {
 }
 
 enum class FilterCategory { SORT, PRICE, RATING, PROMO, MODE, CUISINE }
+enum class OrderFilterCategory { ALL, ONGOING, COMPLETED }

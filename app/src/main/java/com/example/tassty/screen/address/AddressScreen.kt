@@ -3,6 +3,7 @@ package com.example.tassty.screen.address
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,8 +28,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
+import com.example.core.ui.mapper.empty
 import com.example.tassty.addresses
 import com.example.tassty.component.AddTopAppBar
+import com.example.tassty.component.EmptyAddressContent
+import com.example.tassty.component.EmptyContent
+import com.example.tassty.component.ErrorScreen
+import com.example.tassty.component.HeaderTitleScreen
+import com.example.tassty.component.ShimmerAddressCard
 import com.example.tassty.component.addressVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -64,25 +71,9 @@ fun AddressContent(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding)
-                .padding(top = 24.dp)
         ) {
             item{
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    text = buildAnnotatedString {
-                        append("My addresses")
-                        withStyle(
-                            style = SpanStyle(color = Orange500)
-                        ) {
-                            append(".")
-                        }
-                    },
-                    style = LocalCustomTypography.current.h2Bold,
-                    color = Neutral100
-                )
-
+                HeaderTitleScreen(title = "My addresses")
                 Spacer(Modifier.height(8.dp))
                 AddressTabContent (
                     selectedType = uiState.selectedTab,
@@ -90,10 +81,36 @@ fun AddressContent(
                 )
             }
 
-            addressVerticalListBlock(
-                headerText = "addresses",
-                addressItems = uiState.addressResource.data.orEmpty()
-            )
+            val resource = uiState.addressResource
+            val address = resource.data.orEmpty()
+            when{
+                resource.isLoading -> {
+                    items(count = 4){
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+                            ShimmerAddressCard()
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
+                }
+                resource.errorMessage!=null ->{
+                    item {
+                        ErrorScreen()
+                    }
+                }
+
+                address.isEmpty() ->{
+                    item {
+                        EmptyAddressContent()
+                    }
+                }
+                else ->{
+                    addressVerticalListBlock(
+                        headerText = "addresses",
+                        addressItems = address
+                    )
+                }
+            }
+
         }
     }
 }
@@ -144,12 +161,11 @@ fun AddressTabContent(
 
 @Preview(showBackground = true)
 @Composable
-fun AddressPreview(
-) {
+fun AddressListPreview() {
     AddressContent(
         uiState = AddressUiState(
-            selectedTab = AddressTab.PERSONAL,
-            addressResource = Resource(addresses)
+            selectedTab = AddressTab.ALL,
+            addressResource = Resource(data = addresses,isLoading = true)
         ),
         onTabSelected = {}
     )

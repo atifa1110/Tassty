@@ -63,6 +63,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AddCardScreen(
+    onNavigateBack:() -> Unit,
     viewModel: AddCardViewModel= hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -78,12 +79,10 @@ fun AddCardScreen(
                 is PaymentResult.Completed -> {
                     val secret = uiState.setupIntentClientSecret
 
-                    Log.e("LUNA_DEBUG", "Stripe Success: $secret")
                     scope.launch (Dispatchers.IO) {
                         val setupIntent = stripe.retrieveSetupIntentSynchronous(secret)
                         val realPmId = setupIntent.paymentMethodId
 
-                        Log.e("LUNA_DEBUG", "Stripe Success: $realPmId")
                         if (realPmId != null) {
                             viewModel.onStripeValidationSuccess(realPmId)
                         }
@@ -101,7 +100,6 @@ fun AddCardScreen(
 
     LaunchedEffect(stripeTrigger) {
         stripeTrigger?.let { stripe->
-            Log.d("LUNA_DEBUG", "Launching Stripe Popup Now!")
             paymentLauncher.confirm(stripe)
             viewModel.onStripeLaunched()
         }
@@ -112,6 +110,7 @@ fun AddCardScreen(
             when (effect) {
                 is AddCardUiEffect.NavigateBack -> {
                     Toast.makeText(context, "Add Payment Success", Toast.LENGTH_SHORT).show()
+                    onNavigateBack()
                 }
                 is AddCardUiEffect.ShowError -> {
                     Toast.makeText(context, effect.message, Toast.LENGTH_LONG).show()
@@ -123,16 +122,37 @@ fun AddCardScreen(
         }
     }
 
-    AddCardContent(
-        uiState = uiState,
-        onCardNameChange = viewModel::onCardNameChange,
-        onCardNumberChange = viewModel::onCardNumberChange,
-        onExpireDateChange = viewModel::onExpireDateChange,
-        onCvvNumberChange = viewModel::onCvvChange,
-        onSaveCardCLicked = {viewModel.onSaveClicked()},
-        onColorSelected = viewModel::onColorSelected,
-        onImageSelected = viewModel::onPatternSelected
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        AddCardContent(
+            uiState = uiState,
+            onCardNameChange = viewModel::onCardNameChange,
+            onCardNumberChange = viewModel::onCardNumberChange,
+            onExpireDateChange = viewModel::onExpireDateChange,
+            onCvvNumberChange = viewModel::onCvvChange,
+            onSaveCardCLicked = { viewModel.onSaveClicked() },
+            onColorSelected = viewModel::onColorSelected,
+            onImageSelected = viewModel::onPatternSelected
+        )
+
+        AnimatedVisibility(
+            visible = uiState.isLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Neutral100.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = Green500)
+                    Spacer(Modifier.height(8.dp))
+                    Text("Securely processing...", color = Neutral10)
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -146,21 +166,6 @@ fun AddCardContent(
     onColorSelected: (CardColorOption) -> Unit,
     onImageSelected:(PatternImage) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedVisibility (
-            visible = uiState.isLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Neutral100.copy(alpha = 0.35f)),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
         Scaffold(
             containerColor = Neutral10,
             bottomBar = {
@@ -284,7 +289,6 @@ fun AddCardContent(
             }
         }
     }
-}
 
 @Composable
 fun CardBackgroundListContent(
@@ -345,25 +349,49 @@ fun CardColorListContent(
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun AddCardScreenPreview() {
-    AddCardContent(
-        uiState = AddCardUiState(
-            selectedColor = colorList[3],
-            selectedImage = patterns[0],
-            cardName = "Atifa Fiorenza",
-            cardNumber = "1234567845678890",
-            expireDate = "1126",
-            cvv = "123",
-            isLoading = true
-        ),
-        onCardNumberChange = {},
-        onCardNameChange = {},
-        onCvvNumberChange = {},
-        onExpireDateChange = {},
-        onSaveCardCLicked = {},
-        onColorSelected = {},
-        onImageSelected = {}
+    val mockUiState = AddCardUiState(
+        selectedColor = colorList[3],
+        selectedImage = patterns[0],
+        cardName = "Luna Fiorenza",
+        cardNumber = "4242424242424242",
+        expireDate = "1226",
+        cvv = "123",
+        isLoading = true
     )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AddCardContent(
+            uiState = mockUiState,
+            onCardNumberChange = {},
+            onCardNameChange = {},
+            onCvvNumberChange = {},
+            onExpireDateChange = {},
+            onSaveCardCLicked = {},
+            onColorSelected = {},
+            onImageSelected = {}
+        )
+
+        AnimatedVisibility(
+            visible = mockUiState.isLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Neutral100.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(color = Green500)
+                    Spacer(Modifier.height(8.dp))
+                    Text("Securely processing...", color = Neutral10)
+                }
+            }
+        }
+    }
 }

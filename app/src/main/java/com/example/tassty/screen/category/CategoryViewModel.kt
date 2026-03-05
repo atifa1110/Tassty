@@ -54,9 +54,7 @@ class CategoryViewModel @Inject constructor(
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private val restaurantFlow = combine(
-        // Stream for Query (use debounce so it will not spam API when typing)
         _internalState.map { it.query }.distinctUntilChanged().debounce { if (it.isNotEmpty()) 800L else 0L },
-        // Stream for filter
         filterData
     ) { query, filters ->
         RestaurantSearchFilter(

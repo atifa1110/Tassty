@@ -37,11 +37,24 @@ class AuthRepositoryImpl @Inject constructor(
         when(response) {
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
+                val authData = response.data
+                if (authData != null) {
+                    authDataStore.updateAuthStatus { current ->
+                        current.copy(
+                            isLoggedIn = true,
+                            name = authData.name,
+                            profileImage = authData.profileImage,
+                            addressName = authData.addressName,
+                            accessToken = authData.accessToken,
+                            refreshToken = authData.refreshToken
+                        )
+                    }
+                }
                 emit(TasstyResponse.Success(response.data?.toDomain(), response.meta))
             }
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun register(
         email: String,
@@ -54,18 +67,21 @@ class AuthRepositoryImpl @Inject constructor(
         when (response) {
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
-                authDataStore.updateAuthStatus { current ->
-                    current.copy(
-                        registrationStep = RegistrationStep.AWAITING_CONFIRMATION,
-                        email = email,
-                        name = current.name
-                    )
+                val authData = response.data
+                if (authData != null) {
+                    authDataStore.updateAuthStatus { current ->
+                        current.copy(
+                            registrationStep = RegistrationStep.AWAITING_CONFIRMATION,
+                            email = email,
+                            name = authData.name
+                        )
+                    }
                 }
-                emit(TasstyResponse.Success(response.data?.toDomain(), response.meta))
+                emit(TasstyResponse.Success(authData?.toDomain(), response.meta))
             }
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun verify(
         email: String,

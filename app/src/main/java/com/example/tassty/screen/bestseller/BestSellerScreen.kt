@@ -25,12 +25,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.component.BestSellerHeader
 import com.example.tassty.component.CategoryTopAppBar
+import com.example.tassty.component.CollectionContent
+import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.FoodWideListCard
 import com.example.tassty.component.SearchBar
+import com.example.tassty.component.ShimmerFoodWideListCard
 import com.example.tassty.component.StatusItemImage
 import com.example.tassty.menusItem
+import com.example.tassty.screen.detailrestaurant.DetailRestaurantEvent
 import com.example.tassty.screen.detailrestaurant.ShoppingCartBottomBar
 import com.example.tassty.ui.theme.Neutral10
 
@@ -41,18 +47,32 @@ fun BestSellerScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BestSellerContent(
-        uiState = uiState
+        uiState = uiState,
+        onFavoriteClick = viewModel::onMenuFavorite
     )
+
+    CustomBottomSheet(
+        visible = uiState.isCollectionSheetVisible,
+        onDismiss = { viewModel.onShowCollectionSheet() }
+    ) {
+        CollectionContent(
+            resource = uiState.collections,
+            onCollectionSelected = {id, check -> viewModel.onCollectionCheckChange(id)},
+            onSaveCollectionClick = {viewModel.onSaveToCollection()},
+            onAddCollectionClick = { viewModel.onShowAddCollectionSheet() }
+        )
+    }
 }
 
 @Composable
 fun BestSellerContent(
-    uiState: BestSellerUiState
+    uiState: BestSellerUiState,
+    onFavoriteClick:(MenuUiModel) -> Unit
 ) {
     Scaffold (
         containerColor = Neutral10,
         bottomBar = {
-            if (uiState.totalItems>0){
+            if (uiState.totalItems > 0){
                 ShoppingCartBottomBar(
                     itemCount = uiState.totalItems,
                     totalPrice = uiState.totalPrice,
@@ -80,11 +100,37 @@ fun BestSellerContent(
                 }
             }
 
-            items(items = uiState.menus.data.orEmpty(), key = {it.id} ) { item ->
-                Column(Modifier.padding(horizontal = 24.dp)) {
-                    FoodWideListCard(menu = item, onFavoriteClick = {} ,onAddToCart = {})
-                    Spacer(Modifier.height(12.dp))
+            val resource = uiState.menus
+            val menus = resource.data.orEmpty()
+            when{
+                resource.isLoading->{
+                    items(count = 4){
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+                            ShimmerFoodWideListCard()
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
                 }
+
+                resource.errorMessage !=null || menus.isEmpty() ->{
+                    item {
+                        ErrorScreen()
+                    }
+                }
+
+                else ->{
+                    items(items = menus, key = {it.id} ) { item ->
+                        Column(Modifier.padding(horizontal = 24.dp)) {
+                            FoodWideListCard(
+                                menu = item,
+                                onFavoriteClick = {onFavoriteClick(item)},
+                                onAddToCart = {}
+                            )
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -144,9 +190,10 @@ fun ScrollableBestHeaderContent(
 fun BestSellerPreview(){
     BestSellerContent(
         uiState = BestSellerUiState(
-            menus = Resource(data = menusItem),
+            menus = Resource(data = menusItem,isLoading = false),
             totalItems = 0,
             totalPrice = 120000
-        )
+        ),
+        onFavoriteClick = {}
     )
 }

@@ -129,7 +129,7 @@ class AddCardViewModel @Inject constructor(
 
                     is TasstyResponse.Success -> {
                         val secret = response.data ?: return@collect
-                        _uiState.update { it.copy(isLoading = false) }
+                        _uiState.update { it.copy(isLoading = true, setupIntentClientSecret = secret) }
                         _stripeTrigger.value = createStripeParams(secret)
                     }
                 }

@@ -3,6 +3,7 @@ package com.example.tassty.screen.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.usecase.LoginAndConnectChatUseCase
 import com.example.core.domain.usecase.LoginEmailPasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -21,13 +22,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginEmailPasswordUseCase: LoginEmailPasswordUseCase
+    private val loginAndChaConnectChatUseCase: LoginAndConnectChatUseCase
 ): ViewModel(){
-    // --- STATE FLOW ---
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    // --- EVENT FLOW (SharedFlow) ---
     private val _events = MutableSharedFlow<LoginEvent>()
     val events: SharedFlow<LoginEvent> = _events.asSharedFlow()
 
@@ -41,16 +41,14 @@ class LoginViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(password = password, passwordError = null)
     }
 
-    // Button enable: hanya cek non-empty, tanpa validasi
     val isLoginEnabled: StateFlow<Boolean> = _uiState.map { state ->
         state.email.isNotBlank() && state.password.isNotBlank()
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     fun resetLoginInput(){
-        _uiState.update { it.copy(
-            isBottomSheetVisible = false,
-            bottomSheetMessage = null
-        ) }
+        _uiState.update {
+            it.copy(isBottomSheetVisible = false, bottomSheetMessage = null)
+        }
     }
 
     fun setBottomSheetVisible(isVisible: Boolean) {
@@ -68,19 +66,14 @@ class LoginViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            loginEmailPasswordUseCase.invoke(uiState.value.email, uiState.value.password)
+            loginAndChaConnectChatUseCase.invoke(uiState.value.email, uiState.value.password)
                 .collect { result ->
                     when(result) {
                         is TasstyResponse.Error -> {
-
-                                _uiState.update {
-                                    it.copy(bottomSheetMessage = result.meta.message)
-                                }
-
-                                  _uiState.update { it.copy(isLoading = false) }
-
-                                // 4. Emit Event: Sinyal untuk Composable agar tampilkan sheet
-                                _events.emit(LoginEvent.ShowBottomSheet)
+                            _uiState.update {
+                                it.copy(isLoading = false, bottomSheetMessage = result.meta.message)
+                            }
+                            _events.emit(LoginEvent.ShowBottomSheet)
                         }
 
                         is TasstyResponse.Loading -> _uiState.update { it.copy(isLoading = true) }
@@ -93,14 +86,3 @@ class LoginViewModel @Inject constructor(
         }
     }
 }
-
-private val MINIMUM_LOADING_TIME = 500L
-//suspend fun handleMinimumDelay(startTime: Long) {
-//    val elapsedTime = System.currentTimeMillis() - startTime
-//    val requiredDelay = MINIMUM_LOADING_TIME - elapsedTime
-//
-//    if (requiredDelay > 0) {
-//        // Tunda hanya jika waktu pemrosesan API lebih cepat dari batas minimum
-//        delay(requiredDelay)
-//    }
-//}

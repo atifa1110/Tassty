@@ -1,5 +1,6 @@
 package com.example.tassty
 
+import androidx.compose.runtime.Composable
 import com.example.core.domain.model.AddressType
 import com.example.core.domain.model.Collection
 import com.example.core.domain.model.DiscountType
@@ -13,23 +14,36 @@ import com.example.core.domain.model.VoucherStatus
 import com.example.core.domain.model.VoucherType
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.FilterIconKeys
+import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.mapper.toUiModel
+import com.example.core.ui.model.CardUserUiModel
 import com.example.core.ui.model.CartGroupUiModel
 import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.CategoryUiModel
+import com.example.core.ui.model.ChatUiModel
 import com.example.core.ui.model.CollectionMenuUiModel
 import com.example.core.ui.model.CollectionRestaurantUiModel
 import com.example.core.ui.model.CollectionRestaurantWithMenuUiModel
 import com.example.core.ui.model.DetailMenuUiModel
+import com.example.core.ui.model.DetailOrderUiModel
 import com.example.core.ui.model.DetailRestaurantUiModel
+import com.example.core.ui.model.DriverUiModel
 import com.example.core.ui.model.FilterOptionUi
+import com.example.core.ui.model.NotificationType
+import com.example.core.ui.model.NotificationUiModel
 import com.example.core.ui.model.OptionGroupUiModel
 import com.example.core.ui.model.OptionUiModel
+import com.example.core.ui.model.OrderItemUiModel
+import com.example.core.ui.model.OrderStatus
+import com.example.core.ui.model.OrderUiModel
+import com.example.core.ui.model.PaymentChannelUiModel
 import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantStatusResult
 import com.example.core.ui.model.ReviewUiModel
+import com.example.core.ui.model.SenderType
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
+import com.example.tassty.component.OrderItem
 import com.example.tassty.model.ChipFilterOption
 import org.threeten.bp.LocalDate
 
@@ -375,7 +389,7 @@ val addresses = listOf(
         longitude = 106.8378,
         addressName = "Head Office - Sinar Raya",
         landmarkDetail = "Gedung Tower 3, lantai 15 (samping lift B)",
-        addressType = AddressType.BUSINESS,
+        addressType = AddressType.PERSONAL,
         isPrimary = false,
         isSelected = false
     )
@@ -426,4 +440,241 @@ val defaultFilter = listOf(
         label = "Cuisine",
         category = FilterCategory.CUISINE
     )
+)
+
+val cardList = listOf(
+    CardUserUiModel(
+        id = "CARD-001",
+        stripeId = "pm_123444243",
+        maskedNumber = "**** **** **** 4242",
+        cardBrand = "visa",
+        expDate = "11/28",
+        cardholderName = "Rafiq Daniel",
+        themeColor = "pink",
+        themeBackground = "pattern_1",
+        isActive = true,
+        isSelected = true
+    ),
+    CardUserUiModel(
+        id = "CARD-002",
+        stripeId = "pm_1323242",
+        maskedNumber = "**** **** **** 4242",
+        cardBrand = "mastercard",
+        expDate = "11/28",
+        cardholderName = "Rafiq Daniel",
+        themeColor = "orange",
+        themeBackground = "pattern_3",
+        isActive = true,
+        isSelected = false
+    )
+)
+
+val paymentChannel = listOf(
+    PaymentChannelUiModel(
+        businessId = "PAY-001",
+        channelCode = "BCA",
+        name = "BCA virtual account",
+        channelCategory = "Virtual Account",
+        iconKey = "BCA",
+        isEnabled = true,
+        isSelected = false
+    ),
+    PaymentChannelUiModel(
+        businessId = "PAY-002",
+        channelCode = "BRI",
+        name ="BRI virtual account",
+        channelCategory = "Virtual Account",
+        iconKey = "BRI",
+        isEnabled = false,
+        isSelected = false
+    ),
+    PaymentChannelUiModel(
+        businessId = "PAY-003",
+        channelCode = "OVO",
+        name ="OVO e-wallet",
+        channelCategory = "E-Wallet",
+        iconKey = "OVO",
+        isEnabled = true,
+        isSelected = false
+    ),
+    PaymentChannelUiModel(
+        businessId = "PAY-004",
+        channelCode = "DANA",
+        name ="Dana e-wallet",
+        channelCategory =  "E-Wallet",
+        iconKey = "DANA",
+        isEnabled = true,
+        isSelected = false
+    )
+)
+
+val orderList= listOf(
+    OrderUiModel(
+        id="ORD-001",
+        restaurantName = "Kopi Kenangan - Depok Town Square",
+        restaurantImage = "",
+        status = OrderStatus.PENDING,
+        displayHeader = "Today",
+        displayTime = "09:35 AM",
+        orderDate = LocalDate.of(2026,2,28),
+        orderNumber = "",
+        finalAmount = "Rp150.000",
+        queueNumber = "#001"
+    ),
+    OrderUiModel(
+        id="ORD-002",
+        restaurantName = "Indah Cafe",
+        restaurantImage = "",
+        status = OrderStatus.PLACED,
+        displayHeader = "Today",
+        orderDate = LocalDate.of(2026,2,28),
+        displayTime = "09:35 AM",
+        orderNumber = "",
+        finalAmount = "Rp150.000",
+        queueNumber = "#001"
+    ),
+    OrderUiModel(
+        id="ORD-003",
+        restaurantName = "Indah Cafe",
+        restaurantImage = "",
+        status = OrderStatus.COMPLETED,
+        orderDate = LocalDate.of(2026,2,27),
+        displayHeader = "Yesterday",
+        displayTime = "08:00 AM",
+        orderNumber = "",
+        finalAmount = "Rp100.000",
+        queueNumber = "#012"
+    ),
+    OrderUiModel(
+        id="ORD-004",
+        restaurantName = "Indah Cafe",
+        restaurantImage = "",
+        status = OrderStatus.COMPLETED,
+        orderDate = LocalDate.of(2026,2,27),
+        displayHeader = "Yesterday",
+        displayTime = "08:00 AM",
+        orderNumber = "",
+        finalAmount = "Rp100.000",
+        queueNumber = "#025"
+    )
+)
+
+val orderFilters: List<FilterOptionUi<OrderFilterCategory>> = listOf(
+    FilterOptionUi(
+        key = "all",
+        label = "All",
+        category = OrderFilterCategory.ALL,
+        isSelected = true
+    ),
+    FilterOptionUi(
+        key = "ongoing",
+        label = "Ongoing",
+        category = OrderFilterCategory.ONGOING
+    ),
+    FilterOptionUi(
+        key = "completed",
+        label = "Completed",
+        category = OrderFilterCategory.COMPLETED
+    )
+)
+
+@Composable
+fun getFilterIconRes(filter: FilterOptionUi<OrderFilterCategory>): Int {
+    return when (filter.key) {
+        "all" -> R.drawable.collection
+        "ongoing" -> R.drawable.delivery
+        "completed" -> R.drawable.category
+        else -> R.drawable.flag
+    }
+}
+
+val dummyNotifications = listOf(
+    NotificationUiModel(
+        id = "1",
+        title = "Your order has been taken by the driver!",
+        description = "Lorem ipsum dolor sit amet",
+        displayTime = "15.00 PM",
+        displayHeader = "Today",
+        isRead = true,
+        type = NotificationType.ORDER
+    ),
+    NotificationUiModel(
+        id = "2",
+        title = "45% Special Discount for Tassty Membership!",
+        description = "Lorem ipsum dolor sit amet",
+        displayTime = "14.25 PM",
+        displayHeader = "Today",
+        isRead = false,
+        type = NotificationType.DISCOUNT
+    ),
+    NotificationUiModel(
+        id = "3",
+        title = "45% Special Discount for Tassty Membership!",
+        description = "Lorem ipsum dolor sit amet",
+        displayTime = "14.25 PM",
+        displayHeader = "Yesterday",
+        isRead = false,
+        type = NotificationType.DISCOUNT
+    )
+)
+
+val dummyChats = listOf(
+    ChatUiModel(
+        id = "1",
+        senderName = "Lucas Nathan",
+        lastMessage = "Your order on its way and should arrive shortly",
+        senderProfileImage = "https://example.com/p1.jpg",
+        displayTime = "27/09/24",
+        unreadCount = 2,
+        isOnline = false,
+        senderType = SenderType.DRIVER
+    ),
+    ChatUiModel(
+        id = "2",
+        senderName = "Indah Café",
+        lastMessage = "Your order will be prepared and delivered now",
+        senderProfileImage = "https://example.com/p2.jpg",
+        displayTime = "27/09/24",
+        unreadCount = 0,
+        isOnline = true,
+        senderType = SenderType.RESTAURANT
+    )
+)
+
+val listOrder = listOf(
+    OrderItemUiModel(
+        id = "ITEM-001",
+        quantity = 1,
+        menuName = menus[0].name,
+        notesSummary = "Pilih Varian Kopi: Kenangan Blend\n" +
+                "Sugar Level: Normal Sugar\n" +
+                "Size: Iced Jumbo\n" +
+                "Milk Option: Fresh Milk\n" +
+                "Ice level: Less Ice\n" +
+                "Syrup: Hazelnut Syrup"
+    ),
+    OrderItemUiModel(
+        id = "ITEM-002",
+        quantity = 2,
+        menuName = menus[1].name,
+        notesSummary = "Note : -"
+    )
+)
+val dummyDetail = DetailOrderUiModel(
+    id = "DET-001",
+    orderNumber = "T-12340002",
+    userAddress = addresses[0],
+    restaurant = restaurantUiModel[0],
+    userId = "",
+    status = OrderStatus.PLACED,
+    totalPrice = 15000,
+    deliveryFee = 0,
+    discount = 10000,
+    finalAmount = 140000,
+    paymentStatus = "",
+    cardPayment = cardList[0],
+    createdAt = "",
+    queueNumber = "#001",
+    driver = DriverUiModel(id = "DRI-001", name = "Luchas",4.7, profileImage = ""),
+    orderItems = listOrder
 )

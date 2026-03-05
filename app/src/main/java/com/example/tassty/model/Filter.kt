@@ -92,7 +92,7 @@ data class ChipFilterOption(
  * Helper function untuk mapping active chips.
  * Pindahkan ke file terpisah agar bisa dipakai di SearchViewModel juga.
  */
-fun mapToActiveFilters(filterData: FilterDataState, data: FilterState): List<FilterOptionUi> {
+fun mapToActiveFilters(filterData: FilterDataState, data: FilterState): List<FilterOptionUi<FilterCategory>> {
     return data.activeFilters.map { placeholder ->
         when (placeholder.category) {
             FilterCategory.SORT -> {

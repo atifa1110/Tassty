@@ -10,11 +10,8 @@ import javax.inject.Inject
 class AddCardToStripeUseCase @Inject constructor(
     private val repository: UserRepository
 ) {
-    // Ambil Secret
     fun getSecret(): Flow<TasstyResponse<String>> = repository.getSetupIntentSecret()
 
-
-    // Simpan Final ke Backend
     fun finalize(id: String, color: String, background: String): Flow<TasstyResponse<String>> =
         repository.saveCardInfo(id, color,background)
 }

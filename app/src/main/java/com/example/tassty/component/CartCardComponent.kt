@@ -85,9 +85,7 @@ fun CartListCard(
                             style = LocalCustomTypography.current.h5Bold,
                             color = Neutral100
                         )
-                        val notesDisplay = if (cart.summary.isNotEmpty()) {
-                            cart.formattedDisplay
-                        } else {
+                        val notesDisplay = cart.summary.ifEmpty {
                             "Notes: -"
                         }
                         NotesText(notes = notesDisplay)

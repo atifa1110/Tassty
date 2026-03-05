@@ -14,6 +14,7 @@ import com.example.core.domain.usecase.ObserveIsMenuFavoriteUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
 import com.example.core.domain.utils.mapToResource
 import com.example.core.domain.utils.toListState
+import com.example.core.data.mapper.toDomain
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.DetailMenuUiModel
@@ -207,7 +208,6 @@ class DetailMenuViewModel @Inject constructor(
             try {
                 saveMenuCollectionsUseCase(
                     menu = menu.toDomain(),
-                    restaurant = menu.restaurant.toDomain(),
                     selectedCollectionIds = selectedCollectionIds
                 )
 
@@ -224,9 +224,11 @@ class DetailMenuViewModel @Inject constructor(
             }
         }
     }
+
     private fun handleAddToCart() = viewModelScope.launch {
         val state = uiState.value
         val detail = state.detail.data ?: return@launch
+        val totalPrice = state.cartTotalPrice
 
         val missingGroups = detail.optionGroups.filter { it.required && it.options.none { opt -> opt.isSelected } }
 
@@ -238,7 +240,8 @@ class DetailMenuViewModel @Inject constructor(
         val selectedOptionsSummary = detail.optionGroups
             .filter { g -> g.options.any { it.isSelected } }
             .joinToString("\n") { g ->
-                "${g.title}: ${g.options.filter { it.isSelected }.joinToString { it.name }}"
+                val selectedNames = g.options.filter { it.isSelected }.joinToString { it.name }
+                "${g.title}: $selectedNames"
             }
 
         addCartMenuUseCase(
@@ -246,7 +249,8 @@ class DetailMenuViewModel @Inject constructor(
             restaurant = detail.restaurant.toDomain(),
             quantity = state.quantity,
             summary = selectedOptionsSummary,
-            notes = state.notesValue
+            notes = state.notesValue,
+            totalPrice = totalPrice
         )
         val message = if (state.isEditMode) "Cart updated successfully!" else "Added to cart!"
         _uiEffect.send(UiEvent.NavigateBackWithResult(detail.restaurant.id, message))

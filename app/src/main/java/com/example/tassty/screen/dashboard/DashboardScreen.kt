@@ -45,7 +45,9 @@ fun DashboardScreen(
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
-    onNavigateToPayment: ()-> Unit
+    onNavigateToCard: ()-> Unit,
+    onNavigateToOrder: ()-> Unit,
+    onNavigateToPayment: (String, String) -> Unit,
 ){
 
     val bottomNavController = rememberNavController()
@@ -77,6 +79,8 @@ fun DashboardScreen(
             onNavigateToDetailMenu = onNavigateToDetailMenu,
             onNavigateToVoucher = onNavigateToVoucher,
             onNavigateToAddress = onNavigateToAddress,
+            onNavigateToCard = onNavigateToCard,
+            onNavigateToOrder = onNavigateToOrder,
             onNavigateToPayment = onNavigateToPayment
         )
     }

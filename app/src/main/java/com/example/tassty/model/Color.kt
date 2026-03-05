@@ -44,3 +44,23 @@ val patterns = listOf(
     PatternImage("pattern_2",R.drawable.card_pattern_2),
     PatternImage("pattern_3",R.drawable.card_pattern_3)
 )
+
+// Helper untuk mencari Warna
+fun String.toCardColor(): CardColorOption {
+    return colorList.find { it.id == this } ?: colorList.first() // default ke pink jika tidak ketemu
+}
+
+// Helper untuk mencari Pattern
+fun String.toPatternRes(): Int {
+    return patterns.find { it.id == this }?.imageRes ?: R.drawable.card_pattern_1
+}
+
+
+fun String.toLogoRes(): Int {
+    return when (this.lowercase()) {
+        "visa" -> R.drawable.visa
+        "mastercard" -> R.drawable.mastercard
+        else -> R.drawable.credit_card
+    }
+}
+

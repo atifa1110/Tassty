@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NorthEast
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -21,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -89,6 +92,7 @@ fun EmptyContent(
     subtitle: String,
     buttonText: String,
     icon: Int,
+    isButton: Boolean = true
 ){
     Column (
         modifier = Modifier
@@ -127,29 +131,31 @@ fun EmptyContent(
                 textAlign = TextAlign.Center
             )
             Text(
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = subtitle,
                 style = LocalCustomTypography.current.bodyMediumRegular,
                 color = Neutral70
             )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = buttonText,
-                    style = LocalCustomTypography.current.bodyMediumMedium,
-                    color = Orange500
-                )
-                Spacer(Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(R.drawable.arrow_left_up),
-                    contentDescription = "arrow click",
-                    tint = Orange500,
-                    modifier = Modifier.size(16.dp)
-                )
+            if(isButton){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = buttonText,
+                        style = LocalCustomTypography.current.bodyMediumMedium,
+                        color = Orange500
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        painter = painterResource(R.drawable.arrow_left_up),
+                        contentDescription = "arrow click",
+                        tint = Orange500,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
     }
@@ -162,6 +168,17 @@ fun EmptyCartContent(){
         subtitle = stringResource(R.string.start_exploring_your_favorite),
         buttonText = "Find recommended restaurants",
         icon = R.drawable.empty_cart
+    )
+}
+
+@Composable
+fun EmptyAddressContent(){
+    EmptyContent(
+        title = "Where should we deliver?",
+        subtitle = "You don't have any saved addresses right now. Add one to get started!",
+        buttonText = "Find recommended restaurants",
+        icon = R.drawable.empty_cart,
+        isButton = false
     )
 }
 
@@ -191,9 +208,44 @@ fun EmptyVoucherContent(){
         title = "Your list is empty",
         subtitle = "You don't have any available voucher right now, please stay tune",
         buttonText = "",
-        icon = R.drawable.phone_boarding
+        icon = R.drawable.phone_boarding,
+        isButton = false
     )
 }
+
+@Composable
+fun EmptyChatContent(){
+    EmptyContent(
+        title = "Your message is empty",
+        subtitle = "The message from your order & Driver \nwill be displayed here.",
+        buttonText = "",
+        icon = R.drawable.phone_boarding,
+        isButton = false
+    )
+}
+
+@Composable
+fun EmptyNotificationContent(){
+    EmptyContent(
+        title = "Your notification is empty",
+        subtitle = "You haven't received any notifications yet. \nWe'll let you know when something arrives!",
+        buttonText = "",
+        icon = R.drawable.phone_boarding,
+        isButton = false
+    )
+}
+
+@Composable
+fun EmptyOrderContent(){
+    EmptyContent(
+        title = "No order yet?",
+        subtitle = "It looks like you haven't ordered anything. \nLet’s find something delicious for you!",
+        buttonText = "",
+        icon = R.drawable.phone_boarding,
+        isButton = false
+    )
+}
+
 
 @Composable
 fun DoubleCheckContent(){
@@ -268,6 +320,7 @@ fun ErrorScreen(){
         Image(
             painter = painterResource(R.drawable.sorry),
             contentDescription = "Sorry",
+            contentScale = ContentScale.FillWidth
         )
 
         Spacer(Modifier.height(12.dp))
@@ -342,10 +395,6 @@ fun ErrorListState(
 @Preview(showBackground = true)
 @Composable
 fun ErrorPreview(){
-    Column (modifier = Modifier.fillMaxSize().background(Neutral10),
-
-    ){
-        EmptyCollectionContent()
-        EmptyFavoriteContent()
-    }
+    EmptySearchContent()
 }
+

@@ -17,6 +17,7 @@ import com.example.core.domain.usecase.InitializeSystemCollectionsUseCase
 import com.example.core.domain.usecase.ObserveFavoriteMenuIdsUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
 import com.example.core.domain.utils.toListState
+import com.example.core.data.mapper.toDomain
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.MenuUiModel
@@ -182,7 +183,6 @@ class HomeViewModel @Inject constructor(
             try {
                 saveMenuCollectionsUseCase(
                     menu = menu.toDomain(),
-                    restaurant = menu.restaurant.toDomain(),
                     selectedCollectionIds = selectedCollectionIds
                 )
 

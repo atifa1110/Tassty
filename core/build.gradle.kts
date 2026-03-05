@@ -1,9 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+val localProps = Properties()
+val localFile = rootProject.file("local.properties")
+if (localFile.exists()) {
+    localFile.inputStream().use { localProps.load(it) }
+}
+
+val streamKey: String = localProps.getProperty("STREAM_API_KEY") ?: ""
 
 android {
     namespace = "com.example.core"
@@ -14,6 +24,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        buildConfigField("String", "STREAM_API_KEY", "\"$streamKey\"")
     }
 
     buildTypes {
@@ -29,6 +41,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -70,4 +87,7 @@ dependencies {
 
     implementation(libs.stripe.android)
     implementation(libs.androidx.datastore.preferences)
+
+    implementation(libs.stream.chat.client)
+    implementation(libs.stream.chat.compose)
 }

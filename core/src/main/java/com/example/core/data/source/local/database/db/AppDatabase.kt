@@ -32,7 +32,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun restaurantDao(): RestaurantDao
     abstract fun menuDao(): MenuDao
     abstract fun collectionMenuDao(): CollectionMenuDao
-    abstract fun favoriteQueryDao(): FavoriteQueryDao
     abstract fun collectionDao() : CollectionDao
     abstract fun cleanupDao() : CleanupDao
     abstract fun favoriteRestaurantDao() : FavoriteRestaurantDao

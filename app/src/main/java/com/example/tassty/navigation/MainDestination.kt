@@ -18,26 +18,27 @@ import com.example.tassty.navigation.CategoryDestination.nameArg
 import com.example.tassty.screen.addcard.AddCardScreen
 import com.example.tassty.screen.address.AddressScreen
 import com.example.tassty.screen.bestseller.BestSellerScreen
+import com.example.tassty.screen.card.CardScreen
 import com.example.tassty.screen.category.CategoryScreen
 import com.example.tassty.screen.detailcollection.CollectionDetailScreen
 import com.example.tassty.screen.collection.CollectionScreen
 import com.example.tassty.screen.dashboard.DashboardScreen
 import com.example.tassty.screen.detailmenu.DetailMenuScreen
+import com.example.tassty.screen.detailorder.DetailOrderScreen
 import com.example.tassty.screen.detailrestaurant.DetailRestaurantScreen
 import com.example.tassty.screen.favorite.FavoriteScreen
 import com.example.tassty.screen.nearby.NearbyRestaurantScreen
+import com.example.tassty.screen.orders.OrderScreen
 import com.example.tassty.screen.payment.PaymentScreen
 import com.example.tassty.screen.recommended.RecommendedRestaurantScreen
 import com.example.tassty.screen.search.SearchRoute
 import com.example.tassty.screen.voucher.VoucherScreen
 
-// this is container for all Bottom Navigation
 object MainGraph : TasstyNavigationDestination {
     override val route = "main_graph"
     override val destination = "main_graph_destination"
 }
 
-// MainDestination adalah Composable (Screen) yang akan menampung Bottom Navigation
 object MainDestination : TasstyNavigationDestination {
     override val route: String = "main_route"
     override val destination: String = "main_destination"
@@ -171,28 +172,65 @@ object CategoryDestination : TasstyNavigationDestination {
         return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
     }
 }
+
 object NearbyDestination : TasstyNavigationDestination {
     override val route: String = "nearby"
     override val destination: String = "nearby"
 }
 
-
-
 object AddressDestination : TasstyNavigationDestination {
     override val route: String = "address"
     override val destination: String = "address"
 }
-
-
 object PaymentDestination : TasstyNavigationDestination {
     override val route: String = "payment"
     override val destination: String = "payment"
+
+    const val idArg = "id"
+    const val totalArg = "total"
+    private const val IdNullMessage = "Id is null."
+
+    val routeWithArgs = "${route}/{${idArg}}?${totalArg}={${totalArg}}"
+
+    fun createRoute(id: String, total: String): String {
+        return "${route}/$id?${totalArg}=$total"
+    }
+
+    fun getId(savedStateHandle: SavedStateHandle): String {
+        return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
+    }
 }
 
-
+object CardDestination : TasstyNavigationDestination {
+    override val route: String = "card"
+    override val destination: String = "card"
+}
 object AddCardDestination : TasstyNavigationDestination {
     override val route: String = "add_card"
     override val destination: String = "add_card"
+}
+
+object OrderDestination : TasstyNavigationDestination {
+    override val route: String = "order"
+    override val destination: String = "order"
+}
+
+object DetailOrderDestination : TasstyNavigationDestination {
+    override val route: String = "detail_order"
+    override val destination: String = "detail_order"
+
+    const val idArg = "id"
+    private const val IdNullMessage = "Id is null."
+
+    val routeWithArgs = "${route}/{${idArg}}"
+
+    fun createRoute(id: String): String {
+        return "${route}/$id"
+    }
+
+    fun getId(savedStateHandle: SavedStateHandle): String {
+        return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
+    }
 }
 
 
@@ -212,8 +250,11 @@ fun NavGraphBuilder.mainGraph(
     onNavigateToBestSeller:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
-    onNavigateToPayment: ()-> Unit,
-    onNavigateToAddCard: ()-> Unit
+    onNavigateToPayment: (String, String)-> Unit,
+    onNavigateToCard:() -> Unit,
+    onNavigateToAddCard: ()-> Unit,
+    onNavigateToOrder: ()-> Unit,
+    onNavigateToDetailOrder:(String) -> Unit
 ) {
     navigation(
         route = MainGraph.route,
@@ -231,6 +272,8 @@ fun NavGraphBuilder.mainGraph(
                 onNavigateToDetailMenu = onNavigateToDetailMenu,
                 onNavigateToVoucher = onNavigateToVoucher,
                 onNavigateToAddress = onNavigateToAddress,
+                onNavigateToCard = onNavigateToCard,
+                onNavigateToOrder = onNavigateToOrder,
                 onNavigateToPayment = onNavigateToPayment
             )
         }
@@ -371,15 +414,49 @@ fun NavGraphBuilder.mainGraph(
         }
 
         composable(
-            route = PaymentDestination.route,
+            route = PaymentDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(PaymentDestination.totalArg) {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val total = backStackEntry.arguments?.getString(PaymentDestination.totalArg) ?: ""
+            PaymentScreen(
+                total = total,
+                onNavigateToOrderDetail = onNavigateToDetailOrder
+            )
+        }
+
+        composable(
+            route = CardDestination.route,
         ) {
-            PaymentScreen (onNavigateToAddCard = onNavigateToAddCard)
+            CardScreen(
+                onNavigateToAddCard = onNavigateToAddCard
+            )
         }
 
         composable(
             route = AddCardDestination.route,
         ) {
-            AddCardScreen()
+            AddCardScreen(
+                onNavigateBack = onNavigateBack
+            )
+        }
+
+        composable(
+            route = OrderDestination.route,
+        ) {
+            OrderScreen(
+                onNavigateToPayment = onNavigateToPayment,
+                onNavigateToDetailOrder = onNavigateToDetailOrder
+            )
+        }
+
+        composable(
+            route = DetailOrderDestination.routeWithArgs,
+        ) {
+            DetailOrderScreen()
         }
 
     }

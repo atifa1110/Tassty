@@ -13,7 +13,6 @@ data class CartUiState(
 
     // Status Seleksi
     val isSelectAll: Boolean = false,
-
     // Informasi Pengiriman & Promo
     val selectedAddress: UserAddressUiModel? = null,
     val availableAddresses:  Resource<List<UserAddressUiModel>> = Resource(),
@@ -46,7 +45,8 @@ data class CartInternalState(
     val isDoubleCheckSheetVisible: Boolean = false,
     val isVoucherSheetVisible: Boolean = false,
     val isRemoveItemSheetVisible: Boolean = false,
-    val cartItemToRemove: CartItemUiModel? = null
+    val cartItemToRemove: CartItemUiModel? = null,
+    val checkout: Resource<String> = Resource(),
 )
 
 sealed class CartUiEvent {
@@ -63,22 +63,25 @@ sealed class CartUiEvent {
     object OnDismissRemoveItemSheet : CartUiEvent()
     data class OnRemoveCartItem(val cartId: String) : CartUiEvent()
 
-    // Interaksi Lokasi
+    // Location Sheet Interaction
     object OnShowLocationSheet : CartUiEvent()
     object OnDismissLocationSheet : CartUiEvent()
     object OnSetLocationClicked : CartUiEvent() // Choose one of the address
     data class OnAddressSelectionChanged(val addressId: String) : CartUiEvent() // Check Address from list
 
-    // Interaksi Voucher
-    object OnShowVoucherSheet : CartUiEvent() // Buka Sheet
-    object OnDismissVoucherSheet : CartUiEvent() // Tutup Sheet (tanpa menyimpan data)
+    // Voucher Sheet Interaction
+    object OnShowVoucherSheet : CartUiEvent()
+    object OnDismissVoucherSheet : CartUiEvent()
     object OnApplyVoucherClicked : CartUiEvent()
     data class OnVoucherSelectionChanged(val voucherId: String) : CartUiEvent()
 
-    // Finalisasi
     object OnCheckoutClicked : CartUiEvent()
-    object OnAddMoreClicked : CartUiEvent()
 
     object OnShowDoubleCheckSheet : CartUiEvent()
     object OnDismissDoubleCheckSheet : CartUiEvent()
+}
+
+sealed interface CartEvent {
+    data class ShowError(val message: String) : CartEvent
+    data class CheckoutSuccess(val id: String, val total: String) : CartEvent
 }

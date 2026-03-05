@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import android.os.Build
 import android.util.Log
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
@@ -54,6 +55,7 @@ import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
+import org.threeten.bp.LocalDate
 
 @Composable
 fun CustomBottomSheet(
@@ -525,7 +527,7 @@ fun DetailScheduleContent(
 
 @Composable
 fun SortContent(
-    sortList: List<FilterOptionUi>,
+    sortList: List<FilterOptionUi<FilterCategory>>,
     onUpdateDraftFilter: (FilterCategory, String) -> Unit,
     onApplySort: () -> Unit,
     onResetSort: () -> Unit
@@ -574,10 +576,10 @@ fun SortContent(
 
 @Composable
 fun FilterContent(
-    rupiahPriceRanges: List<FilterOptionUi>,
-    restoRatingsOptions: List<FilterOptionUi>,
-    modesOptions: List<FilterOptionUi>,
-    cuisineOption: List<FilterOptionUi>,
+    rupiahPriceRanges: List<FilterOptionUi<FilterCategory>>,
+    restoRatingsOptions: List<FilterOptionUi<FilterCategory>>,
+    modesOptions: List<FilterOptionUi<FilterCategory>>,
+    cuisineOption: List<FilterOptionUi<FilterCategory>>,
     onUpdateDraftFilter: (FilterCategory, String) -> Unit,
     onApplyFilter:() -> Unit,
     onResetFilter:() -> Unit
@@ -1064,26 +1066,71 @@ fun MenuAddToCartContent(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewModalDialog() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+fun DatePickerContent(
+    currentMonth: LocalDate,
+    startDate : LocalDate?,
+    endDate: LocalDate?,
+    onMonthChange: (LocalDate) -> Unit,
+    onDateClick: (LocalDate) -> Unit,
+    onSelectClick: () -> Unit,
+    onCancelClick: () -> Unit
+){
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        .background(Neutral10)
+        .padding(top = 24.dp, bottom = 32.dp)
     ) {
-        CollectionAddContent(
-            collectionName="",
-            onValueName={},
-            onDismissClick={},
-            onAddCollection={},
-        )
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Select Date",
+                style = LocalCustomTypography.current.h3Bold,
+                color = Neutral100
+            )
+            TopBarButton(
+                icon = Icons.Default.Clear,
+                boxColor = Neutral10, iconColor = Neutral100
+            ) { onCancelClick() }
+        }
+        Divider32()
 
-        CartEditContent(
-            text = "",
-            onTextChange = {},
-            onUpdateCart = {}
-        )
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            DatePicker(
+                currentMonth = currentMonth,
+                startDate = startDate, endDate = endDate,
+                onMonthChange = onMonthChange, onDateClick = onDateClick
+            )
+            ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                labelResId = R.string.select,
+                onClick = onSelectClick
+            )
+        }
     }
 }
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewModalDialog() {
+//    val mockStartDate = LocalDate.of(2026, 4, 19)
+//    val mockEndDate = LocalDate.of(2026, 4, 23)
+//    Column(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(24.dp),
+//        verticalArrangement = Arrangement.spacedBy(10.dp)
+//    ) {
+//        DatePickerContent(
+//            startDate = mockStartDate,
+//            endDate = mockEndDate
+//        )
+//    }
+//}

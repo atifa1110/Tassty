@@ -1,5 +1,9 @@
 package com.example.tassty.screen.cart
 
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,12 +14,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,18 +54,38 @@ import com.example.tassty.component.SelectLocationCard
 import com.example.tassty.component.SelectPaymentCard
 import com.example.tassty.component.TextButton
 import com.example.tassty.component.cartVerticalListBlock
+import com.example.tassty.ui.theme.Green100
+import com.example.tassty.ui.theme.Green50
+import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun CartRoute(
+    onNavigateToPayment: (String, String) -> Unit,
     onNavigateToDetail:(String) -> Unit,
     viewModel: CartViewModel = hiltViewModel()
 ){
+    val context = LocalContext.current
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(viewModel.uiEvent) {
+        viewModel.uiEvent.collect { event->
+            when(event){
+                is CartEvent.ShowError -> {
+                    Toast.makeText(context,event.message, Toast.LENGTH_SHORT).show()
+                }
+
+                is CartEvent.CheckoutSuccess -> {
+                    onNavigateToPayment(event.id,event.total)
+                }
+            }
+        }
+    }
     CartScreen(
         uiState = state.value,
         onSelectLocationClicked = { viewModel.onEvent(CartUiEvent.OnShowLocationSheet) },
@@ -111,7 +145,7 @@ fun CartRoute(
     ) {
         CartDoubleCheckContent(
             onRecheck = {viewModel.onEvent(CartUiEvent.OnDismissDoubleCheckSheet)},
-            onContinueToPayment = {}
+            onContinueToPayment = {viewModel.onEvent(CartUiEvent.OnCheckoutClicked)}
         )
     }
 }
@@ -178,7 +212,27 @@ fun CartScreen(
                 }
             }
 
-            // ✅ STATE 3 — ada data
+            uiState.carts.isLoading ->{
+                AnimatedVisibility(
+                    visible = uiState.carts.isLoading,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Neutral100.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = Green500)
+                            Spacer(Modifier.height(8.dp))
+                            Text("Securely processing...", color = Neutral10)
+                        }
+                    }
+                }
+            }
+
             else -> {
                 LazyColumn(
                     modifier = Modifier
@@ -186,7 +240,6 @@ fun CartScreen(
                         .fillMaxSize()
                         .background(Neutral10)
                 ) {
-
                     item {
                         Spacer(Modifier.height(24.dp))
                         Column(
@@ -220,6 +273,8 @@ fun CartScreen(
                         }
                         Divider32()
                     }
+
+                    item { Banner() }
 
                     cartVerticalListBlock(
                         cart = menus,
@@ -293,6 +348,61 @@ fun CartScreen(
     }
 }
 
+@Composable
+fun Banner(){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 20.dp, end = 20.dp, bottom = 24.dp)) {
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Pink500,
+                    RoundedCornerShape(12.dp)
+                )
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(R.drawable.flag),
+                    tint = Neutral10,
+                    contentDescription = "order pending"
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.orderanmu),
+                    color = Color.White,
+                    style = LocalCustomTypography.current.bodyMediumMedium
+                )
+            }
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ){
+                ButtonComponent(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    enabled = true,
+                    labelResId = R.string.lanjutkan
+                ) { }
+
+                ButtonComponent(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
+                    enabled = true,
+                    labelResId = R.string.batal
+                ) { }
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

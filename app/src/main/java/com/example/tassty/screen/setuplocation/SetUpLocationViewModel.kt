@@ -9,6 +9,7 @@ import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.AddressType
 import com.example.core.domain.usecase.SetupUserAccountUseCase
 import com.example.core.domain.usecase.GetCurrentLocationUseCase
+import com.example.core.data.mapper.toDomain
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.model.UserAddressUiModel
 import com.google.android.gms.maps.model.LatLng

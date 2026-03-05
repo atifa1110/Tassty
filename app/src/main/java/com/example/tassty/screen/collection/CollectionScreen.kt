@@ -27,6 +27,7 @@ import com.example.tassty.component.CollectionVerticalCard
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmptyCollectionContent
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.HorizontalTitleItemCountSection
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
@@ -87,17 +88,7 @@ fun CollectionContent (
             modifier = Modifier.padding(padding)
         ) {
             item {
-                Text(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                    text = buildAnnotatedString {
-                        withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Neutral100)) {
-                            append("My Collections")
-                        }
-                        withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Orange500)) {
-                            append(".")
-                        }
-                    }
-                )
+                HeaderTitleScreen(title = "My collections")
                 Divider32()
             }
 

@@ -1,6 +1,7 @@
 package com.example.core.ui.mapper
 
 
+import com.example.core.data.source.remote.request.OrderItemRequest
 import com.example.core.domain.model.CartGroup
 import com.example.core.domain.model.CartItem
 import com.example.core.ui.model.CartGroupUiModel
@@ -25,5 +26,15 @@ fun CartItem.toUiModel(): CartItemUiModel{
         notes = notes,
         isSelected = false,
         isSwipeActionVisible = false
+    )
+}
+
+fun CartItemUiModel.toRequest() : OrderItemRequest{
+    return OrderItemRequest(
+        menuId = this.menuId,
+        quantity = this.quantity,
+        price = this.price,
+        options = this.summary,
+        notes = this.notes?:""
     )
 }

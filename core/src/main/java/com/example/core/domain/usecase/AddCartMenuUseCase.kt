@@ -1,5 +1,6 @@
 package com.example.core.domain.usecase
 
+import android.util.Log
 import com.example.core.domain.model.Menu
 import com.example.core.domain.model.Restaurant
 import com.example.core.domain.repository.CartRepository
@@ -8,8 +9,12 @@ import javax.inject.Inject
 class AddCartMenuUseCase @Inject constructor(
     private val cartRepository: CartRepository
 ) {
-    suspend operator fun invoke(menu: Menu, restaurant: Restaurant, quantity: Int,
-                        summary: String, notes: String){
-        return cartRepository.addToCart(menu,restaurant,quantity,summary,notes)
+    suspend operator fun invoke(
+        menu: Menu, restaurant: Restaurant,
+        quantity: Int, totalPrice:Int = 0,
+        summary: String, notes: String
+    ){
+        val finalPrice = if (totalPrice == 0) menu.price else totalPrice
+        return cartRepository.addToCart(menu,restaurant,quantity,finalPrice,summary,notes)
     }
 }

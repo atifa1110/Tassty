@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
@@ -36,7 +37,7 @@ import kotlin.collections.forEach
 @Composable
 fun ChipFilterSection(
     title: String,
-    options: List<FilterOptionUi>,
+    options: List<FilterOptionUi<FilterCategory>>,
     onToggleOption: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 24.dp)) {
@@ -140,7 +141,7 @@ fun ChipSearchExpandSection(
 fun RadioFilterTitleSection(
     title: String,
     isTitleShown: Boolean = true,
-    options: List<FilterOptionUi>,
+    options: List<FilterOptionUi<FilterCategory>>,
     onOptionSelected: (String) -> Unit
 ) {
     Column(

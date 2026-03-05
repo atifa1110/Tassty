@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
 import com.example.tassty.model.getFilterDrawable
@@ -193,7 +194,7 @@ fun CustomSearchChip(
 
 @Composable
 fun CustomFilterChip(
-    option: FilterOptionUi,
+    option: FilterOptionUi<FilterCategory>,
     onClick: () -> Unit,
 ) {
     val image = getFilterDrawable(option.iconRes)
@@ -226,10 +227,5 @@ fun PreviewFilterScreen() {
             onClick = {}
         )
 
-//        ChipFilterSection(
-//            title = "Resto ratings",
-//            options = restoRatingsOptions,
-//            selectedKeys = setOf("Rated 2.0+", "tea", "juice")
-//        ) { }
     }
 }

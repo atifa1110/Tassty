@@ -25,11 +25,14 @@ import java.util.UUID
         )
     ]
 )
+
 data class CartEntity(
     @PrimaryKey val cartId: String = UUID.randomUUID().toString(),
     val menuId: String,
     val restaurantId: String,
     val quantity: Int,
+    val price: Int,
     val finalSummary: String,
-    val notes: String?
+    val notes: String?,
+    val isHidden: Boolean
 )

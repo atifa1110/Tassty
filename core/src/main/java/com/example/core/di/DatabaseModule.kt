@@ -54,12 +54,6 @@ object DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideFavoriteDao(database: AppDatabase): FavoriteQueryDao {
-        return database.favoriteQueryDao()
-    }
-
-    @Singleton
-    @Provides
     fun provideCollectionDao(database: AppDatabase): CollectionDao {
         return database.collectionDao()
     }

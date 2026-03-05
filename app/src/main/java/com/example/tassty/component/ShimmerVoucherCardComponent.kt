@@ -1,6 +1,7 @@
 package com.example.tassty.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,8 +34,7 @@ import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 
 @Composable
-fun ShimmerVoucherLargeCard(
-) {
+fun ShimmerVoucherLargeCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -43,7 +43,7 @@ fun ShimmerVoucherLargeCard(
         ),
     ) {
         Column(
-            modifier = Modifier.width(250.dp).padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Spacer(
@@ -88,9 +88,63 @@ fun ShimmerVoucherLargeCard(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewShimmerVoucherLargeCard(
-){
-    ShimmerVoucherLargeCard()
+fun ShimmerAddressCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = {}),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Neutral20
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 12.dp)
+        ) {
+            Spacer(
+                modifier = Modifier.fillMaxWidth().height(200.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .shimmerLoadingAnimation()
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .shimmerLoadingAnimation()
+                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(14.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .shimmerLoadingAnimation()
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(14.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .shimmerLoadingAnimation()
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(14.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .shimmerLoadingAnimation()
+                    )
+                }
+            }
+        }
+    }
 }
+

@@ -23,8 +23,9 @@ class CartDataSource @Inject constructor(
         menu: MenuEntity,
         restaurant: RestaurantEntity,
         quantity: Int,
+        price: Int,
         summary: String,
-        notes: String
+        notes: String,
     ) {
         val currentCartItem = cartDao.getAnyCartItem()
         if (currentCartItem != null && currentCartItem.restaurantId != restaurant.id) {
@@ -41,7 +42,8 @@ class CartDataSource @Inject constructor(
             val updatedItem = existingItem.copy(
                 finalSummary = summary,
                 notes = notes,
-                quantity = quantity
+                quantity = quantity,
+                price = price
             )
             cartDao.updateCart(updatedItem)
         } else {
@@ -50,8 +52,10 @@ class CartDataSource @Inject constructor(
                     menuId = menu.id,
                     restaurantId = restaurant.id,
                     quantity = quantity,
+                    price = price,
                     finalSummary = summary,
-                    notes = notes
+                    notes = notes,
+                    isHidden = false
                 )
             )
         }
@@ -61,8 +65,16 @@ class CartDataSource @Inject constructor(
         cartDao.deleteById(cartId)
     }
 
+    suspend fun removeCartsByIds(cartIds: List<String>){
+        cartDao.deleteMultipleCarts(cartIds)
+    }
+
     suspend fun removeCartItemByRestaurantId(restaurantId: String) {
         cartDao.deleteByRestaurantId(restaurantId)
+    }
+
+    suspend fun removeHiddenCart() {
+        cartDao.clearHiddenCart()
     }
 
     suspend fun updateCartQuantity(cartId: String, isIncrement: Boolean) {
@@ -73,16 +85,20 @@ class CartDataSource @Inject constructor(
         }
     }
 
+    suspend fun updateIsHidden(cartIds: List<String>, isHidden: Boolean) {
+        cartDao.updateIsHiddenMultiple(cartIds = cartIds, isHidden = isHidden)
+    }
+
     fun observeCartByMenuId(menuId: String): Flow<CartEntity?>{
         return cartDao.observeCartItemByMenuId(menuId)
     }
 
     fun getAllCartWithDetails(): Flow<List<CartWithMenuAndRestaurant>> {
-        return cartDao.getAllCartWithDetails()
+        return cartDao.getCartWithDetails()
     }
 
     fun getCartByRestaurantId(resId: String): Flow<List<CartWithMenuAndRestaurant>> {
-        return cartDao.getAllCartWithDetails()
+        return cartDao.getCartWithDetails()
             .map { list ->
                 list.filter { it.cart.restaurantId == resId }
             }

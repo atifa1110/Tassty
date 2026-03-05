@@ -20,8 +20,7 @@ class CollectionDataSource @Inject constructor(
     private val menuDao: MenuDao,
     private val restaurantDao: RestaurantDao,
     private val collectionMenuDao: CollectionMenuDao,
-    private val collectionDao: CollectionDao,
-    private val favoriteQueryDao: FavoriteQueryDao
+    private val collectionDao: CollectionDao
 ) {
     @Transaction
     suspend fun addCollection(collectionId: String, title: String,isSystem: Boolean = false) {
@@ -50,7 +49,7 @@ class CollectionDataSource @Inject constructor(
     suspend fun addWishlist(
         menu: MenuEntity,
         restaurant: RestaurantEntity,
-        collectionIds: List<String> //collection check id
+        collectionIds: List<String>
     ){
         // 1. Ensure parent is exist
         restaurantDao.upsert(restaurant)
@@ -104,7 +103,7 @@ class CollectionDataSource @Inject constructor(
     }
 
     fun getMenuCollectionById(collectionId: String) : Flow<List<MenuWithRestaurant>>{
-        return favoriteQueryDao.getFavoriteMenus(collectionId)
+        return collectionMenuDao.getFavoriteMenus(collectionId)
     }
 
 }

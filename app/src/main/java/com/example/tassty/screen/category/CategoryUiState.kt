@@ -10,14 +10,14 @@ import com.example.tassty.defaultFilter
 @Immutable
 data class CategoryUiState(
     val query: String = "",
-    val sortList : List<FilterOptionUi> = emptyList(),
-    val priceRanges: List<FilterOptionUi> = emptyList(),
-    val ratingsOptions: List<FilterOptionUi> = emptyList(),
-    val modesOptions: List<FilterOptionUi> = emptyList(),
-    val cuisineOptions: List<FilterOptionUi> = emptyList(),
+    val sortList: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val priceRanges: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val ratingsOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val modesOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val cuisineOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val activeFilters: List<FilterOptionUi<FilterCategory>> = emptyList(),
     val isFilterSheetVisible: Boolean = false,
     val isSortSheetVisible: Boolean = false,
-    val activeFilters: List<FilterOptionUi> = emptyList(),
     val restaurants: Resource<List<RestaurantMenuUiModel>> = Resource(),
 )
 
@@ -28,12 +28,12 @@ data class CategoryInternalState(
 )
 
 data class FilterState(
-    val sortList : List<FilterOptionUi> = emptyList(),
-    val priceRanges: List<FilterOptionUi> = emptyList(),
-    val ratingsOptions: List<FilterOptionUi> = emptyList(),
-    val modesOptions: List<FilterOptionUi> = emptyList(),
-    val cuisineOptions: List<FilterOptionUi> = emptyList(),
-    val activeFilters: List<FilterOptionUi> = defaultFilter,
+    val sortList: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val priceRanges: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val ratingsOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val modesOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val cuisineOptions: List<FilterOptionUi<FilterCategory>> = emptyList(),
+    val activeFilters: List<FilterOptionUi<FilterCategory>> = emptyList(),
 )
 
 sealed interface CategoryEvent {

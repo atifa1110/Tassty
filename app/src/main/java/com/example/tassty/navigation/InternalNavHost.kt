@@ -1,18 +1,13 @@
 package com.example.tassty.navigation
 
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.tassty.screen.profile.ProfileScreen
 import com.example.tassty.screen.cart.CartRoute
-import com.example.tassty.screen.chat.ChatRoute
+import com.example.tassty.screen.chat.ChatScreen
 import com.example.tassty.screen.home.HomeScreen
 import com.example.tassty.screen.dashboard.CartDestination
 import com.example.tassty.screen.dashboard.ChatDestination
@@ -33,7 +28,9 @@ fun InternalNavHost(
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
-    onNavigateToPayment: ()-> Unit
+    onNavigateToCard: ()-> Unit,
+    onNavigateToOrder: ()-> Unit,
+    onNavigateToPayment: (String, String) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -54,11 +51,12 @@ fun InternalNavHost(
         }
         composable(CartDestination.route) {
             CartRoute(
-                onNavigateToDetail = onNavigateToDetail
+                onNavigateToDetail = onNavigateToDetail,
+                onNavigateToPayment = onNavigateToPayment
             )
         }
         composable(ChatDestination.route){
-            ChatRoute()
+            ChatScreen()
         }
         composable(ProfileDestination.route) {
             ProfileScreen(
@@ -66,7 +64,8 @@ fun InternalNavHost(
                 onNavigateToCollection = onNavigateToCollection,
                 onNavigateToFavorite= onNavigateToFavorite,
                 onNavigateToAddress= onNavigateToAddress,
-                onNavigateToPayment = onNavigateToPayment
+                onNavigateToCard = onNavigateToCard,
+                onNavigateToOrder = onNavigateToOrder
             )
         }
     }

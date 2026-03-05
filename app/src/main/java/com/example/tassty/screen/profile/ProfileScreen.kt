@@ -73,7 +73,8 @@ fun ProfileScreen(
     onNavigateToFavorite:() -> Unit = {},
     onNavigateToVoucher:()-> Unit = {},
     onNavigateToAddress: () -> Unit = {},
-    onNavigateToPayment: ()-> Unit = {},
+    onNavigateToCard: ()-> Unit = {},
+    onNavigateToOrder: ()-> Unit = {},
     onLogout:() -> Unit = {}
 ) {
     ProfileContent (
@@ -81,7 +82,8 @@ fun ProfileScreen(
         onNavigateToFavorite = onNavigateToFavorite,
         onNavigateToVoucher = onNavigateToVoucher,
         onNavigateToAddress = onNavigateToAddress,
-        onNavigateToPayment = onNavigateToPayment,
+        onNavigateToCard = onNavigateToCard,
+        onNavigateToOrder = onNavigateToOrder,
         onLogout = onLogout,
     )
 }
@@ -91,7 +93,8 @@ fun ProfileContent(
     onNavigateToFavorite:() -> Unit,
     onNavigateToVoucher: () -> Unit,
     onNavigateToAddress: () -> Unit,
-    onNavigateToPayment: ()-> Unit,
+    onNavigateToCard: ()-> Unit,
+    onNavigateToOrder: ()-> Unit,
     onLogout:() -> Unit
 ) {
     Scaffold (
@@ -119,7 +122,8 @@ fun ProfileContent(
                     onNavigateToFavorite = onNavigateToFavorite,
                     onNavigateToVoucher = onNavigateToVoucher,
                     onNavigateToAddress = onNavigateToAddress,
-                    onNavigateToPayment = onNavigateToPayment
+                    onNavigateToCard = onNavigateToCard,
+                    onNavigateToOrder = onNavigateToOrder
                 )
             }
 
@@ -135,9 +139,8 @@ fun ProfileContent(
                 ButtonComponent(
                     enabled = true,
                     labelResId = R.string.logout,
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                        .height(50.dp).padding(horizontal = 24.dp),
+                    onClick = onLogout,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Pink50,
                         contentColor = Pink500,
@@ -302,7 +305,8 @@ fun ProfileMenuSection(
     onNavigateToFavorite:() -> Unit,
     onNavigateToVoucher: () -> Unit,
     onNavigateToAddress: () -> Unit,
-    onNavigateToPayment: ()-> Unit
+    onNavigateToCard: ()-> Unit,
+    onNavigateToOrder: ()-> Unit
 ) {
     Column(
         modifier = Modifier
@@ -329,7 +333,7 @@ fun ProfileMenuSection(
                     iconColor = Green600,
                     boxColor = Green100,
                     title = "My orders",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToOrder
                 )
                 
                 HorizontalDivider(
@@ -389,7 +393,7 @@ fun ProfileMenuSection(
                     iconColor = Pink600,
                     boxColor = Pink100,
                     title = "Payment Methods",
-                    onClick = onNavigateToPayment
+                    onClick = onNavigateToCard
                 )
 
                 HorizontalDivider(

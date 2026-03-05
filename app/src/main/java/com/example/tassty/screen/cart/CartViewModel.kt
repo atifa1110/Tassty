@@ -1,19 +1,28 @@
 package com.example.tassty.screen.cart
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.usecase.CreateOrderUseCase
 import com.example.core.domain.usecase.GetCartsUseCase
 import com.example.core.domain.usecase.GetRestaurantVouchersUseCase
 import com.example.core.domain.usecase.GetUserAddressUseCase
 import com.example.core.domain.usecase.RemoveAllCartMenuUseCase
 import com.example.core.domain.usecase.RemoveCartMenuUseCase
+import com.example.core.domain.usecase.UpdateCartHiddenUseCase
 import com.example.core.domain.usecase.UpdateCartQuantityUseCase
 import com.example.core.domain.utils.mapToResource
+import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.core.domain.utils.toListState
+import com.example.core.ui.mapper.toRequest
 import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.calculateCartSummary
+import com.example.tassty.screen.detailcollection.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +31,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,13 +45,14 @@ class CartViewModel @Inject  constructor(
     private val removeAllCartMenuUseCase: RemoveAllCartMenuUseCase,
     private val getRestaurantVouchersUseCase: GetRestaurantVouchersUseCase,
     private val getUserAddressUseCase: GetUserAddressUseCase,
-    private val updateCartQuantityUseCase: UpdateCartQuantityUseCase
+    private val updateCartQuantityUseCase: UpdateCartQuantityUseCase,
+    private val createOrderUseCase: CreateOrderUseCase,
+    private val updateCartHiddenUseCase: UpdateCartHiddenUseCase
 ): ViewModel(){
 
     private val _internalState = MutableStateFlow(CartInternalState())
 
-    private val cartFlow = getCartsUseCase()
-        .map { it.mapToResource { cart-> cart.toUiModel() } }
+    private val cartFlow = getCartsUseCase().map { it.mapToResource { cart-> cart.toUiModel() } }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val vouchersFlow = cartFlow
@@ -55,6 +66,9 @@ class CartViewModel @Inject  constructor(
     private val addressFlow = getUserAddressUseCase().map {
         it.toListState { address-> address.toUiModel() }
     }
+
+    private val _uiEvent = Channel<CartEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
 
     val uiState: StateFlow<CartUiState> = combine(
         _internalState,
@@ -144,13 +158,11 @@ class CartViewModel @Inject  constructor(
             is CartUiEvent.OnVoucherSelectionChanged -> handleVoucherSelectionChanged(event.voucherId)
 
             // Logic Checkout
-            is CartUiEvent.OnCheckoutClicked -> {/* TODO: Implement checkout logic */ }
-            is CartUiEvent.OnAddMoreClicked -> {/* TODO: Navigate to menu */ }
+            is CartUiEvent.OnCheckoutClicked -> handleCheckOutClicked()
             is CartUiEvent.OnDismissDoubleCheckSheet -> _internalState.update { it.copy(isDoubleCheckSheetVisible = false) }
             is CartUiEvent.OnShowDoubleCheckSheet -> _internalState.update { it.copy(isDoubleCheckSheetVisible = true) }
         }
     }
-
 
     // Toggles the 'isChecked' status of a single cart item.
     private fun handleCartSelection(cartId: String) {
@@ -242,8 +254,55 @@ class CartViewModel @Inject  constructor(
         }
     }
 
-    private fun handleCheckOutClicked(){
+    private fun handleCheckOutClicked() {
+        val state = uiState.value
+        val cart = state.carts.data ?: return
+        val selected = cart.menus.filter { it.isSelected }
+        val addressId = state.selectedAddress?.id?: return
 
+        if (selected.isEmpty()) {
+            viewModelScope.launch {
+                _uiEvent.send(CartEvent.ShowError("Tolong pilih menu terlebih dahulu"))
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            createOrderUseCase(
+                restaurantId = cart.restaurant.id,
+                addressId = addressId,
+                totalPrice = state.subtotal,
+                deliveryFee = state.deliveryFee,
+                discount = state.voucherDiscount,
+                totalOrder = state.totalOrder,
+                items = selected.map { it.toRequest() }
+            ).collect { result->
+                when(result){
+                    is TasstyResponse.Error -> {
+                        _internalState.update { it.copy(checkout = Resource(isLoading = false)) }
+                        _uiEvent.send(CartEvent.ShowError(result.meta.message))
+                    }
+                    is TasstyResponse.Loading -> {
+                        _internalState.update { it.copy(checkout = Resource(isLoading = true)) }
+                    }
+                    is TasstyResponse.Success -> {
+                        val selectedIds = selected.map { it.cartId }
+                        updateCartHiddenUseCase(selectedIds, isHidden = true)
+
+                        _internalState.update {
+                            it.copy(
+                                checkout = Resource(isLoading = false),
+                                isDoubleCheckSheetVisible = false,
+                                selectedCartIds = it.selectedCartIds - selectedIds.toSet()
+                            )
+                        }
+                        Log.d("CartViewModel",result.data.toString())
+                        _uiEvent.send(CartEvent.CheckoutSuccess(id=result.data.toString(), total = state.totalOrder.toCleanRupiahFormat()))
+                    }
+                }
+            }
+
+        }
     }
 
 }

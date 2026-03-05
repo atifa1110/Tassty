@@ -3,6 +3,7 @@ package com.example.core.ui.mapper
 import com.example.core.domain.model.DetailRestaurant
 import com.example.core.domain.model.Menu
 import com.example.core.domain.model.MenuWithWishlist
+import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.MenuUiModel
 
 fun Menu.toUiModel(isWishlist: Boolean) : MenuUiModel{
@@ -74,6 +75,24 @@ fun MenuUiModel?.toDomain(): Menu{
         stockLabel = "",
         stockStatus = "",
         restaurant = this?.restaurant?.toDomain()?: empty
+    )
+}
+
+fun MenuUiModel?.toDomain(restaurant: DetailRestaurantUiModel): Menu{
+    return Menu(
+        id = this?.id?:"",
+        name = this?.name?:"",
+        imageUrl = this?.imageUrl?:"",
+        description = this?.description?:"",
+        price = this?.price?:0,
+        soldCount = this?.soldCount?:0,
+        rank = this?.rank?:0,
+        customizable = this?.customizable?:false,
+        isAvailable = this?.isAvailable?:false,
+        maxQuantity = this?.maxQuantity?:0,
+        stockLabel = "",
+        stockStatus = "",
+        restaurant = restaurant.toDomain()
     )
 }
 

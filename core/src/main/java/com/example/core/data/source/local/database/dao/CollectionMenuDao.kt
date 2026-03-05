@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.core.data.source.local.database.entity.CollectionMenuCrossRef
+import com.example.core.data.source.local.database.model.MenuWithRestaurant
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -60,4 +62,18 @@ interface CollectionMenuDao {
     )
 """)
     fun observeIsMenuFavorite(menuId: String): Flow<Boolean>
+
+    @Transaction
+    @Query("""
+        SELECT *
+        FROM menus
+        WHERE id IN (
+            SELECT menuId
+            FROM collection_menu
+            WHERE collectionId = :collectionId
+        )
+    """)
+    fun getFavoriteMenus(
+        collectionId: String
+    ): Flow<List<MenuWithRestaurant>>
 }

@@ -205,7 +205,7 @@ fun FoodWideListCard(
         ) {
             FoodRoundImageWithOverlays(
                 menu = menu,
-                modifier = Modifier.size(120.dp,)
+                modifier = Modifier.size(120.dp)
             )
 
             FoodWideListCardContent(

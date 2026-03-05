@@ -352,7 +352,6 @@ fun HeaderRestaurantCollection(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Nama Resto - Gunakan fill = false agar tidak "serakah" mengambil sisa space
         Text(
             text = restaurantName,
             style = LocalCustomTypography.current.h6Bold,
@@ -362,14 +361,12 @@ fun HeaderRestaurantCollection(
             modifier = Modifier.weight(1f, fill = true)
         )
 
-        // Dot Separator (Opsional, berdasarkan gambar ada titik abu-abu)
         Text(
             text = " • ",
             color = Neutral70,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
 
-        // ⭐ Rating
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = null,
@@ -389,7 +386,6 @@ fun HeaderRestaurantCollection(
             modifier = Modifier.padding(horizontal = 4.dp)
         )
 
-        // 📍 City
         Icon(
             painter = painterResource(R.drawable.location),
             contentDescription = null,
@@ -403,7 +399,6 @@ fun HeaderRestaurantCollection(
             modifier = Modifier.padding(start = 4.dp)
         )
 
-        // Spacer ini akan mendorong "See resto" ke ujung kanan jika masih ada sisa ruang
         Spacer(Modifier.weight(0.3f))
 
         // RIGHT ACTION
@@ -416,7 +411,23 @@ fun HeaderRestaurantCollection(
     }
 }
 
-
+@Composable
+fun HeaderTitleScreen(
+    modifier: Modifier = Modifier,
+    title: String
+){
+    Text(
+        modifier = modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 24.dp),
+        text = buildAnnotatedString {
+            withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Neutral100)) {
+                append(title)
+            }
+            withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Orange500)) {
+                append(".")
+            }
+        }
+    )
+}
 @Preview(showBackground = true)
 @Composable
 fun PreviewHeader(){

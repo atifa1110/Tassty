@@ -22,6 +22,7 @@ import com.example.core.domain.usecase.RemoveFavoriteRestaurantUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
 import com.example.core.domain.utils.mapToResource
 import com.example.core.domain.utils.toListState
+import com.example.core.data.mapper.toDomain
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toDomainDetail
 import com.example.core.ui.mapper.toUiModel
@@ -240,7 +241,12 @@ class DetailRestaurantViewModel @Inject constructor(
         val menu = menu.toDomain()
         val restaurant = menu.restaurant
 
-        addCartMenuUseCase(menu , restaurant,state.quantity,"", "")
+        addCartMenuUseCase(
+            menu = menu , restaurant = restaurant,
+            quantity = state.quantity,
+            totalPrice = 0,
+            summary = "", notes = ""
+        )
         _internalState.update {
             it.copy(isDetailMenuModalVisible = false, selectedMenu = null)
         }
@@ -274,8 +280,7 @@ class DetailRestaurantViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 saveMenuCollectionsUseCase(
-                    menu = menu.toDomain(),
-                    restaurant = restaurant.toDomain(),
+                    menu = menu.toDomain(restaurant),
                     selectedCollectionIds = selectedCollectionIds
                 )
                 _internalState.update {

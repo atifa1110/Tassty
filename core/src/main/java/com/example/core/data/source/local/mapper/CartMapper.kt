@@ -22,7 +22,7 @@ fun List<CartWithMenuAndRestaurant>.toSingleCartDomain(): CartGroup {
             menuId = it.menu.id,
             name = it.menu.name,
             imageUrl = it.menu.imageUrl,
-            price = it.menu.price,
+            price = it.cart.price,
             quantity = it.cart.quantity,
             summary = it.cart.finalSummary,
             notes = it.cart.notes
