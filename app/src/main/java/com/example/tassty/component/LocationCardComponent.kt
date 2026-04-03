@@ -265,7 +265,7 @@ fun LocationSelectorCard(
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(width= 1.dp, color = if(address.isSelected) Orange500 else Neutral40),
         colors = CardDefaults.cardColors(
-            containerColor = if(address.isSelected) Orange50 else Neutral10
+            containerColor = if(address.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.background
         )
     ) {
         Row(
@@ -287,7 +287,7 @@ fun LocationSelectorCard(
                 Text(
                     text = address.addressName,
                     style = LocalCustomTypography.current.h5Bold,
-                    color = Neutral100
+                    color = LocalCustomColors.current.headerText
                 )
                 Spacer(Modifier.height(4.dp))
                 LocationContent(
@@ -335,7 +335,7 @@ fun LocationContent(
         Text(
             text = value,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
     }
 }
@@ -348,7 +348,7 @@ fun LocationLardCard(
         modifier = Modifier.fillMaxWidth().clickable(onClick = {}),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral20
+            containerColor = LocalCustomColors.current.cardBackground
         )
     ) {
         Column(modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 12.dp)) {
@@ -378,13 +378,13 @@ fun LocationLardCard(
                     Text(
                         text = address.addressName,
                         style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = address.fullAddress,
                         style = LocalCustomTypography.current.bodySmallMedium,
-                        color = Neutral70
+                        color = LocalCustomColors.current.text
                     )
                     Spacer(Modifier.height(12.dp))
                     LocationContent(

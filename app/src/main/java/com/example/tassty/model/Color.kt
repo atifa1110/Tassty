@@ -45,12 +45,10 @@ val patterns = listOf(
     PatternImage("pattern_3",R.drawable.card_pattern_3)
 )
 
-// Helper untuk mencari Warna
 fun String.toCardColor(): CardColorOption {
     return colorList.find { it.id == this } ?: colorList.first()
 }
 
-// Helper untuk mencari Pattern
 fun String.toPatternRes(): Int {
     return patterns.find { it.id == this }?.imageRes ?: R.drawable.card_pattern_1
 }

@@ -79,12 +79,11 @@ import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange100
-import com.example.tassty.ui.theme.Orange200
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Orange600
 import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink600
+import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.dummyDetail
 import com.example.tassty.util.listOrder
 
@@ -585,7 +584,8 @@ fun DeliveryDetailCard(
     order: List<OrderItemUiModel>
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        modifier = Modifier.fillMaxWidth()
+            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
@@ -597,8 +597,8 @@ fun DeliveryDetailCard(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+            colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.background),
+            border = BorderStroke(1.dp, LocalCustomColors.current.border)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -641,18 +641,12 @@ fun OrderItem(name: String, qty: String, note: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = Neutral20,
+                    color = LocalCustomColors.current.cardBackground,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Row {
-                Text(
-                    text = note,
-                    style = LocalCustomTypography.current.bodySmallMedium,
-                    color = Neutral100
-                )
-            }
+            NotesText(notes = note)
         }
     }
 }
@@ -801,14 +795,19 @@ fun DashedLine(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun OrderCardPreview(){
-    Column(Modifier.fillMaxSize().background(Neutral20)) {
-        OrderListCard(order =orderList[0]) { }
-        OrderCard(order = orderList[0]) { }
-        DeliveryDriverCard(driver = dummyDetail.driver, onMessageClick = {},isProcess = false)
-        OrderMenuListCard(item = listOrder[1]) { }
-    }
-}
-
+//@Preview(showBackground = true)
+//@Composable
+//fun OrderCardPreview(){
+//    TasstyTheme(darkTheme = true) {
+//        Column (Modifier.fillMaxSize()){
+//            OrderListCard(order = orderList[0]) { }
+//            OrderCard(order = orderList[0]) { }
+//            DeliveryDriverCard(driver = dummyDetail.driver, onMessageClick = {}, isProcess = false)
+//            OrderMenuListCard(item = listOrder[1]) { }
+//            DeliveryDetailCard(
+//                listOrder
+//            )
+//        }
+//    }
+//}
+//

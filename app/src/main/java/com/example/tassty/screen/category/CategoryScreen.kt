@@ -162,7 +162,6 @@ fun CategoryContent(
                     .background(
                         LocalCustomColors.current.background.copy(alpha = appBarAlpha)
                     )
-                    .statusBarsPadding(),
             )
         }
     }

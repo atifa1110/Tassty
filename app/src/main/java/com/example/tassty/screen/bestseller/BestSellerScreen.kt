@@ -64,6 +64,7 @@ import com.example.tassty.util.collectionUiModel
 
 @Composable
 fun BestSellerScreen(
+    onNavigateBack:() -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
     viewModel: BestSellerViewModel = hiltViewModel()
 ) {
@@ -83,7 +84,9 @@ fun BestSellerScreen(
 
     BestSellerContent(
         uiState = uiState,
-        onFavoriteClick = viewModel::onMenuFavorite
+        onFavoriteClick = viewModel::onMenuFavorite,
+        onNavigateBack = onNavigateBack,
+        onNavigateToDetailMenu = onNavigateToDetailMenu
     )
 
     CustomBottomSheet(
@@ -115,7 +118,9 @@ fun BestSellerScreen(
 @Composable
 fun BestSellerContent(
     uiState: BestSellerUiState,
-    onFavoriteClick:(MenuUiModel) -> Unit
+    onFavoriteClick:(MenuUiModel) -> Unit,
+    onNavigateBack:() -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit
 ) {
     val resource = uiState.menus
     val isLoading = resource.isLoading
@@ -188,7 +193,9 @@ fun BestSellerContent(
                                 FoodWideListCard(
                                     menu = item,
                                     onFavoriteClick = { onFavoriteClick(item) },
-                                    onAddToCart = {}
+                                    onAddToCart = {
+                                        onNavigateToDetailMenu(item.id)
+                                    }
                                 )
                                 Spacer(Modifier.height(12.dp))
                             }
@@ -200,12 +207,11 @@ fun BestSellerContent(
             CategoryTopAppBar(
                 iconBackground = iconBgColor,
                 onFilterClick = {},
-                onBackClick = {},
+                onBackClick = onNavigateBack,
                 modifier = Modifier.align(Alignment.TopCenter)
                     .background(
                         LocalCustomColors.current.background.copy(alpha = appBarAlpha)
                     )
-                    .statusBarsPadding()
             )
         }
     }

@@ -34,16 +34,7 @@ import com.example.tassty.activity.findActivity
 
 @Composable
 fun SplashScreen() {
-    val window = LocalView.current.context.findActivity()?.window
     SplashGradientBackground {
-        SideEffect {
-            window?.let { w ->
-                w.statusBarColor = Color(0xFFFFCF24).toArgb()
-                WindowCompat.getInsetsController(w, w.decorView).apply {
-                    isAppearanceLightStatusBars = false  // icon jadi putih
-                }
-            }
-        }
         Column(
             modifier = Modifier.fillMaxSize()
                 .windowInsetsPadding(WindowInsets.systemBars),

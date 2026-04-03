@@ -44,7 +44,6 @@ import com.example.tassty.component.CustomTwoColorText
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FeedbackSection
 import com.example.tassty.component.HeaderListBlackTitle
-import com.example.tassty.component.OrderDetailAppBar
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -66,8 +65,10 @@ fun RatingScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { event ->
             when(event){
-                is RatingEvent.NavigateBack -> TODO()
-                is RatingEvent.ShowMessage -> TODO()
+                is RatingEvent.NavigateBack -> {
+                    onNavigateBack()
+                }
+                is RatingEvent.ShowMessage ->{}
             }
         }
     }

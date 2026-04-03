@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -76,7 +77,7 @@ fun CustomBarStart(
 ){
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth().statusBarsPadding()
             .padding(horizontal = 24.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
@@ -87,7 +88,7 @@ fun CustomBarStart(
 
 @Composable
 fun LogoTopAppBar(){
-    CustomBarStart {
+    CustomBarStart() {
         LogoImage()
     }
 }
@@ -136,7 +137,7 @@ fun BorderTopBarButton(
 
 @Composable
 fun AuthTopAppBar(){
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         LogoImage()
         TopBarButton(
             icon = R.drawable.question_mark_circle,
@@ -149,7 +150,7 @@ fun AuthTopAppBar(){
 fun BackTopAppBar(
     onBackClick : () -> Unit
 ) {
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.topBarBackgroundColor,
             iconColor = LocalCustomColors.current.iconFocused
@@ -195,11 +196,10 @@ fun ProfileTopAppBar(
 
 @Composable
 fun CollectionTopAppBar(
-    modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
-    CustomBarSpaceBetween(modifier = modifier) {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.topBarBackgroundColor,
             iconColor = LocalCustomColors.current.iconFocused
@@ -267,12 +267,11 @@ fun CategoryTopAppBar(
 
 @Composable
 fun OrderDetailAppBar(
-    modifier: Modifier = Modifier,
     isReviewId: Boolean = false,
     onBackClick : () -> Unit,
     onEditClick : () -> Unit
 ) {
-    CustomBarSpaceBetween(modifier = modifier) {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.topBarBackgroundColor,
             iconColor =LocalCustomColors.current.iconFocused
@@ -290,13 +289,13 @@ fun OrderDetailAppBar(
 
 @Composable
 fun AddTopAppBar(
-    modifier: Modifier = Modifier,
     onBackClick : () -> Unit,
     onAddClick : () -> Unit
 ) {
-    CustomBarSpaceBetween(modifier = modifier) {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
-            boxColor = Neutral20, iconColor = Neutral100
+            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+            iconColor = LocalCustomColors.current.iconFocused
         ) { onBackClick() }
 
         TopBarButton(icon = R.drawable.add,
@@ -307,13 +306,13 @@ fun AddTopAppBar(
 
 @Composable
 fun AddCardTopAppBar(
-    modifier: Modifier = Modifier,
     onBackClick : () -> Unit,
     onAddClick : () -> Unit
 ) {
-    CustomBarSpaceBetween(modifier = modifier) {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
-            boxColor = Neutral20, iconColor = Neutral100
+            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+            iconColor = LocalCustomColors.current.iconFocused
         ) { onBackClick() }
 
         TopBarButton(icon = Icons.Default.CameraAlt,
@@ -385,7 +384,7 @@ fun SetupTopAppBar(
     onBackClick: () -> Unit,
     onSkipClick: () -> Unit
 ) {
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.cardBackground,
             iconColor = LocalCustomColors.current.iconFocused
@@ -423,7 +422,7 @@ fun FavoriteTopAppBar(
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween (modifier = Modifier.statusBarsPadding()){
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.topBarBackgroundColor,
             iconColor = LocalCustomColors.current.iconFocused
@@ -441,7 +440,7 @@ fun MyOrderTopAppBar(
     onBackClick: () -> Unit,
     onCalendarCLick: () -> Unit
 ) {
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.topBarBackgroundColor,
             iconColor = LocalCustomColors.current.iconFocused
@@ -459,7 +458,7 @@ fun TitleTopAppBar(
     onBackClick:() -> Unit,
     onFilterClick:() -> Unit
 ){
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.cardBackground,
             iconColor = LocalCustomColors.current.iconFocused
@@ -550,100 +549,98 @@ fun ChatTopBar(
     onCameraClick: () -> Unit,
     onCallClick: () -> Unit,
 ) {
-    Column {
-        CustomBarSpaceBetween(Modifier.background(LocalCustomColors.current.modalBackgroundFrame)) {
-            BorderTopBarButton(
-                icon = Icons.Default.ArrowBackIosNew,
-                onClick = onBackClick,
-                boxColor = LocalCustomColors.current.cardBackground,
-                iconColor = LocalCustomColors.current.iconFocused,
+    CustomBarSpaceBetween(Modifier.background(LocalCustomColors.current.modalBackgroundFrame)) {
+        BorderTopBarButton(
+            icon = Icons.Default.ArrowBackIosNew,
+            onClick = onBackClick,
+            boxColor = LocalCustomColors.current.cardBackground,
+            iconColor = LocalCustomColors.current.iconFocused,
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Box(modifier = Modifier.size(44.dp)) {
+            AsyncImage(
+                model = user.image,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(Neutral40),
+                contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.width(12.dp))
 
-            Box(modifier = Modifier.size(44.dp)) {
-                AsyncImage(
-                    model = user.image,
+            Box(
+                modifier = Modifier
+                    .size(18.dp)
+                    .clip(CircleShape)
+                    .background(Blue500)
+                    .align(Alignment.BottomStart)
+                    .padding(3.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delivery),
                     contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(Neutral40),
-                    contentScale = ContentScale.Crop
+                    tint = Neutral10,
+                    modifier = Modifier.fillMaxSize()
                 )
+            }
 
+            if(user.online) {
                 Box(
                     modifier = Modifier
-                        .size(18.dp)
+                        .size(12.dp)
                         .clip(CircleShape)
-                        .background(Blue500)
-                        .align(Alignment.BottomStart)
-                        .padding(3.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_delivery),
-                        contentDescription = null,
-                        tint = Neutral10,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-
-                if(user.online) {
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clip(CircleShape)
-                            .background(Neutral10)
-                            .padding(2.dp)
-                            .clip(CircleShape)
-                            .background(Green500)
-                            .align(Alignment.TopEnd)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = user.name,
-                    style = LocalCustomTypography.current.h5Bold,
-                    color = LocalCustomColors.current.headerText,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = if(user.online) "Online" else "Offline",
-                        style = LocalCustomTypography.current.bodyXtraSmallBold,
-                        color = if(user.online) Green500 else LocalCustomColors.current.text,
-                    )
-                    Text(
-                        text = if(user.extraData["user_role"] == "driver") " • Driver" else " • User",
-                        style = LocalCustomTypography.current.bodyXtraSmallMedium,
-                        color = LocalCustomColors.current.text
-                    )
-                }
-            }
-
-            Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BorderTopBarButton(
-                    icon = Icons.Default.CameraAlt,
-                    onClick = onCameraClick,
-                    boxColor = LocalCustomColors.current.cardBackground,
-                    iconColor = LocalCustomColors.current.iconFocused
-                )
-
-                BorderTopBarButton(
-                    icon = Icons.Default.Phone,
-                    onClick = onCallClick,
-                    boxColor = LocalCustomColors.current.cardBackground,
-                    iconColor = LocalCustomColors.current.iconFocused
+                        .background(Neutral10)
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .background(Green500)
+                        .align(Alignment.TopEnd)
                 )
             }
-
         }
-        HorizontalDivider(color = Neutral30)
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = user.name,
+                style = LocalCustomTypography.current.h5Bold,
+                color = LocalCustomColors.current.headerText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = if(user.online) "Online" else "Offline",
+                    style = LocalCustomTypography.current.bodyXtraSmallBold,
+                    color = if(user.online) Green500 else LocalCustomColors.current.text,
+                )
+                Text(
+                    text = if(user.extraData["user_role"] == "driver") " • Driver" else " • User",
+                    style = LocalCustomTypography.current.bodyXtraSmallMedium,
+                    color = LocalCustomColors.current.text
+                )
+            }
+        }
+
+        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BorderTopBarButton(
+                icon = Icons.Default.CameraAlt,
+                onClick = onCameraClick,
+                boxColor = LocalCustomColors.current.cardBackground,
+                iconColor = LocalCustomColors.current.iconFocused
+            )
+
+            BorderTopBarButton(
+                icon = Icons.Default.Phone,
+                onClick = onCallClick,
+                boxColor = LocalCustomColors.current.cardBackground,
+                iconColor = LocalCustomColors.current.iconFocused
+            )
+        }
+
+
     }
 }
 

@@ -376,12 +376,12 @@ fun DetailNotesSection(
                 modifier = Modifier.weight(1f),
                 text = "Notes",
                 style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
             Text(
                 text = "${text.length} / 100",
                 style = LocalCustomTypography.current.bodyMediumRegular,
-                color = Neutral70
+                color = LocalCustomColors.current.text
             )
         }
         TextComponent(

@@ -308,8 +308,7 @@ fun DetailRestaurantContent(
                     .align(Alignment.TopCenter)
                     .background(
                         LocalCustomColors.current.background.copy(alpha = appBarAlpha)
-                    )
-                    .statusBarsPadding(),
+                    ),
                 iconBackground = iconBgColor,
                 isFavorite = resource?.isWishlist ?: false,
                 onShowSearch = onShowSearchSheet,
@@ -614,10 +613,7 @@ fun ShoppingCartBottomBar(
     totalPrice: Int,
     onCartClick:()-> Unit
 ) {
-    Row(
-        modifier = Modifier.padding(
-            top=24.dp, bottom = 36.dp,start=24.dp,end=24.dp)
-            .background(Neutral10).clickable{onCartClick()}
+    Row(modifier = Modifier.padding(top=24.dp, bottom = 36.dp,start=24.dp,end=24.dp).clickable{onCartClick()}
     ) {
         CartAddItemButton(
             totalPrice = totalPrice,

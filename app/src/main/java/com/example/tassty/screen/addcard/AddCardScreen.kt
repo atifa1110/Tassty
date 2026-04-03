@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,11 +54,14 @@ import com.example.tassty.model.CardColorOption
 import com.example.tassty.model.PatternImage
 import com.example.tassty.model.colorList
 import com.example.tassty.model.patterns
+import com.example.tassty.screen.rating.HeaderIconText
 import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.Transformations
 import com.stripe.android.Stripe
 import com.stripe.android.payments.paymentlauncher.PaymentResult
@@ -169,137 +173,136 @@ fun AddCardContent(
     onImageSelected:(PatternImage) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-        Scaffold(
-            containerColor = Neutral10,
-            bottomBar = {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    ButtonComponent(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState.buttonEnable,
-                        labelResId = R.string.save,
-                        onClick = onSaveCardCLicked
-                    )
-                    CustomTwoColorText(
-                        modifier = Modifier.fillMaxWidth(),
-                        fullText = "By adding a card, you've read & agree to our \nTerms and conditions",
-                        highlightText = "Terms and conditions",
-                        onHighlightClick = {}
-                    )
-                }
-            },
-
-            topBar = {
-                AddCardTopAppBar(
-                    onAddClick = {},
-                    onBackClick = onNavigateBack
+    Scaffold(
+        containerColor = LocalCustomColors.current.background,
+        bottomBar = {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ButtonComponent(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = uiState.buttonEnable,
+                    labelResId = R.string.save,
+                    onClick = onSaveCardCLicked
+                )
+                CustomTwoColorText(
+                    modifier = Modifier.fillMaxWidth(),
+                    fullText = "By adding a card, you've read & agree to our \nTerms and conditions",
+                    highlightText = "Terms and conditions",
+                    onHighlightClick = {}
                 )
             }
-        ) { padding ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding)
-            ) {
-                item {
-                    Spacer(Modifier.height(24.dp))
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+        },
+        topBar = {
+            AddCardTopAppBar(
+                onAddClick = {},
+                onBackClick = onNavigateBack
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 24.dp)
+        ) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Add card",
-                                style = LocalCustomTypography.current.h2Bold,
-                                color = Neutral100
-                            )
-                            Icon(
-                                painter = painterResource(R.drawable.category),
-                                modifier = Modifier.size(38.dp),
-                                contentDescription = "icon category",
-                                tint = Green500
-                            )
-                        }
                         Text(
-                            text = "Your card details will be saved securely",
-                            style = LocalCustomTypography.current.bodyMediumRegular,
-                            color = Neutral70
+                            text = "Add card",
+                            style = LocalCustomTypography.current.h2Bold,
+                            color = LocalCustomColors.current.headerText
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.category),
+                            modifier = Modifier.size(38.dp),
+                            contentDescription = "icon category",
+                            tint = Green500
                         )
                     }
-                    Divider32()
+                    Text(
+                        text = "Your card details will be saved securely",
+                        style = LocalCustomTypography.current.bodyMediumRegular,
+                        color = LocalCustomColors.current.text
+                    )
                 }
+                Divider32()
+            }
 
-                item {
-                    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        TextSection(
-                            label = "Card holder's name",
-                            placeholder = "Enter name",
-                            text = uiState.cardName,
-                            leadingIcon = R.drawable.person,
-                            onTextChanged = onCardNameChange,
-                            textError = ""
+            item {
+                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    TextSection(
+                        label = "Card holder's name",
+                        placeholder = "Enter name",
+                        text = uiState.cardName,
+                        leadingIcon = R.drawable.person,
+                        onTextChanged = onCardNameChange,
+                        textError = ""
+                    )
+
+                    TextTransformationSection(
+                        label = "Card number",
+                        placeholder = "Enter number",
+                        text = uiState.cardNumber,
+                        leadingIcon = R.drawable.credit_card,
+                        onTextChanged = onCardNumberChange,
+                        visualTransformation = Transformations.CardNumber()
+                    )
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TextTransformationSection(
+                            modifier = Modifier.weight(1f),
+                            label = "Expiry Date",
+                            placeholder = "MM/YY",
+                            text = uiState.expireDate,
+                            leadingIcon = R.drawable.calendar,
+                            onTextChanged = onExpireDateChange,
+                            visualTransformation = Transformations.ExpiryDateTransformation()
                         )
 
                         TextTransformationSection(
-                            label = "Card number",
-                            placeholder = "Enter number",
-                            text = uiState.cardNumber,
-                            leadingIcon = R.drawable.credit_card,
-                            onTextChanged = onCardNumberChange,
-                            visualTransformation = Transformations.CardNumber()
+                            modifier = Modifier.weight(1f),
+                            label = "CVV",
+                            placeholder = "CVV",
+                            text = uiState.cvv,
+                            leadingIcon = R.drawable.lock,
+                            onTextChanged = onCvvNumberChange
                         )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            TextTransformationSection(
-                                modifier = Modifier.weight(1f),
-                                label = "Expiry Date",
-                                placeholder = "MM/YY",
-                                text = uiState.expireDate,
-                                leadingIcon = R.drawable.calendar,
-                                onTextChanged = onExpireDateChange,
-                                visualTransformation = Transformations.ExpiryDateTransformation()
-                            )
-
-                            TextTransformationSection(
-                                modifier = Modifier.weight(1f),
-                                label = "CVV",
-                                placeholder = "CVV",
-                                text = uiState.cvv,
-                                leadingIcon = R.drawable.lock,
-                                onTextChanged = onCvvNumberChange
-                            )
-                        }
                     }
-                    Divider32()
                 }
+                Divider32()
+            }
 
-                item {
-                    Column(
-                        Modifier.fillMaxSize().padding(horizontal = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CardBackgroundListContent(
-                            selectedPatternRes = uiState.selectedImage,
-                            option = uiState.selectedColor,
-                            patterns = uiState.backgroundPatterns,
-                            onClick = onImageSelected
-                        )
+            item {
+                Column(
+                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CardBackgroundListContent(
+                        selectedPatternRes = uiState.selectedImage,
+                        option = uiState.selectedColor,
+                        patterns = uiState.backgroundPatterns,
+                        onClick = onImageSelected
+                    )
 
-                        CardColorListContent(
-                            selectedColor = uiState.selectedColor,
-                            colorOptions = uiState.colorOptions,
-                            onClick = onColorSelected
-                        )
-                    }
+                    CardColorListContent(
+                        selectedColor = uiState.selectedColor,
+                        colorOptions = uiState.colorOptions,
+                        onClick = onColorSelected
+                    )
                 }
             }
         }
     }
+}
 
 @Composable
 fun CardBackgroundListContent(
@@ -315,7 +318,7 @@ fun CardBackgroundListContent(
             textAlign = TextAlign.Start,
             text = "Card color",
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -346,7 +349,7 @@ fun CardColorListContent(
             textAlign = TextAlign.Start,
             text = "Card color",
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             colorOptions.forEach { option ->
@@ -361,30 +364,58 @@ fun CardColorListContent(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun AddCardScreenPreview() {
-    val mockUiState = AddCardUiState(
-        selectedColor = colorList[3],
-        selectedImage = patterns[0],
-        cardName = "Luna Fiorenza",
-        cardNumber = "4242424242424242",
-        expireDate = "1226",
-        cvv = "123",
-        isLoading = true
-    )
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun AddCardLightPreview() {
+//    val mockUiState = AddCardUiState(
+//        selectedColor = colorList[3],
+//        selectedImage = patterns[0],
+//        cardName = "Luna Fiorenza",
+//        cardNumber = "4242424242424242",
+//        expireDate = "1226",
+//        cvv = "123",
+//        isLoading = true
+//    )
+//
+//    TasstyTheme {
+//        AddCardContent(
+//            uiState = mockUiState,
+//            onCardNumberChange = {},
+//            onCardNameChange = {},
+//            onCvvNumberChange = {},
+//            onExpireDateChange = {},
+//            onSaveCardCLicked = {},
+//            onColorSelected = {},
+//            onImageSelected = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AddCardContent(
-            uiState = mockUiState,
-            onCardNumberChange = {},
-            onCardNameChange = {},
-            onCvvNumberChange = {},
-            onExpireDateChange = {},
-            onSaveCardCLicked = {},
-            onColorSelected = {},
-            onImageSelected = {},
-            onNavigateBack = {}
-        )
-    }
-}
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun AddCardDarkPreview() {
+//    val mockUiState = AddCardUiState(
+//        selectedColor = colorList[3],
+//        selectedImage = patterns[0],
+//        cardName = "Luna Fiorenza",
+//        cardNumber = "4242424242424242",
+//        expireDate = "1226",
+//        cvv = "123",
+//        isLoading = true
+//    )
+//
+//    TasstyTheme(darkTheme = true) {
+//        AddCardContent(
+//            uiState = mockUiState,
+//            onCardNumberChange = {},
+//            onCardNameChange = {},
+//            onCvvNumberChange = {},
+//            onExpireDateChange = {},
+//            onSaveCardCLicked = {},
+//            onColorSelected = {},
+//            onImageSelected = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}

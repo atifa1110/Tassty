@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -183,7 +184,7 @@ fun PaymentContent(
             }
         },
         topBar = {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth().statusBarsPadding()) {
                 CenterAlignedTopAppBar(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -205,7 +206,7 @@ fun PaymentContent(
                         )
                     },
                 )
-                HorizontalDivider()
+                HorizontalDivider(color = LocalCustomColors.current.divider)
             }
         }
     ) { padding ->

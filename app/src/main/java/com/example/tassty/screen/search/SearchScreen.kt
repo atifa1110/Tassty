@@ -60,14 +60,14 @@ import com.example.tassty.util.restaurantMenuUiModel
 import com.example.tassty.util.restaurantUiModel
 
 @Composable
-fun SearchRoute(
+fun SearchScreen(
     onNavigateBack:() -> Unit,
     onNavigateToDetail:(String) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    SearchScreen(
+    SearchRoute(
         uiState = uiState,
         onQueryChange = {viewModel.onEvent(SearchEvent.ChangeQuery(it))},
         onFilterClick = {viewModel.onEvent(SearchEvent.ShowFilterSheet)},
@@ -108,7 +108,7 @@ fun SearchRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(
+fun SearchRoute(
     uiState: SearchUiState,
     onQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit,
@@ -363,7 +363,7 @@ fun MenuSection(
 //@Composable
 //fun SearchLightPreview() {
 //    TasstyTheme {
-//        SearchScreen(
+//        SearchRoute(
 //            uiState = SearchUiState(
 //                history = Resource(data = historyOptions),
 //                popular = Resource(data = popularOptions),
@@ -388,7 +388,7 @@ fun MenuSection(
 //@Composable
 //fun SearchDarkPreview() {
 //    TasstyTheme(darkTheme = true){
-//        SearchScreen(
+//        SearchRoute(
 //            uiState = SearchUiState(
 //                history = Resource(data = historyOptions),
 //                popular = Resource(data = popularOptions),

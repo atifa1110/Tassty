@@ -33,11 +33,13 @@ import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.ShimmerAddressCard
 import com.example.tassty.component.addressVerticalListBlock
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun AddressScreen(
@@ -60,7 +62,7 @@ fun AddressContent(
     onNavigateBack:() -> Unit,
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             AddTopAppBar (
                 onAddClick = {},
@@ -70,9 +72,9 @@ fun AddressContent(
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
-            item{
+            item(key = "header"){
                 HeaderTitleScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     title = "My addresses."
@@ -131,7 +133,7 @@ fun AddressTabContent(
             .fillMaxWidth()
             .padding(16.dp)
             .background(
-                color = Neutral20,
+                color = LocalCustomColors.current.cardBackground,
                 shape = RoundedCornerShape(50)
             )
             .padding(6.dp)
@@ -153,7 +155,7 @@ fun AddressTabContent(
                 ) {
                     Text(
                         text = type.title,
-                        color = if (isSelected) Neutral10 else Neutral70,
+                        color = if (isSelected) LocalCustomColors.current.headerText else LocalCustomColors.current.text,
                         style = LocalCustomTypography.current.h7Bold
                     )
                 }
@@ -163,15 +165,32 @@ fun AddressTabContent(
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun AddressListPreview() {
-    AddressContent(
-        uiState = AddressUiState(
-            selectedTab = AddressTab.ALL,
-            addressResource = Resource(data = addresses)
-        ),
-        onTabSelected = {},
-        onNavigateBack = {}
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun AddressLightPreview() {
+//    TasstyTheme {
+//        AddressContent(
+//            uiState = AddressUiState(
+//                selectedTab = AddressTab.ALL,
+//                addressResource = Resource(data = addresses)
+//            ),
+//            onTabSelected = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun AddressDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        AddressContent(
+//            uiState = AddressUiState(
+//                selectedTab = AddressTab.ALL,
+//                addressResource = Resource(data = addresses)
+//            ),
+//            onTabSelected = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}

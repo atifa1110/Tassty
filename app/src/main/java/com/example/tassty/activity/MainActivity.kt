@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
@@ -65,6 +66,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         permissionManager = PermissionManager(
             activity = this,
@@ -97,7 +99,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            TasstyTheme(darkTheme = true) {
+            TasstyTheme {
                 LaunchedEffect(isAuthLoaded) {
                     if (isAuthLoaded) {
                         viewModel.snackbarMessage.collect { message ->
@@ -121,19 +123,17 @@ class MainActivity : ComponentActivity() {
                         enter = fadeIn() + slideInVertically { 80 },
                         exit = fadeOut()
                     ) {
-                        TransparentStatusBar(true)
-
-                        Scaffold (
-                            snackbarHost = {
-                                SnackbarHost(hostState = snackHostState)
-                            }
-                        ) { innerPadding ->
+//                        Scaffold(
+//                            snackbarHost = {
+//                                SnackbarHost(hostState = snackHostState)
+//                            }
+//                        ) { _ ->
                             TasstyNavHost(
                                 authStatus = authStatus,
-                                modifier = Modifier.padding(innerPadding),
+                                modifier = Modifier.fillMaxSize(),
                                 navController = rememberNavController()
                             )
-                        }
+                        //}
                     }
                 }
             }
@@ -169,16 +169,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private enum class Action { START, STOP }
-}
-
-@Composable
-fun TransparentStatusBar(lightIcons: Boolean) {
-    val window = LocalView.current.context.findActivity()?.window
-    SideEffect {
-        window?.statusBarColor = Color.Transparent.toArgb()
-        WindowCompat.getInsetsController(window!!, window.decorView)
-            .isAppearanceLightStatusBars = lightIcons
-    }
 }
 
 fun Context.findActivity(): Activity? = when (this) {

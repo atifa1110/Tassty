@@ -363,7 +363,6 @@ fun ErrorBanner(
 //
 //@Preview(
 //    showBackground = true,
-//    uiMode = Configuration.UI_MODE_NIGHT_YES,
 //    name = "Dark Mode",
 //)
 //@Composable

@@ -29,7 +29,9 @@ import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.ShimmerDebitPaymentCard
 import com.example.tassty.component.cardUserVerticalListBlock
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun CardScreen(
@@ -53,7 +55,7 @@ fun CardContent(
     onNavigateBack:() -> Unit
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             AddTopAppBar(
                 onAddClick = onAddClick,
@@ -114,14 +116,31 @@ fun LazyListScope.cardSection(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CardContentPreview(){
-    CardContent(
-        uiState = CardUiState(
-            cardPayment = Resource(data = cardList)
-        ),
-        onNavigateBack = {},
-        onAddClick = {}
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun CardLightPreview() {
+//    TasstyTheme{
+//        CardContent(
+//            uiState = CardUiState(
+//                cardPayment = Resource(data = cardList)
+//            ),
+//            onNavigateBack = {},
+//            onAddClick = {}
+//        )
+//    }
+//}
+//
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun CardDarkPreview(){
+//    TasstyTheme (darkTheme = true){
+//        CardContent(
+//            uiState = CardUiState(
+//                cardPayment = Resource(data = cardList)
+//            ),
+//            onNavigateBack = {},
+//            onAddClick = {}
+//        )
+//    }
+//}

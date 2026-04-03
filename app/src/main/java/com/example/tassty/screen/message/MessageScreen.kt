@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -137,13 +139,15 @@ fun MessageContent(
     Scaffold (
         containerColor = LocalCustomColors.current.background,
         topBar = {
-            Column(Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.fillMaxWidth().statusBarsPadding()) {
                 ChatTopBar(
                     user = uiState.user,
                     onBackClick = onNavigateBack,
                     onCallClick = {},
                     onCameraClick = {}
                 )
+
+                HorizontalDivider(color = LocalCustomColors.current.divider)
 
                 if (uiState.isLoading) {
                     if (uiState.uploadProgress in 0.01f..0.99f) {

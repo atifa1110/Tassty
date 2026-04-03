@@ -39,10 +39,9 @@ import com.example.tassty.screen.payment.PaymentScreen
 import com.example.tassty.screen.rating.RatingScreen
 import com.example.tassty.screen.recommended.RecommendedRestaurantScreen
 import com.example.tassty.screen.review.ReviewScreen
-import com.example.tassty.screen.search.SearchRoute
+import com.example.tassty.screen.search.SearchScreen
 import com.example.tassty.screen.terms.TermsScreen
 import com.example.tassty.screen.voucher.VoucherScreen
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize
 
@@ -398,7 +397,7 @@ fun NavGraphBuilder.mainGraph(
         }
 
         composable(route = SearchDestination.route) {
-            SearchRoute(
+            SearchScreen(
                 onNavigateBack = onNavigateBack,
                 onNavigateToDetail = onNavigateToDetailRest
             )
@@ -466,6 +465,7 @@ fun NavGraphBuilder.mainGraph(
                 navArgument(idArg) { type = NavType.StringType })
         ){ backStackEntry ->
             BestSellerScreen(
+                onNavigateBack = onNavigateBack,
                 onNavigateToDetailMenu = onNavigateToDetailMenu
             )
         }

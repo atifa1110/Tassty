@@ -194,7 +194,7 @@ fun VoucherApplyCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -213,18 +213,18 @@ fun VoucherApplyCard(
                 Text(
                     text = voucher.title,
                     style = LocalCustomTypography.current.h6Bold,
-                    color = Neutral100
+                    color = LocalCustomColors.current.headerText
                 )
                 Text(
                     text = voucher.description,
                     style = LocalCustomTypography.current.bodySmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = "choose location",
-                tint = Neutral100,
+                tint = LocalCustomColors.current.background,
                 modifier = Modifier.size(16.dp)
             )
         }

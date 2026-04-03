@@ -200,7 +200,6 @@ fun OrderProcessContent(
             cameraPositionState = cameraPositionState,
             uiSettings = MapUiSettings(zoomControlsEnabled = false, tiltGesturesEnabled = false)
         ) {
-            // MARKER RESTORAN
             restaurantMarkerIcon?.let { icon ->
                 Marker(
                     state = MarkerState(position = restaurantLoc),
@@ -210,7 +209,6 @@ fun OrderProcessContent(
                 )
             }
 
-            // MARKER USER
             userMarkerIcon?.let { icon ->
                 Marker(
                     state = MarkerState(position = userLoc),
@@ -220,7 +218,6 @@ fun OrderProcessContent(
                 )
             }
 
-            // GARIS JALAN UTAMA (Abu-abu)
             if (roadPoints.isNotEmpty()) {
                 Polyline(
                     points = roadPoints,
@@ -232,7 +229,6 @@ fun OrderProcessContent(
                 )
             }
 
-            // GARIS JALAN YANG SUDAH DILEWATI (Biru/Ungu)
             if (detail.status == OrderStatus.ON_DELIVERY && roadPoints.isNotEmpty()) {
                 val pathTraveled = calculatePathTraveled(roadPoints, driverPos)
 
@@ -246,7 +242,6 @@ fun OrderProcessContent(
                     endCap = RoundCap()
                 )
 
-                // MARKER DRIVER (Icon Motor)
                 Marker(
                     state = MarkerState(position = animatedDriverLatLng),
                     anchor = Offset(0.5f, 0.5f)

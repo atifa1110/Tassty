@@ -283,8 +283,7 @@ fun DetailMenuContent(
                         .align(Alignment.TopCenter)
                         .background(
                             Neutral10.copy(alpha = appBarAlpha)
-                        )
-                        .statusBarsPadding(),
+                        ),
                     iconBackground = iconBackground,
                     isFavorite = menu.isWishlist,
                     onBackClick = onNavigateBack,

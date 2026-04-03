@@ -175,8 +175,7 @@ fun CollectionDetailContent(
                     .align(Alignment.TopCenter)
                     .background(
                         LocalCustomColors.current.background.copy(alpha = appBarAlpha)
-                    )
-                    .statusBarsPadding(),
+                    ),
                 onBackClick = onNavigateBack,
                 onEditClick = onEditClick,
                 onRemoveClick = onDeleteClick

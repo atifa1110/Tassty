@@ -219,9 +219,7 @@ fun HomeContent(
         containerColor = LocalCustomColors.current.background,
         snackbarHost = { SnackbarHost(snackHostState) },
     ) { padding ->
-        BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxSize()
-            .background(Color.Transparent)
-        ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val screenHeight = maxHeight
 
             LazyColumn(
@@ -256,10 +254,8 @@ fun HomeContent(
                                 )
                             }
                         )
-                        Column(
-                            modifier = Modifier
+                        Column(modifier = Modifier
                                 .fillMaxWidth()
-                                .statusBarsPadding()
                         ) {
                             Spacer(modifier = Modifier.height(80.dp))
                             HeaderSection(
@@ -329,7 +325,6 @@ fun HomeContent(
                     .background(
                         Orange500.copy(alpha = appBarAlpha)
                     )
-                    .statusBarsPadding(),
             )
 
             PullToRefreshDefaults.Indicator(
@@ -845,32 +840,32 @@ fun SuggestedMenu(
 //    }
 //}
 //
-//@Preview(showBackground = true, name = "DarkMode")
-//@Composable
-//fun HomeDarkPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme(darkTheme = true){
-//        HomeContent(
-//            snackHostState = snackHostState,
-//            uiState = HomeUiState(
-//                userName = "Guest",
-//                addressName = "Guest",
-//                allCategories = Resource(data = categories, isLoading = false),
-//                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-//                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-//                todayVouchers = Resource(data = voucherUiModel, isLoading = false),
-//                recommendedMenus = Resource(data = menusItem, isLoading = false),
-//                suggestedMenus = Resource(data = menusItem, isLoading = false),
-//            ),
-//            onRefresh = {},
-//            onFavoriteClicked = {},
-//            onNavigateToDetail = {},
-//            onNavigateToSearch = {},
-//            onNavigateToRecommended = {},
-//            onNavigateToCategory = { _, _, _ -> },
-//            onNavigateToNearbyRestaurant = {},
-//            onNavigateToDetailMenu = {},
-//            onNavigateToVoucher = {}
-//        )
-//    }
-//}
+@Preview(showBackground = true, name = "DarkMode")
+@Composable
+fun HomeDarkPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme(darkTheme = true){
+        HomeContent(
+            snackHostState = snackHostState,
+            uiState = HomeUiState(
+                userName = "Guest",
+                addressName = "Guest",
+                allCategories = Resource(data = categories, isLoading = false),
+                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+                todayVouchers = Resource(data = voucherUiModel, isLoading = false),
+                recommendedMenus = Resource(data = menusItem, isLoading = false),
+                suggestedMenus = Resource(data = menusItem, isLoading = false),
+            ),
+            onRefresh = {},
+            onFavoriteClicked = {},
+            onNavigateToDetail = {},
+            onNavigateToSearch = {},
+            onNavigateToRecommended = {},
+            onNavigateToCategory = { _, _, _ -> },
+            onNavigateToNearbyRestaurant = {},
+            onNavigateToDetailMenu = {},
+            onNavigateToVoucher = {}
+        )
+    }
+}
