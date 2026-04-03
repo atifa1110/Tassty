@@ -2,11 +2,11 @@ package com.example.core.ui.model
 
 data class NotificationUiModel(
     val id: String,
-    val title: String, // Contoh: "Your order has been taken..."
-    val description: String, // Contoh: "Lorem ipsum dolor sit amet"
-    val displayTime: String, // Contoh: "15.00 PM"
-    val displayHeader:String,
-    val isRead: Boolean, // Untuk nampilin titik oranye di pojok kanan bawah
+    val title: String,
+    val message: String,
+    val displayTime: String,
+    val displayDate:String,
+    val isRead: Boolean,
     val type: NotificationType
 )
 

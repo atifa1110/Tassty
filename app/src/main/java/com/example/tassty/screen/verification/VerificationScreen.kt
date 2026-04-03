@@ -1,5 +1,6 @@
 package com.example.tassty.screen.verification
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -55,20 +56,25 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.withStyle
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingButtonComponent
+import com.example.tassty.component.LoadingOverlay
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral60
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun VerificationRoute(
     onNavigateToSetUp:() -> Unit,
+    onNavigateToNewPassword:() -> Unit,
     viewModel: VerificationViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val email = viewModel.email.collectAsState().value
     val snackHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = Unit) {
@@ -78,8 +84,12 @@ fun VerificationRoute(
                     onNavigateToSetUp()
                 }
 
-                is VerificationEvent.Snackbar -> {
+                is VerificationEvent.ShowMessage -> {
                     snackHostState.showSnackbar(event.message)
+                }
+
+                is VerificationEvent.NavigateToNewPassword -> {
+                    onNavigateToNewPassword()
                 }
             }
         }
@@ -88,11 +98,10 @@ fun VerificationRoute(
     VerificationScreen(
         snackHostState = snackHostState,
         uiState = uiState,
-        onOtpChange = {viewModel.onOtpChange(it)},
-        onVerifyClick = viewModel::verifyEmail,
-        onDismissError = viewModel::dismissError,
-        onResendCodeClick = viewModel::resendVerification,
-        email = email
+        onOtpChange = viewModel::onOtpChange,
+        onVerifyClick = viewModel::onVerificationCode,
+        onDismissError = viewModel::onErrorDismiss,
+        onResendCodeClick = viewModel::onResendVerification
     )
 }
 
@@ -104,21 +113,64 @@ fun VerificationScreen(
     onVerifyClick: () -> Unit,
     onDismissError: () -> Unit,
     onResendCodeClick: () -> Unit,
-    email: String = "rafiq@gmail.com"
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+
     Scaffold(
         snackbarHost = {SnackbarHost(snackHostState)},
-        containerColor = Color.White,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             BackTopAppBar(onBackClick = {})
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TextButton(
+                    onClick = onResendCodeClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = uiState.isResendEnabled
+                ) {
+                    Column (
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ){
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.didnt_get_the_email),
+                            style = LocalCustomTypography.current.bodyMediumRegular,
+                            color = LocalCustomColors.current.text,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = if (uiState.isResendEnabled) "Resend code"
+                            else "Resend code in ${uiState.timerSeconds}s",
+                            style = LocalCustomTypography.current.bodyMediumMedium,
+                            color = if(uiState.isResendEnabled) Orange500 else Neutral60,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                LoadingButtonComponent(
+                    enabled = uiState.isButtonEnabled,
+                    labelResId = R.string.verify,
+                    onClick = onVerifyClick,
+                    isLoading = uiState.isLoading
+                )
+            }
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color.White)
                 .imePadding()
         ) {
             Column(
@@ -131,26 +183,28 @@ fun VerificationScreen(
                     modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    HeaderTitleScreen(title = uiState.title)
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "Verify your Email.",
-                        style = LocalCustomTypography.current.h2Bold,
-                        color = Neutral100
+                        text = buildAnnotatedString {
+                            withStyle(style = LocalCustomTypography.current.bodyMediumRegular.toSpanStyle().copy(color = LocalCustomColors.current.text)) {
+                                append(uiState.instruction)
+                                append(" ")
+                            }
+
+                            withStyle(style = LocalCustomTypography.current.bodyMediumMedium.toSpanStyle().copy(color = LocalCustomColors.current.headerText)) {
+                                append(uiState.email)
+                                append(" ")
+                            }
+
+                            withStyle(style = LocalCustomTypography.current.bodyMediumRegular.toSpanStyle().copy(color = LocalCustomColors.current.text)) {
+                                append(uiState.recoveryInfo)
+                            }
+                        },
+                        style = LocalCustomTypography.current.bodyMediumRegular,
+                        color = Neutral70,
+                        textAlign = TextAlign.Start
                     )
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "Please enter the verification code sent to:",
-                            style = LocalCustomTypography.current.bodyMediumRegular,
-                            color = Neutral70,
-                            textAlign = TextAlign.Start
-                        )
-                        Text(
-                            text = email,
-                            style = LocalCustomTypography.current.bodyMediumMedium,
-                            color = Neutral100,
-                            textAlign = TextAlign.Start,
-                        )
-                    }
+
                 }
 
                 Divider32()
@@ -164,6 +218,7 @@ fun VerificationScreen(
                     }
 
                     BasicTextField(
+                        enabled = uiState.isTextEditable,
                         value = uiState.otp,
                         onValueChange = {
                             onOtpChange(it)
@@ -193,7 +248,7 @@ fun VerificationScreen(
                                     }
 
                                     val boxBackgroundColor =
-                                        if (uiState.isError) Pink50 else Neutral10
+                                        if (uiState.isError) LocalCustomColors.current.errorBackground else Color.Transparent
                                     val boxBorderColor =
                                         if (uiState.isError) Pink500 else Neutral40
                                     val boxActiveBorderColor =
@@ -202,7 +257,7 @@ fun VerificationScreen(
                                         if (uiState.isError) Pink500 else Neutral40
 
                                     val borderColor = when {
-                                        uiState.isError -> Pink500
+                                        uiState.isError -> LocalCustomColors.current.errorBorder
                                         index < uiState.otp.length -> boxFilledBorderColor
                                         index == uiState.otp.length -> boxActiveBorderColor
                                         else -> boxBorderColor
@@ -229,7 +284,7 @@ fun VerificationScreen(
                                         Text(
                                             text = char.toString(),
                                             style = LocalCustomTypography.current.bodyMediumRegular,
-                                            color = if (uiState.isError) Pink500 else Neutral100,
+                                            color = if (uiState.isError) Pink500 else LocalCustomColors.current.headerText,
                                             textAlign = TextAlign.Center
                                         )
                                     }
@@ -238,48 +293,6 @@ fun VerificationScreen(
                         }
                     )
                 }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(horizontal = 24.dp, vertical = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(36.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TextButton(
-                    onClick = onResendCodeClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState.isResendEnabled
-                ) {
-                    Column (
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ){
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.didnt_get_the_email),
-                            style = LocalCustomTypography.current.bodyMediumRegular,
-                            color = Neutral70,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = if (uiState.isResendEnabled) "Resend code"
-                            else "Resend code in ${uiState.timerSeconds}s",
-                            style = LocalCustomTypography.current.bodyMediumMedium,
-                            color = if(uiState.isResendEnabled) Orange500 else Neutral60,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-                LoadingButtonComponent(
-                    enabled = uiState.otp.isNotEmpty(),
-                    labelResId = R.string.verify,
-                    onClick = onVerifyClick,
-                    isLoading = uiState.isLoading
-                )
             }
         }
     }
@@ -300,7 +313,6 @@ fun ErrorBanner(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Icon
         Image(
             painter = painterResource(id = R.drawable.information_circle),
             contentDescription = "Error",
@@ -323,21 +335,58 @@ fun ErrorBanner(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun VerificationPreview() {
-    val snackHostState = remember { SnackbarHostState() }
-    VerificationScreen(
-        snackHostState = snackHostState,
-        uiState = VerificationUiState(
-            otp = "123456",
-            isError = true,
-            isResendEnabled = true,
-            errorMessage = "Kode verifikasi sudah kedaluwarsa. Silakan kirim ulang kode"
-        ),
-        onOtpChange = {},
-        onVerifyClick = {},
-        onResendCodeClick = {},
-        onDismissError = {}
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun VerificationLightPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme(darkTheme = false) {
+//        VerificationScreen(
+//            snackHostState = snackHostState,
+//            uiState = VerificationUiState(
+//                otp = "123456",
+//                email = "rafiq@gmail.com",
+//                isError = false,
+//                isLoading = false,
+//                isButtonEnabled = true,
+//                isResendEnabled = false,
+//                title = "Verify Your Email.",
+//                instruction = "Please enter the 6-digit activation code sent to : ",
+//                recoveryInfo = "to activate your account.",
+//            ),
+//            onOtpChange = {},
+//            onVerifyClick = {},
+//            onResendCodeClick = {},
+//            onDismissError = {}
+//        )
+//    }
+//}
+//
+//@Preview(
+//    showBackground = true,
+//    uiMode = Configuration.UI_MODE_NIGHT_YES,
+//    name = "Dark Mode",
+//)
+//@Composable
+//fun VerificationDarkPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme(darkTheme = true) {
+//        VerificationScreen(
+//            snackHostState = snackHostState,
+//            uiState = VerificationUiState(
+//                otp = "123456",
+//                email = "rafiq@gmail.com",
+//                isError = false,
+//                isLoading = false,
+//                isButtonEnabled = true,
+//                isResendEnabled = false,
+//                title = "Verify Your Email.",
+//                instruction = "Please enter the 6-digit activation code sent to : ",
+//                recoveryInfo = "to activate your account.",
+//            ),
+//            onOtpChange = {},
+//            onVerifyClick = {},
+//            onResendCodeClick = {},
+//            onDismissError = {}
+//        )
+//    }
+//}

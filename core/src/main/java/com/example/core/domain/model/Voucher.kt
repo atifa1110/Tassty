@@ -30,6 +30,7 @@ enum class DiscountType(val displayName: String) {
     PERCENTAGE("Percentage"),
     FIXED("Fixed"),
 }
+
 enum class VoucherScope {
     GLOBAL,
     RESTAURANT

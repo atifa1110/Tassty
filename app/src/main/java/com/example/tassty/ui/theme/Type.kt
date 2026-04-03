@@ -23,17 +23,6 @@ val PlusJakartaSansFontFamily = FontFamily(
     Font(R.font.plus_jakarta_sans_light, FontWeight.Light)
 )
 
-// Set of Material typography styles to start with
-val Typography = Typography(
-    // Headline/H1
-    displayLarge = TextStyle(
-        fontFamily = ApfelGrotezkFontFamily,
-        fontWeight = FontWeight.ExtraBold,
-        fontSize = 40.sp,
-        lineHeight = 48.sp
-    ),
-)
-
 data class CustomTypography(
     val h1ExtraBold: TextStyle = TextStyle(
         fontFamily = ApfelGrotezkFontFamily,

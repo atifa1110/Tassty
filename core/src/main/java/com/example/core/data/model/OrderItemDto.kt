@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class OrderItemDto(
     val id: String,
+    @SerializedName("menu_review_id")
+    val menuReviewId: String? = null,
     val quantity: Int,
     val price: Long,
     @SerializedName("menu_name")

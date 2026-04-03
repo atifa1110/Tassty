@@ -36,29 +36,36 @@ import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.MyOrderTopAppBar
 import com.example.tassty.component.OrderListCard
 import com.example.tassty.component.SearchBar
-import com.example.tassty.getFilterIconRes
-import com.example.tassty.orderFilters
-import com.example.tassty.orderList
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.getFilterIconRes
+import com.example.tassty.util.orderFilters
+import com.example.tassty.util.orderList
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.TasstyTheme
 import com.jakewharton.threetenabp.AndroidThreeTen
-import org.threeten.bp.LocalDate
 
 @Composable
 fun OrderScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToPayment:(String, String) -> Unit,
-    onNavigateToDetailOrder:(String) -> Unit,
+    onNavigateToOrderProcess:(String) -> Unit,
+    onNavigateToOrderDetail:(String) -> Unit,
     viewModel: OrderViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect (Unit) {
+    LaunchedEffect (viewModel.navigation) {
         viewModel.navigation.collect { event ->
             when (event) {
                 is OrderEvent.NavigateToPayment -> {
                     onNavigateToPayment(event.orderId, event.total)
                 }
-                is OrderEvent.NavigateToDetail -> {
-                    onNavigateToDetailOrder(event.orderId)
+                is OrderEvent.NavigateToOrderDetail -> {
+                    onNavigateToOrderDetail(event.orderId)
+                }
+
+                is OrderEvent.NavigateToOrderProcess -> {
+                    onNavigateToOrderProcess(event.orderId)
                 }
             }
         }
@@ -68,7 +75,8 @@ fun OrderScreen(
         uiState = uiState,
         onFilterClick = viewModel::onFilterSelected,
         onCalendarClick = {viewModel.onCalendarClick(true)},
-        onCardClick = viewModel::onOrderClicked
+        onCardClick = viewModel::onOrderClicked,
+        onNavigateBack = onNavigateBack
     )
 
     CustomBottomSheet(
@@ -93,13 +101,14 @@ fun OrderContent(
     uiState: OrderUiState,
     onFilterClick : (OrderFilterCategory) -> Unit,
     onCalendarClick:() -> Unit,
-    onCardClick: (OrderUiModel) -> Unit
+    onCardClick: (OrderUiModel) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             MyOrderTopAppBar(
-                onBackClick = {},
+                onBackClick = onNavigateBack,
                 onCalendarCLick = onCalendarClick
             )
         }
@@ -110,23 +119,20 @@ fun OrderContent(
                 .padding(padding)
         ) {
             item {
-                HeaderTitleScreen(title = "My orders")
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Column(modifier = Modifier.fillMaxWidth()
                         .padding(start = 24.dp, end = 24.dp, top = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    HeaderTitleScreen(title = "My orders.")
                     SearchBar(
                         value = "",
                         onValueChange = {},
                         placeholder = "Search for your order.."
                     )
-
                     ChipOrderFilterSection(
                         options = uiState.filter,
                         onToggleOption = onFilterClick
                     )
-
                 }
                 Divider32()
             }
@@ -182,6 +188,10 @@ fun OrderContent(
                     }
                 }
             }
+
+            item{
+                Spacer(Modifier.height(32.dp))
+            }
         }
     }
 }
@@ -206,27 +216,58 @@ fun ChipOrderFilterSection(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun OrderScreenPreview() {
-    AndroidThreeTen.init(LocalContext.current)
-    val activeFilter = OrderFilterCategory.COMPLETED
-    val mockFilters = orderFilters.map {
-        it.copy(isSelected = it.category == activeFilter)
-    }
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun OrderLightPreview() {
+//    AndroidThreeTen.init(LocalContext.current)
+//    val activeFilter = OrderFilterCategory.ALL
+//    val mockFilters = orderFilters.map {
+//        it.copy(isSelected = it.category == activeFilter)
+//    }
+//
+//    val uiState = OrderUiState(
+//        orders = Resource(data = orderList),
+//        filter = mockFilters,
+//        selectedCategory = activeFilter,
+//        isCalendarVisible = false,
+//        startDateSelected = null,
+//        endDateSelected = null
+//    )
+//    TasstyTheme {
+//        OrderContent(
+//            uiState = uiState,
+//            onFilterClick = {},
+//            onCalendarClick = {},
+//            onCardClick = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}
 
-    val uiState = OrderUiState(
-        orders = Resource(data = emptyList(), errorMessage = ""),
-        filter = mockFilters,
-        selectedCategory = activeFilter,
-        isCalendarVisible = false,
-        startDateSelected = null,
-        endDateSelected = null
-    )
-    OrderContent(
-        uiState = uiState,
-        onFilterClick = {},
-        onCalendarClick = {},
-        onCardClick = {}
-    )
-}
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun OrderDarkPreview() {
+//    AndroidThreeTen.init(LocalContext.current)
+//    val activeFilter = OrderFilterCategory.ALL
+//    val mockFilters = orderFilters.map {
+//        it.copy(isSelected = it.category == activeFilter)
+//    }
+//
+//    val uiState = OrderUiState(
+//        orders = Resource(data = orderList),
+//        filter = mockFilters,
+//        selectedCategory = activeFilter,
+//        isCalendarVisible = false,
+//        startDateSelected = null,
+//        endDateSelected = null
+//    )
+//    TasstyTheme (darkTheme = true){
+//        OrderContent(
+//            uiState = uiState,
+//            onFilterClick = {},
+//            onCalendarClick = {},
+//            onCardClick = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}

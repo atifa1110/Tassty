@@ -1,13 +1,16 @@
 package com.example.tassty.screen.verification
 
-import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.usecase.ForgotPasswordUseCase
 import com.example.core.domain.usecase.GetAuthStatusUseCase
-import com.example.core.domain.usecase.ResendVerificationUseCase
-import com.example.core.domain.usecase.VerifyEmailUseCase
-import com.example.core.domain.utils.mapToResource
+import com.example.core.domain.usecase.ResendEmailOtpUseCase
+import com.example.core.domain.usecase.VerifyEmailOtpUseCase
+import com.example.core.domain.usecase.VerifyResetOtpUseCase
+import com.example.tassty.VerificationType
+import com.example.tassty.navigation.VerifyDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -17,8 +20,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,116 +28,151 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VerificationViewModel @Inject constructor(
-    private val verifyEmailUseCase: VerifyEmailUseCase,
+    val savedStateHandle: SavedStateHandle,
     private val getAuthStatusUseCase: GetAuthStatusUseCase,
-    private val resendVerificationUseCase: ResendVerificationUseCase
+    private val verifyEmailOtpUseCase: VerifyEmailOtpUseCase,
+    private val verifyResetOtpUseCase: VerifyResetOtpUseCase,
+    private val resendEmailOtpUseCase: ResendEmailOtpUseCase,
+    private val forgotPasswordUseCase: ForgotPasswordUseCase
 ): ViewModel() {
 
-    private val _uiState = MutableStateFlow(VerificationUiState())
-    val uiState: StateFlow<VerificationUiState> = _uiState.asStateFlow()
+    private val args = VerifyDestination.getArgs(savedStateHandle)
+
+    private val _internalState = MutableStateFlow(VerificationInternalState(
+        timerSeconds = args.resendDelay
+    ))
+
+    val uiState: StateFlow<VerificationUiState> = combine(
+        getAuthStatusUseCase(),
+        _internalState
+    ) { auth, state->
+        val currentEmail = auth.email ?: ""
+
+        VerificationUiState(
+            otp = state.otp,
+            timerSeconds = state.timerSeconds,
+            isResendEnabled = state.timerSeconds == 0,
+            isLoading = state.isLoading,
+            isError = state.isError,
+            email = currentEmail,
+            isTextEditable = !state.isLoading,
+            isButtonEnabled = state.otp.length == 6 && currentEmail.isNotEmpty() && !state.isLoading,
+            errorMessage = state.errorMessage,
+            title = args.type.title,
+            instruction = args.type.instruction,
+            recoveryInfo = args.type.recoveryInfo
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = VerificationUiState()
+    )
 
     private val _event = MutableSharedFlow<VerificationEvent>()
     val event: SharedFlow<VerificationEvent> = _event.asSharedFlow()
 
-    val email = getAuthStatusUseCase()
-        .map { it.email ?: "" }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(500),
-            ""
-        )
+    private var timerJob: Job? = null
 
     init {
         startTimer()
     }
-    private var timerJob: Job? = null
+
 
     fun startTimer() {
         timerJob?.cancel()
+        _internalState.update { it.copy(timerSeconds = args.resendDelay) }
+
         timerJob = viewModelScope.launch {
-            for (i in 60 downTo 0) {
-                _uiState.update { it.copy(
-                    timerSeconds = i,
-                    isResendEnabled = i == 0
-                )}
+            while (_internalState.value.timerSeconds > 0) {
                 delay(1000)
+                _internalState.update { it.copy(timerSeconds = it.timerSeconds - 1) }
             }
         }
     }
+
     fun onOtpChange(otp: String) {
-        val filteredValue = otp.filter { it.isDigit() }
-        val truncatedValue = filteredValue.take(6)
-        _uiState.update {
-            it.copy(
-                otp = truncatedValue,
-                isError = false,
-                errorMessage = ""
-            )
+        val truncatedValue = otp.filter { it.isDigit() }.take(6)
+        _internalState.update { it.copy(otp = truncatedValue, isError = false) }
+    }
+
+    fun onErrorDismiss(){
+        _internalState.update { it.copy(isError = false, errorMessage = "") }
+    }
+
+    fun onVerificationCode() {
+        val currentEmail = uiState.value.email
+        val otp = uiState.value.otp
+        if (currentEmail.isEmpty() || otp.length < 6) return
+
+        viewModelScope.launch {
+            val flow = if (args.type == VerificationType.REGISTRATION) {
+                verifyEmailOtpUseCase(currentEmail, otp)
+            } else {
+                verifyResetOtpUseCase(currentEmail, otp)
+            }
+
+            flow.collect { result ->
+                handleResponse(result) {
+                    if (args.type == VerificationType.REGISTRATION) {
+                        _event.emit(VerificationEvent.NavigateToSetUp)
+                    } else {
+                        _event.emit(VerificationEvent.NavigateToNewPassword)
+                    }
+                }
+            }
         }
     }
 
-    fun dismissError(){
-        _uiState.update {
-            it.copy(
-                otp = "",
-                isError = false,
-                errorMessage = ""
-            )
-        }
-    }
-
-    fun resendVerification(){
-        if (email.value.isEmpty()) return
+    fun onResendVerification() {
+        val currentEmail = uiState.value.email
+        if (currentEmail.isEmpty()) return
 
         startTimer()
 
         viewModelScope.launch {
-            resendVerificationUseCase(email.value).collect { response ->
-                when(response){
-                    is TasstyResponse.Loading -> {}
-                    is TasstyResponse.Success -> {
-                        _event.emit(VerificationEvent.Snackbar(response.meta.message))
+            val flow = if (args.type == VerificationType.REGISTRATION) {
+                resendEmailOtpUseCase(currentEmail)
+            } else {
+                forgotPasswordUseCase(currentEmail)
+            }
+
+            flow.collect { result->
+                handleResponse(
+                    result = result,
+                    onError = {
+                        _internalState.update { it.copy(timerSeconds = 0) }
+                    },
+                    onSuccess = {
+                        _event.emit(VerificationEvent.ShowMessage(it.meta.message))
                     }
-                    is TasstyResponse.Error -> _uiState.update {
-                        timerJob?.cancel()
-                        it.copy(
-                            isError = true,
-                            errorMessage = response.meta.message,
-                            isResendEnabled = true
-                        )
-                    }
-                }
+                )
             }
         }
     }
 
-    fun verifyEmail(){
-        viewModelScope.launch {
-            verifyEmailUseCase.invoke(email.value, uiState.value.otp)
-                .collect { result ->
-                    when(result) {
-                        is TasstyResponse.Loading -> {
-                            _uiState.update { it.copy(isLoading = true) }
-                        }
-
-                        is TasstyResponse.Success -> {
-                            _uiState.update { it.copy(isLoading = false) }
-                            Log.d("VerificationViewModel", result.data.toString())
-                            _event.emit(VerificationEvent.NavigateToSetUp)
-                        }
-
-                        is TasstyResponse.Error -> {
-                            Log.d("VerificationViewModel",result.meta.message)
-                            _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    isError = true,
-                                    errorMessage = result.meta.message
-                                )
-                            }
-                        }
-                    }
+    private suspend fun <T> handleResponse(
+        result: TasstyResponse<T>,
+        onError: (String) -> Unit = {},
+        onSuccess: suspend (TasstyResponse.Success<T>) -> Unit
+    ) {
+        when(result) {
+            is TasstyResponse.Loading -> {
+                _internalState.update { it.copy(isLoading = true) }
+            }
+            is TasstyResponse.Success -> {
+                _internalState.update { it.copy(isLoading = false) }
+                onSuccess(result)
+            }
+            is TasstyResponse.Error -> {
+                _internalState.update {
+                    it.copy(
+                        isLoading = false,
+                        isError = true,
+                        errorMessage = result.meta.message
+                    )
                 }
+                onError(result.meta.message)
+            }
         }
     }
 }

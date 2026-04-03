@@ -8,7 +8,7 @@ import com.example.core.domain.usecase.GetPaymentChannelUseCase
 import com.example.core.domain.usecase.GetUserCardUseCase
 import com.example.core.domain.usecase.ProcessOrderPaymentStripeUseCase
 import com.example.core.domain.usecase.RemoveHiddenCardUseCase
-import com.example.core.domain.utils.toListState
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.navigation.PaymentDestination
 import dagger.hilt.android.lifecycle.HiltViewModel

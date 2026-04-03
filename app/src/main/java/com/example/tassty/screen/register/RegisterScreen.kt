@@ -1,9 +1,11 @@
 package com.example.tassty.screen.register
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,15 +32,22 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
+import com.example.tassty.VerificationType
 import com.example.tassty.component.AuthTopAppBar
 import com.example.tassty.component.ButtonLogin
 import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.CustomTwoColorText
+import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmailSection
+import com.example.tassty.component.FailedIcon
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingButtonComponent
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.PasswordSection
+import com.example.tassty.component.SuccessIcon
 import com.example.tassty.component.TermsOfServiceCheckbox
 import com.example.tassty.component.TextSection
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -46,22 +55,19 @@ import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun RegisterRoute(
     onNavigateToLogin:()  -> Unit,
-    onNavigateToVerify: () -> Unit,
+    onNavigateToVerify: (VerificationType, Int, Int) -> Unit,
     viewModel: RegisterViewModel = hiltViewModel()
 ){
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                RegisterEvent.ShowBottomSheet -> {
-                    viewModel.setBottomSheetVisible(true)
-                }
-
-                RegisterEvent.NavigateToVerify -> {
-                    onNavigateToVerify()
+                is RegisterEvent.NavigateToVerify -> {
+                    onNavigateToVerify(VerificationType.REGISTRATION,event.expireIn,event.resendAvailableIn)
                 }
             }
         }
@@ -71,16 +77,16 @@ fun RegisterRoute(
 
     RegisterScreen(
         uiState = uiState,
-        onTextChange = {viewModel.onFullNameChange(it)},
-        onEmailChange = {viewModel.onEmailChange(it)},
-        onPasswordChange = {viewModel.onPasswordChange(it)},
-        onTermCheckChange = {viewModel.onTermCheckChanged(it)},
+        onTextChange = viewModel::onFullNameChange,
+        onEmailChange = viewModel::onEmailChange,
+        onPasswordChange = viewModel::onPasswordChange,
+        onTermCheckChange = viewModel::onTermCheckChanged,
         onLoginClick = onNavigateToLogin,
-        onRegisterClick = { viewModel.register()}
+        onRegisterClick = viewModel::onRegister
     )
 
     CustomBottomSheet(
-        visible = uiState.isBottomSheetVisible,
+        visible = uiState.isBottomSuccessVisible,
         dismissOnClickOutside = false,
         onDismiss = { }
     ) {
@@ -88,13 +94,24 @@ fun RegisterRoute(
             title = "Register Success!",
             subtitle = "Congratulation, you're now registered.\nNext, you need to setup your account first.",
             buttonTitle ="Continue setup account",
-            onClick = {viewModel.onUserConfirmVerification()}
+            onClick = viewModel::onConfirmVerification
         ){
-            Image(
-                painter = painterResource(id = R.drawable.success),
-                contentDescription = "Success Icon",
-                modifier = Modifier.size(64.dp)
-            )
+            SuccessIcon()
+        }
+    }
+
+    CustomBottomSheet(
+        visible = uiState.isBottomFailedVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        ModalStatusContent(
+            title = "Register Failed!",
+            subtitle = uiState.bottomSheetMessage?:"",
+            buttonTitle = "OK",
+            onClick = viewModel::onDismissBottomSheet
+        ) {
+            FailedIcon()
         }
     }
 }
@@ -110,14 +127,14 @@ fun RegisterScreen(
     onRegisterClick: () -> Unit
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             AuthTopAppBar()
         },
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
-                .fillMaxSize().background(Neutral10)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -126,17 +143,14 @@ fun RegisterScreen(
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.create_your_new_account),
-                    style = LocalCustomTypography.current.h2Bold,
-                    color = Neutral100
+                HeaderTitleScreen(
+                    title = stringResource(R.string.create_your_new_account),
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.create_an_account_to_start_looking_for_the),
                     style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
 
@@ -148,19 +162,22 @@ fun RegisterScreen(
                     text = uiState.fullName,
                     textError = uiState.fullNameError?:"",
                     leadingIcon = R.drawable.person,
-                    onTextChanged = onTextChange
+                    onTextChanged = onTextChange,
+                    enabled = uiState.isTextEditable
                 )
 
                 EmailSection (
                     email = uiState.email,
                     emailError = uiState.emailError?:"",
-                    onEmailChanged = onEmailChange
+                    onEmailChanged = onEmailChange,
+                    enabled = uiState.isTextEditable
                 )
 
                 PasswordSection(
                     password = uiState.password,
                     passwordError = uiState.passwordError?:"",
-                    onPasswordChanged = onPasswordChange
+                    onPasswordChanged = onPasswordChange,
+                    enabled = uiState.isTextEditable
                 )
 
                 TermsOfServiceCheckbox(
@@ -174,55 +191,105 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
             ) {
                 LoadingButtonComponent (
-                    enabled = uiState.isRegisterButtonEnabled,
+                    enabled = uiState.isButtonEnabled,
                     labelResId = R.string.register,
                     onClick = onRegisterClick,
                     isLoading = uiState.isLoading
                 )
             }
 
-            HorizontalDivider(color = Neutral30)
+            Divider32()
 
             ButtonLogin()
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = stringResource(R.string.already_have_an_account),
-                    style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = Neutral60
-                )
-                Text(
-                    text = stringResource(R.string.login),
-                    style = LocalCustomTypography.current.bodyMediumMedium,
-                    color = Orange500,
-                    modifier = Modifier.clickable { onLoginClick() }
-                )
-            }
+            CustomTwoColorText(
+                fullText = "Already have an account? Login",
+                highlightText = "Login",
+                highlightColor = Orange500,
+                textColor = Neutral60,
+                normalStyle = LocalCustomTypography.current.bodyMediumRegular,
+                onHighlightClick = onLoginClick
+            )
         }
     }
 }
 
-//@Preview(showBackground = true)
+//@Preview(showBackground = true, name = "Light Mode")
 //@Composable
-//fun RegisterPreview() {
-//    RegisterScreen(
-//        uiState = RegisterUiState(
-//            isLoading = false,
-//            email = "",
-//            password = "123456",
-//            fullName = "",
-//            fullNameError = "",
-//            isTermSelected = true
-//        ),
-//        onTermCheckChange = {},
-//        onRegisterClick = {},
-//        onLoginClick = {},
-//        onTextChange = {},
-//        onEmailChange = {},
-//        onPasswordChange = {}
-//    )
+//fun RegisterLightPreview() {
+//    TasstyTheme(darkTheme = false) {
+//        RegisterScreen(
+//            uiState = RegisterUiState(
+//                isLoading = false,
+//                email = "",
+//                password = "123456",
+//                fullName = "",
+//                fullNameError = "",
+//                isTermSelected = true
+//            ),
+//            onTermCheckChange = {},
+//            onRegisterClick = {},
+//            onLoginClick = {},
+//            onTextChange = {},
+//            onEmailChange = {},
+//            onPasswordChange = {}
+//        )
+//
+//        CustomBottomSheet(
+//            visible = false,
+//            dismissOnClickOutside = false,
+//            onDismiss = { }
+//        ) {
+//            ModalStatusContent(
+//                title = "Register Success!",
+//                subtitle = "Congratulation, you're now registered.\nNext, you need to setup your account first.",
+//                buttonTitle ="Continue setup account",
+//                onClick = {}
+//            ){
+//                SuccessIcon()
+//            }
+//        }
+//    }
+//}
+//
+//@Preview(
+//    showBackground = true,
+//    uiMode = Configuration.UI_MODE_NIGHT_YES,
+//    name = "Dark Mode",
+//)
+//@Composable
+//fun RegisterDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        RegisterScreen(
+//            uiState = RegisterUiState(
+//                isLoading = true,
+//                email = "atifafiorenza24@gmail.com",
+//                password = "123456",
+//                fullName = "",
+//                isTermSelected = true,
+//                isButtonEnabled = false,
+//            ),
+//            onTermCheckChange = {},
+//            onRegisterClick = {},
+//            onLoginClick = {},
+//            onTextChange = {},
+//            onEmailChange = {},
+//            onPasswordChange = {}
+//        )
+//
+//        CustomBottomSheet(
+//            visible = false,
+//            dismissOnClickOutside = false,
+//            onDismiss = { }
+//        ) {
+//            ModalStatusContent(
+//                title = "Register Success!",
+//                subtitle = "Congratulation, you're now registered.\nNext, you need to setup your account first.",
+//                buttonTitle ="Continue setup account",
+//                onClick = {}
+//            ){
+//                SuccessIcon()
+//            }
+//        }
+//    }
 //}

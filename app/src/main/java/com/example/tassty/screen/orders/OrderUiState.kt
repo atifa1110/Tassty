@@ -3,12 +3,9 @@ package com.example.tassty.screen.orders
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.model.FilterOptionUi
-import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.OrderUiModel
-import com.example.tassty.orderFilters
-import com.example.tassty.screen.home.HomeEvent
+import com.example.tassty.util.orderFilters
 import org.threeten.bp.LocalDate
-import org.threeten.bp.ZoneId
 
 data class OrderUiState (
     val orders: Resource<List<OrderUiModel>> = Resource(),
@@ -33,5 +30,6 @@ data class OrderInternalState (
 
 sealed class OrderEvent {
     data class NavigateToPayment(val orderId: String, val total: String) : OrderEvent()
-    data class NavigateToDetail(val orderId: String) : OrderEvent()
+    data class NavigateToOrderProcess(val orderId: String) : OrderEvent()
+    data class NavigateToOrderDetail(val orderId: String) : OrderEvent()
 }

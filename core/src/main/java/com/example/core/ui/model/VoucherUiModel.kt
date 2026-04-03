@@ -1,12 +1,10 @@
 package com.example.core.ui.model
 
 import com.example.core.domain.model.DiscountType
-import com.example.core.domain.model.Voucher
 import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
 import com.example.core.domain.model.VoucherType
 import com.example.core.domain.utils.toCleanRupiahFormat
-import com.example.core.domain.utils.toDisplayFormat
 import org.threeten.bp.LocalDate
 
 data class VoucherUiModel(
@@ -24,16 +22,12 @@ data class VoucherUiModel(
     val minOrderLabel: String,
     val startDate: LocalDate,
     val expiryDate: LocalDate,
+    val expireLabel: String,
+    val header: String,
     val status: VoucherStatus,
     val isUsable: Boolean,
     val isSelected: Boolean,
 ){
-    val expireLabel : String
-        get() = expiryDate.toDisplayFormat()
-
-    val startLabel : String
-        get() = startDate.toDisplayFormat()
-
     val formatMinOrder : String
         get() = minOrderValue.toCleanRupiahFormat()
 }

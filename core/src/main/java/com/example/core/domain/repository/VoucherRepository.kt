@@ -5,7 +5,7 @@ import com.example.core.domain.model.Voucher
 import kotlinx.coroutines.flow.Flow
 
 interface VoucherRepository {
-    suspend fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>>
-    suspend fun getRestaurantVouchers(id: String): Flow<TasstyResponse<List<Voucher>>>
-    suspend fun getUserVouchers(): Flow<TasstyResponse<List<Voucher>>>
+    fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>>
+    fun getRestaurantVouchers(id: String): Flow<TasstyResponse<List<Voucher>>>
+    fun getUserVouchers(): Flow<TasstyResponse<List<Voucher>>>
 }

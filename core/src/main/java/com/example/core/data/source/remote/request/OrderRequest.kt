@@ -6,6 +6,9 @@ data class OrderRequest(
     @SerializedName("restaurant_id")
     val restaurantId: String,
 
+    @SerializedName("voucher_id")
+    val voucherId: String,
+
     @SerializedName("address_id")
     val addressId: String,
 

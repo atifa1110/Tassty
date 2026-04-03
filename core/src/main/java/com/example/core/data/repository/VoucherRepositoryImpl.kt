@@ -23,8 +23,8 @@ class VoucherRepositoryImpl @Inject constructor(
         private const val META_KEY_TODAY = "today_vouchers"
     }
 
-    override suspend fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>> = flow {
-        emit(TasstyResponse.Loading)
+    override fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>> = flow {
+        emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_TODAY)
         if (cachedData.isNotEmpty()) {
@@ -56,8 +56,8 @@ class VoucherRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getRestaurantVouchers(id: String): Flow<TasstyResponse<List<Voucher>>>  = flow {
-        emit(TasstyResponse.Loading)
+    override fun getRestaurantVouchers(id: String): Flow<TasstyResponse<List<Voucher>>>  = flow {
+        emit(TasstyResponse.Loading())
 
         when (val result = remoteDataSource.getRestaurantVouchers(id)) {
             is TasstyResponse.Success -> {
@@ -74,8 +74,8 @@ class VoucherRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getUserVouchers(): Flow<TasstyResponse<List<Voucher>>>  = flow {
-        emit(TasstyResponse.Loading)
+    override fun getUserVouchers(): Flow<TasstyResponse<List<Voucher>>>  = flow {
+        emit(TasstyResponse.Loading())
 
         when (val result = remoteDataSource.getUserVouchers()) {
             is TasstyResponse.Success -> {

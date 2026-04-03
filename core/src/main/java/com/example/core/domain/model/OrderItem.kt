@@ -2,6 +2,7 @@ package com.example.core.domain.model
 
 data class OrderItem(
     val id: String,
+    val menuReviewId: String,
     val quantity: Int,
     val price: Long,
     val menuName: String,

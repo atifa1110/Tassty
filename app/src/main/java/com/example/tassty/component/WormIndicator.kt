@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral30
 
 @Composable
@@ -34,7 +35,7 @@ fun WormIndicator(
     totalDots: Int,
     modifier: Modifier = Modifier,
     baseSize: Dp = 6.dp,
-    selectedWidth: Dp = 24.dp, // panjang kalau aktif
+    selectedWidth: Dp = 24.dp,
     spacing: Dp = 8.dp,
     selectedColor: Color = Color(0xFFEE8E1F),
     unselectedColor: Color = Color(0xFFFADCBA)
@@ -47,7 +48,6 @@ fun WormIndicator(
         repeat(totalDots) { index ->
             val isSelected = pagerState.currentPage == index
 
-            // animasi lebar ketika dipilih
             val width by animateDpAsState(
                 targetValue = selectedWidth,
                 label = "widthAnim"
@@ -74,8 +74,8 @@ fun DashedDivider(
     modifier: Modifier = Modifier,
     color: Color = Color.LightGray,
     strokeWidth: Dp = 1.dp,
-    dashLength: Dp = 4.dp, // Panjang setiap strip
-    gapLength: Dp = 4.dp   // Panjang celah
+    dashLength: Dp = 4.dp,
+    gapLength: Dp = 4.dp
 ) {
     val density = LocalDensity.current
     val strokeWidthPx = with(density) { strokeWidth.toPx() }
@@ -84,7 +84,7 @@ fun DashedDivider(
     Spacer(
         modifier
             .fillMaxWidth()
-            .height(strokeWidth) // Tinggi = tebal garis
+            .height(strokeWidth)
             .drawBehind {
                 drawLine(
                     color = color,
@@ -97,5 +97,6 @@ fun DashedDivider(
     )
 }
 
+@Composable fun Divider(modifier: Modifier = Modifier, color: Color = LocalCustomColors.current.divider) = HorizontalDivider(color = color, modifier = modifier)
 @Composable fun Divider24() = HorizontalDivider(color = Neutral30,modifier = Modifier.padding(vertical = 24.dp))
-@Composable fun Divider32() =  HorizontalDivider(color = Neutral30,modifier = Modifier.padding(vertical = 32.dp))
+@Composable fun Divider32(color: Color = LocalCustomColors.current.divider) =  HorizontalDivider(color = color,modifier = Modifier.padding(vertical = 32.dp))

@@ -54,6 +54,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.DriverUiModel
+import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.OrderItemUiModel
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.OrderUiModel
@@ -61,13 +62,14 @@ import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.tassty.R
 import com.example.tassty.StatusUIConfig
-import com.example.tassty.addresses
 import com.example.tassty.getUIConfig
-import com.example.tassty.listOrder
-import com.example.tassty.restaurantUiModel
+import com.example.tassty.util.orderList
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Blue600
+import com.example.tassty.ui.theme.Green300
+import com.example.tassty.ui.theme.Green50
 import com.example.tassty.ui.theme.Green600
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -77,10 +79,14 @@ import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange100
+import com.example.tassty.ui.theme.Orange200
+import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Orange600
 import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink600
+import com.example.tassty.util.dummyDetail
+import com.example.tassty.util.listOrder
 
 @Composable
 fun OrderListCard(
@@ -88,15 +94,15 @@ fun OrderListCard(
     onCardClick:(OrderUiModel) -> Unit
 ){
     val (text, color) = when (order.status) {
-        OrderStatus.PLACED ,OrderStatus.PENDING,OrderStatus.PREPARING,OrderStatus.ON_DELIVERY -> "Processed" to Blue600
-        OrderStatus.COMPLETED -> "Completed" to Green600
-        OrderStatus.CANCELLED -> "Cancelled" to Pink600
+        OrderStatus.PLACED ,OrderStatus.PENDING,OrderStatus.PREPARING,OrderStatus.ON_DELIVERY -> "Processed" to LocalCustomColors.current.processStatus
+        OrderStatus.COMPLETED -> "Completed" to LocalCustomColors.current.completedStatus
+        OrderStatus.CANCELLED -> "Cancelled" to LocalCustomColors.current.cancelStatus
     }
 
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = {onCardClick(order)}),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier
@@ -122,15 +128,16 @@ fun OrderListCard(
                 ) {
                     Text(
                         modifier = Modifier.weight(1f),
+                        color = LocalCustomColors.current.headerText,
                         style = LocalCustomTypography.current.h5Bold,
                         text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = Neutral100)) {
+                            withStyle(style = SpanStyle()) {
                                 append(order.restaurantName)
                             }
-                            withStyle(style = SpanStyle(color = Neutral70)) {
+                            withStyle(style = SpanStyle(color =LocalCustomColors.current.text)) {
                                 append(" - ")
                             }
-                            withStyle(style = SpanStyle(color = Neutral100)) {
+                            withStyle(style = SpanStyle()) {
                                 append(order.queueNumber)
                             }
                         }
@@ -153,12 +160,12 @@ fun OrderListCard(
                     )
                     Text(
                         text = order.displayTime,
-                        style = LocalCustomTypography.current.bodyXtraSmallRegular,
-                        color = Neutral70
+                        style = LocalCustomTypography.current.bodyXtraSmallMedium,
+                        color = LocalCustomColors.current.text
                     )
                     Text(
                         text = "•",
-                        style = LocalCustomTypography.current.bodyXtraSmallRegular,
+                        style = LocalCustomTypography.current.bodyXtraSmallMedium,
                         color = Neutral70.copy(0.4f)
                     )
                     Text(
@@ -192,121 +199,280 @@ fun OrderListCard(
 }
 
 @Composable
-fun DeliveryDriverCard(
-    driver: DriverUiModel
+fun OrderCard(
+    order: OrderUiModel,
+    onCardClick: (OrderUiModel) -> Unit
 ) {
+    val (text, color) = when (order.status) {
+        OrderStatus.PLACED ,OrderStatus.PENDING,OrderStatus.PREPARING,OrderStatus.ON_DELIVERY -> "Processed" to LocalCustomColors.current.processStatus
+        OrderStatus.COMPLETED -> "Completed" to LocalCustomColors.current.completedStatus
+        OrderStatus.CANCELLED -> "Cancelled" to LocalCustomColors.current.cancelStatus
+    }
+
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral10),
-        border = BorderStroke(1.dp,Neutral40)
+            .fillMaxWidth()
+            .clickable(onClick = { onCardClick(order) }),
+        shape = RoundedCornerShape(0.dp),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.selectedOrangeBackground),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp,
+            pressedElevation = 2.dp
+        )
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Box(
-                modifier = Modifier.size(44.dp)
-            ) {
-                CommonImage(
-                    imageUrl = driver.profileImage,
-                    name = driver.name,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .align(Alignment.BottomStart)
-                        .offset(x = (-2).dp, y = (0).dp)
-                        .clip(CircleShape)
-                        .background(Blue500),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_delivery),
-                        contentDescription = null,
-                        modifier = Modifier.size(10.dp),
-                        colorFilter = ColorFilter.tint(Neutral10)
-                    )
-                }
-            }
+            CommonImage(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                imageUrl = order.restaurantImage,
+                name = order.orderNumber
+            )
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    text = driver.name,
-                    style = LocalCustomTypography.current.h6Bold,
-                    color = Neutral100
-                )
-                Row (horizontalArrangement = Arrangement.spacedBy(4.dp),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     Text(
+                        modifier = Modifier.weight(1f),
+                        style = LocalCustomTypography.current.h6Bold,
+                        color = LocalCustomColors.current.headerText,
                         text = buildAnnotatedString {
-                            withStyle(
-                                style = LocalCustomTypography.current.bodyXtraSmallRegular.toSpanStyle()
-                            ) {
-                                append("ID ")
+                            withStyle(style = SpanStyle()) {
+                                append(order.restaurantName)
                             }
-                            withStyle(
-                                style = LocalCustomTypography.current.h8Bold.toSpanStyle()
-                            ) {
-                                append("23455")
+                            withStyle(style = SpanStyle()) {
+                                append(" - ")
+                            }
+                            withStyle(style = SpanStyle()) {
+                                val qNum = if (order.queueNumber.startsWith("#")) order.queueNumber else "#${order.queueNumber}"
+                                append(qNum)
                             }
                         },
-                        color = Neutral70,
+                        minLines = 1,
                     )
 
+                    FoodPriceText(
+                        price = order.finalAmount,
+                        color = Orange500
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.calendar),
+                        contentDescription = null,
+                        tint = Blue600,
+                        modifier = Modifier.size(12.dp)
+                    )
                     Text(
-                        text = " • ",
-                        style = LocalCustomTypography.current.h8Bold,
-                        color = Neutral70
+                        text = order.displayTime,
+                        style = LocalCustomTypography.current.bodyXtraSmallMedium,
+                        color = LocalCustomColors.current.text
+                    )
+                    Text(
+                        text = "•",
+                        style = LocalCustomTypography.current.bodyXtraSmallRegular,
+                        color = LocalCustomColors.current.text
+                    )
+                    Text(
+                        text = text,
+                        style = LocalCustomTypography.current.bodyXtraSmallBold,
+                        color = color
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { onCardClick(order) }
+                ) {
+                    Text(
+                        text = "See order",
+                        style = LocalCustomTypography.current.bodySmallMedium,
+                        color = Orange500
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = Icons.Default.NorthEast,
+                        contentDescription = null,
+                        tint = Orange500,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OrderMenuListCard(
+    item : OrderItemUiModel,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            CommonImage(
+                imageUrl = item.imageUrl,
+                name = item.menuName,
+                modifier = Modifier.size(80.dp)
+                    .clip(CircleShape)
+            )
+
+            FoodOrderListCardContent(item = item, onClick = onClick)
+        }
+    }
+}
+
+@Composable
+fun DeliveryDriverCard(
+    driver: DriverUiModel,
+    onMessageClick : () -> Unit,
+    isProcess: Boolean = true
+) {
+    Column (Modifier.padding(horizontal = 24.dp)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.background),
+            border = BorderStroke(1.dp, Neutral40)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    CommonImage(
+                        imageUrl = driver.profileImage,
+                        name = driver.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.BottomStart)
+                            .offset(x = (-2).dp, y = (0).dp)
+                            .clip(CircleShape)
+                            .background(Blue500),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_delivery),
+                            contentDescription = null,
+                            modifier = Modifier.size(10.dp),
+                            colorFilter = ColorFilter.tint(Neutral10)
+                        )
+                    }
+                }
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = driver.name,
+                        style = LocalCustomTypography.current.h6Bold,
+                        color = LocalCustomColors.current.headerText
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.star),
-                            contentDescription = "",
-                            modifier = Modifier.size(12.dp),
-                            tint = Orange500
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(
+                                    style = LocalCustomTypography.current.bodyXtraSmallRegular.toSpanStyle()
+                                ) {
+                                    append("ID ")
+                                }
+                                withStyle(
+                                    style = LocalCustomTypography.current.h8Bold.toSpanStyle()
+                                ) {
+                                    append("23455")
+                                }
+                            },
+                            color = LocalCustomColors.current.text,
+                            style = LocalCustomTypography.current.bodyXtraSmallRegular
                         )
 
                         Text(
-                            text = driver.rating.toString(),
+                            text = " • ",
                             style = LocalCustomTypography.current.h8Bold,
-                            color = Neutral70
+                            color = LocalCustomColors.current.text
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.star),
+                                contentDescription = "",
+                                modifier = Modifier.size(12.dp),
+                                tint = Orange500
+                            )
+
+                            Text(
+                                text = driver.rating.toString(),
+                                style = LocalCustomTypography.current.h8Bold,
+                                color = LocalCustomColors.current.text,
+                            )
+                        }
+                    }
+                }
+                if(isProcess) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        CircleImageIcon(
+                            boxColor = Orange500,
+                            icon = R.drawable.phone,
+                            iconSize = 16.dp,
+                            iconColor = Neutral10,
+                            contentDescription = "top app bar icon",
+                            modifier = Modifier.size(36.dp)
+                        )
+
+                        CircleImageIcon(
+                            boxColor = Orange500,
+                            icon = R.drawable.chat,
+                            iconSize = 16.dp,
+                            iconColor = Neutral10,
+                            contentDescription = "top app bar icon",
+                            modifier = Modifier.size(36.dp).clickable(
+                                onClick = { onMessageClick() }
+                            )
                         )
                     }
                 }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-
-                CircleImageIcon(
-                    boxColor = Orange500,
-                    icon = R.drawable.phone,
-                    iconSize = 16.dp,
-                    iconColor = Neutral10,
-                    contentDescription = "top app bar icon",
-                    modifier = Modifier.size(36.dp)
-                )
-
-                CircleImageIcon(
-                    boxColor = Orange500,
-                    icon = R.drawable.chat,
-                    iconSize = 16.dp,
-                    iconColor = Neutral10,
-                    contentDescription = "top app bar icon",
-                    modifier = Modifier.size(36.dp)
-                )
             }
         }
     }
@@ -324,7 +490,7 @@ fun DeliveryLocationCard(
         Text(
             text = "Delivery details",
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
         LocationCard(
             restaurant = restaurant,
@@ -343,7 +509,7 @@ fun LocationCard(
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral10),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.background),
         border = BorderStroke(1.dp,Neutral40)
     ) {
         Column(
@@ -401,12 +567,12 @@ fun LocationItem(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = label,
-                color = Neutral70,
+                color = LocalCustomColors.current.text,
                 style = LocalCustomTypography.current.bodyXtraSmallRegular
             )
             Text(
                 text = address,
-                color = Neutral100,
+                color = LocalCustomColors.current.headerText,
                 style = LocalCustomTypography.current.h6Bold
             )
         }
@@ -425,7 +591,7 @@ fun DeliveryDetailCard(
         Text(
             text = "Delivery detail",
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         Card(
@@ -451,7 +617,7 @@ fun DeliveryDetailCard(
 }
 
 @Composable
-fun OrderItem(name: String, qty: Int, note: String) {
+fun OrderItem(name: String, qty: String, note: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -460,12 +626,12 @@ fun OrderItem(name: String, qty: Int, note: String) {
             Text(
                 text = name,
                 style = LocalCustomTypography.current.bodySmallMedium,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
             Text(
-                text = "x$qty",
+                text = qty,
                 style = LocalCustomTypography.current.h6Bold,
-                color = Neutral70
+                color = LocalCustomColors.current.text
             )
         }
 
@@ -525,18 +691,19 @@ fun OrderStatusCard(
                     Text(
                         text = status.title,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                     Text(
                         text = status.description,
                         style = LocalCustomTypography.current.bodyXtraSmallRegular,
-                        color = Neutral70
+                        color = LocalCustomColors.current.text
                     )
                 }
             }
         }
     }
 }
+
 @Composable
 fun OrderStepProgress(
     currentStatus: OrderStatus,
@@ -638,27 +805,10 @@ fun DashedLine(
 @Composable
 fun OrderCardPreview(){
     Column(Modifier.fillMaxSize().background(Neutral20)) {
-        DeliveryDriverCard(
-            driver = DriverUiModel(
-                id = "1",
-                profileImage = "",
-                name = "Lucas Nathan",
-                rating = 4.0
-            ),
-        )
-
-        DeliveryLocationCard(
-            restaurant = restaurantUiModel[0],
-            userAddress = addresses[0]
-        )
-        DeliveryDetailCard(order = listOrder)
-        OrderSummaryCard(
-            isPercentageDiscount = false,
-            totalPrice = 100000,
-            deliveryFee = 0,
-            voucherDiscount = 19000,
-            totalOrder = 90000
-        )
+        OrderListCard(order =orderList[0]) { }
+        OrderCard(order = orderList[0]) { }
+        DeliveryDriverCard(driver = dummyDetail.driver, onMessageClick = {},isProcess = false)
+        OrderMenuListCard(item = listOrder[1]) { }
     }
 }
 

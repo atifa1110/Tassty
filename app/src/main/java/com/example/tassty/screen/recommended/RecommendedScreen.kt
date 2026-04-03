@@ -1,5 +1,10 @@
 package com.example.tassty.screen.recommended
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -28,65 +34,73 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
-import com.example.tassty.categories
+import com.example.tassty.util.categories
 import com.example.tassty.component.CategoryCard
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorListState
+import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HorizontalTitleSubtitleSection
+import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.RestaurantLargeGridCard
 import com.example.tassty.component.SearchBar
+import com.example.tassty.component.ShimmerFoodGridCard
+import com.example.tassty.component.ShimmerRestaurantGridCard
 import com.example.tassty.component.TitleTopAppBar
 import com.example.tassty.component.restaurantRecommendedSection
 import com.example.tassty.component.shimmerLoadingAnimation
-import com.example.tassty.restaurantUiModel
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.restaurantUiModel
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun RecommendedRestaurantScreen(
-    onNavigateToDetail:(String) -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateToDetailRest:(String) -> Unit,
     viewModel: RecommendedViewModel = hiltViewModel()
 ){
-    val uiState by viewModel.recommendedState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     RecommendedRestaurantContent(
-        uiState =uiState,
-        onCategoryClick = {viewModel.onCategoryClicked(it)},
-        onNavigateToDetail = onNavigateToDetail
+        uiState = uiState,
+        onCategoryClick = viewModel::onCategoryClicked,
+        onNavigateToDetailRest = onNavigateToDetailRest,
+        onNavigateBack = onNavigateBack
     )
 }
 
 @Composable
 fun RecommendedRestaurantContent(
     uiState: RecommendedUiState,
+    onNavigateBack: () -> Unit,
     onCategoryClick:(String)-> Unit,
-    onNavigateToDetail:(String) -> Unit,
+    onNavigateToDetailRest:(String) -> Unit,
 ){
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             TitleTopAppBar(
                 title = stringResource(R.string.recommended_restaurant),
-                onBackClick = {}) { }
+                onBackClick = onNavigateBack,
+                onFilterClick = {}
+            )
         }
     ) { padding->
-        LazyColumn(modifier = Modifier.padding(padding)
-            .fillMaxSize()
-            .background(Neutral10),
+        LazyColumn(
+            modifier = Modifier.padding(padding).fillMaxSize(),
         ) {
-            item {
+            item(key = "search_header") {
                 Spacer(Modifier.height(24.dp))
                 SearchHeader(
-                    resource = uiState.allCategories, onClick = onCategoryClick)
+                    resource = uiState.allCategories,
+                    onClick = onCategoryClick
+                )
             }
 
-            item {
-                Divider32()
-            }
-
-            item {
+            item(key = "recommended_rest"){
                 RecommendedCategoryContent(
                     resource = uiState.recommendedRestaurantCategories,
-                    onNavigateToDetail = onNavigateToDetail
+                    onNavigateToDetail = onNavigateToDetailRest
                 )
             }
 
@@ -96,7 +110,7 @@ fun RecommendedRestaurantContent(
 
             restaurantRecommendedSection(
                 resource = uiState.recommendedRestaurant,
-                onNavigateToDetail = onNavigateToDetail
+                onNavigateToDetail = onNavigateToDetailRest
             )
         }
     }
@@ -129,7 +143,8 @@ fun CategorySection(
     onClick: (String) -> Unit,
 ){
     val items = resource.data.orEmpty()
-    when{
+
+    when {
         resource.isLoading -> {
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
@@ -164,40 +179,84 @@ fun CategorySection(
         }
     }
 }
+
 @Composable
 fun RecommendedCategoryContent(
     resource: Resource<List<RestaurantUiModel>>,
     onNavigateToDetail: (String) -> Unit
-){
+) {
     val items = resource.data.orEmpty()
-    HorizontalTitleSubtitleSection(
-        title = "Recommended Restaurant",
-        subtitle = "Our recommended cafes to explore!",
-        onSeeAllClick = {}
+    val shouldShowSection = resource.isLoading || items.isNotEmpty()
+
+    AnimatedVisibility(
+        visible = shouldShowSection,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
     ) {
-        items(
-            items = items,
-            key = { item -> item.id }
-        ) { restaurant ->
-            RestaurantLargeGridCard(
-                restaurant = restaurant,
-                onClick = {onNavigateToDetail(restaurant.id)}
-            )
-            Spacer(modifier = Modifier.padding(end = 12.dp))
+        Column {
+            Divider32()
+            HorizontalTitleSubtitleSection(
+                title = "Recommended Restaurant",
+                subtitle = "Our recommended cafes to explore!",
+                onSeeAllClick = {}
+            ) {
+                when {
+                    resource.isLoading -> {
+                        items(5) {
+                            ShimmerRestaurantGridCard()
+                        }
+                    }
+                    resource.errorMessage != null -> {
+                        item {
+                            ErrorScreen()
+                        }
+                    }
+                    else -> {
+                        items(items = items, key = { it.id }) { restaurant ->
+                            RestaurantLargeGridCard(
+                                restaurant = restaurant,
+                                onClick = { onNavigateToDetail(restaurant.id) }
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RecommendedPreview() {
-    RecommendedRestaurantContent(
-        uiState = RecommendedUiState(
-            selectedCategoryId = "CAT-001",
-            allCategories = Resource(data = categories),
-            recommendedRestaurant = Resource(data = restaurantUiModel),
-            recommendedRestaurantCategories = Resource(data = restaurantUiModel)
-        ),
-        onCategoryClick = {}
-    ) { }
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun RecommendedLightPreview() {
+//    TasstyTheme {
+//        RecommendedRestaurantContent(
+//            uiState = RecommendedUiState(
+//                selectedCategoryId = "CAT-001",
+//                allCategories = Resource(data = categories),
+//                recommendedRestaurant = Resource(data = restaurantUiModel),
+//                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
+//            ),
+//            onCategoryClick = {},
+//            onNavigateBack = {},
+//            onNavigateToDetailRest = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun RecommendedDArkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        RecommendedRestaurantContent(
+//            uiState = RecommendedUiState(
+//                selectedCategoryId = "CAT-001",
+//                allCategories = Resource(data = categories),
+//                recommendedRestaurant = Resource(data = restaurantUiModel),
+//                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
+//            ),
+//            onCategoryClick = {},
+//            onNavigateBack = {},
+//            onNavigateToDetailRest = {}
+//        )
+//    }
+//}

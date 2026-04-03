@@ -1,32 +1,44 @@
 package com.example.core.data.mapper
 
 import com.example.core.data.model.AuthDto
+import com.example.core.data.model.DriverDto
 import com.example.core.data.model.UserAddressDto
 import com.example.core.data.model.UserDto
 import com.example.core.domain.model.AddressType
 import com.example.core.domain.model.AuthUser
+import com.example.core.domain.model.Driver
+import com.example.core.domain.model.OtpTimer
 import com.example.core.domain.model.User
 import com.example.core.domain.model.UserAddress
 
 fun AuthDto.toDomain() : AuthUser {
     return AuthUser(
+        userId = this.userId?:"",
         accessToken = this.accessToken?:"",
         refreshToken = this.refreshToken?:"",
-        steamToken = this.steamToken?:"",
+        streamToken = this.streamToken?:"",
         name = this.name?:"",
         profileImage = this.profileImage?:"",
         addressName = this.addressName?:""
     )
 }
 
+fun AuthDto.toDomainOtp() : OtpTimer {
+    return OtpTimer(
+        expireIn = this.expiresIn?:0,
+        resendAvailableIn = this.resendAvailableIn?:0
+    )
+}
+
+
 fun UserAddressDto.toDomain() = UserAddress(
     id = this.id,
     fullAddress = this.fullAddress,
-    addressName = this.addressName,
-    landmarkDetail =  this.landmarkDetail,
+    addressName = this.addressName?:"",
+    landmarkDetail =  this.landmarkDetail?:"",
     latitude = this.latitude,
     longitude = this.longitude,
-    addressType = AddressType.valueOf(this.addressType),
+    addressType = AddressType.valueOf(this.addressType?:"PERSONAL"),
     isPrimary = this.isPrimary
 )
 
@@ -35,5 +47,14 @@ fun UserDto.toDomain() = User(
     email = this.email,
     name = this.name,
     profileImage = this.profileImage,
-    categoryIds = this.categoryIds
+    categoryIds = this.categoryIds.map { it.toDomain() }
 )
+
+fun DriverDto.toDomain() : Driver {
+    return Driver(
+        id = this.id,
+        name = this.name,
+        rating = this.rating,
+        profileImage = this.profileImage
+    )
+}

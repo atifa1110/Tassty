@@ -1,7 +1,5 @@
 package com.example.tassty.screen.payment
 
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -11,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,7 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CardUserUiModel
 import com.example.tassty.R
-import com.example.tassty.cardList
+import com.example.tassty.util.cardList
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.FoodPriceText
 import com.example.tassty.component.HeaderListBlackTitle
@@ -56,29 +55,28 @@ import com.example.tassty.component.PaymentChannelCard
 import com.example.tassty.component.PaymentSwipeButton
 import com.example.tassty.component.TopBarButton
 import com.example.tassty.component.cardUserSelectedVerticalListBlock
-import com.example.tassty.paymentChannel
+import com.example.tassty.util.paymentChannel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Orange500
-import androidx.core.net.toUri
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import com.example.tassty.component.ButtonComponent
-import com.example.tassty.component.LogoImage
-import com.example.tassty.ui.theme.Green100
-import com.example.tassty.ui.theme.Green200
+import com.example.tassty.component.ShimmerDebitPaymentCard
 import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.TasstyTheme
 import kotlinx.coroutines.delay
 
 @Composable
 fun PaymentScreen(
     total: String,
-    onNavigateToOrderDetail: (String) -> Unit,
+    onNavigateToOrderProcess: (String) -> Unit,
+    onNavigateBack:() -> Unit,
     viewModel: PaymentViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -112,7 +110,8 @@ fun PaymentScreen(
             uiState = uiState,
             onCardSelected = viewModel::onCardSelected,
             onChannelSelected = viewModel::onChannelSelected,
-            onSwipePayment = viewModel::onSwipePayment
+            onSwipePayment = viewModel::onSwipePayment,
+            onNavigateBack = onNavigateBack
         )
 
         AnimatedVisibility(
@@ -142,7 +141,7 @@ fun PaymentScreen(
     ) {
         PaymentSuccessOverlay(
             onFinished = {
-                onNavigateToOrderDetail(orderId)
+                onNavigateToOrderProcess(orderId)
             }
         )
     }
@@ -155,12 +154,14 @@ fun PaymentContent(
     uiState: PaymentUiState,
     onCardSelected:(String) -> Unit,
     onChannelSelected:(String) -> Unit,
-    onSwipePayment:() -> Unit
+    onSwipePayment:() -> Unit,
+    onNavigateBack:() -> Unit
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         bottomBar = {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp),
+            Column(Modifier.fillMaxWidth().background(LocalCustomColors.current.modalBackgroundFrame)
+                .padding(horizontal = 24.dp, vertical = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
@@ -170,7 +171,7 @@ fun PaymentContent(
                     Text(
                         text = "Total Order",
                         style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
 
                     FoodPriceText(price = total, color = Orange500)
@@ -186,20 +187,22 @@ fun PaymentContent(
                 CenterAlignedTopAppBar(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Neutral10
+                        containerColor = LocalCustomColors.current.background
                     ),
                     title = {
                         Text(
                             text = "Payment",
                             style = LocalCustomTypography.current.h5Bold,
-                            color = Neutral100
+                            color = LocalCustomColors.current.headerText
                         )
                     },
                     navigationIcon = {
                         TopBarButton(
                             icon = R.drawable.arrow_left,
-                            boxColor = Neutral20, iconColor = Neutral100
-                        ) { }
+                            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+                            iconColor = LocalCustomColors.current.iconFocused,
+                            onClick = onNavigateBack
+                        )
                     },
                 )
                 HorizontalDivider()
@@ -207,12 +210,13 @@ fun PaymentContent(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding)
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 24.dp)
         ) {
-            item {
-                Spacer(Modifier.height(24.dp))
-            }
-            cardUserSection(resource = uiState.cardPayment, onCardSelected = onCardSelected)
+            cardUserSection(
+                resource = uiState.cardPayment,
+                onCardSelected = onCardSelected
+            )
 
             uiState.groupedPaymentChannels.forEach { (category, channels) ->
                 item {
@@ -248,7 +252,12 @@ fun LazyListScope.cardUserSection(
     val cardItems = resource.data.orEmpty()
     when{
         resource.isLoading -> {
-            item { LoadingRowState() }
+            items(2){
+                Column(Modifier.padding(horizontal = 24.dp)) {
+                    ShimmerDebitPaymentCard()
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
         }
         resource.errorMessage != null  -> {
             item {
@@ -258,6 +267,7 @@ fun LazyListScope.cardUserSection(
                 )
             }
         }
+
         cardItems.isEmpty() -> {}
 
         else->{
@@ -330,40 +340,44 @@ fun PaymentSuccessOverlay(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PaymentPreview() {
-    Box(modifier = Modifier.fillMaxSize()) {
-    PaymentContent(
-        total = "Rp150.0000",
-        uiState = PaymentUiState(
-            cardPayment = Resource(data = cardList),
-            paymentChannel = Resource(data = paymentChannel),
-            selectedCardId = "",
-            isButtonEnabled = true,
-            isLoading = true
-        ),
-        onCardSelected = {},
-        onChannelSelected = {},
-        onSwipePayment = {}
-    )
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Neutral100.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Green500)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Securely processing...", color = Neutral10)
-                }
-            }
-        }
-    }
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun PaymentLightPreview() {
+//    TasstyTheme {
+//        PaymentContent(
+//            total = "Rp150.0000",
+//            uiState = PaymentUiState(
+//                cardPayment = Resource(data = cardList),
+//                paymentChannel = Resource(data = paymentChannel),
+//                selectedCardId = "",
+//                isButtonEnabled = true,
+//                isLoading = true
+//            ),
+//            onCardSelected = {},
+//            onChannelSelected = {},
+//            onSwipePayment = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun PaymentDarkPreview() {
+//    TasstyTheme(darkTheme = true){
+//        PaymentContent(
+//            total = "Rp150.0000",
+//            uiState = PaymentUiState(
+//                cardPayment = Resource(data = cardList),
+//                paymentChannel = Resource(data = paymentChannel),
+//                selectedCardId = "",
+//                isButtonEnabled = true,
+//                isLoading = true
+//            ),
+//            onCardSelected = {},
+//            onChannelSelected = {},
+//            onSwipePayment = {},
+//            onNavigateBack = {}
+//        )
+//    }
+//}

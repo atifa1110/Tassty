@@ -9,5 +9,5 @@ data class UserDto (
     @SerializedName("profile_image")
     val profileImage: String,
     @SerializedName("category_ids")
-    val categoryIds: List<String>
+    val categoryIds: List<CategoryDto>
 )

@@ -36,7 +36,9 @@ import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
+import com.example.tassty.screen.rating.HeaderIconText
 import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -47,7 +49,7 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-import com.example.tassty.voucherUiModel
+import com.example.tassty.util.voucherUiModel
 
 @Composable
 fun VoucherCard(
@@ -58,7 +60,7 @@ fun VoucherCard(
         modifier = Modifier.width(320.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral10
+            containerColor = LocalCustomColors.current.cardBackground2
         ),
         elevation = CardDefaults.elevatedCardElevation(
             defaultElevation = 2.dp
@@ -73,9 +75,11 @@ fun VoucherCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DiscountFoodContent(title = voucher.title,
-                    description = voucher.description)
-                HorizontalDivider(color = Neutral30)
+                DiscountFoodContent(
+                    title = voucher.title,
+                    description = voucher.description
+                )
+                HorizontalDivider(color = LocalCustomColors.current.divider)
                 DateAndMinTransactionContent(
                     date = voucher.expireLabel,
                     minTransaction = voucher.formatMinOrder
@@ -95,7 +99,7 @@ fun VoucherSelectorCard(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(width= 1.dp, color = if(voucher.isSelected) Orange500 else Neutral40),
         colors = CardDefaults.cardColors(
-            containerColor =  if(voucher.isSelected) Orange50 else Neutral10
+            containerColor =  if(voucher.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.background
         )
     ) {
         Row(
@@ -144,7 +148,7 @@ fun VoucherLargeCard(
         modifier = Modifier.width(320.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral10
+            containerColor = LocalCustomColors.current.background
         ),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -174,7 +178,7 @@ fun VoucherLargeCard(
                     Text(
                         text = voucher.title,
                         style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100,
+                        color = LocalCustomColors.current.headerText,
                         maxLines = 1
                     )
 
@@ -224,7 +228,8 @@ fun VoucherExtraLargeCard(
                         title = voucher.title,
                         description = voucher.description
                     )
-                    HorizontalDivider(Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp),
+                        color = LocalCustomColors.current.divider)
                     DateAndMinTransactionContent(
                         date = voucher.expireLabel,
                         minTransaction = voucher.formatMinOrder
@@ -245,23 +250,12 @@ fun DateAndMinTransactionContent(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.calendar),
-                contentDescription = "Date",
-                tint = Green500,
-                modifier = Modifier.size(16.dp)
-            )
-
-            Text(
-                text = date,
-                style = LocalCustomTypography.current.bodySmallMedium,
-                color = Neutral70
-            )
-        }
+        HeaderIconText(
+            icon = R.drawable.calendar,
+            text = date,
+            iconColor = Green500,
+            style = LocalCustomTypography.current.bodySmallMedium,
+        )
 
         Box(
             modifier = Modifier.size(3.dp)
@@ -281,14 +275,13 @@ fun DateAndMinTransactionContent(
             Text(
                 text = "min",
                 style = LocalCustomTypography.current.bodySmallMedium,
-                color = Neutral70
+                color = LocalCustomColors.current.text
             )
             Text(
                 text = minTransaction,
                 style = LocalCustomTypography.current.h6Bold,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
-
         }
     }
 }
@@ -304,14 +297,14 @@ fun DiscountFoodContent(
         Text(
             text = title,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
         Text(
             text = description,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70,
+            color = LocalCustomColors.current.text,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

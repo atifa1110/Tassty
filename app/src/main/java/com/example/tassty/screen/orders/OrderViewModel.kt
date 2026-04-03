@@ -3,12 +3,12 @@ package com.example.tassty.screen.orders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetUserOrderUseCase
-import com.example.core.domain.utils.toListState
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.OrderUiModel
-import com.example.tassty.orderFilters
+import com.example.tassty.util.orderFilters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +37,6 @@ class OrderViewModel @Inject constructor(
         orderContent,
         _internalState
     ) { orders, internal ->
-
-
         val filteredData = orders.copy(
             data = orders.data?.filter { order ->
                 val categoryMatch = when (internal.activeCategory) {
@@ -93,7 +91,6 @@ class OrderViewModel @Inject constructor(
     fun onDateSelected(date: LocalDate) {
         _internalState.update { currentState ->
             when {
-                // Jika belum ada start, atau sudah ada keduanya (reset), set sebagai start baru
                 currentState.startDateSelected == null || (currentState.endDateSelected != null) -> {
                     currentState.copy(
                         startDateSelected = date,
@@ -133,8 +130,10 @@ class OrderViewModel @Inject constructor(
         viewModelScope.launch {
             if (order.status == OrderStatus.PENDING) {
                 _navigation.emit(OrderEvent.NavigateToPayment(order.id,order.finalAmount))
-            } else {
-                _navigation.emit(OrderEvent.NavigateToDetail(order.id))
+            } else if(order.status == OrderStatus.COMPLETED){
+                _navigation.emit(OrderEvent.NavigateToOrderDetail(order.id))
+            } else{
+                _navigation.emit(OrderEvent.NavigateToOrderProcess(order.id))
             }
         }
     }

@@ -27,6 +27,7 @@ import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
 import com.example.tassty.model.getFilterDrawable
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -44,7 +45,7 @@ fun ChipFilterSection(
         Text(
             text = title,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText
         )
         Spacer(Modifier.height(12.dp))
         FlowRow(
@@ -123,11 +124,10 @@ fun ChipSearchExpandSection(
                 )
             }
 
-            // Tambahkan expand button kalau belum expanded
             if (!expanded && options.size > maxVisible) {
                 CustomSearchChip(
                     label = "",
-                    icon = R.drawable.arrow_down, // pakai icon ▼
+                    icon = R.drawable.arrow_down,
                     selected = true,
                     onClick = { expanded = true }
                 )
@@ -151,7 +151,7 @@ fun RadioFilterTitleSection(
             Text(
                 text = title,
                 style = LocalCustomTypography.current.h5Bold,
-                color = Neutral100,
+                color = LocalCustomColors.current.headerText
             )
             Spacer(Modifier.height(24.dp))
         }
@@ -185,7 +185,7 @@ fun RadioFilterItem(
     ) {
         Text(
             text = label,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             style = LocalCustomTypography.current.h6Regular,
             modifier = Modifier.weight(1f)
         )
@@ -198,7 +198,6 @@ fun RadioFilterItem(
                 unselectedColor = Neutral40
             ),
             modifier = Modifier.padding(0.dp).size(24.dp)
-
         )
     }
 }

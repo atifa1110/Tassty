@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -32,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
@@ -42,14 +42,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CardUserUiModel
 import com.example.core.ui.model.PaymentChannelUiModel
-import com.example.tassty.cardList
 import com.example.tassty.getPaymentIcon
 import com.example.tassty.model.CardColorOption
 import com.example.tassty.model.PatternImage
 import com.example.tassty.model.toCardColor
 import com.example.tassty.model.toLogoRes
 import com.example.tassty.model.toPatternRes
-import com.example.tassty.paymentChannel
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -58,8 +57,83 @@ import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
-import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.util.cardList
+import com.example.tassty.util.paymentChannel
+
+@Composable
+fun ShimmerDebitPaymentCard(
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(180.dp),
+        shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, Neutral20),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Neutral10)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.5f)
+                    .shimmerLoadingAnimation()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .size(45.dp, 30.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .shimmerLoadingAnimation()
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(24.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .shimmerLoadingAnimation()
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.7f)
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmerLoadingAnimation()
+                )
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmerLoadingAnimation()
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun DebitPaymentCard(
@@ -80,11 +154,12 @@ fun DebitPaymentCard(
     ) {
         Column (modifier = Modifier
             .fillMaxSize()
-            .background(Neutral10)
+            .background(LocalCustomColors.current.background)
         ) {
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .weight(1.5f).background(color.imageBackground)
+                .weight(1.5f)
+                .background(color.imageBackground)
             ) {
                 Image(
                     modifier = Modifier.fillMaxWidth().clipToBounds(),
@@ -98,9 +173,9 @@ fun DebitPaymentCard(
                     Checkbox(
                         checked = card.isSelected,
                         onCheckedChange = {onCheckChanged()},
-                        modifier = Modifier
-                            .align(Alignment.TopEnd),
+                        modifier = Modifier.align(Alignment.TopEnd),
                         colors = CheckboxDefaults.colors(
+                            checkmarkColor = Neutral10,
                             checkedColor = Orange500,
                             uncheckedColor = Neutral40,
                         )
@@ -138,12 +213,12 @@ fun DebitPaymentCard(
                 Text(
                     text = card.cardholderName,
                     style = LocalCustomTypography.current.h7Bold,
-                    color = Neutral100
+                    color = LocalCustomColors.current.headerText
                 )
                 Text(
                     text = card.expDate,
                     style = LocalCustomTypography.current.bodySmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
         }
@@ -162,6 +237,7 @@ fun DebitSmallPaymentCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp),
+        colors = CardDefaults.cardColors(Neutral10),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, color.borderColor),
         elevation = CardDefaults.cardElevation(0.dp)
@@ -170,8 +246,7 @@ fun DebitSmallPaymentCard(
             Box(
                 modifier = Modifier
                     .weight(0.3f)
-                    .fillMaxHeight()
-                    .background(Color.White),
+                    .fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
                 Image(
@@ -229,8 +304,8 @@ fun PaymentChannelCard(
     channel: PaymentChannelUiModel,
     onCheckChanged: () -> Unit,
 ) {
-    val borderColor = if (channel.isSelected) Orange500 else Neutral30
-    val textColor = if (channel.isEnabled) Neutral100 else Neutral70
+    val borderColor = if (channel.isSelected) Orange500 else LocalCustomColors.current.border
+    val textColor = if (channel.isEnabled) LocalCustomColors.current.headerText else LocalCustomColors.current.text
 
     Card(
         modifier = Modifier
@@ -240,7 +315,7 @@ fun PaymentChannelCard(
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, borderColor),
         elevation = CardDefaults.cardElevation(0.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.background)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -263,14 +338,14 @@ fun PaymentChannelCard(
             VerticalDivider(
                 modifier = Modifier.fillMaxHeight(),
                 thickness = 1.dp,
-                color = Neutral30
+                color = LocalCustomColors.current.border
             )
 
             Row(
                 modifier = Modifier
                     .weight(0.65f)
                     .fillMaxHeight()
-                    .background(if (channel.isEnabled) Color.White else Neutral10),
+                    .background(LocalCustomColors.current.background),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -382,15 +457,11 @@ fun CardBackgroundItem(
 //            onCheckChanged = {}
 //        )
 //
-//        DebitSmallPaymentCard(
-//            card = cardList[0]
-//        )
+//        ShimmerDebitPaymentCard()
 //
 //        PaymentChannelCard(
-//            channel = paymentChannel[0],
-//            onCheckChanged = {}
-//        )
-//
+//            channel = paymentChannel[0]
+//        ) { }
 //    }
 //}
 

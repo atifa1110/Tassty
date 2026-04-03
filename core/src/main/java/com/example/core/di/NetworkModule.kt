@@ -1,23 +1,21 @@
 package com.example.core.di
 
-import android.content.Context
-import com.example.core.data.source.remote.api.AuthApiService
+import com.example.core.data.source.remote.api.AuthAuthenticatedApiService
 import com.example.core.data.source.remote.api.CategoryApiService
 import com.example.core.data.source.remote.api.DetailApiService
 import com.example.core.data.source.remote.api.MenuApiService
 import com.example.core.data.source.remote.api.OrderApiService
+import com.example.core.data.source.remote.api.AuthPublicApiService
 import com.example.core.data.source.remote.api.RestaurantApiService
 import com.example.core.data.source.remote.api.ReviewApiService
 import com.example.core.data.source.remote.api.SearchApiService
 import com.example.core.data.source.remote.api.UserApiService
 import com.example.core.data.source.remote.api.VoucherApiService
-import com.example.core.domain.model.Menu
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -30,17 +28,32 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val BASE_URL = "http://10.0.2.2:3000/api/"
+
     @Singleton
     @Provides
     fun provideHTTPLoggingInterceptor(): HttpLoggingInterceptor {
-        val interceptor = HttpLoggingInterceptor()
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-        return interceptor
+        return HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
     }
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(
+    @AuthClient
+    fun provideAuthOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
+
+    @Singleton
+    @Provides
+    @MainClient
+    fun provideMainOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
         locationInterceptor: LocationInterceptor,
         headerInterceptor: HeaderInterceptor
@@ -57,57 +70,72 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideGson(): Gson {
-        return GsonBuilder()
-            .create()
-    }
+    fun provideGson(): Gson = GsonBuilder().create()
+
 
     @Provides
-    fun provideRetrofit(client: OkHttpClient): Retrofit {
+    @Singleton
+    @AuthClient
+    fun provideAuthRetrofit(@AuthClient client: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:3000/api/")
-            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .client(client)
             .build()
     }
 
     @Provides
-    fun provideAuthApi(retrofit: Retrofit): AuthApiService =
-        retrofit.create(AuthApiService::class.java)
+    @Singleton
+    @MainClient
+    fun provideMainRetrofit(@MainClient client: OkHttpClient, gson: Gson): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(client)
+            .build()
+    }
 
     @Provides
-    fun provideCategoryApi(retrofit: Retrofit): CategoryApiService =
+    fun provideAuthPublicApi(@AuthClient retrofit: Retrofit): AuthPublicApiService =
+        retrofit.create(AuthPublicApiService::class.java)
+
+    @Provides
+    fun provideAuthAuthenticatedApi(@MainClient retrofit: Retrofit): AuthAuthenticatedApiService =
+        retrofit.create(AuthAuthenticatedApiService::class.java)
+
+    @Provides
+    fun provideCategoryApi(@MainClient retrofit: Retrofit): CategoryApiService =
         retrofit.create(CategoryApiService::class.java)
 
     @Provides
-    fun provideUserApi(retrofit: Retrofit): UserApiService =
+    fun provideUserApi(@MainClient retrofit: Retrofit): UserApiService =
         retrofit.create(UserApiService::class.java)
 
     @Provides
-    fun provideRestaurantApi(retrofit: Retrofit): RestaurantApiService =
+    fun provideRestaurantApi(@MainClient retrofit: Retrofit): RestaurantApiService =
         retrofit.create(RestaurantApiService::class.java)
 
     @Provides
-    fun provideMenuApi(retrofit: Retrofit): MenuApiService =
+    fun provideMenuApi(@MainClient retrofit: Retrofit): MenuApiService =
         retrofit.create(MenuApiService::class.java)
 
     @Provides
-    fun provideVoucherApi(retrofit: Retrofit): VoucherApiService =
+    fun provideVoucherApi(@MainClient retrofit: Retrofit): VoucherApiService =
         retrofit.create(VoucherApiService::class.java)
 
     @Provides
-    fun provideSearchApi(retrofit: Retrofit): SearchApiService =
+    fun provideSearchApi(@MainClient retrofit: Retrofit): SearchApiService =
         retrofit.create(SearchApiService::class.java)
 
     @Provides
-    fun provideDetailApi(retrofit: Retrofit): DetailApiService =
+    fun provideDetailApi(@MainClient retrofit: Retrofit): DetailApiService =
         retrofit.create(DetailApiService::class.java)
 
     @Provides
-    fun provideReviewApi(retrofit: Retrofit): ReviewApiService =
+    fun provideReviewApi(@MainClient retrofit: Retrofit): ReviewApiService =
         retrofit.create(ReviewApiService::class.java)
 
     @Provides
-    fun provideOrderApi(retrofit: Retrofit): OrderApiService =
+    fun provideOrderApi(@MainClient retrofit: Retrofit): OrderApiService =
         retrofit.create(OrderApiService::class.java)
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,9 +29,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,10 +41,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CircleImageIcon
 import com.example.tassty.component.CommonImage
+import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.Divider32
+import com.example.tassty.component.LogoutContent
 import com.example.tassty.component.ProfileTopAppBar
 import com.example.tassty.ui.theme.Blue100
 import com.example.tassty.ui.theme.Blue400
@@ -53,9 +59,9 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Green600
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral80
 import com.example.tassty.ui.theme.Orange100
@@ -66,57 +72,87 @@ import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun ProfileScreen(
-    onNavigateToCollection: () -> Unit = {},
-    onNavigateToFavorite:() -> Unit = {},
-    onNavigateToVoucher:()-> Unit = {},
-    onNavigateToAddress: () -> Unit = {},
-    onNavigateToCard: ()-> Unit = {},
-    onNavigateToOrder: ()-> Unit = {},
-    onLogout:() -> Unit = {}
+    onNavigateToCollection: () -> Unit,
+    onNavigateToFavorite:() -> Unit,
+    onNavigateToVoucher:()-> Unit,
+    onNavigateToAddress: () -> Unit,
+    onNavigateToCard: ()-> Unit,
+    onNavigateToOrder: ()-> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
+    onNavigateToTerm: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     ProfileContent (
+        uiState = uiState,
+        onShowLogoutSheet = {viewModel.handleShowLogoutSheet(true)},
         onNavigateToCollection = onNavigateToCollection,
         onNavigateToFavorite = onNavigateToFavorite,
         onNavigateToVoucher = onNavigateToVoucher,
         onNavigateToAddress = onNavigateToAddress,
         onNavigateToCard = onNavigateToCard,
         onNavigateToOrder = onNavigateToOrder,
-        onLogout = onLogout,
+        onNavigateToEditProfile = onNavigateToEditProfile,
+        onNavigateToTerm = onNavigateToTerm
     )
+
+    CustomBottomSheet(
+        visible = uiState.isLogoutSheetVisible,
+        onDismiss = {},
+        dismissOnClickOutside = false
+    ) {
+        LogoutContent(
+            onLogout = {
+                viewModel.onLogout()
+                onNavigateToLogin()
+            },
+            onDismissClick = {
+                viewModel.handleShowLogoutSheet(false)
+            }
+        )
+    }
 }
 @Composable
 fun ProfileContent(
+    uiState: ProfileUiState,
     onNavigateToCollection: () -> Unit,
     onNavigateToFavorite:() -> Unit,
     onNavigateToVoucher: () -> Unit,
     onNavigateToAddress: () -> Unit,
     onNavigateToCard: ()-> Unit,
     onNavigateToOrder: ()-> Unit,
-    onLogout:() -> Unit
+    onShowLogoutSheet:() -> Unit,
+    onNavigateToTerm: () -> Unit,
+    onNavigateToEditProfile: () -> Unit
 ) {
     Scaffold (
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
-            ProfileTopAppBar()
+            ProfileTopAppBar(
+                onEditClick = onNavigateToEditProfile
+            )
         }
     ){ padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize().background(Neutral10)
-                .padding(top = 12.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp)
         ) {
-            item {
-                ProfileHeaderSection()
+            item(key = "header") {
+                ProfileHeaderSection(
+                    name = uiState.name,
+                    imageUrl = uiState.imageUrl,
+                    email = uiState.email
+                )
+                Divider32()
             }
             
-            item {
-                HorizontalDivider(color = Neutral30)
-            }
-            
-            item {
+            item(key = "menu_section") {
                 ProfileMenuSection(
                     onNavigateToCollection = onNavigateToCollection,
                     onNavigateToFavorite = onNavigateToFavorite,
@@ -125,21 +161,20 @@ fun ProfileContent(
                     onNavigateToCard = onNavigateToCard,
                     onNavigateToOrder = onNavigateToOrder
                 )
+                Divider32()
             }
 
-            item {
-                HorizontalDivider(color = Neutral30)
+            item (key = "support_section"){
+                SupportSection(
+                    onNavigateToTerm = onNavigateToTerm
+                )
+                Spacer(Modifier.height(24.dp))
             }
 
-            item {
-                SupportSection()
-            }
-
-            item{
+            item(key = "logout_section"){
                 ButtonComponent(
-                    enabled = true,
                     labelResId = R.string.logout,
-                    onClick = onLogout,
+                    onClick = onShowLogoutSheet,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Pink50,
@@ -148,14 +183,17 @@ fun ProfileContent(
                         disabledContainerColor = Neutral40
                     )
                 )
-
             }
         }
     }
 }
 
 @Composable
-fun ProfileHeaderSection() {
+fun ProfileHeaderSection(
+    name: String,
+    imageUrl: String,
+    email:String,
+) {
     Column(Modifier.padding(horizontal = 24.dp)){
         Card(
             modifier = Modifier
@@ -184,7 +222,6 @@ fun ProfileHeaderSection() {
                     Row(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Profile Picture
                         Box(
                             contentAlignment = Alignment.BottomEnd
                         ) {
@@ -197,7 +234,7 @@ fun ProfileHeaderSection() {
                                 contentAlignment = Alignment.Center
                             ) {
                                 CommonImage(
-                                    imageUrl = "https://avatar.iran.liara.run/public",
+                                    imageUrl = imageUrl,
                                     name = "profile picture"
                                 )
                             }
@@ -209,16 +246,14 @@ fun ProfileHeaderSection() {
                             modifier = Modifier.fillMaxWidth().height(60.dp),
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // User Name
                             Text(
-                                text = "Rafiq Daniel",
+                                text = name,
                                 style = LocalCustomTypography.current.h4Bold,
                                 color = Neutral10
                             )
 
-                            // User Email
                             Text(
-                                text = "rafiq.daniel@email.com",
+                                text = email,
                                 style = LocalCustomTypography.current.bodyXtraSmallMedium,
                                 color = Neutral10
                             )
@@ -317,17 +352,17 @@ fun ProfileMenuSection(
         Text(
             text = "Account",
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
         
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Neutral20
+                containerColor = LocalCustomColors.current.cardBackground
             )
         ) {
-            Column {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 ProfileMenuItem(
                     icon = R.drawable.icon,
                     iconColor = Green600,
@@ -336,9 +371,7 @@ fun ProfileMenuSection(
                     onClick = onNavigateToOrder
                 )
                 
-                HorizontalDivider(
-                    color = Neutral30
-                )
+                HorizontalDivider(color = LocalCustomColors.current.divider)
                 
                 ProfileMenuItem(
                     icon = R.drawable.promo,
@@ -347,23 +380,19 @@ fun ProfileMenuSection(
                     title = "Vouchers",
                     onClick = onNavigateToVoucher
                 )
-                
-                HorizontalDivider(
-                    color = Neutral30
-                )
-                
+
+                HorizontalDivider(color = LocalCustomColors.current.divider)
+
                 ProfileMenuItem(
                     icon = R.drawable.calendar,
                     iconColor = Orange600,
                     boxColor = Orange100,
                     title = "Subscriptions",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = {}
                 )
-                
-                HorizontalDivider(
-                    color = Neutral30
-                )
-                
+
+                HorizontalDivider(color = LocalCustomColors.current.divider)
+
                 ProfileMenuItem(
                     icon = R.drawable.heart,
                     iconColor = Pink600,
@@ -371,34 +400,28 @@ fun ProfileMenuSection(
                     title = "Collections",
                     onClick = onNavigateToCollection
                 )
-                
-                HorizontalDivider(
-                    color = Neutral30
-                )
-                
+
+                HorizontalDivider(color = LocalCustomColors.current.divider)
+
                 ProfileMenuItem(
-                    icon = R.drawable.heart,
+                    icon = R.drawable.store,
                     iconColor = Pink600,
                     boxColor = Pink100,
                     title = "Favorite Restaurants",
                     onClick = onNavigateToFavorite
                 )
-                
-                HorizontalDivider(
-                    color = Neutral30
-                )
-                
+
+                HorizontalDivider(color = LocalCustomColors.current.divider)
+
                 ProfileMenuItem(
-                    icon = R.drawable.heart,
+                    icon = R.drawable.credit_card,
                     iconColor = Pink600,
                     boxColor = Pink100,
                     title = "Payment Methods",
                     onClick = onNavigateToCard
                 )
 
-                HorizontalDivider(
-                    color = Neutral30
-                )
+                HorizontalDivider(color = LocalCustomColors.current.divider)
 
                 ProfileMenuItem(
                     icon = R.drawable.location,
@@ -408,16 +431,14 @@ fun ProfileMenuSection(
                     onClick = onNavigateToAddress
                 )
 
-                HorizontalDivider(
-                    color = Neutral30
-                )
+                HorizontalDivider(color = LocalCustomColors.current.divider)
 
                 ProfileMenuItem(
                     icon = R.drawable.calendar,
                     iconColor = Blue500,
                     boxColor = Blue100,
                     title = "Invite Friends",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = {}
                 )
             }
         }
@@ -425,24 +446,23 @@ fun ProfileMenuSection(
 }
 
 @Composable
-fun SupportSection() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+fun SupportSection(
+    onNavigateToTerm: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "Supports",
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Neutral20
+                containerColor = LocalCustomColors.current.cardBackground
             )
         ) {
             Column {
@@ -453,31 +473,27 @@ fun SupportSection() {
                     title = "Dark Mode",
                     isSwitch = true,
                     onSwitchChange ={},
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = {}
                 )
 
-                HorizontalDivider(
-                    color = Neutral30
-                )
+                HorizontalDivider(color = LocalCustomColors.current.divider)
 
                 ProfileMenuItem(
-                    icon = R.drawable.calendar,
+                    icon = R.drawable.question_mark_circle,
                     iconColor = Orange600,
                     boxColor = Orange100,
                     title = "Help Center",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = {}
                 )
 
-                HorizontalDivider(
-                    color = Neutral30
-                )
+                HorizontalDivider(color = LocalCustomColors.current.divider)
 
                 ProfileMenuItem(
-                    icon = R.drawable.calendar,
+                    icon = R.drawable.clipboard_list,
                     iconColor = Orange600,
                     boxColor = Orange100,
                     title = "Terms of Service",
-                    onClick = { /* Navigate to personal info */ }
+                    onClick = onNavigateToTerm
                 )
             }
         }
@@ -490,53 +506,34 @@ fun ProfileMenuItem(
     iconColor: Color,
     boxColor: Color,
     title: String,
-    textColor: Color = Neutral100,
+    textColor: Color = LocalCustomColors.current.headerText,
     onClick: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        color = Neutral20
+    Row(modifier = Modifier.fillMaxWidth()
+        .padding(horizontal = 12.dp, vertical = 14.dp).clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon
-            Box(
-                modifier = Modifier.size(32.dp).clip(CircleShape)
-                    .background(boxColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(icon),
-                    contentDescription = title,
-                    tint = iconColor,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.width(8.dp))
-            
-            // Text Content
-            Text(
-                modifier = Modifier.weight(1f),
-                text = title,
-                style = LocalCustomTypography.current.h6Bold,
-                color = textColor
-            )
-            
-            // Arrow
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Navigate",
-                tint = Neutral100,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        CircleImageIcon(
+            modifier = Modifier.size(32.dp),
+            boxColor = boxColor,
+            iconSize = 16.dp,
+            icon = icon,
+            iconColor = iconColor,
+            contentDescription = ""
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            modifier = Modifier.weight(1f),
+            text = title,
+            style = LocalCustomTypography.current.h6Bold,
+            color = textColor
+        )
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = "Navigate",
+            tint = LocalCustomColors.current.iconFocused,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
@@ -546,62 +543,88 @@ fun ProfileMenuSwitchItem(
     iconColor: Color,
     boxColor: Color,
     title: String,
-    textColor: Color = Neutral100,
+    textColor: Color = LocalCustomColors.current.headerText,
     isSwitch: Boolean = false,
     onSwitchChange:(Boolean) -> Unit,
     onClick: () -> Unit
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        color = Neutral20
+    Row(modifier = Modifier
+        .fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp)
+        .clickable(onClick= onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon
-            CircleImageIcon(
-                boxColor =boxColor,
-                icon = icon,
-                iconColor = iconColor,
-                iconSize = 16.dp,
-                contentDescription = title,
-                modifier = Modifier.size(32.dp)
-            )
+        CircleImageIcon(
+            boxColor =boxColor,
+            icon = icon,
+            iconColor = iconColor,
+            iconSize = 16.dp,
+            contentDescription = title,
+            modifier = Modifier.size(32.dp)
+        )
 
-            Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
-            // Text Content
-            Text(
-                modifier = Modifier.weight(1f),
-                text = title,
-                style = LocalCustomTypography.current.h6Bold,
-                color = textColor
-            )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = title,
+            style = LocalCustomTypography.current.h6Bold,
+            color = textColor
+        )
 
-            // Arrow
-            Switch(
-                checked = isSwitch,
-                onCheckedChange = onSwitchChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Blue500,
-                    checkedTrackColor = Blue400,
-                    uncheckedThumbColor = Neutral80,
-                    uncheckedTrackColor = Neutral70
-                )
+        Switch(
+            checked = isSwitch,
+            onCheckedChange = onSwitchChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Blue500,
+                checkedTrackColor = Blue400,
+                uncheckedThumbColor = Neutral80,
+                uncheckedTrackColor = Neutral70
             )
-        }
+        )
     }
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun ProfileScreenPreview() {
-    ProfileScreen(
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun ProfileLightPreview() {
+//    TasstyTheme {
+//        ProfileContent(
+//            uiState = ProfileUiState(
+//                name = "Atifa Fiorenza",
+//                email = "atifafiorenza24@gmail.com",
+//                imageUrl = "",
+//            ),
+//            onNavigateToCard = {},
+//            onNavigateToOrder = {},
+//            onNavigateToVoucher = {},
+//            onNavigateToAddress = {},
+//            onNavigateToFavorite = {},
+//            onNavigateToCollection = {},
+//            onNavigateToEditProfile = {},
+//            onShowLogoutSheet = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun ProfileDarkPreview() {
+//    TasstyTheme (darkTheme = true){
+//        ProfileContent(
+//            uiState = ProfileUiState(
+//                name = "Atifa Fiorenza",
+//                email = "atifafiorenza24@gmail.com",
+//                imageUrl = "",
+//            ),
+//            onNavigateToCard = {},
+//            onNavigateToOrder = {},
+//            onNavigateToVoucher = {},
+//            onNavigateToAddress = {},
+//            onNavigateToFavorite = {},
+//            onNavigateToCollection = {},
+//            onNavigateToEditProfile = {},
+//            onShowLogoutSheet = {}
+//        )
+//    }
+//}
