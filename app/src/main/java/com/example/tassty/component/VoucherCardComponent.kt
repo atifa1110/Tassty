@@ -200,7 +200,7 @@ fun VoucherExtraLargeCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral20
+            containerColor = LocalCustomColors.current.cardBackground
         ),
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -213,7 +213,6 @@ fun VoucherExtraLargeCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                       // .aspectRatio(3f / 1f)
                 )
             }
 

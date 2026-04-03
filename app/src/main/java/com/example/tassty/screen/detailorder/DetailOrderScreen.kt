@@ -195,28 +195,28 @@ fun DetailOrderContent(
 }
 
 
-@Preview(showBackground = true, name = "Light Mode")
-@Composable
-fun DetailOrderLightPreview() {
-    TasstyTheme{
-        DetailOrderContent(
-            detail = dummyDetail,
-            onNavigateBack = {},
-            onRatingMenuClick = {},
-            onRatingRestClick = {}
-        )
-    }
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun DetailOrderLightPreview() {
+//    TasstyTheme{
+//        DetailOrderContent(
+//            detail = dummyDetail,
+//            onNavigateBack = {},
+//            onRatingMenuClick = {},
+//            onRatingRestClick = {}
+//        )
+//    }
+//}
 
-@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-fun DetailOrderDarkPreview() {
-    TasstyTheme(darkTheme = true) {
-        DetailOrderContent(
-            detail = dummyDetail,
-            onNavigateBack = {},
-            onRatingMenuClick = {},
-            onRatingRestClick = {}
-        )
-    }
-}
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun DetailOrderDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        DetailOrderContent(
+//            detail = dummyDetail,
+//            onNavigateBack = {},
+//            onRatingMenuClick = {},
+//            onRatingRestClick = {}
+//        )
+//    }
+//}

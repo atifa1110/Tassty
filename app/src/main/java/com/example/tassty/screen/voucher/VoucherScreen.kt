@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,6 +28,7 @@ import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.voucherVerticalListBlock
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -51,7 +53,7 @@ fun VoucherContent(
     uiState: VoucherUiState
 ){
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             FavoriteTopAppBar(
                 onBackClick = onNavigateBack,
@@ -63,7 +65,7 @@ fun VoucherContent(
             modifier = Modifier .padding(padding).fillMaxSize(),
             contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
-            item{
+            item(key="header"){
                 HeaderTitleScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     title = stringResource(R.string.promo_vouchers)
@@ -73,7 +75,7 @@ fun VoucherContent(
 
             when {
                 uiState.vouchers.isLoading -> {
-                    item {
+                    item(key="loading_content") {
                         LoadingRowState()
                     }
                 }
@@ -115,6 +117,23 @@ fun VoucherContent(
 //@Composable
 //fun VoucherLightPreview(){
 //    TasstyTheme {
+//        VoucherContent(
+//            uiState = VoucherUiState(
+//                vouchers = Resource(
+//                    isLoading = false,
+//                    data = voucherUiModel,
+//                    errorMessage = null
+//                )
+//            ),
+//            onNavigateBack = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun VoucherDarkPreview(){
+//    TasstyTheme(darkTheme = true) {
 //        VoucherContent(
 //            uiState = VoucherUiState(
 //                vouchers = Resource(
