@@ -29,7 +29,7 @@ class MenuRepositoryImpl @Inject constructor(
     }
 
     override fun getRecommendedMenus(): Flow<TasstyResponse<List<Menu>>> = flow {
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_RECOMMENDED)
         if (cachedData.isNotEmpty()) {
@@ -64,7 +64,7 @@ class MenuRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override fun getSuggestedMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_SUGGESTED)
         if (cachedData.isNotEmpty()) {
@@ -83,7 +83,6 @@ class MenuRepositoryImpl @Inject constructor(
         val result = remoteDataSource.getSuggestedMenus()
         when (result) {
             is TasstyResponse.Success -> {
-                // save to cache + meta
                 cache.saveAll(META_KEY_MENU_SUGGESTED, result.data?: emptyList())
                 cache.saveMeta(META_KEY_MENU_SUGGESTED, result.meta)
 
@@ -99,8 +98,8 @@ class MenuRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading)
+    override fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
+        emit(TasstyResponse.Loading())
 
         val result = remoteDataSource.getSearchMenus()
         when (result) {
@@ -114,7 +113,7 @@ class MenuRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
     override fun getDetailBestSellerMenu(id:String): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val result = remoteDataSource.getDetailBestSellerMenu(id)
         when (result) {
@@ -128,7 +127,7 @@ class MenuRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override fun getDetailRecommendedMenu(id: String): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val result = remoteDataSource.getDetailRecommendedMenu(id)
         when (result) {
@@ -142,7 +141,7 @@ class MenuRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
 
     override fun getDetailAllMenu(id: String): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val result = remoteDataSource.getDetailAllMenu(id)
         when (result) {

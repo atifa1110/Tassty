@@ -89,6 +89,10 @@ class CartDataSource @Inject constructor(
         cartDao.updateIsHiddenMultiple(cartIds = cartIds, isHidden = isHidden)
     }
 
+    suspend fun updateNotes(cartId: String, notes: String) {
+        cartDao.updateNotes(cartId = cartId, notes = notes)
+    }
+
     fun observeCartByMenuId(menuId: String): Flow<CartEntity?>{
         return cartDao.observeCartItemByMenuId(menuId)
     }

@@ -10,17 +10,7 @@ import javax.inject.Inject
 class GetDetailMenuUseCase @Inject constructor(
     private val repository: DetailRepository
 ) {
-    operator fun invoke(id:String): Flow<TasstyResponse<DetailMenu>> = flow {
-        val result = repository.getDetailMenu(id)
-
-        result.collect { result ->
-            when(result){
-                is TasstyResponse.Success -> {
-                    emit(TasstyResponse.Success(result.data,result.meta))
-                }
-                is TasstyResponse.Error -> emit(result)
-                is TasstyResponse.Loading -> emit(TasstyResponse.Loading)
-            }
-        }
+    operator fun invoke(id:String): Flow<TasstyResponse<DetailMenu>> {
+        return repository.getDetailMenu(id)
     }
 }

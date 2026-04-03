@@ -1,17 +1,13 @@
 package com.example.tassty.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
     background = DarkBackground,
@@ -33,36 +29,93 @@ private val LightColorScheme = lightColorScheme(
     outline = CardOutlineDefault,
 )
 
-// Ini adalah CompositionLocal yang kita buat sebelumnya
+private val DarkCustomColors = CustomColors(
+    background = DarkBackground,
+    sliderBackground = DarkBackgroundSlider,
+    searchBackground = DarkBackground,
+    modalBackground = DarkBackgroundFrame,
+    modalBackgroundFrame = DarkBackgroundFrame,
+    cardBackground = CardBackgroundDefault,
+    cardBackground2 = CardBackgroundDefault,
+    frameBackground = DarkBackgroundFrame,
+    buttonDisableBackground = CardBackgroundDisable,
+    buttonTextDisableBackground = Neutral40,
+    divider = CardOutlineDefault,
+    dividerCard = CardBackgroundDisable,
+    topBarBackgroundColor = DarkBackgroundFrame,
+    topBarBorder = CardBackgroundDisable,
+    selectedOrangeStroke = Orange700,
+    selectedOrangeBackground = DarkOrangeBackground,
+    headerText = Neutral10,
+    text = Neutral40,
+    iconFocused = Neutral10,
+    iconDisable = Neutral40,
+    border = CardOutlineDefault,
+    borderUnfocused = CardBackgroundDisable,
+    errorBorder = Pink400,
+    errorBackground = ErrorBackground,
+    pink = DarkPink,
+    orange = DarkOrange,
+    green = DArkGreen,
+    blue = DarkBlue,
+    processStatus = Blue300,
+    completedStatus = Green300,
+    cancelStatus = Pink300
+)
+
+private val LightCustomColors = CustomColors(
+    background = Neutral10,
+    sliderBackground = Neutral10.copy(0.9f),
+    searchBackground = Neutral10.copy(0.20f),
+    modalBackground = modal,
+    modalBackgroundFrame = Neutral10.copy(0.9f),
+    cardBackground = Neutral20,
+    cardBackground2 = Neutral10,
+    frameBackground = Neutral10.copy(0.9f),
+    buttonDisableBackground = Neutral40,
+    buttonTextDisableBackground = Neutral100,
+    divider = Neutral30,
+    dividerCard = Neutral40,
+    topBarBackgroundColor = Neutral20,
+    topBarBorder = Color.Transparent,
+    selectedOrangeStroke = Orange200,
+    selectedOrangeBackground = Orange50,
+    headerText = Neutral100,
+    text = Neutral70,
+    iconFocused = Neutral100,
+    iconDisable = Neutral70,
+    border = Neutral30,
+    borderUnfocused = Neutral30,
+    errorBorder = Pink600,
+    errorBackground = Pink50,
+    pink = Pink50,
+    orange = Orange50,
+    green = Green50,
+    blue = Blue50,
+    processStatus = Blue600,
+    completedStatus = Green600,
+    cancelStatus = Pink600
+)
+
+
+val LocalCustomColors = staticCompositionLocalOf { LightCustomColors }
 val LocalCustomTypography = staticCompositionLocalOf { CustomTypography() }
 
 @Composable
 fun TasstyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-//            val context = LocalContext.current
-//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-//        }
+    val customColors = if (darkTheme) DarkCustomColors else LightCustomColors
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
-    // Gunakan CompositionLocalProvider untuk menyediakan Typography kustom
-    CompositionLocalProvider(LocalCustomTypography provides CustomTypography()) {
+    CompositionLocalProvider(
+        LocalCustomTypography provides CustomTypography(),
+        LocalCustomColors provides customColors
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             content = content
         )
     }
-//    MaterialTheme(
-//        colorScheme = colorScheme,
-//        typography = Typography,
-//        content = content
-//    )
 }

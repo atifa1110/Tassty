@@ -70,13 +70,11 @@ fun DraggableRestaurantBar(
 ) {
     var offsetY by remember { mutableStateOf(-250f) }
 
-    // Konversi offsetY jadi tinggi dinamis (dibalik biar drag ke atas = tinggi tambah)
     val dynamicHeight by animateDpAsState(
         targetValue = (minHeight - offsetY.dp).coerceIn(minHeight, maxHeight),
         label = "heightAnim"
     )
 
-    // === Animasi padding bawah & horizontal ===
     val dynamicBottomPadding by animateDpAsState(
         targetValue = if (offsetY >= 0f) bottomSpacing else 0.dp,
         label = "bottomPaddingAnim"
@@ -111,7 +109,7 @@ fun DraggableRestaurantBar(
                 end = dynamicHorizontalPadding
             )
             .fillMaxWidth()
-            .height(dynamicHeight) // ← tinggi ikut drag
+            .height(dynamicHeight)
     ) {
         Column(
             modifier = Modifier.fillMaxSize().background(

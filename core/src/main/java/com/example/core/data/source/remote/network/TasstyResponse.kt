@@ -10,5 +10,6 @@ sealed class TasstyResponse<out T> {
         val meta: Meta
     ) : TasstyResponse<Nothing>()
 
-    object Loading : TasstyResponse<Nothing>()
+//    object Loading : TasstyResponse<Nothing>()
+    data class Loading(val progress: Float = 0f) : TasstyResponse<Nothing>()
 }

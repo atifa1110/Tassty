@@ -8,21 +8,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -32,78 +29,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
-import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.R
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-
-@Composable
-fun HeaderWithOverlap(
-    imageUrl: String,
-    status : RestaurantStatus,
-    onBackClick: () -> Unit,
-    onFilterClick: () -> Unit,
-    collapseProgress: Float,
-    headerContent: @Composable () -> Unit
-) {
-    val imageHeight = 304.dp
-    val searchBarOverlapHeight = 24.dp
-
-    val currentHeight = lerp(imageHeight,100.dp, collapseProgress)
-    val contentAlpha = 1f - collapseProgress
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(currentHeight)
-    ) {
-        StatusItemImage(
-            imageUrl = imageUrl,
-            name = "category header image",
-            status = status,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(imageHeight).alpha(contentAlpha)
-                .align(Alignment.TopCenter)
-        )
-
-        CategoryTopAppBar(onBackClick = onBackClick, onFilterClick = onFilterClick)
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter).alpha(contentAlpha),
-            shape = RectangleShape,
-            colors = CardDefaults.cardColors(
-                containerColor = Neutral10.copy(0.7f)
-            )
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = 24.dp, end = 24.dp, top = 24.dp)
-                    .padding(bottom = 48.dp)
-            ) {
-                headerContent()
-            }
-        }
-
-        SearchBar(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter).alpha(contentAlpha)
-                .offset(y = searchBarOverlapHeight)
-                .padding(horizontal = 24.dp)
-        )
-    }
-}
 
 @Composable
 fun CategoryFoundHeader(
@@ -126,7 +60,7 @@ fun CategoryFoundHeader(
         }
         withStyle(
             style = LocalCustomTypography.current.h5Bold.toSpanStyle()
-                .copy(color = Neutral100)
+                .copy(color = LocalCustomColors.current.headerText)
         ) {
             append(headerText)
         }
@@ -136,57 +70,7 @@ fun CategoryFoundHeader(
 }
 
 @Composable
-fun CategoryTextHeader(
-    title : String,
-    subtitle: String
-){
-    Column{
-        Text(
-            text = title,
-            style = LocalCustomTypography.current.h3Bold,
-            color = Neutral100
-        )
-
-        Spacer(Modifier.height(4.dp))
-
-        Text(
-            text = subtitle,
-            style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
-        )
-    }
-}
-
-@Composable
-fun CategoryAndDescriptionHeader(
-    title: String,
-    imageUrl: String
-){
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        CategoryTextHeader(title = title, subtitle = "Some lunch boosters!")
-        CategoryCard(title = title, image = imageUrl, onClick = {})
-    }
-}
-
-@Composable
-fun BestSellerHeader(){
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        CategoryTextHeader(title = "Our best seller!",
-            subtitle = "Top-selling delicacies you can't miss!")
-        BestSellerIcon()
-    }
-}
-
-@Composable
-fun StatusTextHeader(
+fun StatusModalContent(
     title : String,
     subtitle : String
 ){
@@ -197,7 +81,7 @@ fun StatusTextHeader(
         Text(
             text = title,
             style = LocalCustomTypography.current.h2Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             textAlign = TextAlign.Center
         )
 
@@ -206,7 +90,39 @@ fun StatusTextHeader(
         Text(
             text = subtitle,
             style = LocalCustomTypography.current.bodyMediumRegular,
-            color = Neutral70,
+            color = LocalCustomColors.current.text,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+
+@Composable
+fun StatusTwoColorModalContent(
+    title : String,
+    subtitle : String = "You can’t undo this action.",
+    highlight: String = "?",
+    titleColor : Color = LocalCustomColors.current.headerText,
+    highlightColor: Color = Pink500,
+){
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        CustomTwoColorText(
+            fullText = title,
+            textColor = titleColor,
+            highlightText = highlight,
+            highlightColor = highlightColor,
+            normalStyle = LocalCustomTypography.current.h2Bold,
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = subtitle,
+            style = LocalCustomTypography.current.bodyMediumRegular,
+            color = LocalCustomColors.current.text,
             textAlign = TextAlign.Center
         )
     }
@@ -261,12 +177,12 @@ fun HeaderListTitleSubtitleButton(
         Column {
             Text(
                 text = title,
-                color = Neutral100,
+                color = LocalCustomColors.current.headerText,
                 style = LocalCustomTypography.current.h5Bold
             )
             Text(
                 text = subtitle,
-                color = Neutral100,
+                color = LocalCustomColors.current.headerText,
                 style = LocalCustomTypography.current.bodySmallRegular
             )
         }
@@ -288,7 +204,7 @@ fun HeaderListBlackTitle(
         Text(
             text = title,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
     }
 }
@@ -304,7 +220,7 @@ fun ItemCountTitleText(
                 append(itemCount.toString())
             }
             append(" ")
-            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = Neutral100)) {
+            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = LocalCustomColors.current.headerText)) {
                 append(title)
             }
         }
@@ -346,7 +262,8 @@ fun HeaderRestaurantCollection(
     modifier: Modifier = Modifier,
     restaurantName: String,
     rating: String,
-    city: String
+    city: String,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -355,7 +272,7 @@ fun HeaderRestaurantCollection(
         Text(
             text = restaurantName,
             style = LocalCustomTypography.current.h6Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = true)
@@ -363,7 +280,7 @@ fun HeaderRestaurantCollection(
 
         Text(
             text = " • ",
-            color = Neutral70,
+            color = LocalCustomColors.current.text,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
 
@@ -376,7 +293,7 @@ fun HeaderRestaurantCollection(
         Text(
             text = rating,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70,
+            color = LocalCustomColors.current.text,
             modifier = Modifier.padding(start = 4.dp)
         )
 
@@ -395,18 +312,19 @@ fun HeaderRestaurantCollection(
         Text(
             text = city,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70,
+            color = LocalCustomColors.current.text,
             modifier = Modifier.padding(start = 4.dp)
         )
 
         Spacer(Modifier.weight(0.3f))
 
-        // RIGHT ACTION
         Text(
             text = "See resto",
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Orange500,
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(start = 12.dp).clickable(
+                onClick = onClick
+            )
         )
     }
 }
@@ -416,23 +334,46 @@ fun HeaderTitleScreen(
     modifier: Modifier = Modifier,
     title: String
 ){
-    Text(
-        modifier = modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 24.dp),
-        text = buildAnnotatedString {
-            withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Neutral100)) {
-                append(title)
-            }
-            withStyle(style = LocalCustomTypography.current.h2Bold.toSpanStyle().copy(color = Orange500)) {
-                append(".")
-            }
-        }
+    CustomTwoColorText(
+        modifier = modifier,
+        fullText = title,
+        highlightText = ".",
+        textColor = LocalCustomColors.current.headerText,
+        normalStyle = LocalCustomTypography.current.h2Bold,
+        textAlign = TextAlign.Start
     )
 }
+
+@Composable
+fun DateHeader(date: String) {
+    Box(modifier = Modifier.fillMaxWidth()
+        .padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            color = Neutral70.copy(alpha = 0.8f),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Text(
+                text = date,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                color = Neutral10,
+                style = LocalCustomTypography.current.bodyXtraSmallMedium
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewHeader(){
     Column (Modifier.fillMaxWidth().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)){
+
+        HeaderTitleScreen(
+            modifier = Modifier.fillMaxWidth(),
+            title = "My collections."
+        )
 
         HeaderListTitleButton(
             title = "Recommended Restaurants",

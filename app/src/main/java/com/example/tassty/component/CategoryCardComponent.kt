@@ -1,6 +1,5 @@
 package com.example.tassty.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,7 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CategoryUiModel
-import com.example.tassty.categories
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.categories
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
@@ -70,8 +70,8 @@ fun FoodCategoryCard(
     onCardClick : () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (isSelected) Orange50 else Neutral20
-    val borderColor = if (isSelected) Orange500 else Color.Transparent
+    val containerColor = if (isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.cardBackground
+    val borderColor = if (isSelected) LocalCustomColors.current.selectedOrangeStroke else Color.Transparent
 
     Card(
         modifier = modifier.size(120.dp).clip(RoundedCornerShape(20.dp))
@@ -94,7 +94,7 @@ fun FoodCategoryCard(
                 Text(
                     text = category.name,
                     style = LocalCustomTypography.current.h6Bold,
-                    color = Neutral100
+                    color = LocalCustomColors.current.headerText
                 )
             }
 

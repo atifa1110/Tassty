@@ -1,20 +1,34 @@
 package com.example.core.di
 
-import com.example.core.data.provider.DefaultLocationProvider
-import com.example.core.domain.provider.LocationProvider
-import dagger.Binds
+import android.content.Context
+import android.location.Geocoder
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.Locale
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class LocationModule {
+object LocationModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindLocationProvider(
-        defaultLocationProvider: DefaultLocationProvider
-    ): LocationProvider // Hilt akan memberikan DefaultLocationProvider ketika diminta LocationProvider
+    fun provideGeocoder(
+        @ApplicationContext context: Context
+    ): Geocoder {
+        return Geocoder(context, Locale.getDefault())
+    }
+
+    @Provides
+    @Singleton
+    fun provideFusedLocationProviderClient(
+        @ApplicationContext context: Context
+    ): FusedLocationProviderClient {
+        return LocationServices.getFusedLocationProviderClient(context)
+    }
 }

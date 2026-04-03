@@ -8,9 +8,9 @@ import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
-import com.example.tassty.historyOptions
+import com.example.tassty.util.historyOptions
 import com.example.tassty.model.ChipFilterOption
-import com.example.tassty.popularOptions
+import com.example.tassty.util.popularOptions
 
 @Immutable
 data class SearchUiState(

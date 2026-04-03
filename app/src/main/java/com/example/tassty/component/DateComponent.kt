@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -28,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -69,9 +71,9 @@ fun DayItem(
                 else -> LocalCustomTypography.current.h5Regular
             },
             color = when {
-                isSelectedStart || isSelectedEnd -> Neutral10
+                isSelectedStart || isSelectedEnd -> LocalCustomColors.current.background
                 isInRange -> Orange500
-                else -> Neutral70
+                else -> LocalCustomColors.current.text
             }
         )
     }
@@ -85,7 +87,7 @@ fun DateGrid(
     onDateClick: (LocalDate) -> Unit
 ) {
     val daysInMonth = currentMonth.lengthOfMonth()
-    val firstDayOfMonth = currentMonth.withDayOfMonth(1).dayOfWeek.value % 7 // Start Sunday
+    val firstDayOfMonth = currentMonth.withDayOfMonth(1).dayOfWeek.value % 7
 
     DaysOfWeekHeader()
     LazyVerticalGrid(
@@ -126,18 +128,18 @@ fun CalendarHeader(
         // Left side: "June 2023"
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { /* Aksi jika bulan diklik */ }
+            modifier = Modifier.clickable {}
         ) {
             Text(
                 text = "$monthName $year",
                 style = LocalCustomTypography.current.bodyMediumBold,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = Neutral100,
+                tint = LocalCustomColors.current.headerText,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -170,7 +172,7 @@ fun DaysOfWeekHeader() {
                 modifier = Modifier.weight(1f),
                 text = day,
                 style = LocalCustomTypography.current.bodySmallSemiBold,
-                color = Neutral70.copy(alpha = 0.4f),
+                color = LocalCustomColors.current.text.copy(alpha = 0.4f),
                 textAlign = TextAlign.Center
             )
         }
@@ -185,7 +187,7 @@ fun DatePicker (
     onMonthChange: (LocalDate) -> Unit,
     onDateClick: (LocalDate) -> Unit
 ){
-    Column(modifier = Modifier.fillMaxWidth(),
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         CalendarHeader(
@@ -202,11 +204,11 @@ fun DatePicker (
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DateGridPreview() {
-    val mockStartDate = LocalDate.of(2026,10,13)
-    val mockEndDate = null
-
-    DatePicker( currentMonth = mockStartDate, startDate = mockStartDate,mockEndDate, onMonthChange = {}, onDateClick = {})
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DateGridPreview() {
+//    val mockStartDate = LocalDate.of(2026,10,13)
+//    val mockEndDate = null
+//
+//    DatePicker( currentMonth = mockStartDate, startDate = mockStartDate,mockEndDate, onMonthChange = {}, onDateClick = {})
+//}

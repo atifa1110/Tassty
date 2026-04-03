@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
-import com.example.tassty.categories
+import com.example.tassty.util.categories
 import com.example.tassty.component.SetupTopAppBar
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
@@ -42,7 +42,11 @@ import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CategoryFoundHeader
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodCategoryCard
+import com.example.tassty.component.Header
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.SearchBar
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun SetupCuisineRoute(
@@ -95,7 +99,7 @@ fun SetupCuisineScreen(
     onBackButtonClick: () -> Unit
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             SetupTopAppBar(
                 currentStep = 1,
@@ -108,7 +112,7 @@ fun SetupCuisineScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .imePadding()
+                    .imePadding().background(LocalCustomColors.current.modalBackgroundFrame)
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -124,28 +128,20 @@ fun SetupCuisineScreen(
     ) { innerPadding ->
         LazyColumn (
             modifier = Modifier.padding(innerPadding)
-                .fillMaxSize()
-                .background(Neutral10)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 32.dp)
         ) {
-            item {
+            item(key = "header_content") {
                 Spacer(modifier = Modifier.height(16.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.choose_your_preferred_cuisine),
-                        style = LocalCustomTypography.current.h2Bold,
-                        color = Neutral100
-                    )
+                    HeaderTitleScreen(title = stringResource(R.string.choose_your_preferred_cuisine),)
 
                     Text(
                         text = stringResource(R.string.dozens_food),
                         style = LocalCustomTypography.current.bodyMediumRegular,
-                        color = Neutral70,
+                        color = LocalCustomColors.current.text,
                         textAlign = TextAlign.Start
                     )
 
@@ -161,6 +157,7 @@ fun SetupCuisineScreen(
             item {
                 Divider32()
             }
+
             item {
                 if (uiState.isLoading || uiState.categories.isEmpty()) {
                     Box(
@@ -223,21 +220,44 @@ fun CategoriesContent(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewSetupCuisineScreen() {
-    SetupCuisineScreen(
-        uiState = SetupCuisineUiState(
-            categories = categories,
-            selectedCategoryIds = listOf("1","2"),
-            currentSearchQuery = "bakery",
-            filteredCategories = categories
-        ),
-        searchText = "",
-        onSearchText = {},
-        onSelectedCategory = {},
-        onNextClick = {},
-        onSkipClick = {},
-        onBackButtonClick = {}
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun SetupCuisineLightPreview() {
+//    TasstyTheme(darkTheme = false) {
+//        SetupCuisineScreen(
+//            uiState = SetupCuisineUiState(
+//                categories = categories,
+//                selectedCategoryIds = listOf("CAT-001"),
+//                currentSearchQuery = "bakery",
+//                filteredCategories = categories
+//            ),
+//            searchText = "",
+//            onSearchText = {},
+//            onSelectedCategory = {},
+//            onNextClick = {},
+//            onSkipClick = {},
+//            onBackButtonClick = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun SetupCuisineDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        SetupCuisineScreen(
+//            uiState = SetupCuisineUiState(
+//                categories = categories,
+//                selectedCategoryIds = listOf("CAT-001"),
+//                currentSearchQuery = "bakery",
+//                filteredCategories = categories
+//            ),
+//            searchText = "",
+//            onSearchText = {},
+//            onSelectedCategory = {},
+//            onNextClick = {},
+//            onSkipClick = {},
+//            onBackButtonClick = {}
+//        )
+//    }
+//}

@@ -24,10 +24,7 @@ class CategoryRepositoryImpl @Inject constructor(
     }
 
     override fun getAllCategories(): Flow<TasstyResponse<List<Category>>> = flow {
-        emit(TasstyResponse.Loading)
-        // Erase when using real api
-        delay(1000)
-
+        emit(TasstyResponse.Loading())
         // Cek cache
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_CATEGORY)
         if (cachedData.isNotEmpty()) {

@@ -4,6 +4,7 @@ import com.example.core.domain.model.DetailMenu
 import com.example.core.domain.model.Menu
 import com.example.core.domain.model.Option
 import com.example.core.domain.model.OptionGroup
+import com.example.core.domain.utils.getSubtitle
 import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.OptionGroupUiModel
@@ -31,6 +32,7 @@ fun DetailMenu.toUiModel(isWishlist: Boolean) : DetailMenuUiModel{
 fun OptionGroup.toDomain() = OptionGroupUiModel(
     id = id,
     title = title,
+    subtitle = getSubtitle(this.required,this.maxPick),
     required = required,
     maxPick = maxPick,
     options = options.map { it.toDomain() }

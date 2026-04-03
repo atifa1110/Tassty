@@ -35,21 +35,24 @@ object ProfileDestination : TasstyNavigationDestination {
 
 @Composable
 fun DashboardScreen(
-    onNavigateToDetail: (String) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,
     onNavigateToNearbyRestaurant:() -> Unit,
     onNavigateToCollection:() -> Unit,
     onNavigateToFavorite:() -> Unit,
+    onNavigateToDetailRest: (String) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
     onNavigateToCard: ()-> Unit,
     onNavigateToOrder: ()-> Unit,
     onNavigateToPayment: (String, String) -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToMessage:(String) -> Unit,
+    onNavigateToEditProfile: () -> Unit,
+    onNavigateToTerm: () -> Unit
 ){
-
     val bottomNavController = rememberNavController()
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -59,7 +62,7 @@ fun DashboardScreen(
     Scaffold (
         bottomBar = {
             NavigationBottomBar(
-                items =topLevelDestinations,
+                items = topLevelDestinations,
                 currentDestination = currentDestination,
                 navController = bottomNavController,
                 badgeFavorite = 0
@@ -70,7 +73,7 @@ fun DashboardScreen(
             modifier = Modifier.padding(padding),
             navController = bottomNavController,
             onNavigateToSearch = onNavigateToSearch,
-            onNavigateToDetail = onNavigateToDetail,
+            onNavigateToDetailRest = onNavigateToDetailRest,
             onNavigateToCategory = onNavigateToCategory,
             onNavigateToRecommended = onNavigateToRecommended,
             onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
@@ -81,7 +84,11 @@ fun DashboardScreen(
             onNavigateToAddress = onNavigateToAddress,
             onNavigateToCard = onNavigateToCard,
             onNavigateToOrder = onNavigateToOrder,
-            onNavigateToPayment = onNavigateToPayment
+            onNavigateToPayment = onNavigateToPayment,
+            onNavigateToLogin = onNavigateToLogin,
+            onNavigateToMessage = onNavigateToMessage,
+            onNavigateToEditProfile = onNavigateToEditProfile,
+            onNavigateToTerm = onNavigateToTerm
         )
     }
 }

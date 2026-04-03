@@ -9,6 +9,7 @@ import com.example.core.data.repository.DetailRepositoryImpl
 import com.example.core.data.repository.FavoriteRepositoryImpl
 import com.example.core.data.repository.LocationRepositoryImpl
 import com.example.core.data.repository.MenuRepositoryImpl
+import com.example.core.data.repository.NotificationRepositoryImpl
 import com.example.core.data.repository.OrderRepositoryImpl
 import com.example.core.data.repository.RestaurantRepositoryImpl
 import com.example.core.data.repository.ReviewRepositoryImpl
@@ -24,6 +25,7 @@ import com.example.core.domain.repository.DetailRepository
 import com.example.core.domain.repository.FavoriteRepository
 import com.example.core.domain.repository.LocationRepository
 import com.example.core.domain.repository.MenuRepository
+import com.example.core.domain.repository.NotificationRepository
 import com.example.core.domain.repository.OrderRepository
 import com.example.core.domain.repository.RestaurantRepository
 import com.example.core.domain.repository.ReviewRepository
@@ -132,5 +134,11 @@ abstract class RepositoryModule {
     abstract fun bindOrderRepository(
         orderRepositoryImpl: OrderRepositoryImpl
     ): OrderRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationRepository(
+        notificationRepositoryImpl: NotificationRepositoryImpl
+    ): NotificationRepository
 
 }

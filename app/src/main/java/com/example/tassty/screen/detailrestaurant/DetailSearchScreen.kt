@@ -37,14 +37,15 @@ import com.example.tassty.component.FoodListCard
 import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.LoadingScreen
 import com.example.tassty.component.SearchBar
-import com.example.tassty.menusItem
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.menusItem
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Pink500
 
 @Composable
 fun DetailSearchScreen(
     query : String,
-    status: RestaurantStatus,
     resource : Resource<List<MenuUiModel>>,
     onQueryChange: (String) -> Unit,
     onClose: () -> Unit
@@ -59,29 +60,26 @@ fun DetailSearchScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f)),
+            .background(Neutral100.copy(alpha = 0.6f)),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(animatedHeight)
-                .background(Color.White)
+                .background(LocalCustomColors.current.background)
         ) {
-            // SearchBar di atas
             SearchAppBarActive(
                 searchQuery = query,
                 onQueryChange = onQueryChange,
                 onClose = onClose
             )
 
-            // Isi muncul kalau query ga kosong
             AnimatedVisibility(visible = showFullPage) {
                 Column {
                     HorizontalDivider(Modifier.padding(vertical = 32.dp))
                     SearchResultList(
-                        resource = resource,
-                        status = status
+                        resource = resource
                     )
                 }
             }
@@ -97,10 +95,9 @@ fun SearchAppBarActive(
 ) {
     Row(
         modifier = Modifier
-        .fillMaxWidth().background(Neutral10.copy(0.9f))
+        .fillMaxWidth()
         .padding(start =24.dp, end = 24.dp, top = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
-
     ) {
         SearchBar(
             value = searchQuery,
@@ -113,7 +110,7 @@ fun SearchAppBarActive(
         Spacer(Modifier.width(8.dp))
 
         Box(
-            modifier = Modifier.size(44.dp).background(Neutral10).clickable{
+            modifier = Modifier.size(44.dp).clickable{
                 if(searchQuery.isNotEmpty()){
                     onQueryChange("")
                 }else {
@@ -134,8 +131,7 @@ fun SearchAppBarActive(
 
 @Composable
 fun SearchResultList(
-    resource: Resource<List<MenuUiModel>>,
-    status: RestaurantStatus
+    resource: Resource<List<MenuUiModel>>
 ) {
     val menuItems = resource.data.orEmpty()
 
@@ -181,7 +177,6 @@ fun PreviewSearch(){
         resource = Resource(
             data = menusItem
         ),
-        status = RestaurantStatus.OPEN,
         onQueryChange = {},
         onClose = {}
     )

@@ -14,22 +14,23 @@ import com.example.core.domain.usecase.GetTodayVouchersUseCase
 import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
 import com.example.core.domain.usecase.InitializeSystemCollectionsUseCase
-import com.example.core.domain.usecase.ObserveFavoriteMenuIdsUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.domain.utils.toListState
-import com.example.core.data.mapper.toDomain
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.MenuUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -48,13 +49,14 @@ class HomeViewModel @Inject constructor(
     private val getCollectionsByIdUseCase: GetCollectionsByIdUseCase,
     private val createNewCollectionUseCase: CreateNewCollectionUseCase,
     private val initializeSystemCollectionsUseCase: InitializeSystemCollectionsUseCase,
-    private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase,
-    private val observeFavoriteMenuIdsUseCase: ObserveFavoriteMenuIdsUseCase
+    private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase
 ) : ViewModel() {
 
     private val _internalState = MutableStateFlow(HomeInternalState())
-
     private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
+
+    private val _uiEffect = Channel<HomeUiEffect>(Channel.BUFFERED)
+    val uiEffect = _uiEffect.receiveAsFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val contentFlow = _refreshTrigger.flatMapLatest {
@@ -86,43 +88,51 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private val collectionFlows = getCollectionsListUseCase().map {
-        it.toListState { collection-> collection.toUiModel() }
-    }
+    private val collectionFlows = combine(
+        getCollectionsListUseCase().map { it.toListState { c -> c.toUiModel() } },
+        _internalState.map { it.selectedCollectionIds }.distinctUntilChanged()
+    ) { res, selectedIds ->
+        res.copy(
+            data = res.data?.map { it.copy(isSelected = selectedIds.contains(it.id)) }
+        )
+    }.distinctUntilChanged()
 
-    val homeState : StateFlow<HomeUiState> = combine(
-        _internalState,
+    private val uiFlagsFlow = _internalState.map {
+        HomeUiFlags(
+            isRefreshing = it.isRefreshing,
+            isCollectionSheetVisible = it.isCollectionSheetVisible,
+            isAddCollectionSheet = it.isAddCollectionSheet,
+            newCollectionName = it.newCollectionName,
+            errorMessage = it.errorMessage
+        )
+    }.distinctUntilChanged()
+
+    val uiState : StateFlow<HomeUiState> = combine(
+        uiFlagsFlow,
         getAuthStatusUseCase(),
         contentFlow,
         menuFlow,
         collectionFlows
-    ) { internal, auth, content, menuContent, collections ->
+    ) { internal, auth, content, menuContent, collectionRes ->
         HomeUiState(
             userName = auth.name ?: "Guest",
             profileImage = auth.profileImage ?: "",
             addressName = auth.addressName ?: "Guest Address",
-            // Dari UseCase Data (Mapping ke UiModel)
             allCategories = content.categories,
             nearbyRestaurants = content.nearby,
             recommendedRestaurants = content.recommended,
             todayVouchers = content.vouchers,
             recommendedMenus = menuContent.recommendedMenus,
             suggestedMenus = menuContent.suggestedMenus,
-            collectionsResource = collections.copy(
-                data = collections.data?.map { model ->
-                    model.copy(isSelected = internal.selectedCollectionIds.contains(model.id))
-                }
-            ),
-            isRefreshing = menuContent.recommendedMenus.isLoading,
-            // Dari Internal State
+            collectionsResource = collectionRes,
+            isRefreshing = internal.isRefreshing,
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
             isAddCollectionSheet = internal.isAddCollectionSheet,
-            newCollectionName = internal.newCollectionName,
-            menu = internal.menu
+            newCollectionName = internal.newCollectionName
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState()
     )
 
@@ -140,7 +150,6 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.OnCreateCollection -> handleCreateNewCollection()
             is HomeEvent.OnNewCollectionNameChange -> _internalState.update { it.copy(newCollectionName = event.name) }
             is HomeEvent.OnCollectionCheckChange -> handleCollectionCheckChange(event.collectionId)
-            is HomeEvent.ShowSnackbar -> TODO()
             is HomeEvent.OnSaveToCollection -> handleSaveToCollection()
         }
     }
@@ -158,11 +167,10 @@ class HomeViewModel @Inject constructor(
     private fun handleFavoriteClick(menu: MenuUiModel) {
         viewModelScope.launch {
             val selectedIds = getCollectionsByIdUseCase(menu.id)
-
             _internalState.update { state ->
                 state.copy(
                     isCollectionSheetVisible = true,
-                    menu = menu,
+                    selectedMenu = menu,
                     selectedCollectionIds = selectedIds.toSet()
                 )
             }
@@ -170,29 +178,19 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleSaveToCollection() {
-        val state = homeState.value
-        val menu = state.menu ?: return
-
-        val selectedCollectionIds =
-            state.collectionsResource.data
-                ?.filter { it.isSelected }
-                ?.map { it.id }
-                ?: emptyList()
+        val currentState = _internalState.value
+        val menu = currentState.selectedMenu ?: return
+        val selectedIds = currentState.selectedCollectionIds.toList()
 
         viewModelScope.launch {
             try {
                 saveMenuCollectionsUseCase(
                     menu = menu.toDomain(),
-                    selectedCollectionIds = selectedCollectionIds
+                    collectionIdsFromUser = selectedIds
                 )
-
-                _internalState.update {
-                    it.copy(
-                        isCollectionSheetVisible = false
-                    )
-                }
+                _internalState.update { it.copy(isCollectionSheetVisible = false) }
             } catch (e: Exception) {
-                Log.e("HomeViewModel", e.message.toString())
+                _uiEffect.send(HomeUiEffect.ShowSnackbar(e.message?:""))
             }
         }
     }
@@ -205,9 +203,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun handleCreateNewCollection() {
-        viewModelScope.launch {
-            createNewCollectionUseCase(homeState.value.newCollectionName)
+    private fun handleCreateNewCollection() = viewModelScope.launch {
+        try {
+            createNewCollectionUseCase(_internalState.value.newCollectionName)
             _internalState.update {
                 it.copy(
                     isAddCollectionSheet = false,
@@ -215,6 +213,8 @@ class HomeViewModel @Inject constructor(
                     newCollectionName = ""
                 )
             }
+        }catch (e: Exception){
+            _uiEffect.send(HomeUiEffect.ShowSnackbar(e.message?:""))
         }
     }
 }

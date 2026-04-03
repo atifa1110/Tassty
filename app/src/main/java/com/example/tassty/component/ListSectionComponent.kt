@@ -36,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.FilterCategory
@@ -52,8 +51,7 @@ import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
-import com.example.tassty.categories
-import com.example.tassty.menusItem
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
@@ -101,7 +99,7 @@ fun HorizontalTitleButtonSection(
         HeaderListTitleButton(
             modifier = Modifier.padding(horizontal = 24.dp),
             title = title,
-            titleColor = Neutral100,
+            titleColor = LocalCustomColors.current.headerText,
             onClick = onClick
         )
 
@@ -257,22 +255,25 @@ fun LazyListScope.restaurantMenuListBlock(
 }
 
 fun LazyListScope.collectionList(
-    items: List<CollectionRestaurantWithMenuUiModel>
+    items: List<CollectionRestaurantWithMenuUiModel>,
+    onNavigateToDetailRest : (String) -> Unit
 ){
     val totalMenus = items.sumOf { it.menus.size }
     item {
         HeaderListItemCountTitle(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 24.dp),
             itemCount = totalMenus,
             title = " Menus"
         )
+        Spacer(Modifier.height(12.dp))
     }
 
     items.forEachIndexed { index, section ->
         collectionMenuWithRestaurant(
             restaurant = section.restaurant,
             items = section.menus,
-            showDivider = index != 0
+            showDivider = index != 0,
+            onRestaurantClick = onNavigateToDetailRest
         )
     }
 }
@@ -280,7 +281,8 @@ fun LazyListScope.collectionList(
 fun LazyListScope.collectionMenuWithRestaurant(
     restaurant: CollectionRestaurantUiModel,
     items: List<CollectionMenuUiModel>,
-    showDivider : Boolean = false
+    showDivider : Boolean = false,
+    onRestaurantClick:(String) -> Unit
 ) {
     item {
         if (showDivider) {
@@ -290,7 +292,10 @@ fun LazyListScope.collectionMenuWithRestaurant(
             modifier = Modifier.padding(horizontal = 24.dp),
             restaurantName = restaurant.name,
             rating = restaurant.ratingText,
-            city = restaurant.city
+            city = restaurant.city,
+            onClick = {
+                onRestaurantClick(restaurant.id)
+            }
         )
         Spacer(Modifier.height(12.dp))
     }
@@ -340,7 +345,8 @@ fun LazyListScope.cartVerticalListBlock(
     onIncrementQuantity:(String) -> Unit,
     onDecrementQuantity:(String) -> Unit,
     onRemoveItemClicked: (String) -> Unit,
-    onRevealChange: (Int, Boolean) -> Unit
+    onRevealChange: (String, Boolean) -> Unit,
+    onEditNoteMenuClick : (String) -> Unit
 ){
     item {
         Row(
@@ -355,7 +361,7 @@ fun LazyListScope.cartVerticalListBlock(
                 Text(
                     text = "select all",
                     style = LocalCustomTypography.current.h6Regular,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
                 Spacer(Modifier.width(8.dp))
                 Checkbox(
@@ -375,15 +381,15 @@ fun LazyListScope.cartVerticalListBlock(
         Spacer(modifier = Modifier.height(12.dp))
     }
 
-    itemsIndexed(items= cart){ index, cartItem ->
+    itemsIndexed(items= cart, key = { _, cart -> cart.cartId }){ index, cartItem ->
        Column(Modifier.padding(horizontal = 24.dp)) {
            SwipeableItemWithActions(
                isRevealed = cartItem.isSwipeActionVisible,
                onExpanded = {
-                   onRevealChange(index, true)
+                   onRevealChange(cartItem.cartId, true)
                },
                onCollapsed = {
-                   onRevealChange(index, false)
+                   onRevealChange(cartItem.cartId, false)
                },
                actions = {
                    Box(
@@ -414,7 +420,8 @@ fun LazyListScope.cartVerticalListBlock(
                    cart = cartItem,
                    onCheckedChange = onCartSelectionChange,
                    onIncrementQuantity = { onIncrementQuantity(cartItem.cartId) },
-                   onDecrementQuantity = { onDecrementQuantity(cartItem.cartId) }
+                   onDecrementQuantity = { onDecrementQuantity(cartItem.cartId) },
+                   onCartNotesClick = { onEditNoteMenuClick(cartItem.cartId) }
                )
            }
        }
@@ -427,10 +434,14 @@ fun LazyListScope.restaurantRecommendedSection(
     onNavigateToDetail: (String) -> Unit
 ){
     val items = resource.data.orEmpty()
+
     when{
         resource.isLoading ->{
-            item{
-                LoadingRowState()
+            items(5){
+                Column (Modifier.padding(horizontal = 24.dp)){
+                    ShimmerRestaurantLargeListCard()
+                    Spacer(Modifier.height(12.dp))
+                }
             }
         }
         resource.errorMessage!=null  ->{
@@ -473,14 +484,14 @@ fun LazyListScope.restaurantVerticalListBlock(
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 
 fun LazyListScope.voucherVerticalListBlock(
     headerText: String,
     voucherItems: List<VoucherUiModel>,
-    onNavigateToDetail: (String) -> Unit
+    onNavigateToDetailVoucher: (String) -> Unit
 ) {
     item {
         HeaderListItemCountTitle(
@@ -495,11 +506,10 @@ fun LazyListScope.voucherVerticalListBlock(
         items = voucherItems,
         key = { it.id }
     ) { voucher ->
-        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+        Column (modifier = Modifier.padding(horizontal = 24.dp)) {
             VoucherExtraLargeCard(voucher = voucher)
+            Spacer(modifier = Modifier.height(12.dp))
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -670,7 +680,7 @@ fun LazyListScope.filterListSection(
 ){
     val items = resource.data.orEmpty()
     when{
-        resource.isLoading ->{
+        resource.isLoading || resource.data ==null ->{
             items(count = 4){
                 Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)){
                     ShimmerRestaurantLargeListCard()
@@ -680,11 +690,11 @@ fun LazyListScope.filterListSection(
         }
         resource.errorMessage!=null->{
             item {
-                ErrorScreen()
+                EmptySearchContent()
             }
         }
 
-        items.isEmpty() && !resource.isLoading -> {
+        items.isEmpty() -> {
             item {
                 EmptySearchContent()
             }
@@ -718,10 +728,10 @@ fun LazyListScope.cardUserVerticalListBlock(
         items = cards,
         key = { it.id }
     ) { card ->
-        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+        Column (modifier = Modifier.padding(horizontal = 24.dp)) {
             DebitPaymentCard(card = card, onCheckChanged = {})
+            Spacer(modifier = Modifier.height(12.dp))
         }
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 

@@ -13,7 +13,7 @@ import dagger.assisted.AssistedInject
 class DatabaseCleanupWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val repository: MenuRepository // Inilah alasan kita butuh HiltWorker
+    private val repository: MenuRepository
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {

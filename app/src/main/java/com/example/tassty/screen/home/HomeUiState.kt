@@ -18,14 +18,13 @@ data class HomeUiState(
     val todayVouchers: Resource<List<VoucherUiModel>> = Resource(),
     val recommendedMenus: Resource<List<MenuUiModel>> = Resource(),
     val suggestedMenus: Resource<List<MenuUiModel>> = Resource(),
-    val collectionsResource: Resource<List<CollectionUiModel>> = Resource(isLoading = false),
+    val collectionsResource: Resource<List<CollectionUiModel>> = Resource(),
 
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
     val isCollectionSheetVisible: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
-    val newCollectionName: String = "",
-    val menu: MenuUiModel? = null,
+    val newCollectionName: String = ""
 )
 
 data class HomeContent(
@@ -40,19 +39,25 @@ data class HomeMenuSection(
     val suggestedMenus: Resource<List<MenuUiModel>>
 )
 
-data class HomeInternalState(
-    val userName: String ="",
-    val profileImage: String="",
-    val addressName: String="",
+data class HomeUiFlags(
+    val isRefreshing: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
     val isCollectionSheetVisible: Boolean = false,
     val newCollectionName: String = "",
-    val menu: MenuUiModel? = null,
-    val selectedCollectionIds: Set<String> = emptySet()
+    val errorMessage: String? = null,
+)
+
+data class HomeInternalState(
+    val isRefreshing: Boolean = false,
+    val isAddCollectionSheet: Boolean = false,
+    val isCollectionSheetVisible: Boolean = false,
+    val newCollectionName: String = "",
+    val selectedMenu: MenuUiModel? = null,
+    val selectedCollectionIds: Set<String> = emptySet(),
+    val errorMessage: String? = null,
 )
 
 sealed class HomeEvent{
-    data class ShowSnackbar(val message: String) : HomeEvent()
     object OnShowCollectionSheet : HomeEvent()
     object OnDismissCollectionSheet: HomeEvent()
     data class OnFavoriteClick(val menu: MenuUiModel) : HomeEvent()
@@ -63,4 +68,8 @@ sealed class HomeEvent{
     object OnDismissAddCollectionSheet : HomeEvent()
     data class OnNewCollectionNameChange(val name: String) : HomeEvent()
     object OnCreateCollection : HomeEvent()
+}
+
+sealed class HomeUiEffect {
+    data class ShowSnackbar(val message: String) : HomeUiEffect()
 }

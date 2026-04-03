@@ -44,7 +44,7 @@ class FavoriteRepositoryImpl @Inject constructor(
                 )
             }
             .onStart {
-                emit(TasstyResponse.Loading)
+                emit(TasstyResponse.Loading())
             }
             .catch { e ->
                 Log.d("CollectionRepository", e.message.orEmpty())

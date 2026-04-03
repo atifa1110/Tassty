@@ -25,12 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tassty.R
 import com.example.tassty.component.ButtonComponent
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LogoTopAppBar
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun SetUpCompletedScreen (
@@ -53,17 +56,16 @@ fun SetUpCompletedContent (
     onExploreButtonClick: () -> Unit
 ){
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             LogoTopAppBar()
         },
         bottomBar = {
-            Column(modifier = Modifier.fillMaxWidth()
-                    .imePadding().padding(vertical = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                HorizontalDivider(color = Neutral30)
-                Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                HorizontalDivider(color = LocalCustomColors.current.divider)
+                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 32.dp)) {
                     ButtonComponent(
                         modifier= Modifier.fillMaxWidth(),
                         enabled = true,
@@ -77,7 +79,6 @@ fun SetUpCompletedContent (
         Column(
             modifier = Modifier.padding(innerPadding)
                 .fillMaxSize()
-                .background(Neutral10)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -95,14 +96,14 @@ fun SetUpCompletedContent (
                 Text(
                     text = stringResource(R.string.setup_account_completed),
                     style = LocalCustomTypography.current.h1Bold,
-                    color = Neutral100,
+                    color = LocalCustomColors.current.headerText,
                     textAlign = TextAlign.Center
                 )
 
                 Text(
                     text = stringResource(R.string.more_address_from_profile_menu),
                     style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = Neutral70,
+                    color = LocalCustomColors.current.text,
                     textAlign = TextAlign.Center
                 )
             }
@@ -111,8 +112,18 @@ fun SetUpCompletedContent (
 }
 
 
-@Preview
-@Composable
-fun PreviewSetupAccountCompletedScreen() {
-    SetUpCompletedContent {  }
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun SetupCompletedLightPreview() {
+//    TasstyTheme(darkTheme = false) {
+//        SetUpCompletedContent { }
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun SetupCompletedDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        SetUpCompletedContent { }
+//    }
+//}

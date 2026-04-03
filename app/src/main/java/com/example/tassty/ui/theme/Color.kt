@@ -68,12 +68,12 @@ val Neutral40  = Color(0xFFD2D2D2)
 val Neutral30  = Color(0xFFE8E8E8)
 val Neutral20  = Color(0xFFF4F4F7)
 val Neutral10  = Color(0xFFFFFFFF)
-
+val modal = Color(0xFF1C202B).copy(0.6f)
 // Dark Mode Colors
 val DarkBackground = Color(0xFF191B1D)
-val DarkBackgroundSlider = Color(0xFF191B1D)
+val DarkBackgroundSlider = Color(0xFF191B1D).copy(0.84f)
 val DarkBackgroundPopup = Color(0xFF191B1D)
-val DarkBackgroundFrame = Color(0xFF3A4153)
+val DarkBackgroundFrame = Color(0xFF3A4153).copy(0.6f)
 
 // Card
 val CardOutlineDefault = Color(0xFF323639)
@@ -83,3 +83,44 @@ val CardBackgroundDisableSlider = Color(0xFF555E65)
 
 // Chips
 val ChipsActive = Color(0xFF422604)
+val DarkOrangeBackground = Color(0xFF422604)
+val ErrorBackground = Color(0xFF410E27)
+
+val DarkPink = Color(0xFF410E27)
+val DarkOrange = Color(0xFF422604)
+val DarkBlue = Color(0xFF201354)
+val DArkGreen =Color(0xFF1C392E)
+
+data class CustomColors(
+    val background: Color,
+    val searchBackground: Color,
+    val sliderBackground: Color,
+    val modalBackground: Color,
+    val modalBackgroundFrame: Color,
+    val frameBackground: Color,
+    val buttonDisableBackground: Color,
+    val buttonTextDisableBackground: Color,
+    val cardBackground: Color,
+    val cardBackground2: Color,
+    val divider: Color,
+    val dividerCard: Color,
+    val topBarBackgroundColor : Color,
+    val topBarBorder: Color,
+    val selectedOrangeBackground: Color,
+    val selectedOrangeStroke: Color,
+    val headerText: Color,
+    val text: Color,
+    val iconFocused: Color,
+    val iconDisable: Color,
+    val border: Color,
+    val borderUnfocused: Color,
+    val errorBorder: Color,
+    val errorBackground: Color,
+    val pink: Color,
+    val orange: Color,
+    val green: Color,
+    val blue: Color,
+    val processStatus: Color,
+    val completedStatus: Color,
+    val cancelStatus: Color
+)

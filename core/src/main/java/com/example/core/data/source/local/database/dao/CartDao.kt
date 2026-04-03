@@ -38,6 +38,9 @@ interface CartDao {
     @Query("UPDATE cart SET isHidden = :isHidden WHERE cartId IN (:cartIds)")
     suspend fun updateIsHiddenMultiple(cartIds: List<String>, isHidden: Boolean)
 
+    @Query("UPDATE cart set notes = :notes WHERE cartId = :cartId")
+    suspend fun updateNotes(cartId: String, notes: String)
+
     // Hapus satu item dari keranjang
     @Query("DELETE FROM cart WHERE cartId = :id")
     suspend fun deleteById(id: String)

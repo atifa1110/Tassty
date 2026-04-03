@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -24,7 +25,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CollectionUiModel
-import com.example.tassty.collectionUiModel
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.collectionUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -42,7 +44,7 @@ fun CollectionCard(
         modifier = Modifier.fillMaxWidth().clickable{onCheckedChange(!collection.isSelected)},
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(width=1.dp, color = if(collection.isSelected) Orange500 else Neutral40),
-        colors = CardDefaults.cardColors(containerColor = if (collection.isSelected) Orange50 else Neutral10)
+        colors = CardDefaults.cardColors(containerColor = if (collection.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.cardBackground2)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -62,7 +64,7 @@ fun CollectionCard(
                     Text(
                         text = collection.title,
                         style = LocalCustomTypography.current.h5Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                     Spacer(Modifier.height(6.dp))
                     CollectionText(itemCount = collection.menuCount)
@@ -92,7 +94,7 @@ fun CollectionVerticalCard(
             onClick()
         },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Column (
             modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -110,7 +112,7 @@ fun CollectionVerticalCard(
                 Text(
                     text = collection.title,
                     style = LocalCustomTypography.current.h5Bold,
-                    color = Neutral100,
+                    color = LocalCustomColors.current.headerText,
                     minLines = 1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

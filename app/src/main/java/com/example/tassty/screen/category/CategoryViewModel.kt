@@ -1,14 +1,13 @@
 package com.example.tassty.screen.category
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetFilterOptionsUseCase
 import com.example.core.domain.usecase.GetSearchRestaurantsByCategoryUseCase
 import com.example.core.domain.utils.RestaurantSearchFilter
-import com.example.core.domain.utils.mapToResource
-import com.example.core.ui.FilterManager
+import com.example.core.ui.utils.mapToResource
+import com.example.core.ui.utils.FilterManager
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.model.mapToActiveFilters

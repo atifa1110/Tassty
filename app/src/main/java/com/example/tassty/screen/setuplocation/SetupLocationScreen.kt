@@ -28,19 +28,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.core.domain.model.AddressType
-import com.example.core.ui.model.UserAddressUiModel
 import com.example.tassty.R
 import com.example.tassty.component.ButtonComponent
+import com.example.tassty.component.Divider32
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingScreen
+import com.example.tassty.component.LocationSetUpCard
 import com.example.tassty.component.SetupTopAppBar
-import com.example.tassty.component.UserAddressBox
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.addresses
 
 @Composable
 fun SetupLocationRoute(
@@ -67,8 +70,8 @@ fun SetupLocationRoute(
 
     SetupLocationScreen(
         uiState = uiState,
-        onBackClick= onBackClick,
-        onSkipClick={},
+        onBackClick = onBackClick,
+        onSkipClick = {},
         onSubmitClick= {viewModel.onSubmitAddress(selectedCuisines)},
         onSetLocationClick = {viewModel.onSetLocationClick(true)}
     )
@@ -94,7 +97,7 @@ fun SetupLocationScreen(
     onSetLocationClick: () -> Unit
 ) {
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             SetupTopAppBar(
                 currentStep = 2,
@@ -106,8 +109,8 @@ fun SetupLocationScreen(
         bottomBar = {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
+                    .fillMaxWidth() .imePadding()
+                    .background(LocalCustomColors.current.modalBackgroundFrame)
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -124,9 +127,7 @@ fun SetupLocationScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Neutral10)
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(innerPadding)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             Column(
@@ -135,30 +136,24 @@ fun SetupLocationScreen(
                     .padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.setup_your_delivery_location),
-                    style = LocalCustomTypography.current.h2Bold,
-                    color = Neutral100
-                )
+                HeaderTitleScreen(title = stringResource(R.string.setup_your_delivery_location))
 
                 Text(
                     text = stringResource(R.string.primary_delivery_location),
                     style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = Neutral70,
+                    color = LocalCustomColors.current.text,
                     textAlign = TextAlign.Start
                 )
             }
 
-            HorizontalDivider(color = Neutral30)
+            Divider32()
 
             if (uiState.isLoading) {
                 LoadingScreen()
             } else if (uiState.errorMessage != null) {
                 Text("No location available")
             } else {
-                Column(
-                    modifier = Modifier
+                Column(modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -171,7 +166,7 @@ fun SetupLocationScreen(
                         Text(
                             text = stringResource(R.string.primary_address),
                             style = LocalCustomTypography.current.h5Bold,
-                            color = Neutral100
+                            color = LocalCustomColors.current.headerText
                         )
 
                         Text(
@@ -182,9 +177,9 @@ fun SetupLocationScreen(
                         )
                     }
 
-                    UserAddressBox (
-                        address = uiState.userAddress,
-                        onCardClick = {}
+                    LocationSetUpCard(
+                        selectedLatLng = uiState.selectedLatLng,
+                        address = uiState.userAddress
                     )
                 }
             }
@@ -194,17 +189,34 @@ fun SetupLocationScreen(
 
 
 
-@Preview
-@Composable
-fun PreviewSetupAccountScreen() {
-    SetupLocationScreen (
-        uiState = SetUpLocationUiState(
-            UserAddressUiModel("","","","",
-            0.0,0.0, AddressType.NONE,false,false)
-        ),
-        onBackClick = {},
-        onSkipClick={},
-        onSubmitClick = {},
-        onSetLocationClick = {}
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun SetupLocationLightPreview() {
+//    TasstyTheme(darkTheme = false) {
+//        SetupLocationScreen(
+//            uiState = SetUpLocationUiState(
+//                userAddress = addresses[0]
+//            ),
+//            onBackClick = {},
+//            onSkipClick = {},
+//            onSubmitClick = {},
+//            onSetLocationClick = {}
+//        )
+//    }
+//}
+
+//@Preview(showBackground = true, name = "Dark mode")
+//@Composable
+//fun SetupLocationDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        SetupLocationScreen(
+//            uiState = SetUpLocationUiState(
+//                userAddress = addresses[0]
+//            ),
+//            onBackClick = {},
+//            onSkipClick = {},
+//            onSubmitClick = {},
+//            onSetLocationClick = {}
+//        )
+//    }
+//}

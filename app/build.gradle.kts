@@ -4,8 +4,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.google)
 }
 
 val localProps = Properties()
@@ -130,6 +132,15 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.stream.chat.client)
     implementation(libs.stream.chat.compose)
+    implementation(libs.stream.chat.offline)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.analytics)
+    implementation(libs.stream.chat.push.firebase)
+    implementation(libs.stream.push.delegate)
+
+    implementation(libs.canhub.cropper)
 
     implementation(project(":core"))
 }

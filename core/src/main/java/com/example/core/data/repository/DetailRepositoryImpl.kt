@@ -17,7 +17,7 @@ class DetailRepositoryImpl @Inject constructor(
 ) : DetailRepository{
 
     override fun getDetailRestaurant(id: String): Flow<TasstyResponse<DetailRestaurant>> = flow {
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val response = dataSource.getDetailRestaurant(id)
         when(response){
@@ -30,7 +30,7 @@ class DetailRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override fun getDetailMenu(id: String): Flow<TasstyResponse<DetailMenu>> = flow {
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val response = dataSource.getDetailMenu(id)
         when(response){

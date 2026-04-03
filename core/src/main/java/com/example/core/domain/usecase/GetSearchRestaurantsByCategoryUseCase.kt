@@ -12,18 +12,7 @@ import javax.inject.Inject
 class GetSearchRestaurantsByCategoryUseCase @Inject constructor(
     private val restaurantRepository: RestaurantRepository
 ) {
-    operator fun invoke(id: String,filter: RestaurantSearchFilter) : Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow{
-        val result = restaurantRepository.getSearchRestaurantsByCategory(id,filter)
-
-        result.collect { result ->
-            when (result) {
-                is TasstyResponse.Success -> {
-                    emit(TasstyResponse.Success(result.data, result.meta))
-                }
-
-                is TasstyResponse.Error -> emit(result) // just pass error downstream
-                is TasstyResponse.Loading -> emit(TasstyResponse.Loading)
-            }
-        }
+    operator fun invoke(id: String,filter: RestaurantSearchFilter) : Flow<TasstyResponse<List<RestaurantWithMenu>>> {
+        return restaurantRepository.getSearchRestaurantsByCategory(id,filter)
     }
 }

@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.example.tassty.ui.theme.LocalCustomColors
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -47,7 +48,7 @@ fun SwipeableItemWithActions(
 
     LaunchedEffect(isRevealed, contextMenuWidth) {
         if (isRevealed) {
-            offset.animateTo(-contextMenuWidth) // 👈 geser ke kiri
+            offset.animateTo(-contextMenuWidth)
         } else {
             offset.animateTo(0f)
         }
@@ -58,10 +59,9 @@ fun SwipeableItemWithActions(
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
     ) {
-        // Actions tetap di kanan
         Row(
             modifier = Modifier.fillMaxHeight()
-                .align(Alignment.CenterEnd) // 👈 actions must on the right
+                .align(Alignment.CenterEnd)
                 .onSizeChanged { contextMenuWidth = it.width.toFloat() },
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -70,8 +70,8 @@ fun SwipeableItemWithActions(
         }
 
         Surface(
-            color = Color.White,
-            contentColor = Color.White,
+            color = LocalCustomColors.current.background,
+            contentColor = LocalCustomColors.current.background,
             modifier = Modifier
                 .fillMaxSize()
                 .offset { IntOffset(offset.value.roundToInt(), 0) }

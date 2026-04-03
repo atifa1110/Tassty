@@ -29,6 +29,7 @@ import com.example.tassty.model.getFilterDrawable
 import com.example.tassty.model.getFilterPalette
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -51,8 +52,6 @@ fun Personal30Chip(){
         color = Neutral20
     )
 }
-
-
 @Composable
 fun AllReviewChip(){
     CustomShortChip(
@@ -79,12 +78,12 @@ fun Personal50Chip(){
 
 @Composable
 fun CustomShortChip(
+    modifier: Modifier = Modifier,
     image : Int?,
     label : String,
     labelColor : Color,
     color: Color,
     iconColor: Color,
-    modifier: Modifier = Modifier,
 ){
     Surface(
         modifier = modifier.clip(RoundedCornerShape(100.dp)),
@@ -162,11 +161,11 @@ fun CustomBorderChip(
 ){
     CustomShortChip(
         image = icon,
-        color = if(selected) Orange50 else Neutral10,
-        iconColor = if(selected)Orange500 else Neutral70,
+        color = if(selected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.cardBackground2,
+        iconColor = if(selected)Orange500 else LocalCustomColors.current.text,
         label = label,
-        labelColor = if(selected) Neutral100 else Neutral70,
-        modifier = Modifier.border(1.dp,if(selected) Orange200 else Neutral40,
+        labelColor = if(selected) LocalCustomColors.current.headerText else LocalCustomColors.current.text,
+        modifier = Modifier.border(1.dp,if(selected) LocalCustomColors.current.selectedOrangeStroke else LocalCustomColors.current.border,
             RoundedCornerShape(100.dp)
         ).clickable(onClick = onClick)
     )
@@ -181,11 +180,11 @@ fun CustomSearchChip(
 ) {
     CustomShortChip(
         image = icon,
-        color = if(selected) Orange50 else Neutral20,
-        iconColor = if(selected)Orange500 else Neutral70,
+        color = if(selected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.cardBackground,
+        iconColor = if(selected)Orange500 else LocalCustomColors.current.text,
         label = label,
-        labelColor = if(selected) Neutral100 else Neutral70,
-        modifier = Modifier.border(1.dp,if(selected) Orange200 else
+        labelColor = if(selected) LocalCustomColors.current.headerText else LocalCustomColors.current.text,
+        modifier = Modifier.border(1.dp,if(selected) LocalCustomColors.current.selectedOrangeStroke else
             Color.Transparent,
             RoundedCornerShape(100.dp)
         ).clickable(onClick = onClick)
@@ -201,31 +200,48 @@ fun CustomFilterChip(
     val pallet = getFilterPalette(option.category)
     CustomShortChip(
         image = image,
-        color = if(option.isSelected) pallet.backgroundColor else Neutral20,
-        iconColor = if(option.isSelected) pallet.iconColor else Neutral70,
+        color = if(option.isSelected) pallet.backgroundColor else LocalCustomColors.current.cardBackground,
+        iconColor = if(option.isSelected) pallet.iconColor else LocalCustomColors.current.text,
         label = option.label,
-        labelColor = if(option.isSelected) pallet.labelColor else Neutral70,
+        labelColor = if(option.isSelected) pallet.labelColor else LocalCustomColors.current.text,
         modifier = Modifier.border(1.dp,if(option.isSelected) pallet.borderColor else Color.Transparent,
             RoundedCornerShape(100.dp)
         ).clickable(onClick = onClick)
     )
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewFilterScreen() {
-    Column(
-        modifier = Modifier.background(Neutral10),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        AllReviewChip()
-        Personal50Chip()
-        Personal30Chip()
-        CustomBorderChip(
-            icon = R.drawable.star,
-            label = "Rated 4.0+", selected = true,
-            onClick = {}
-        )
-
-    }
+fun CustomRatingChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    CustomShortChip(
+        image = R.drawable.tag,
+        color = if(isSelected) Orange50 else Neutral20,
+        iconColor = if(isSelected) Orange500 else Neutral70,
+        label = text,
+        labelColor = if(isSelected) Neutral100 else Neutral70,
+        modifier = Modifier.border(1.dp,if(isSelected) Orange200 else Color.Transparent,
+            RoundedCornerShape(100.dp)
+        ).clickable(onClick = onClick)
+    )
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewFilterScreen() {
+//    Column(
+//        modifier = Modifier.background(Neutral10),
+//        verticalArrangement = Arrangement.spacedBy(12.dp)
+//    ) {
+//        AllReviewChip()
+//        Personal50Chip()
+//        Personal30Chip()
+//        CustomBorderChip(
+//            icon = R.drawable.star,
+//            label = "Rated 4.0+", selected = true,
+//            onClick = {}
+//        )
+//    }
+//}

@@ -1,6 +1,5 @@
 package com.example.core.data.repository
 
-import android.util.Log
 import com.example.core.data.source.local.database.entity.MenuEntity
 import com.example.core.data.source.local.database.entity.RestaurantEntity
 import com.example.core.data.source.local.datasource.CollectionDataSource
@@ -12,21 +11,23 @@ import com.example.core.domain.model.Collection
 import com.example.core.domain.model.CollectionRestaurantWithMenu
 import com.example.core.domain.repository.CollectionRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.collections.map
 
 class CollectionRepositoryImpl @Inject constructor(
     private val dataSource: CollectionDataSource,
 ): CollectionRepository {
 
-    val SYSTEM_FAVORITE_ID = "system_favorite"
+    private val systemId = "system_favorite"
 
     override suspend fun addCollection(title: String) {
         val collectionId = UUID.randomUUID().toString()
-        dataSource.addCollection(collectionId,title)
+        dataSource.addCollection(collectionId, title)
     }
 
     override suspend fun updateCollectionName(collectionId: String, name: String) {
@@ -35,39 +36,28 @@ class CollectionRepositoryImpl @Inject constructor(
 
     override suspend fun initializeSystemCollections() {
         val existing = dataSource.getCollections().first()
-
-        if (existing.none { it.collection.id == SYSTEM_FAVORITE_ID }) {
+        if (existing.none { it.collection.id == systemId }) {
             dataSource.addCollection(
-                collectionId = SYSTEM_FAVORITE_ID,
+                collectionId = systemId,
                 title = "Favorites",
                 isSystem = true
             )
         }
     }
 
-    override fun getCollections(): Flow<TasstyResponse<List<Collection>>> = flow {
-        emit(TasstyResponse.Loading)
+    override fun getCollections(): Flow<TasstyResponse<List<Collection>>> =
+        dataSource.getCollections()
+            .map { entities ->
+                entities.map { it.toDomain() }
+            }
+            .map<List<Collection>, TasstyResponse<List<Collection>>> { domainList ->
+                TasstyResponse.Success(domainList, Meta(200, "success", "Get Collections Success"))
+            }
+            .onStart { emit(TasstyResponse.Loading()) }
+            .catch { e ->
+                emit(TasstyResponse.Error(Meta(400, "error", e.message ?: "Failed")))
+            }
 
-        try {
-            dataSource.getCollections()
-                .map { entities -> entities.map { it.toDomain() } }
-                .collect { collections ->
-                    emit(
-                        TasstyResponse.Success(
-                            data = collections,
-                            meta = Meta(0, "", "")
-                        )
-                    )
-                }
-        } catch (e: Exception) {
-            Log.d("CollectionRepository", e.message.orEmpty())
-            emit(
-                TasstyResponse.Error(
-                    Meta(0, "", "Get collection failed")
-                )
-            )
-        }
-    }
 
     override suspend fun getCollectionIdsByMenu(menuId: String): List<String> {
         return dataSource.getCollectionIdsByMenu(menuId)

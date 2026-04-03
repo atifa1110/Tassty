@@ -23,7 +23,7 @@
     <string name="send_otp">Send OTP</string>
     <string name="reset_password">Reset Password.</string>
     <string name="order_reset_password">In order to reset your password, we need to verify your identity.</string>
-    <string name="change_password">change Password</string>
+    <string name="change_password">Change Password</string>
     <string name="password_contain_combination">Password must contain a combination of uppercase, lowercase letters, and numbers.</string>
     <string name="choose_your_preferred_cuisine">Choose your \npreferred cuisine.</string>
     <string name="dozens_food">We have dozens of different types of food!</string>
@@ -75,7 +75,7 @@
     <string name="we_cant_cancel_your_order">We can’t cancel your order after you have \nmade the payment process.</string>
     <string name="please_double_check_your_order">Please double check your order.</string>
     <string name="start_exploring_your_favorite">Start exploring your favorite restaurants and add \ndelicious meals to your cart.</string>
-    <string name="your_cart_is_empty">Your cart is empty</string>
+    <string name="your_cart_is_empty">Your cart is empty!</string>
     <string name="exclamation">!</string>
     <string name="dummy_restaurant_name">Indah Cafe</string>
     <string name="dummy_location">Gerunung Lombok Tengah, Praya</string>
@@ -92,4 +92,21 @@
     <string name="enter_your_name">Enter your name</string>
     <string name="new_password">New Password</string>
     <string name="confirm_password">Confirm Password</string>
+    <string name="lanjutkan">Lanjut</string>
+    <string name="batal">Batal</string>
+    <string name="orderanmu">Orderanmu masih nungguin nih. \nSelesaikan pembayarannya sekarang, yuk?</string>
+    <string name="select">Select</string>
+    <string name="download">Download Receipt</string>
+    <string name="promo_vouchers"><![CDATA[Promo & Vouchers.]]></string>
+    <string name="available">Available</string>
+    <string name="password_changed">Password Changed!</string>
+    <string name="back_to_login">Back to Login</string>
+    <string name="success_reset_password">Your password has been successfully reset. \nYou can now log in with your new password.</string>
+    <string name="belum_ada_percakapan">Belum ada percakapan. Mulai chat dengan drivermu!</string>
+    <string name="reset">Reset</string>
+    <string name="how_much_rating">How much rating would you like to give?</string>
+    <string name="edit">Edit</string>
+    <string name="use_voucher">Use Voucher</string>
+    <string name="accept">Accept</string>
+    <string name="reorder">Reorder</string>
 </resources>

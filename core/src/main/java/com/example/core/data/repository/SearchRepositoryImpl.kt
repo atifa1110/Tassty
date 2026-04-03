@@ -16,7 +16,7 @@ class SearchRepositoryImpl @Inject constructor(
 ): SearchRepository{
 
     override fun filterOption(): Flow<TasstyResponse<FilterOptions>> = flow {
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         val result = searchNetworkDataSource.filterOption()
         when(result){

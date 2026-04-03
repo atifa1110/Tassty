@@ -17,6 +17,7 @@ import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
 private const val AUTH_PREFERENCES_NAME = "auth_preferences"
+private const val LOCATION_PREFERENCES_NAME = "location_preferences"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -24,27 +25,26 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideGeocoder(@ApplicationContext context: Context): Geocoder {
-        return Geocoder(context)
-    }
-
-    @Provides
-    @Singleton
     fun provideContext(@ApplicationContext context: Context): Context {
         return context
     }
 
-
-    @Singleton
+    @AuthDataStore
     @Provides
-    fun provideAuthDataStore(
-        @ApplicationContext context: Context
-    ): DataStore<Preferences> {
+    @Singleton
+    fun provideAuthDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return PreferenceDataStoreFactory.create(
-            corruptionHandler = null,
-            migrations = emptyList(),
-            scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = { context.preferencesDataStoreFile(AUTH_PREFERENCES_NAME) }
         )
     }
+
+    @LocationDataStore
+    @Provides
+    @Singleton
+    fun provideLocationDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile(LOCATION_PREFERENCES_NAME) }
+        )
+    }
+
 }

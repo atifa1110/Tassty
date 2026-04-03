@@ -7,6 +7,7 @@ import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.ReviewUiModel
 import com.example.core.ui.model.VoucherUiModel
+import com.example.tassty.screen.home.HomeEvent
 
 data class DetailRestaurantUiState(
     val restaurantResource: Resource<DetailRestaurantUiModel> = Resource(),
@@ -19,6 +20,7 @@ data class DetailRestaurantUiState(
     val searchResultsResource: Resource<List<MenuUiModel>> = Resource(),
 
     val isCollectionSheetVisible: Boolean = false,
+    val isAddCollectionSheetVisible: Boolean = false,
     val isFavoriteModalVisible: Boolean = false,
     val isScheduleModalVisible: Boolean = false,
     val isShowCloseModalVisible: Boolean = false,
@@ -30,13 +32,15 @@ data class DetailRestaurantUiState(
     val quantity: Int = 1,
     val isEditMode: Boolean = false,
     val totalItems : Int = 0,
-    val totalPrice: Int = 0
+    val totalPrice: Int = 0,
+    val newCollectionName: String = ""
 )
 
 data class DetailInternalState(
     val selectedCollectionIds: Set<String> = emptySet(),
     val selectedMenu: MenuUiModel? = null,
     val isCollectionSheetVisible: Boolean = false,
+    val isAddCollectionSheetVisible: Boolean = false,
     val isFavoriteModalVisible: Boolean = false,
     val isScheduleModalVisible: Boolean = false,
     val isShowCloseModalVisible: Boolean = false,
@@ -44,9 +48,9 @@ data class DetailInternalState(
     val isDetailMenuModalVisible: Boolean = false,
     val searchQuery: String = "",
     val quantity: Int = 1,
-    val isEditMode: Boolean = false
+    val isEditMode: Boolean = false,
+    val newCollectionName: String = ""
 )
-
 
 data class DetailListContent(
     val allMenus: Resource<List<MenuUiModel>> = Resource(),
@@ -76,6 +80,9 @@ sealed class DetailRestaurantEvent {
 
     object OnShowAddCollectionSheet : DetailRestaurantEvent()
     object OnDismissAddCollectionSheet : DetailRestaurantEvent()
+    data class OnNewCollectionNameChange(val name: String) : DetailRestaurantEvent()
+    data object OnCreateCollection: DetailRestaurantEvent()
+
     data class OnMenuFavoriteClick(val menu: MenuUiModel) : DetailRestaurantEvent()
 
     data class OnMenuAddToCartClick(val menu: MenuUiModel): DetailRestaurantEvent()
@@ -83,4 +90,8 @@ sealed class DetailRestaurantEvent {
     data class OnAddToCart(val menu: DetailMenuUiModel) : DetailRestaurantEvent()
     data class OnQuantityIncrease(val quantity: Int) : DetailRestaurantEvent()
     data class OnQuantityDecrease(val quantity: Int) : DetailRestaurantEvent()
+}
+
+sealed interface DetailUiEvent {
+    data class ShowSnackbar(val message: String) : DetailUiEvent
 }

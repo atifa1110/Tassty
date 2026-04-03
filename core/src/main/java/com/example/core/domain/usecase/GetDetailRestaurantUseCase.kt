@@ -25,7 +25,7 @@ class GetDetailRestaurantUseCase @Inject constructor(
                     TasstyResponse.Success(detailWithWishlist,result.meta)
                 }
                 is TasstyResponse.Error -> result
-                is TasstyResponse.Loading -> TasstyResponse.Loading
+                is TasstyResponse.Loading -> TasstyResponse.Loading()
             }
         }
     }

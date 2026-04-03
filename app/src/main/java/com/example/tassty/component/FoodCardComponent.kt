@@ -1,6 +1,5 @@
 package com.example.tassty.component
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,11 +18,9 @@ import com.example.core.ui.model.CollectionMenuUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.OptionUiModel
 import com.example.tassty.R
-import com.example.tassty.collectionMenuUiModel
-import com.example.tassty.collectionUiModel
-import com.example.tassty.menuItem
-import com.example.tassty.optionGroups
-import com.example.tassty.screen.detailrestaurant.DetailRestaurantEvent
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.collectionMenuUiModel
+import com.example.tassty.util.menuItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -64,7 +61,7 @@ fun FoodGridCard(
     Card(
         modifier = Modifier.width(140.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground),
     ) {
         Column (modifier = Modifier.padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -90,7 +87,7 @@ fun FoodGridSoldCard(
     Card(
         modifier = Modifier.width(140.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground),
     ) {
         Column (modifier = Modifier.padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -113,7 +110,7 @@ fun FoodNameGridCard(
     Card(
         modifier = Modifier.width(140.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground),
     ) {
         Column (modifier = Modifier.padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -138,10 +135,10 @@ fun FoodLargeGridCard(
     onAddToCart: () -> Unit
 ){
     Card(
-        modifier = modifier.width(157.dp), // Adjust width as needed
+        modifier = modifier.width(157.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral20
+            containerColor = LocalCustomColors.current.cardBackground
         ),
     ) {
         Column (modifier = Modifier.padding(10.dp),
@@ -167,7 +164,7 @@ fun FoodListCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -196,7 +193,7 @@ fun FoodWideListCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -224,7 +221,7 @@ fun FoodCollectionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -238,29 +235,6 @@ fun FoodCollectionCard(
             FoodListCollectionCardContent(
                 collection = collection
             )
-        }
-    }
-}
-
-@Composable
-fun OrderFoodListCard(
-    menu: MenuUiModel
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            FoodRoundImageWithOverlays(
-                menu= menu,
-                modifier = Modifier.size(84.dp)
-            )
-
-            FoodOrderListCardContent(menu = menu)
         }
     }
 }
@@ -282,7 +256,7 @@ fun OptionCard(
         Text(
             text = option.name,
             style = LocalCustomTypography.current.h6Regular,
-            color = if(option.isAvailable) Neutral100 else Neutral70,
+            color = if(option.isAvailable) LocalCustomColors.current.headerText else LocalCustomColors.current.text,
             modifier = Modifier.weight(1f)
         )
 
@@ -291,7 +265,7 @@ fun OptionCard(
                 Text(
                     text = option.extraPriceText,
                     style = LocalCustomTypography.current.h6Regular,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
                 Spacer(Modifier.width(8.dp))
                 if (maxPick > 1) {
@@ -353,13 +327,13 @@ fun MenuStockStatus(
             Spacer(Modifier.width(4.dp))
             Text(
                 text = stringResource(R.string.sorry),
-                color = Color.White,
+                color = Neutral10,
                 style = LocalCustomTypography.current.bodySmallSemiBold
             )
             Spacer(Modifier.width(2.dp))
             Text(
                 text = "This menu is out stock",
-                color = Color.White,
+                color = Neutral10,
                 style = LocalCustomTypography.current.bodySmallMedium
             )
         }
@@ -394,19 +368,5 @@ fun FoodListCardPreview() {
         FoodListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
         FoodWideListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
         FoodCollectionCard(collection = collectionMenuUiModel[0])
-        OrderFoodListCard(menu = menuItem)
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun OptionCardPreview() {
-//    Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
-//        OptionCard(
-//            maxPick = 1,
-//            enabled = true,
-//            option = optionGroups[0].options[0],
-//            onClick = {}
-//        )
-//    }
-//}

@@ -6,7 +6,6 @@ import java.net.SocketTimeoutException
 import java.util.UUID
 
 object ErrorMapper {
-
     fun mapError(throwable: Throwable): Meta {
         val traceId = UUID.randomUUID().toString()
 

@@ -1,6 +1,7 @@
 package com.example.tassty.screen.detailmenu
 
 import com.example.core.data.source.remote.network.Resource
+import com.example.core.domain.model.MenuStatus
 import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.DetailMenuUiModel
 
@@ -17,7 +18,6 @@ data class DetailMenuInternalState(
     val isEditMode: Boolean = false
 )
 
-// Public: Nampan yang disajikan ke Compose
 data class DetailMenuUiState(
     val detail: Resource<DetailMenuUiModel> = Resource(isLoading = false),
     val collections: Resource<List<CollectionUiModel>> = Resource(isLoading = false),
@@ -30,8 +30,14 @@ data class DetailMenuUiState(
     val isSuccessSheetVisible: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
     val newCollectionName: String = "",
-    val savedCollectionName: String = ""
-)
+    val savedCollectionName: String = "",
+    val titleSuccess: String = ""
+){
+    val canShowBottomBar: Boolean
+        get() = !detail.isLoading &&
+                detail.errorMessage == null &&
+                detail.data?.menuStatus == MenuStatus.AVAILABLE
+}
 
 sealed class DetailMenuEvent {
     data class OnQuantityIncrease(val quantity: Int) : DetailMenuEvent()

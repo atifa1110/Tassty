@@ -1,20 +1,32 @@
 package com.example.tassty.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,9 +35,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,9 +50,17 @@ import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.AddressType
 import com.example.tassty.R
 import com.example.tassty.screen.setuplocation.AddressTypeRow
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.ui.theme.Neutral20
+import com.example.tassty.ui.theme.Neutral30
+import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink400
+import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink600
 
 fun iconPainter(resId: Int) = @Composable {
@@ -47,6 +69,75 @@ fun iconPainter(resId: Int) = @Composable {
 
 fun iconVector(vector: ImageVector, description: String = "") = @Composable {
     Icon(imageVector = vector, contentDescription = description, modifier = Modifier.size(20.dp))
+}
+
+@Composable
+fun TextFieldComponent(
+    modifier: Modifier = Modifier,
+    text: String,
+    onTextChanged: (String) -> Unit,
+    placeholder: String,
+    textError: String = "",
+    singleLine: Boolean = true,
+    enabled: Boolean = true,
+    maxLines: Int = if (singleLine) 1 else 5,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    textStyle: TextStyle = LocalCustomTypography.current.bodyMediumMedium,
+    placeholderStyle:  TextStyle = LocalCustomTypography.current.bodyMediumRegular,
+) {
+    OutlinedTextField(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(30.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = LocalCustomColors.current.headerText,
+            unfocusedTextColor = LocalCustomColors.current.headerText,
+            disabledTextColor = LocalCustomColors.current.text,
+            focusedPlaceholderColor = Neutral60,
+            unfocusedPlaceholderColor = Neutral60,
+            focusedContainerColor = LocalCustomColors.current.background,
+            unfocusedContainerColor = LocalCustomColors.current.background,
+            disabledContainerColor = Color.Transparent,
+            focusedBorderColor = LocalCustomColors.current.border,
+            unfocusedBorderColor = LocalCustomColors.current.borderUnfocused,
+            disabledBorderColor = LocalCustomColors.current.border,
+            focusedLeadingIconColor = LocalCustomColors.current.iconFocused,
+            unfocusedLeadingIconColor = LocalCustomColors.current.iconDisable,
+            disabledLeadingIconColor = LocalCustomColors.current.iconDisable,
+            unfocusedTrailingIconColor = Neutral60,
+            focusedTrailingIconColor = Neutral60,
+            disabledTrailingIconColor = Neutral60,
+            errorPlaceholderColor = Pink600,
+            errorTextColor = Pink600,
+            errorBorderColor = LocalCustomColors.current.errorBorder,
+            errorContainerColor = LocalCustomColors.current.errorBackground,
+            errorLeadingIconColor = Pink600,
+            errorTrailingIconColor = Pink600
+        ),
+        textStyle = textStyle,
+        visualTransformation = visualTransformation,
+        value = text,
+        onValueChange = { onTextChanged(it) },
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = placeholderStyle
+            )
+        },
+        enabled = enabled,
+        trailingIcon = trailingIcon,
+        leadingIcon = leadingIcon,
+        singleLine = singleLine,
+        maxLines = maxLines,
+        keyboardOptions = keyboardOptions,
+        isError = textError.isNotEmpty(),
+    )
+
+    if(textError.isNotEmpty()){
+        TextFieldError(textError = textError)
+    }
 }
 
 @Composable
@@ -73,6 +164,7 @@ fun EmailComponent(
     placeholder: String = "Enter your email",
     text: String,
     textError: String = "",
+    enabled: Boolean = true,
     onTextChanged: (String) -> Unit,
 ) {
     TextFieldComponent(
@@ -81,6 +173,7 @@ fun EmailComponent(
         placeholder = placeholder,
         leadingIcon = iconVector(Icons.Default.Email),
         textError = textError,
+        enabled = enabled,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Email,
             imeAction = ImeAction.Next
@@ -91,6 +184,7 @@ fun EmailComponent(
 @Composable
 fun EmailSection(
     label: String = stringResource(R.string.email_address),
+    enabled: Boolean = true,
     email: String,
     emailError: String,
     onEmailChanged: (String) -> Unit
@@ -104,11 +198,12 @@ fun EmailSection(
             textAlign = TextAlign.Start,
             text = label,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = if(enabled) LocalCustomColors.current.headerText else LocalCustomColors.current.text
         )
 
         EmailComponent(
             text = email,
+            enabled = enabled,
             textError = emailError,
             onTextChanged = onEmailChanged
         )
@@ -118,6 +213,7 @@ fun EmailSection(
 @Composable
 fun PasswordComponent(
     placeholder: String = stringResource(R.string.enter_password),
+    enabled: Boolean = true,
     text: String,
     textError: String = "",
     onTextChanged: (String) -> Unit,
@@ -135,6 +231,7 @@ fun PasswordComponent(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done
         ),
+        enabled = enabled,
         trailingIcon = {
             val iconImage = if (isVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
             val description = if (isVisible) {
@@ -152,6 +249,7 @@ fun PasswordComponent(
 @Composable
 fun PasswordSection(
     placeholder: String = stringResource(R.string.password),
+    enabled: Boolean = true,
     label: String = stringResource(R.string.password),
     password: String,
     passwordError: String,
@@ -166,11 +264,12 @@ fun PasswordSection(
             textAlign = TextAlign.Start,
             text = label,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = if(enabled) LocalCustomColors.current.headerText else LocalCustomColors.current.text
         )
 
         PasswordComponent(
             placeholder = placeholder,
+            enabled = enabled,
             text = password,
             textError = passwordError,
             onTextChanged = onPasswordChanged
@@ -181,6 +280,7 @@ fun PasswordSection(
 @Composable
 fun TextComponent(
     placeholder: String = stringResource(R.string.enter_your_name),
+    enabled: Boolean = true,
     text: String,
     textError: String = "",
     singleLine: Boolean = true,
@@ -189,6 +289,7 @@ fun TextComponent(
 ) {
     TextFieldComponent(
         text = text,
+        enabled = enabled,
         onTextChanged = onTextChanged,
         placeholder = placeholder,
         leadingIcon = leadingIcon?.let { iconPainter(it) },
@@ -205,6 +306,7 @@ fun TextComponent(
 fun TextSection(
     label: String = "Name",
     placeholder: String = "Enter name",
+    enabled: Boolean = true,
     text: String,
     textError: String,
     singleLine: Boolean = true,
@@ -220,12 +322,13 @@ fun TextSection(
             textAlign = TextAlign.Start,
             text = label,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         TextComponent(
             placeholder = placeholder,
             text = text,
+            enabled= enabled,
             textError = textError,
             singleLine = singleLine,
             onTextChanged = onTextChanged,
@@ -247,7 +350,7 @@ fun AddressTypeSection(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Start,
             text = "Address type",
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             style = LocalCustomTypography.current.h5Bold,
         )
 
@@ -323,6 +426,110 @@ fun TextTransformationSection(
     }
 }
 
+@Composable
+fun MessageInputBar(
+    text: String,
+    placeholder: String,
+    onTextChanged: (String) -> Unit,
+    onSendMessage: () -> Unit,
+    onAttachClick: () -> Unit
+) {
+    OutlinedTextField(
+        value = text,
+        onValueChange = { onTextChanged(it) },
+        modifier = Modifier.fillMaxWidth(),
+        textStyle = LocalCustomTypography.current.bodyMediumRegular,
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = LocalCustomTypography.current.bodyMediumRegular,
+                color = LocalCustomColors.current.text
+            )
+        },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(R.drawable.attachment),
+                contentDescription = "Attach",
+                tint = LocalCustomColors.current.iconFocused,
+                modifier = Modifier.clickable { onAttachClick() }
+            )
+        },
+        trailingIcon = {
+            Icon(
+                painter = painterResource(R.drawable.send),
+                contentDescription = "Send",
+                tint = Orange500,
+                modifier = Modifier.clickable { onSendMessage() }
+            )
+        },
+        shape = RoundedCornerShape(50.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Neutral30,
+            unfocusedBorderColor = Neutral30,
+            focusedTextColor = LocalCustomColors.current.headerText,
+            unfocusedTextColor = LocalCustomColors.current.text,
+            focusedLeadingIconColor = Neutral100,
+            unfocusedLeadingIconColor = Neutral70,
+        ),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Send
+        ),
+        keyboardActions = KeyboardActions (
+            onSend = { onSendMessage() }
+        ),
+        singleLine = true
+    )
+}
+
+@Composable
+fun FeedbackSection(
+    feedback: String,
+    onFeedbackChanged: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HeaderListBlackTitle(title = "Feedback")
+
+        FeedbackInputField(
+            value = feedback,
+            onValueChange = onFeedbackChanged
+        )
+    }
+}
+
+@Composable
+fun FeedbackInputField(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    TextFieldComponent(
+        modifier = Modifier.height(84.dp).fillMaxWidth(),
+        text = value,
+        singleLine = false,
+        maxLines = 5,
+        onTextChanged = onValueChange,
+        placeholder = "Enter your feedback here..",
+        leadingIcon = {
+            Box(modifier = Modifier.fillMaxHeight().padding(top = 18.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Neutral70
+                )
+            }
+        },
+        enabled = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Done
+        )
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun EditTextReview(){
@@ -347,5 +554,7 @@ fun EditTextReview(){
             textError = "",
             onTextChanged = {}
         )
+
+        MessageInputBar(text = "Placed", placeholder = "", onTextChanged = {}, onSendMessage = {}) { }
     }
 }

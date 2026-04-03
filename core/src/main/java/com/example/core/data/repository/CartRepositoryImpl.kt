@@ -64,12 +64,16 @@ class CartRepositoryImpl @Inject constructor(
         return dataSource.updateIsHidden(cartId,isHidden)
     }
 
+    override suspend fun updateCartNotes(cartId: String, notes: String) {
+        return dataSource.updateNotes(cartId,notes)
+    }
+
     override fun observeCartByMenuId(menuId: String): Flow<Cart?> {
         return dataSource.observeCartByMenuId(menuId).map { it?.toDomain() }
     }
 
     override fun getAllCartWithDetails(): Flow<TasstyResponse<CartGroup>> = flow {
-        emit(TasstyResponse.Loading)
+        emit(TasstyResponse.Loading())
 
         try{
             dataSource.getAllCartWithDetails()
@@ -83,7 +87,6 @@ class CartRepositoryImpl @Inject constructor(
                     )
                 }
         }catch (e: Exception){
-            Log.d("CartRepositoryImpl",e.message.toString())
             emit(TasstyResponse.Error(meta = Meta(0,"","Get Cart Failed")))
         }
     }

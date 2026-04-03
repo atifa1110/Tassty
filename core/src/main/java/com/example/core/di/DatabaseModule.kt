@@ -6,9 +6,9 @@ import com.example.core.data.source.local.database.dao.CartDao
 import com.example.core.data.source.local.database.dao.CleanupDao
 import com.example.core.data.source.local.database.dao.CollectionDao
 import com.example.core.data.source.local.database.dao.CollectionMenuDao
-import com.example.core.data.source.local.database.dao.FavoriteQueryDao
 import com.example.core.data.source.local.database.dao.FavoriteRestaurantDao
 import com.example.core.data.source.local.database.dao.MenuDao
+import com.example.core.data.source.local.database.dao.NotificationDao
 import com.example.core.data.source.local.database.dao.RestaurantDao
 import com.example.core.data.source.local.database.db.AppDatabase
 import dagger.Module
@@ -76,5 +76,9 @@ object DatabaseModule {
         return database.cartDao()
     }
 
-
+    @Singleton
+    @Provides
+    fun provideNotificationDao(database: AppDatabase): NotificationDao {
+        return database.notificationDao()
+    }
 }

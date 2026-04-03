@@ -2,17 +2,21 @@ package com.example.tassty.screen.addcard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.AddCardToStripeUseCase
 import com.example.tassty.model.CardColorOption
 import com.example.tassty.model.PatternImage
+import com.example.tassty.screen.home.HomeUiEffect
 import com.stripe.android.model.ConfirmSetupIntentParams
 import com.stripe.android.model.PaymentMethodCreateParams
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,8 +36,8 @@ class AddCardViewModel @Inject constructor(
     private val _stripeTrigger = MutableStateFlow<ConfirmSetupIntentParams?>(null)
     val stripeTrigger: StateFlow<ConfirmSetupIntentParams?> = _stripeTrigger
 
-    private val _uiEffect = MutableSharedFlow<AddCardUiEffect>()
-    val uiEffect = _uiEffect.asSharedFlow()
+    private val _uiEffect = Channel<AddCardUiEffect>(Channel.BUFFERED)
+    val uiEffect = _uiEffect.receiveAsFlow()
 
     /**
      * Updates the UI state and automatically triggers input validation
@@ -151,8 +155,8 @@ class AddCardViewModel @Inject constructor(
     fun onStripeFailed(message: String?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = false) }
-            _uiEffect.emit(
-                AddCardUiEffect.ShowError(message ?: "Stripe payment verification failed")
+            _uiEffect.send(
+                AddCardUiEffect.ShowMessage(message ?: "Stripe payment verification failed")
             )
         }
     }
@@ -163,7 +167,7 @@ class AddCardViewModel @Inject constructor(
     fun onStripeCanceled() {
         _uiState.update { it.copy(isLoading = false) }
         viewModelScope.launch {
-            _uiEffect.emit(AddCardUiEffect.ShowCanceledMessage)
+            _uiEffect.send(AddCardUiEffect.ShowMessage("Payment canceled"))
         }
     }
 
@@ -187,17 +191,21 @@ class AddCardViewModel @Inject constructor(
 
                     is TasstyResponse.Error -> {
                         _uiState.update {
-                            it.copy(isLoading = false, errorMessage = response.meta.message)
+                            it.copy(isLoading = false, errorMessage = response.meta.message, isSuccessSheetVisible = true)
                         }
                     }
 
                     is TasstyResponse.Success -> {
-                        _uiState.update { it.copy(isLoading = false) }
-                        _uiEffect.emit(AddCardUiEffect.NavigateBack)
+                        _uiState.update { it.copy(isLoading = false, isSuccessSheetVisible = true) }
                     }
                 }
             }
         }
+    }
+
+    fun onDismissSheet() = viewModelScope.launch {
+        _uiState.update { it.copy(isSuccessSheetVisible = false)}
+        _uiEffect.send(AddCardUiEffect.NavigateBack)
     }
 
     /**

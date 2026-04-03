@@ -31,9 +31,10 @@ import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.OperationalDayUi
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
-import com.example.tassty.restaurantUiModel
+import com.example.tassty.util.restaurantUiModel
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -75,7 +76,7 @@ fun RestaurantLargeListCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier
@@ -98,9 +99,9 @@ fun RestaurantTinyGridCard (
     restaurant: RestaurantUiModel
 ){
     Card(
-        modifier = Modifier.width(140.dp), // Adjust width as needed
+        modifier = Modifier.width(140.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Column(
             modifier = Modifier.padding(10.dp),
@@ -125,7 +126,7 @@ fun RestaurantGridCard (
         modifier = Modifier.width(156.dp)
             .clickable(onClick = onNavigateToDetail),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground),
     ) {
         Column(
             modifier = Modifier.padding(10.dp),
@@ -149,7 +150,7 @@ fun RestaurantLargeGridCard (
     Card(
         modifier = Modifier.width(196.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Column(
             modifier = Modifier.padding(10.dp),
@@ -217,7 +218,7 @@ fun RestaurantInfoCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral10
+            containerColor = LocalCustomColors.current.cardBackground2
         )
     ) {
         Row(
@@ -228,7 +229,6 @@ fun RestaurantInfoCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column (verticalArrangement = Arrangement.spacedBy(4.dp)){
-                // Icon Verified
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -240,17 +240,16 @@ fun RestaurantInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
 
-                    // Text "Verified"
                     Text(
                         text = stringResource(R.string.verified),
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
                 Text(
                     text = stringResource(R.string.restaurant),
                     style = LocalCustomTypography.current.bodyXtraSmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
 
@@ -259,7 +258,6 @@ fun RestaurantInfoCard(
             Column (
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Rating
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -273,12 +271,12 @@ fun RestaurantInfoCard(
                     Text(
                         text = restaurant.formatRating,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                     Text(
                         text = restaurant.formatReviewCount,
                         style = LocalCustomTypography.current.h8Regular,
-                        color = Neutral70
+                        color = LocalCustomColors.current.text
                     )
                 }
 
@@ -303,7 +301,7 @@ fun RestaurantInfoCard(
                     Text(
                         text = "${restaurant.formatDistance} • ${restaurant.deliveryTime}",
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
 
@@ -328,7 +326,7 @@ fun RestaurantInfoCard(
                     Text(
                         text = operationalHour,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
 
@@ -455,7 +453,7 @@ fun RestaurantMenuInfoCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral20
+            containerColor = LocalCustomColors.current.cardBackground
         )
     ) {
         Row(modifier = Modifier
@@ -467,7 +465,7 @@ fun RestaurantMenuInfoCard(
             Column (
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Rating
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -481,12 +479,12 @@ fun RestaurantMenuInfoCard(
                     Text(
                         text = rating,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                     Text(
                         text = review,
                         style = LocalCustomTypography.current.h8Regular,
-                        color = Neutral70
+                        color = LocalCustomColors.current.text
                     )
                 }
 
@@ -498,7 +496,6 @@ fun RestaurantMenuInfoCard(
             Column (
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Rating
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -512,14 +509,14 @@ fun RestaurantMenuInfoCard(
                     Text(
                         text = deliveryCost,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
 
                 Text(
                     text = "Delivery",
                     style = LocalCustomTypography.current.bodyXtraSmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
 
@@ -541,14 +538,14 @@ fun RestaurantMenuInfoCard(
                     Text(
                         text = deliveryTime,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
 
                 Text(
                     text = "Estimation time",
                     style = LocalCustomTypography.current.bodyXtraSmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
         }
@@ -559,9 +556,8 @@ fun RestaurantMenuInfoCard(
 fun RestaurantOperationalCard(day: OperationalDayUi) {
     val isToday = day.isToday
 
-    // Warna background dan ikon jika hari ini
-    val bgColor = if (isToday) Neutral10 else Color.Transparent
-    val iconColor = if (isToday) Color(0xFF7251F8) else Neutral70.copy(0.2f)
+    val bgColor = if (isToday) LocalCustomColors.current.background else Color.Transparent
+    val iconColor = if (isToday) Color(0xFF7251F8) else LocalCustomColors.current.iconDisable
 
     Row(
         modifier = Modifier
@@ -572,12 +568,11 @@ fun RestaurantOperationalCard(day: OperationalDayUi) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Kiri: Icon dan Hari
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                painter = painterResource(id = R.drawable.calendar), // Placeholder Calendar/Clock
+                painter = painterResource(id = R.drawable.calendar),
                 contentDescription = "Day Icon",
                 tint = iconColor,
                 modifier = Modifier.size(20.dp)
@@ -586,15 +581,14 @@ fun RestaurantOperationalCard(day: OperationalDayUi) {
             Text(
                 text = day.day,
                 style = if (isToday) LocalCustomTypography.current.h6Bold else LocalCustomTypography.current.h6Regular,
-                color = if(isToday) Neutral100 else Neutral70
+                color = if(isToday) LocalCustomColors.current.headerText else LocalCustomColors.current.text
             )
         }
 
-        // Operational time
         Text(
             text = day.hours,
             style = if (isToday) LocalCustomTypography.current.bodySmallBold else LocalCustomTypography.current.bodySmallMedium,
-            color = if(isToday) Neutral100 else Neutral70
+            color = if(isToday) LocalCustomColors.current.headerText else LocalCustomColors.current.text
         )
     }
 }
@@ -623,27 +617,27 @@ fun SeeInfoButton(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RestaurantListCardPreview() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        RestaurantSmallListCard(restaurant = restaurantUiModel[0])
-        RestaurantLargeListCard(restaurant = restaurantUiModel[0], onClick = {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RestaurantGridCardPreview() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
-            RestaurantTinyGridCard(restaurant = restaurantUiModel[0])
-            RestaurantGridCard(restaurant = restaurantUiModel[0], onNavigateToDetail = {})
-        }
-        RestaurantLargeGridCard(restaurant = restaurantUiModel[0], onClick = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun RestaurantListCardPreview() {
+//    Column(
+//        verticalArrangement = Arrangement.spacedBy(10.dp)
+//    ) {
+//        RestaurantSmallListCard(restaurant = restaurantUiModel[0])
+//        RestaurantLargeListCard(restaurant = restaurantUiModel[0], onClick = {})
+//    }
+//}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun RestaurantGridCardPreview() {
+//    Column(
+//        verticalArrangement = Arrangement.spacedBy(8.dp)
+//    ) {
+//        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
+//            RestaurantTinyGridCard(restaurant = restaurantUiModel[0])
+//            RestaurantGridCard(restaurant = restaurantUiModel[0], onNavigateToDetail = {})
+//        }
+//        RestaurantLargeGridCard(restaurant = restaurantUiModel[0], onClick = {})
+//    }
+//}

@@ -33,9 +33,9 @@ import com.example.tassty.screen.dashboard.CartDestination
 import com.example.tassty.screen.dashboard.ChatDestination
 import com.example.tassty.screen.dashboard.HomeDestination
 import com.example.tassty.screen.dashboard.ProfileDestination
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 
 enum class BottomLevelDestination(
@@ -84,7 +84,7 @@ fun NavigationBottomBar(
     badgeFavorite: Int
 ) {
     NavigationBar(
-        containerColor = Neutral10
+        containerColor = LocalCustomColors.current.background
     ) {
         items.forEach { item ->
             NavigationBarItem(
@@ -109,10 +109,10 @@ fun NavigationBottomBar(
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Orange500,
-                    unselectedIconColor = Neutral70,
+                    unselectedIconColor = LocalCustomColors.current.text,
                     selectedTextColor = Orange500,
-                    unselectedTextColor = Neutral70,
-                    indicatorColor = Neutral10
+                    unselectedTextColor = LocalCustomColors.current.text,
+                    indicatorColor = Color.Transparent
                 ),
                 icon = {
                     NavigationIcon(
@@ -120,7 +120,6 @@ fun NavigationBottomBar(
                         selected = currentDestination?.hierarchy?.any {
                             it.route == item.route
                         } == true,
-                        //item.route == HomeDestination.route,
                         badgeFavorite = badgeFavorite
                     )
                 },

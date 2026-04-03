@@ -29,11 +29,12 @@ import androidx.compose.ui.unit.Dp
 import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.CategoryTopAppBar
 import com.example.tassty.component.HeaderListItemCountTitle
-import com.example.tassty.restaurants
+import com.example.tassty.util.restaurants
 import com.example.tassty.component.RestaurantLargeListCard
 import com.example.tassty.component.RestaurantSmallListCard
 import com.example.tassty.component.SearchBar
-import com.example.tassty.restaurantUiModel
+import com.example.tassty.ui.theme.Neutral20
+import com.example.tassty.util.restaurantUiModel
 
 @Composable
 fun NearbyRestaurantScreen() {
@@ -43,7 +44,7 @@ fun NearbyRestaurantScreen() {
         MapArea(modifier = Modifier.fillMaxSize())
 
         CategoryTopAppBar(
-            onBackClick = {}, onFilterClick = {}
+            iconBackground = Neutral20, onBackClick = {}, onFilterClick = {}
         )
 
         // Draggable Search Bar

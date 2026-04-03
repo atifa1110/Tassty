@@ -30,7 +30,7 @@ class GetDetailRecommendedMenuUseCase  @Inject constructor(
                     TasstyResponse.Success(menuWithWishlist, menuRes.meta)
                 }
                 is TasstyResponse.Error -> TasstyResponse.Error(menuRes.meta)
-                is TasstyResponse.Loading -> TasstyResponse.Loading
+                is TasstyResponse.Loading -> TasstyResponse.Loading()
             }
         }.flowOn(Dispatchers.Default)
     }

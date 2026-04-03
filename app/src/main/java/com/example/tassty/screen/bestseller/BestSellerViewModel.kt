@@ -4,23 +4,27 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.domain.usecase.CreateNewCollectionUseCase
 import com.example.core.domain.usecase.GetCartsByRestaurantIdUseCase
 import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
 import com.example.core.domain.usecase.GetDetailBestSellerMenuUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.domain.utils.toListState
-import com.example.core.data.mapper.toDomain
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.navigation.BestSellerDestination
+import com.example.tassty.screen.addcard.AddCardUiEffect
+import com.example.tassty.screen.home.HomeUiEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,11 +37,15 @@ class BestSellerViewModel @Inject constructor(
     private val getCartsByRestaurantIdUseCase: GetCartsByRestaurantIdUseCase,
     private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase,
     private val getCollectionsByIdUseCase: GetCollectionsByIdUseCase,
-    private val getCollectionsUseCase: GetCollectionsUseCase
+    private val getCollectionsUseCase: GetCollectionsUseCase,
+    private val createNewCollectionUseCase: CreateNewCollectionUseCase
 ) : ViewModel() {
 
     private val id = BestSellerDestination.getId(savedStateHandle)
     private val _internalState = MutableStateFlow(BestSellerInternalState())
+
+    private val _uiEffect = Channel<BestSellerUiEffect>(Channel.BUFFERED)
+    val uiEffect = _uiEffect.receiveAsFlow()
 
     private val collectionsFlow = getCollectionsUseCase().map {
         it.toListState { collection -> collection.toUiModel() }
@@ -62,7 +70,9 @@ class BestSellerViewModel @Inject constructor(
                     model.copy(isSelected = internal.selectedCollectionIds.contains(model.id))
                 }
             ),
-            menu = internal.menu
+            isAddCollectionSheet = internal.isAddCollectionSheet,
+            newCollectionName = internal.newCollectionName,
+            selectedMenu = internal.selectedMenu
         )
     }.stateIn(
         scope = viewModelScope,
@@ -83,7 +93,7 @@ class BestSellerViewModel @Inject constructor(
                 it.copy(
                     selectedCollectionIds = savedIds.toSet(),
                     isCollectionSheetVisible = true,
-                    menu = menu
+                    selectedMenu = menu
                 )
             }
         }
@@ -98,31 +108,49 @@ class BestSellerViewModel @Inject constructor(
     }
 
     fun onSaveToCollection(){
-        val state = uiState.value
-        val menu = state.menu
-
-        val selectedCollectionIds =
-            state.collections.data
-                ?.filter { it.isSelected }
-                ?.map { it.id }
-                ?: emptyList()
+        val state = _internalState.value
+        val menu = state.selectedMenu
+        val selectedCollectionIds = state.selectedCollectionIds.toList()
 
         viewModelScope.launch {
             try {
                 saveMenuCollectionsUseCase(
                     menu = menu.toDomain(),
-                    selectedCollectionIds = selectedCollectionIds
+                    collectionIdsFromUser = selectedCollectionIds
                 )
                 _internalState.update {
                     it.copy(isCollectionSheetVisible = false)
                 }
             } catch (e: Exception) {
-                Log.e("DetailRestaurantViewModel", e.message.toString())
+                _uiEffect.send(BestSellerUiEffect.ShowMessage(e.message?:""))
             }
         }
     }
 
     fun onShowAddCollectionSheet(){
+        _internalState.update { it.copy(isAddCollectionSheet = true) }
+    }
 
+    fun onDismissAddCollectionSheet(){
+        _internalState.update { it.copy(isAddCollectionSheet = false) }
+    }
+
+    fun onNewCollectionNameChanged(name: String){
+        _internalState.update { it.copy(newCollectionName = name) }
+    }
+
+    fun onCreateNewCollection() = viewModelScope.launch {
+        try {
+            createNewCollectionUseCase(_internalState.value.newCollectionName)
+            _internalState.update {
+                it.copy(
+                    isAddCollectionSheet = false,
+                    isCollectionSheetVisible = true,
+                    newCollectionName = ""
+                )
+            }
+        }catch (e: Exception){
+            _uiEffect.send(BestSellerUiEffect.ShowMessage(e.message?:""))
+        }
     }
 }

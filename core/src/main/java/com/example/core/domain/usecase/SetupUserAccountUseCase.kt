@@ -10,15 +10,7 @@ import javax.inject.Inject
 class SetupUserAccountUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    operator fun invoke(address: UserAddress, cuisines: List<String>) : Flow<TasstyResponse<String>> = flow {
-        authRepository.setupAccount(address,cuisines).collect { result ->
-            when(result){
-                is TasstyResponse.Error ->  emit(TasstyResponse.Error(result.meta))
-                is TasstyResponse.Success-> {
-                    emit(TasstyResponse.Success(result.data, result.meta))
-                }
-                is TasstyResponse.Loading -> emit(TasstyResponse.Loading)
-            }
-        }
+    operator fun invoke(address: UserAddress, cuisines: List<String>) : Flow<TasstyResponse<String>>{
+        return authRepository.setupAccount(address,cuisines)
     }
 }

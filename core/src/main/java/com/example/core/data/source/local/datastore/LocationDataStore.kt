@@ -4,28 +4,33 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import com.example.core.di.LocationDataStore
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class LocationDataStore @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    @LocationDataStore private val dataStore: DataStore<Preferences>
 ) {
 
-    private val LAT = doublePreferencesKey("lat")
-    private val LNG = doublePreferencesKey("lng")
+    private object PreferencesKeys {
+        val LAT = doublePreferencesKey("lat")
+        val LNG = doublePreferencesKey("lng")
+    }
 
     suspend fun save(lat: Double, lng: Double) {
         dataStore.edit{
-            it[LAT] = lat
-            it[LNG] = lng
+            it[PreferencesKeys.LAT] = lat
+            it[PreferencesKeys.LNG] = lng
         }
     }
 
     suspend fun get(): Pair<Double, Double> {
         val pref = dataStore.data.first()
         return Pair(
-            pref[LAT] ?: -6.3912,
-            pref[LNG] ?: 106.8260
+            pref[PreferencesKeys.LAT] ?: -6.3912,
+            pref[PreferencesKeys.LNG] ?: 106.8260
         )
     }
 }

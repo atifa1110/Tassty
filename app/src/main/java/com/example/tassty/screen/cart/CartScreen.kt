@@ -1,24 +1,22 @@
 package com.example.tassty.screen.cart
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,79 +24,97 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.DiscountType
+import com.example.core.ui.model.CartGroupUiModel
 import com.example.tassty.R
-import com.example.tassty.cartUiModel
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CartDeliveryLocationContent
 import com.example.tassty.component.CartDoubleCheckContent
+import com.example.tassty.component.CartEditContent
 import com.example.tassty.component.CartPromoContent
 import com.example.tassty.component.CartRemoveMenuContent
 import com.example.tassty.component.CartTopAppBar
 import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.DeleteAllCartContent
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmptyCartContent
 import com.example.tassty.component.FoodRatingAndCityRow
 import com.example.tassty.component.HeaderListTitleButton
+import com.example.tassty.component.LoadingOverlay
 import com.example.tassty.component.OrderSummaryCard
 import com.example.tassty.component.SelectLocationCard
-import com.example.tassty.component.SelectPaymentCard
-import com.example.tassty.component.TextButton
+import com.example.tassty.component.SelectVoucherCard
 import com.example.tassty.component.cartVerticalListBlock
-import com.example.tassty.ui.theme.Green100
-import com.example.tassty.ui.theme.Green50
-import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
-import com.example.tassty.ui.theme.Pink500
+import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.cartUiModel
+import com.example.tassty.util.restaurantUiModel
 
 @Composable
-fun CartRoute(
+fun CartScreen(
+    onNavigateToRecommended: () -> Unit,
     onNavigateToPayment: (String, String) -> Unit,
-    onNavigateToDetail:(String) -> Unit,
+    onNavigateToDetailRest:(String) -> Unit,
+    onNavigateToDetailMenu: (String) -> Unit,
     viewModel: CartViewModel = hiltViewModel()
 ){
     val context = LocalContext.current
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(viewModel.uiEvent) {
-        viewModel.uiEvent.collect { event->
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { event->
             when(event){
-                is CartEvent.ShowError -> {
+                is CartUiEffect.ShowError -> {
                     Toast.makeText(context,event.message, Toast.LENGTH_SHORT).show()
                 }
 
-                is CartEvent.CheckoutSuccess -> {
+                is CartUiEffect.CheckoutSuccess -> {
                     onNavigateToPayment(event.id,event.total)
+                }
+
+                is CartUiEffect.NavigateDetailMenu -> {
+                    onNavigateToDetailMenu(event.id)
                 }
             }
         }
     }
-    CartScreen(
+
+    CartContent(
         uiState = state.value,
+        onNavigateToRecommended = onNavigateToRecommended,
+        onNavigateToDetailRest = onNavigateToDetailRest,
         onSelectLocationClicked = { viewModel.onEvent(CartUiEvent.OnShowLocationSheet) },
         onSelectPromoClicked = { viewModel.onEvent(CartUiEvent.OnShowVoucherSheet) },
         onCartSelectionChange = { id -> viewModel.onEvent(CartUiEvent.OnCartSelectionChange(id))},
         onSelectAllClicked = { viewModel.onEvent(CartUiEvent.OnSelectAllClicked) },
         onIncrementQuantity = {id ->  viewModel.onEvent(CartUiEvent.OnIncrementQuantity(id)) },
         onDecrementQuantity = { id -> viewModel.onEvent(CartUiEvent.OnDecrementQuantity(id)) },
-        onDeleteAllClicked = { viewModel.onEvent(CartUiEvent.OnDeleteAllClicked)},
+        onDeleteAllClicked = { viewModel.onEvent(CartUiEvent.OnShowDeleteAllSheet)},
         onRemoveItemClicked = { viewModel.onEvent(CartUiEvent.OnShowRemoveItemSheet(it))},
         onContinuePayment = {viewModel.onEvent(CartUiEvent.OnShowDoubleCheckSheet)},
-        onNavigateToDetail = onNavigateToDetail,
+        onRevealChange = {id, reveal->viewModel.onEvent(CartUiEvent.OnRevealChange(id,reveal))},
+        onEditNoteMenuClick = { viewModel.onEvent(CartUiEvent.OnNoteClicked(it))}
     )
+
+    CustomBottomSheet(
+        visible = state.value.isDeleteAllSheetVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        DeleteAllCartContent(
+            onDelete = {viewModel.onEvent(CartUiEvent.OnDeleteAll)},
+            onDismissClick = {viewModel.onEvent(CartUiEvent.OnDismissDeleteAllSheet) }
+        )
+    }
 
     CustomBottomSheet(
         visible = state.value.isLocationSheetVisible,
@@ -109,7 +125,8 @@ fun CartRoute(
             resource = state.value.availableAddresses,
             onAddressChange = { it -> viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(it)) },
             onSetLocationClicked = { viewModel.onEvent(CartUiEvent.OnSetLocationClicked)},
-            onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissLocationSheet) }
+            onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissLocationSheet) },
+            onNavigateToAddress = {}
         )
     }
 
@@ -132,7 +149,7 @@ fun CartRoute(
         onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissRemoveItemSheet) }
     ) {
         CartRemoveMenuContent(
-            cart = state.value.cartItemToRemove,
+            cart = state.value.selectedCart,
             onRemoveCartItem = { viewModel.onEvent(CartUiEvent.OnRemoveCartItem(it))},
             onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissRemoveItemSheet) }
         )
@@ -148,11 +165,27 @@ fun CartRoute(
             onContinueToPayment = {viewModel.onEvent(CartUiEvent.OnCheckoutClicked)}
         )
     }
+
+    CustomBottomSheet(
+        visible = state.value.isNoteSheetVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        CartEditContent(
+            cartId = state.value.selectedCart?.cartId?:"",
+            text = state.value.note,
+            onTextChange = { viewModel.onEvent(CartUiEvent.OnNoteTextChange(it))},
+            onUpdateCart = { id, notes-> viewModel.onEvent(CartUiEvent.OnUpdateNoteItem(id,notes))},
+            onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissNoteSheet) }
+        )
+    }
 }
 
 @Composable
-fun CartScreen(
+fun CartContent(
     uiState: CartUiState,
+    onNavigateToRecommended: () -> Unit,
+    onNavigateToDetailRest: (String) -> Unit,
     onSelectLocationClicked: () -> Unit,
     onSelectPromoClicked: () -> Unit,
     onCartSelectionChange: (String) -> Unit,
@@ -161,14 +194,15 @@ fun CartScreen(
     onSelectAllClicked: (Boolean) -> Unit,
     onDeleteAllClicked: () -> Unit,
     onRemoveItemClicked: (String) -> Unit,
-    onNavigateToDetail: (String) -> Unit,
+    onRevealChange:(String, Boolean) -> Unit,
     onContinuePayment: () -> Unit,
+    onEditNoteMenuClick : (String) -> Unit
 ) {
     val cart = uiState.carts.data
     val menus = cart?.menus
 
     Scaffold(
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             CartTopAppBar(onDeleteClick = onDeleteAllClicked)
         },
@@ -199,38 +233,21 @@ fun CartScreen(
                 )
             }
 
-            // STATE 2 — empty cart
             menus.isNullOrEmpty() -> {
-                Box(
-                    modifier = Modifier
-                        .padding(padding)
-                        .fillMaxSize()
-                        .background(Neutral10),
+                Box(modifier = Modifier.fillMaxHeight(),
                     contentAlignment = Alignment.Center
                 ) {
-                    EmptyCartContent()
+                    EmptyCartContent(
+                        onClick = onNavigateToRecommended
+                    )
                 }
             }
 
             uiState.carts.isLoading ->{
-                AnimatedVisibility(
-                    visible = uiState.carts.isLoading,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Neutral100.copy(alpha = 0.5f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = Green500)
-                            Spacer(Modifier.height(8.dp))
-                            Text("Securely processing...", color = Neutral10)
-                        }
-                    }
-                }
+                LoadingOverlay(
+                    isLoading = uiState.carts.isLoading,
+                    text = "Load..."
+                )
             }
 
             else -> {
@@ -238,22 +255,18 @@ fun CartScreen(
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()
-                        .background(Neutral10)
                 ) {
-                    item {
-                        Spacer(Modifier.height(24.dp))
+                    item(key = "header_cart") {
                         Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp)
+                            modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 24.dp)
                         ) {
                             Text(
+                                modifier = Modifier.fillMaxWidth(),
                                 text = cart.restaurant.name,
                                 style = LocalCustomTypography.current.h2Bold,
-                                color = Neutral100
+                                color = LocalCustomColors.current.headerText
                             )
                             Spacer(Modifier.height(12.dp))
-
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -264,17 +277,33 @@ fun CartScreen(
                                     rating = cart.restaurant.rating,
                                     modifier = Modifier.weight(1f)
                                 )
-                                TextButton(
-                                    text = "Add more+",
-                                    textColor = Orange500,
-                                    onClick = { onNavigateToDetail(cart.restaurant.id) }
-                                )
+
+                                Row(
+                                    modifier = Modifier.clickable(onClick = { onNavigateToDetailRest(cart.restaurant.id) }),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "Add more",
+                                        style = LocalCustomTypography.current.bodyMediumMedium,
+                                        color = Orange500
+                                    )
+                                    Box(
+                                        modifier = Modifier.size(14.dp)
+                                            .align(Alignment.CenterVertically),
+                                        ) {
+                                        Icon(
+                                            modifier = Modifier.fillMaxSize(),
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "",
+                                            tint = Orange500
+                                        )
+                                    }
+                                }
                             }
                         }
                         Divider32()
                     }
-
-                    item { Banner() }
 
                     cartVerticalListBlock(
                         cart = menus,
@@ -285,15 +314,16 @@ fun CartScreen(
                         onIncrementQuantity = onIncrementQuantity,
                         onDecrementQuantity = onDecrementQuantity,
                         onRemoveItemClicked = onRemoveItemClicked,
-                        onRevealChange = { _, _ -> }
+                        onRevealChange = onRevealChange,
+                        onEditNoteMenuClick = onEditNoteMenuClick
                     )
 
-                    item {
+                    item (key= "location_section"){
                         Divider32()
                         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                             HeaderListTitleButton(
                                 title = "Delivery location",
-                                titleColor = Neutral100,
+                                titleColor = LocalCustomColors.current.headerText,
                                 textButton = "Change location",
                                 onClick = {
                                     if (uiState.selectedAddress != null) {
@@ -309,37 +339,34 @@ fun CartScreen(
                         }
                     }
 
-                    item {
+                    item(key="voucher_section") {
                         Divider32()
                         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                             Text(
                                 text = "Payment detail",
-                                color = Neutral100,
+                                color = LocalCustomColors.current.headerText,
                                 style = LocalCustomTypography.current.h5Bold
                             )
                             Spacer(Modifier.height(12.dp))
-                            SelectPaymentCard(
+                            SelectVoucherCard(
                                 voucher = uiState.selectedVoucher,
                                 onClick = onSelectPromoClicked
                             )
                         }
                     }
 
-                    item {
+                    item(key = "summary_section") {
                         Divider32()
                         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                             OrderSummaryCard(
-                                isPercentageDiscount =
-                                    uiState.selectedVoucher?.discountType == DiscountType.PERCENTAGE,
+                                isPercentageDiscount = uiState.selectedVoucher?.discountType == DiscountType.PERCENTAGE,
                                 totalPrice = uiState.subtotal,
                                 deliveryFee = uiState.deliveryFee,
                                 voucherDiscount = uiState.voucherDiscount,
+                                voucherDiscountPercent = uiState.selectedVoucher?.discountValue,
                                 totalOrder = uiState.totalOrder
                             )
                         }
-                    }
-
-                    item {
                         Spacer(Modifier.height(24.dp))
                     }
                 }
@@ -348,78 +375,67 @@ fun CartScreen(
     }
 }
 
-@Composable
-fun Banner(){
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 20.dp, end = 20.dp, bottom = 24.dp)) {
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Pink500,
-                    RoundedCornerShape(12.dp)
-                )
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(R.drawable.flag),
-                    tint = Neutral10,
-                    contentDescription = "order pending"
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = stringResource(R.string.orderanmu),
-                    color = Color.White,
-                    style = LocalCustomTypography.current.bodyMediumMedium
-                )
-            }
-            Row (
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ){
-                ButtonComponent(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp),
-                    enabled = true,
-                    labelResId = R.string.lanjutkan
-                ) { }
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun CartLightPreview() {
+//    TasstyTheme {
+//        CartContent(
+//            uiState = CartUiState(
+//                carts = Resource(data = cartUiModel)
+//            ),
+//            onSelectLocationClicked = {},
+//            onSelectPromoClicked = {},
+//            onCartSelectionChange = {},
+//            onSelectAllClicked = {},
+//            onIncrementQuantity = {},
+//            onDecrementQuantity = {},
+//            onDeleteAllClicked = {},
+//            onRemoveItemClicked = {},
+//            onNavigateToDetailRest = {},
+//            onRevealChange = { _, _ -> },
+//            onEditNoteMenuClick = {},
+//            onNavigateToRecommended = {},
+//            onContinuePayment = {}
+//        )
+//    }
+//}
 
-                ButtonComponent(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp),
-                    enabled = true,
-                    labelResId = R.string.batal
-                ) { }
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCartScreen() {
-    CartScreen(
-        uiState = CartUiState(
-            carts = Resource(cartUiModel)
-        ),
-        onSelectLocationClicked = {},
-        onSelectPromoClicked = {},
-        onCartSelectionChange = {},
-        onSelectAllClicked = {},
-        onIncrementQuantity = {},
-        onDecrementQuantity = {},
-        onDeleteAllClicked = {},
-        onRemoveItemClicked = {},
-        onNavigateToDetail = {},
-        onContinuePayment = {}
-    )
-}
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun CartDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        CartContent(
+//            uiState = CartUiState(
+//                carts = Resource(data = CartGroupUiModel(
+//                    restaurantUiModel[0],
+//                    emptyList()
+//                ))
+//            ),
+//            onSelectLocationClicked = {},
+//            onSelectPromoClicked = {},
+//            onCartSelectionChange = {},
+//            onSelectAllClicked = {},
+//            onIncrementQuantity = {},
+//            onDecrementQuantity = {},
+//            onDeleteAllClicked = {},
+//            onRemoveItemClicked = {},
+//            onNavigateToDetailRest = {},
+//            onRevealChange = { _, _ -> },
+//            onEditNoteMenuClick = {},
+//            onNavigateToRecommended = {},
+//            onContinuePayment = {}
+//        )
+//
+//        CustomBottomSheet(
+//            visible = false,
+//            dismissOnClickOutside = false,
+//            onDismiss = {}
+//        ) {
+//            CartRemoveMenuContent(
+//                cart = cartUiModel.menus[0],
+//                onRemoveCartItem = {},
+//                onDismiss = {}
+//            )
+//        }
+//    }
+//}

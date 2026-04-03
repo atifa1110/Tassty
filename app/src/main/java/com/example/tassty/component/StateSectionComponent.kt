@@ -1,9 +1,13 @@
 package com.example.tassty.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,11 +37,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
+import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import kotlin.math.max
 
 
 @Composable
@@ -72,7 +79,7 @@ fun EmptySearchContent(){
             textAlign = TextAlign.Center,
             text = stringResource(R.string.we_couldn_t_find_this_menu),
             style = LocalCustomTypography.current.h2Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         Spacer(Modifier.height(10.dp))
@@ -81,7 +88,7 @@ fun EmptySearchContent(){
             textAlign = TextAlign.Center,
             text = stringResource(R.string.try_different),
             style = LocalCustomTypography.current.bodyMediumRegular,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
     }
 }
@@ -89,22 +96,26 @@ fun EmptySearchContent(){
 @Composable
 fun EmptyContent(
     title: String,
+    highlight: String = "!",
     subtitle: String,
-    buttonText: String,
-    icon: Int,
-    isButton: Boolean = true
+    buttonText: String = "",
+    icon: Int? = null,
+    contentImage: @Composable () -> Unit = {
+        icon?.let {
+            Image(
+                painter = painterResource(it),
+                contentDescription = title,
+                modifier = Modifier.size(260.dp)
+            )
+        }
+    },
+    onClick: (() -> Unit)? = null
 ){
     Column (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Image(
-            painter = painterResource(icon),
-            contentDescription = title,
-            modifier = Modifier.size(260.dp)
-        )
+        contentImage()
 
         Spacer(Modifier.height(12.dp))
 
@@ -112,34 +123,23 @@ fun EmptyContent(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(
-                        style = LocalCustomTypography.current.h2Bold.toSpanStyle()
-                            .copy(color = Neutral100)
-                    ) {
-                        append(title)
-                    }
-                    withStyle(
-                        style = LocalCustomTypography.current.h2Bold.toSpanStyle()
-                            .copy(color = Orange500)
-                    ) {
-                        append("!")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+            CustomTwoColorText(
+                fullText = title,
+                highlightText = highlight,
+                textColor = LocalCustomColors.current.headerText,
+                normalStyle = LocalCustomTypography.current.h2Bold,
             )
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 text = subtitle,
                 style = LocalCustomTypography.current.bodyMediumRegular,
-                color = Neutral70
+                color = LocalCustomColors.current.text
             )
-            if(isButton){
+            if (onClick != null) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable(onClick = onClick),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -151,7 +151,7 @@ fun EmptyContent(
                     Spacer(Modifier.width(4.dp))
                     Icon(
                         painter = painterResource(R.drawable.arrow_left_up),
-                        contentDescription = "arrow click",
+                        contentDescription = "action",
                         tint = Orange500,
                         modifier = Modifier.size(16.dp)
                     )
@@ -162,12 +162,15 @@ fun EmptyContent(
 }
 
 @Composable
-fun EmptyCartContent(){
+fun EmptyCartContent(
+    onClick: (() -> Unit)?
+){
     EmptyContent(
         title = stringResource(R.string.your_cart_is_empty),
         subtitle = stringResource(R.string.start_exploring_your_favorite),
         buttonText = "Find recommended restaurants",
-        icon = R.drawable.empty_cart
+        icon = R.drawable.empty_cart,
+        onClick = onClick
     )
 }
 
@@ -175,63 +178,69 @@ fun EmptyCartContent(){
 fun EmptyAddressContent(){
     EmptyContent(
         title = "Where should we deliver?",
-        subtitle = "You don't have any saved addresses right now. Add one to get started!",
-        buttonText = "Find recommended restaurants",
-        icon = R.drawable.empty_cart,
-        isButton = false
+        highlight = "?",
+        subtitle = "You don't have any saved addresses right now. \nAdd one to get started!",
+        icon = R.drawable.empty_cart
     )
 }
 
 @Composable
 fun EmptyCollectionContent(){
     EmptyContent(
-        title = "Your collection \nis empty",
+        title = "Your collection \nis empty!",
         subtitle = "You can add your favorite menus by clicking the love button on the menu details page.",
         buttonText = "Find menus",
-        icon = R.drawable.empty_cart
+        icon = R.drawable.phone_boarding,
+        onClick = {}
     )
 }
 
 @Composable
 fun EmptyFavoriteContent(){
     EmptyContent(
-        title = "Your list is empty",
+        title = "Your list is empty!",
         subtitle = "You can add your favorite restaurants by clicking the love button on the restaurant details page.",
         buttonText = "Find restaurants",
-        icon = R.drawable.phone_boarding
+        icon = R.drawable.phone_boarding,
+        onClick = {}
     )
 }
 
 @Composable
 fun EmptyVoucherContent(){
     EmptyContent(
-        title = "Your list is empty",
+        title = "Your list is empty!",
         subtitle = "You don't have any available voucher right now, please stay tune",
-        buttonText = "",
-        icon = R.drawable.phone_boarding,
-        isButton = false
+        icon = R.drawable.phone_boarding
     )
 }
 
 @Composable
 fun EmptyChatContent(){
     EmptyContent(
-        title = "Your message is empty",
+        title = "Your message is empty!",
         subtitle = "The message from your order & Driver \nwill be displayed here.",
-        buttonText = "",
-        icon = R.drawable.phone_boarding,
-        isButton = false
+        icon = R.drawable.phone_boarding
     )
 }
 
 @Composable
 fun EmptyNotificationContent(){
     EmptyContent(
-        title = "Your notification is empty",
+        title = "Your notification \nis empty!",
         subtitle = "You haven't received any notifications yet. \nWe'll let you know when something arrives!",
-        buttonText = "",
-        icon = R.drawable.phone_boarding,
-        isButton = false
+        contentImage = {
+            NotificationIcon()
+        },
+    )
+}
+
+@Composable
+fun EmptyCardContent(){
+    EmptyContent(
+        title = "No cards added yet!",
+        subtitle = "You haven't added any debit or credit cards. \nAdd one now to enjoy a faster and easier \ncheckout experience!",
+        icon = R.drawable.phone_boarding
     )
 }
 
@@ -239,20 +248,9 @@ fun EmptyNotificationContent(){
 fun EmptyOrderContent(){
     EmptyContent(
         title = "No order yet?",
+        highlight = "?",
         subtitle = "It looks like you haven't ordered anything. \nLet’s find something delicious for you!",
-        buttonText = "",
-        icon = R.drawable.phone_boarding,
-        isButton = false
-    )
-}
-
-
-@Composable
-fun DoubleCheckContent(){
-    StatusContent(
-        title = stringResource(R.string.please_double_check_your_order),
-        subtitle = stringResource(R.string.we_cant_cancel_your_order),
-        icon = R.drawable.empty_search
+        icon = R.drawable.phone_boarding
     )
 }
 
@@ -274,22 +272,7 @@ fun StatusContent(
         )
 
         Spacer(Modifier.height(12.dp))
-
-        Text(
-            textAlign = TextAlign.Center,
-            text = title,
-            style = LocalCustomTypography.current.h2Bold,
-            color = Neutral100
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        Text(
-            textAlign = TextAlign.Center,
-            text = subtitle,
-            style = LocalCustomTypography.current.bodyMediumRegular,
-            color = Neutral70
-        )
+        StatusModalContent(title,subtitle)
     }
 }
 
@@ -309,11 +292,39 @@ fun LoadingScreen(){
 }
 
 @Composable
+fun LoadingOverlay(
+    isLoading: Boolean,
+    text: String = "Sending..",
+    isEmpty: Boolean = false
+) {
+    AnimatedVisibility(
+        visible = isLoading,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(LocalCustomColors.current.headerText.copy(alpha = 0.2f)),
+            contentAlignment = Alignment.Center
+        ) {
+            if(!isEmpty) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(color = Green500)
+                    Text(text, color = Neutral10)
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun ErrorScreen(){
     Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){
@@ -329,25 +340,25 @@ fun ErrorScreen(){
             textAlign = TextAlign.Center,
             text = "Sorry!",
             style = LocalCustomTypography.current.h2Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         Spacer(Modifier.height(8.dp))
 
         Text(
             textAlign = TextAlign.Center,
-            text ="Failed to connect. Please check \nyour internet connection.",
+            text = "Failed to connect. Please check \nyour internet connection.",
             style = LocalCustomTypography.current.bodyLargeRegular,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
 
         Spacer(Modifier.height(24.dp))
 
         ButtonComponent(
             enabled = true,
-            labelResId = R.string.refresh
-        ) { }
-
+            labelResId = R.string.refresh,
+            onClick = {}
+        )
     }
 }
 
@@ -367,7 +378,7 @@ fun ErrorListState(
         Text(
             text = title,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText
         )
         Spacer(Modifier.height(12.dp))
         Row(
@@ -379,22 +390,25 @@ fun ErrorListState(
         ) {
             Icon(
                 imageVector = Icons.Default.Refresh,
-                tint = Neutral70,
+                tint = LocalCustomColors.current.text,
                 contentDescription = "refresh",
                 modifier = Modifier.size(20.dp)
             )
             Text(
                 text = "Refresh",
                 style = LocalCustomTypography.current.bodySmallMedium,
-                color = Neutral70
+                color = LocalCustomColors.current.text
             )
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ErrorPreview(){
-    EmptySearchContent()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ErrorPreview(){
+//    Column(Modifier.fillMaxSize()) {
+//        EmptyNotificationContent()
+//        EmptyChatContent()
+//    }
+//}
 

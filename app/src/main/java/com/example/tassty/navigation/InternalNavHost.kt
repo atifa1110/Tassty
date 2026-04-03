@@ -5,8 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.tassty.screen.cart.CartScreen
 import com.example.tassty.screen.profile.ProfileScreen
-import com.example.tassty.screen.cart.CartRoute
 import com.example.tassty.screen.chat.ChatScreen
 import com.example.tassty.screen.home.HomeScreen
 import com.example.tassty.screen.dashboard.CartDestination
@@ -18,19 +18,23 @@ import com.example.tassty.screen.dashboard.ProfileDestination
 fun InternalNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    onNavigateToDetail: (String) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,
     onNavigateToNearbyRestaurant:() -> Unit,
     onNavigateToCollection:() -> Unit,
     onNavigateToFavorite:() -> Unit,
+    onNavigateToDetailRest: (String) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
     onNavigateToCard: ()-> Unit,
     onNavigateToOrder: ()-> Unit,
     onNavigateToPayment: (String, String) -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToMessage:(String) -> Unit,
+    onNavigateToEditProfile: () -> Unit,
+    onNavigateToTerm: () -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -40,7 +44,7 @@ fun InternalNavHost(
         composable (HomeDestination.route) {
 
             HomeScreen(
-                onNavigateToDetail = onNavigateToDetail,
+                onNavigateToDetailRest = onNavigateToDetailRest,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToCategory = onNavigateToCategory,
                 onNavigateToRecommended = onNavigateToRecommended,
@@ -50,13 +54,17 @@ fun InternalNavHost(
             )
         }
         composable(CartDestination.route) {
-            CartRoute(
-                onNavigateToDetail = onNavigateToDetail,
-                onNavigateToPayment = onNavigateToPayment
+            CartScreen(
+                onNavigateToRecommended = onNavigateToRecommended,
+                onNavigateToDetailRest = onNavigateToDetailRest,
+                onNavigateToPayment = onNavigateToPayment,
+                onNavigateToDetailMenu = onNavigateToDetailMenu
             )
         }
         composable(ChatDestination.route){
-            ChatScreen()
+            ChatScreen(
+                onNavigateToMessage = onNavigateToMessage
+            )
         }
         composable(ProfileDestination.route) {
             ProfileScreen(
@@ -65,7 +73,10 @@ fun InternalNavHost(
                 onNavigateToFavorite= onNavigateToFavorite,
                 onNavigateToAddress= onNavigateToAddress,
                 onNavigateToCard = onNavigateToCard,
-                onNavigateToOrder = onNavigateToOrder
+                onNavigateToOrder = onNavigateToOrder,
+                onNavigateToLogin = onNavigateToLogin,
+                onNavigateToEditProfile = onNavigateToEditProfile,
+                onNavigateToTerm = onNavigateToTerm
             )
         }
     }

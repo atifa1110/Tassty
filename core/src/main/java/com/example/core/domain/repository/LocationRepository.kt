@@ -5,6 +5,6 @@ import com.example.core.domain.model.LocationDetail
 import kotlinx.coroutines.flow.Flow
 
 interface LocationRepository {
-    fun getCurrentLocation(): Flow<LocationDetail>
-    suspend fun syncLocation()
+    suspend fun getCurrentLocationDetail(): LocationDetail
+    suspend fun getAddressFromCoordinate(lat: Double, lng: Double): String
 }

@@ -2,6 +2,7 @@ package com.example.core.data.mapper
 
 import com.example.core.data.model.DetailOrderDto
 import com.example.core.domain.model.DetailOrder
+import com.example.core.ui.utils.DateFormatter
 
 fun DetailOrderDto.toDomain(): DetailOrder {
     return DetailOrder(
@@ -14,8 +15,10 @@ fun DetailOrderDto.toDomain(): DetailOrder {
         discount = this.discount,
         finalAmount = this.finalAmount,
         paymentStatus = this.paymentStatus,
-        createdAt = this.createdAt,
+        createdAt = DateFormatter.utcToLocalDateTime(this.createdAt),
         driver = this.driver.toDomain(),
+        chatChannelId = this.chatChannelId?:"",
+        restaurantReviewId = this.restaurantReviewId?:"",
         restaurant = this.restaurant.toDomain(),
         userAddress = this.userAddress.toDomain(),
         orderItems = this.orderItems.map { it.toDomain() },

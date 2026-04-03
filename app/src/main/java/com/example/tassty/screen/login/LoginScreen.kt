@@ -1,7 +1,7 @@
 package com.example.tassty.screen.login
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,14 +17,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,10 +31,14 @@ import com.example.tassty.R
 import com.example.tassty.component.AuthTopAppBar
 import com.example.tassty.component.ButtonLogin
 import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmailSection
+import com.example.tassty.component.FailedIcon
+import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingButtonComponent
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.PasswordSection
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
@@ -43,12 +46,13 @@ import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun LoginRoute(
     onNavigateToRegister: () -> Unit,
     onNavigateToHome :() -> Unit,
-    onNavigateToResetPassword: () -> Unit,
+    onNavigateToEmailInput: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ){
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -59,25 +63,17 @@ fun LoginRoute(
                 is LoginEvent.NavigateToHome -> {
                     onNavigateToHome()
                 }
-                is LoginEvent.ShowBottomSheet -> {
-                    viewModel.setBottomSheetVisible(true)
-                }
             }
         }
     }
 
     LoginScreen(
-        isLoading = uiState.isLoading,
-        email= uiState.email,
-        emailError = uiState.emailError?:"",
-        onEmailChanged = { viewModel.onEmailChange(it)},
-        password = uiState.password,
-        passwordError = uiState.passwordError?:"",
-        onPasswordChanged = {viewModel.onPasswordChange(it)},
-        onLoginClick = {viewModel.login()},
+        uiState = uiState,
+        onEmailChanged = viewModel::onEmailChange,
+        onPasswordChanged = viewModel::onPasswordChange,
+        onLoginClick = viewModel::onLogin,
         onRegisterClick = onNavigateToRegister,
-        onForgotClick = onNavigateToResetPassword,
-        isButtonEnable = viewModel.isLoginEnabled.collectAsState().value
+        onForgotClick = onNavigateToEmailInput
     )
 
     CustomBottomSheet(
@@ -86,42 +82,33 @@ fun LoginRoute(
         onDismiss = {}
     ) {
         ModalStatusContent(
-            title = "Login failed!",
+            title = "Login Failed!",
             subtitle = uiState.bottomSheetMessage?:"",
             buttonTitle = "OK",
-            onClick = { viewModel.resetLoginInput() }
+            onClick = viewModel::onDismissBottomSheet
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.success),
-                contentDescription = "Success Icon",
-                modifier = Modifier.size(64.dp)
-            )
+            FailedIcon()
         }
     }
 
 }
 @Composable
 fun LoginScreen(
-    isLoading: Boolean,
-    email:String,
-    emailError:String,
+    uiState: LoginUiState,
     onEmailChanged: (String) -> Unit,
-    password:String,
-    passwordError:String,
     onPasswordChanged:(String) -> Unit,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-    onForgotClick:() -> Unit,
-    isButtonEnable: Boolean,
+    onForgotClick:() -> Unit
 ) {
     Scaffold(
-        containerColor = Color.White,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             AuthTopAppBar()
         },
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()
-            .background(Neutral10),
+        Column(
+            modifier = Modifier.padding(innerPadding).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -130,33 +117,30 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.login_to_your_account),
-                    style = LocalCustomTypography.current.h2Bold,
-                    color = Neutral100
-                )
+                HeaderTitleScreen(title = stringResource(R.string.login_to_your_account),)
                 Text(
                     text = stringResource(R.string.welcome_back_you_ve_been_missed),
                     style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
 
                 )
             }
-
 
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 EmailSection(
-                    email = email,
-                    emailError = emailError,
+                    email = uiState.email,
+                    enabled = uiState.isTextEditable,
+                    emailError = uiState.emailError?:"",
                     onEmailChanged = onEmailChanged
                 )
 
                 PasswordSection(
-                    password = password,
-                    passwordError = passwordError,
+                    password = uiState.password,
+                    enabled = uiState.isTextEditable,
+                    passwordError = uiState.passwordError?:"",
                     onPasswordChanged = onPasswordChanged
                 )
 
@@ -164,7 +148,7 @@ fun LoginScreen(
                     text = stringResource(R.string.forgot_password),
                     style = LocalCustomTypography.current.bodyMediumMedium,
                     modifier = Modifier.fillMaxWidth()
-                        .clickable(onClick = onForgotClick),
+                        .clickable(onClick = onForgotClick, enabled = uiState.isTextEditable),
                     textAlign = TextAlign.Right,
                     color = Orange500
                 )
@@ -174,18 +158,16 @@ fun LoginScreen(
             Spacer(Modifier.height(8.dp))
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 LoadingButtonComponent(
-                    enabled = isButtonEnable,
+                    enabled = uiState.isButtonEnabled,
                     labelResId = R.string.login,
                     onClick = onLoginClick,
-                    isLoading = isLoading
+                    isLoading = uiState.isLoading
                 )
             }
 
-            HorizontalDivider(color = Neutral30)
-
+            Divider32()
             ButtonLogin()
 
-            // Teks Register
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -200,7 +182,8 @@ fun LoginScreen(
                     text = " Register",
                     color = Orange500,
                     style = LocalCustomTypography.current.bodyMediumMedium,
-                    modifier = Modifier.clickable { onRegisterClick() }
+                    modifier = Modifier.clickable(onClick = onRegisterClick,
+                        enabled = uiState.isTextEditable)
                 )
             }
         }
@@ -208,20 +191,78 @@ fun LoginScreen(
 }
 
 
-//@Preview(showBackground = true)
+//@Preview(showBackground = true, name = "Light Mode")
 //@Composable
-//fun LoginPreview() {
-//    LoginScreen(
-//        email= "atifafiorenza24@gmail.com",
-//        emailError ="email is empty",
-//        onEmailChanged = { },
-//        password = "123456",
-//        passwordError = "password is empty",
-//        onPasswordChanged = {},
-//        onLoginClick = {},
-//        onRegisterClick = {},
-//        onForgotClick = {},
-//        isButtonEnable = false,
-//        isLoading = false
-//    )
+//fun LoginLightPreview() {
+//    TasstyTheme(darkTheme = false) {
+//        LoginScreen(
+//            uiState = LoginUiState(
+//                email = "atifafiorenza24@gmail.com",
+//                //emailError = "email empty",
+//                password = "123456",
+//                //passwordError = "password empty",
+//                isTextEditable = true,
+//                isButtonEnabled = false
+//            ),
+//            onEmailChanged = { },
+//            onPasswordChanged = {},
+//            onLoginClick = {},
+//            onRegisterClick = {},
+//            onForgotClick = {},
+//        )
+//        CustomBottomSheet(
+//            visible = false,
+//            dismissOnClickOutside = false,
+//            onDismiss = {}
+//        ) {
+//            ModalStatusContent(
+//                title = "Login Failed!",
+//                subtitle = "Your username or password\nis incorrect.",
+//                buttonTitle = "OK",
+//                onClick = {}
+//            ) {
+//                FailedIcon()
+//            }
+//        }
+//    }
+//}
+//
+//@Preview(
+//    showBackground = true,
+//    name = "Dark Mode",
+//)
+//@Composable
+//fun LoginDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        LoginScreen(
+//            uiState = LoginUiState(
+//                email = "atifafiorenza24@gmail.com",
+//                //emailError = "email empty",
+//                password = "",
+//                //passwordError = "password empty",
+//                isTextEditable = true,
+//                isButtonEnabled = false
+//            ),
+//            onEmailChanged = { },
+//            onPasswordChanged = {},
+//            onLoginClick = {},
+//            onRegisterClick = {},
+//            onForgotClick = {},
+//        )
+//
+//        CustomBottomSheet(
+//            visible = false,
+//            dismissOnClickOutside = false,
+//            onDismiss = {}
+//        ) {
+//            ModalStatusContent(
+//                title = "Login Failed!",
+//                subtitle = "Your username or password\nis incorrect.",
+//                buttonTitle = "OK",
+//                onClick = {}
+//            ) {
+//                FailedIcon()
+//            }
+//        }
+//    }
 //}

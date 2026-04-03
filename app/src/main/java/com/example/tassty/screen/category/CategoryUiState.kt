@@ -5,7 +5,6 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.RestaurantMenuUiModel
-import com.example.tassty.defaultFilter
 
 @Immutable
 data class CategoryUiState(

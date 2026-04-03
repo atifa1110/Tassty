@@ -1,5 +1,12 @@
 package com.example.core.ui.model
 
+import com.example.core.domain.model.RatingSummary
+
+data class RestaurantReviewUiModel(
+    val summary: RatingSummary,
+    val reviews: List<ReviewUiModel>
+)
+
 class ReviewUiModel (
     val id: String,
     val username: String,

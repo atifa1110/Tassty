@@ -9,9 +9,9 @@ import com.example.core.domain.usecase.GetMenuYouSearchUseCase
 import com.example.core.domain.usecase.GetRestaurantYouSearchUseCase
 import com.example.core.domain.usecase.GetSearchRestaurantUseCase
 import com.example.core.domain.utils.RestaurantSearchFilter
-import com.example.core.domain.utils.mapToResource
-import com.example.core.domain.utils.toListState
-import com.example.core.ui.FilterManager
+import com.example.core.ui.utils.mapToResource
+import com.example.core.ui.utils.toListState
+import com.example.core.ui.utils.FilterManager
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.model.mapToActiveFilters

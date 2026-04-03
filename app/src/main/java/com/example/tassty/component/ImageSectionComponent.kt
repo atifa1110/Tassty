@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,10 +31,14 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.SubcomposeAsyncImageContent
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.size.Size
@@ -42,7 +50,16 @@ import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
+import com.example.tassty.ui.theme.Blue100
+import com.example.tassty.ui.theme.Blue500
+import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
+import com.example.tassty.ui.theme.Neutral30
+import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.Orange100
+import com.example.tassty.ui.theme.Orange200
+import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink500
 
 @Composable
@@ -83,19 +100,51 @@ fun <T : DisplayStatus> StatusItemImage(
     )
 }
 
+//@Composable
+//fun CommonImage(
+//    modifier : Modifier = Modifier,
+//    imageUrl: String,
+//    name: String,
+//    placeholder: ColorPainter = ColorPainter(Color.LightGray)
+//){
+//    val context = LocalContext.current
+//    val safeImageUrl = remember(imageUrl) { imageUrl.ifBlank { null } }
+//
+//    val imageRequest = remember(safeImageUrl, name) {
+//        ImageRequest.Builder(context)
+//            .data(safeImageUrl)
+//            .crossfade(true)
+//            .size(256)
+//            .diskCachePolicy(CachePolicy.ENABLED)
+//            .memoryCachePolicy(CachePolicy.ENABLED)
+//            .build()
+//    }
+//
+//    AsyncImage(
+//        model = imageRequest,
+//        contentDescription = name,
+//        contentScale = ContentScale.Crop,
+//        modifier = modifier,
+//        placeholder = placeholder,
+//        error = placeholder,
+//    )
+//}
+
 @Composable
 fun CommonImage(
-    modifier : Modifier = Modifier,
-    imageUrl: String,
+    modifier: Modifier = Modifier,
+    imageUrl: Any?,
     name: String,
     placeholder: ColorPainter = ColorPainter(Color.LightGray)
-){
+) {
     val context = LocalContext.current
-    val safeImageUrl = remember(imageUrl) { imageUrl.ifBlank { null } }
+    val safeData = remember(imageUrl) {
+        if (imageUrl is String && imageUrl.isBlank()) null else imageUrl
+    }
 
-    val imageRequest = remember(safeImageUrl, name) {
+    val imageRequest = remember(safeData) {
         ImageRequest.Builder(context)
-            .data(safeImageUrl)
+            .data(safeData)
             .crossfade(true)
             .size(256)
             .diskCachePolicy(CachePolicy.ENABLED)
@@ -113,34 +162,99 @@ fun CommonImage(
     )
 }
 
+
+@Composable
+fun HomeProfile(
+    imageUrl: String,
+    name: String
+){
+    ProfileImage(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape),
+        imageUrl = imageUrl,
+        name = name,
+        style = LocalCustomTypography.current.bodyMediumBold,
+        background= Neutral10,
+        textColor = Neutral70
+    )
+}
+
+@Composable
+fun MessageProfile(
+    imageUrl: String?,
+    name: String,
+){
+    ProfileImage(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape),
+        imageUrl = imageUrl,
+        name = name,
+        style = LocalCustomTypography.current.bodySmallBold,
+        background = Orange500,
+        textColor = Neutral10
+    )
+}
+
+@Composable
+fun ChatProfile(
+    imageUrl: String?,
+    name: String,
+){
+    ProfileImage(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape),
+        imageUrl = imageUrl,
+        name = name,
+        style = LocalCustomTypography.current.bodyMediumBold,
+        background = Orange500,
+        textColor = Neutral10
+    )
+}
+
+
+@Composable
+fun ProfileImage(
+    modifier: Modifier = Modifier,
+    imageUrl: String?,
+    name: String,
+    style: TextStyle,
+    background: Color = Orange500,
+    textColor : Color = Neutral10
+) {
+    if (imageUrl.isNullOrEmpty()) {
+        Box(
+            modifier = modifier
+                .background(background),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = name.take(1).uppercase(),
+                color = textColor,
+                style = style
+            )
+        }
+    }else{
+        CommonImage(
+            imageUrl = imageUrl,
+            name = name,
+            modifier = modifier
+        )
+    }
+}
+
 @Composable
 fun LocationImage(
     modifier : Modifier = Modifier,
     imageUrl: String,
-    name: String,
-    placeholder: ColorPainter = ColorPainter(Color.LightGray)
+    name: String
 ){
-    val context = LocalContext.current
-    val safeImageUrl = remember(imageUrl) { imageUrl.ifBlank { null } }
-
-    val imageRequest = remember(safeImageUrl, name) {
-        ImageRequest.Builder(context)
-            .data(safeImageUrl)
-            .crossfade(true)
-            .size(Size.ORIGINAL)
-            .diskCachePolicy(CachePolicy.ENABLED)
-            .memoryCachePolicy(CachePolicy.ENABLED)
-            .build()
-    }
-
-    AsyncImage(
-        model = imageRequest,
-        contentDescription = name,
-        contentScale = ContentScale.Crop,
+    CommonImage(
         modifier = modifier,
-        placeholder = placeholder,
-        error = placeholder,
-        filterQuality = FilterQuality.High
+        imageUrl = imageUrl,
+        name = name,
     )
 }
 
@@ -152,7 +266,8 @@ fun CategoryImageCircle(
     CommonImage(
         imageUrl = imageUrl,
         name = categoryName,
-        modifier = Modifier.size(24.dp)
+        modifier = Modifier
+            .size(24.dp)
             .clip(CircleShape)
     )
 }
@@ -166,7 +281,8 @@ fun FoodImageCircle(
         imageUrl = menu.imageUrl,
         name = menu.name,
         status = menu.menuStatus,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .clip(CircleShape)
     )
 }
@@ -180,7 +296,8 @@ fun FoodImageRound(
         imageUrl = menu.imageUrl,
         name = menu.name,
         status = menu.menuStatus,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .clip(RoundedCornerShape(10))
     )
 }
@@ -194,7 +311,8 @@ fun FoodImageRound(
         imageUrl = collection.imageUrl,
         name = collection.name,
         status = MenuStatus.AVAILABLE,
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
             .clip(RoundedCornerShape(10))
     )
 }
@@ -238,27 +356,11 @@ fun ImageIcon(
 }
 
 @Composable
-fun BestSellerIcon(){
-    ImageIcon(
-        image = R.drawable.best_seller,
-        contentDescription = "best seller icon",
-        modifier = Modifier.size(44.dp)
-    )
-}
-
-@Composable
 fun LogoImage(){
-    ImageIcon(image = R.drawable.logo,
-        contentDescription = "App Logo",
-        modifier = Modifier.size(62.dp))
-}
-
-@Composable
-fun SuccessImage(){
     ImageIcon(
-        image = R.drawable.success,
-        contentDescription = "Success Icon",
-        modifier = Modifier.size(64.dp)
+        image = R.drawable.logo,
+        contentDescription = "App Logo",
+        modifier = Modifier.size(62.dp)
     )
 }
 
@@ -272,14 +374,16 @@ fun PromoIcon(
             brush = Brush.verticalGradient(
                 colors = when (status) {
                     RestaurantStatus.OPEN -> listOf(
-                        Color(0xFFEE8E1E), // Orange
-                        Color(0xFFF03F94)  // Pink
+                        Color(0xFFEE8E1E),
+                        Color(0xFFF03F94)
                     )
+
                     RestaurantStatus.CLOSED -> listOf(
                         Color(0xFFCBCBCB),
                         Color(0xFF908F8F)
                     )
-                    RestaurantStatus.OFFDAY ->  listOf(
+
+                    RestaurantStatus.OFFDAY -> listOf(
                         Color(0xFFCBCBCB),
                         Color(0xFF908F8F)
                     )
@@ -287,8 +391,8 @@ fun PromoIcon(
 
             ),
             shape = RoundedCornerShape(12.dp)
-        ).
-        clip(RoundedCornerShape(12.dp)),
+        )
+        .clip(RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center
     ){
         Icon(
@@ -303,22 +407,23 @@ fun PromoIcon(
 
 @Composable
 fun CircleImageIcon(
+    modifier: Modifier = Modifier,
     boxColor: Color,
     contentDescription: String,
     icon: Any,
     iconSize : Dp,
-    iconColor: Color,
-    modifier: Modifier
+    iconColor: Color = Color.Unspecified,
 ){
     Box(
-        modifier = modifier.clip(CircleShape)
+        modifier = modifier
+            .clip(CircleShape)
             .background(boxColor),
         contentAlignment = Alignment.Center
     ) {
         val painter = when (icon) {
             is androidx.compose.ui.graphics.vector.ImageVector -> rememberVectorPainter(icon)
             is Int -> painterResource(icon)
-            else -> return // Handle case not supported
+            else -> return
         }
         Icon(
             painter = painter,
@@ -333,12 +438,12 @@ fun CircleImageIcon(
 fun OverlapImage(
     imageUrl: String
 ){
-
     Row(Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ){
         Box(
-            modifier = Modifier.offset(10.dp)
+            modifier = Modifier
+                .offset(10.dp)
                 .zIndex(1f)
                 .size(64.dp)
                 .clip(RoundedCornerShape(22.dp))
@@ -355,30 +460,89 @@ fun OverlapImage(
                 CommonImage(
                     imageUrl =imageUrl,
                     name ="",
-                    modifier = Modifier.size(40.dp).clip(CircleShape)
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
                 )
             }
         }
 
-        Box(
-            modifier = Modifier.offset(-(10).dp)
+        DangerIcon(
+            modifier = Modifier
+                .offset(-(10).dp)
                 .zIndex(2f)
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFF03F94).copy(0.24f))
+        )
+    }
+}
+
+@Composable
+fun NotificationIcon(){
+    CircleModalIcon()
+}
+
+@Composable
+fun SuccessIcon(){
+    CircleModalIcon(
+        icon = R.drawable.check,
+        innerColor = Orange500,
+        outerColor = Color(0xFFEE8E1E).copy(0.24f)
+    )
+}
+
+@Composable
+fun FailedIcon(){
+    CircleModalIcon(
+        icon = R.drawable.x,
+        innerColor = Pink500,
+        outerColor = Pink100
+    )
+}
+
+@Composable
+fun DangerIcon(
+    modifier: Modifier = Modifier
+){
+    CircleModalIcon(
+        modifier = modifier,
+        icon = R.drawable.exclamation,
+        innerColor = Pink500,
+        outerColor = Pink100
+    )
+}
+
+@Composable
+fun CircleModalIcon(
+    modifier: Modifier = Modifier,
+    icon: Int = R.drawable.bell,
+    innerColor: Color = Blue500,
+    outerColor: Color = Blue100,
+    iconTint: Color = Neutral10,
+    innerSize: Dp = 48.dp,
+    outerSize: Dp = 64.dp
+) {
+    Box(
+        modifier = modifier.size(outerSize),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface (
+            modifier = Modifier.fillMaxSize(),
+            shape = CircleShape,
+            color = outerColor.copy(0.8f),
+            border = null,
+            tonalElevation = 2.dp
+        ) {}
+
+        Surface(
+            modifier = Modifier.size(innerSize),
+            shape = CircleShape,
+            color = innerColor,
+            tonalElevation = 2.dp
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Pink500)
-                    .align(Alignment.Center),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    painter = painterResource(R.drawable.exclamation),
-                    contentDescription = "",
-                    tint = Neutral10,
+                    painter = painterResource(id = icon),
+                    contentDescription = "notification",
+                    tint = iconTint,
                     modifier = Modifier.size(24.dp)
                 )
             }

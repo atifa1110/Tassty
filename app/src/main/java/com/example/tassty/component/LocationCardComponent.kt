@@ -1,7 +1,7 @@
 package com.example.tassty.component
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,34 +23,182 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.painter.ColorPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.UserAddressUiModel
-import com.example.tassty.BuildConfig
 import com.example.tassty.R
-import com.example.tassty.addresses
+import com.example.tassty.util.addresses
 import com.example.tassty.getStaticMapUrl
+import com.example.tassty.screen.rating.HeaderIconText
 import com.example.tassty.ui.theme.Blue500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
-import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink100
+import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
+import kotlin.collections.forEach
+
+@Composable
+fun NearbyMapBox(
+    restaurant: List<RestaurantUiModel>,
+){
+    val mapOptions = remember {
+        GoogleMapOptions().liteMode(true)
+    }
+
+    val cameraPositionState = rememberCameraPositionState()
+
+    LaunchedEffect(restaurant) {
+        if (restaurant.isNotEmpty()) {
+            val firstLocation = LatLng(
+                restaurant.first().locationDetail.latitude,
+                restaurant.first().locationDetail.longitude
+            )
+            cameraPositionState.move(
+                CameraUpdateFactory.newLatLngZoom(firstLocation, 15f)
+            )
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth().background(LocalCustomColors.current.cardBackground)
+            .height(200.dp)
+    ) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState,
+            googleMapOptionsFactory = { mapOptions },
+            uiSettings = MapUiSettings(
+                zoomControlsEnabled = false,
+                scrollGesturesEnabled = false,
+                zoomGesturesEnabled = false,
+                rotationGesturesEnabled = false,
+                tiltGesturesEnabled = false,
+                myLocationButtonEnabled = false
+            )
+        ) {
+            restaurant.forEach { resto ->
+                key (resto.id) {
+                    val position = LatLng(
+                        resto.locationDetail.latitude,
+                        resto.locationDetail.longitude
+                    )
+
+                    val markerState = rememberMarkerState(position = position)
+
+                    Marker(
+                        state = markerState,
+                        title = resto.name,
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LocationSetUpCard(
+    selectedLatLng: LatLng?,
+    address: UserAddressUiModel?
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = LocalCustomColors.current.cardBackground
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            LocationImage(
+                imageUrl = getStaticMapUrl(
+                    centerLat = selectedLatLng?.latitude?:0.0,
+                    centerLng = selectedLatLng?.longitude?:0.0,
+                    showMarker = address != null
+                ),
+                name = "location address",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+            )
+
+            Column (
+                modifier = Modifier.padding(horizontal = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = address?.addressName?.ifEmpty { "Address title" } ?: "Address title",
+                    style = LocalCustomTypography.current.h5Bold,
+                    color = LocalCustomColors.current.headerText
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.location),
+                        contentDescription = "location icon"
+                    )
+                    Text(
+                        text = address?.fullAddress?.ifEmpty { "-" } ?: "-",
+                        style = LocalCustomTypography.current.bodySmallMedium,
+                        color = LocalCustomColors.current.text,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.flag),
+                        contentDescription = "flag icon"
+                    )
+                    Text(
+                        text = address?.addressType?.displayName?.ifEmpty { "Type" }?:"Type",
+                        style = LocalCustomTypography.current.bodySmallMedium,
+                        color = LocalCustomColors.current.text
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun LocationCard(
@@ -59,7 +208,7 @@ fun LocationCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral20
+            containerColor = LocalCustomColors.current.cardBackground
         )
     ) {
         Row(
@@ -81,13 +230,13 @@ fun LocationCard(
                 Text(
                     text = address.addressName,
                     style = LocalCustomTypography.current.h6Bold,
-                    color = Neutral100
+                    color = LocalCustomColors.current.headerText
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = address.fullAddress,
                     style = LocalCustomTypography.current.bodySmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
                 Spacer(Modifier.height(12.dp))
                 Row(
@@ -96,7 +245,7 @@ fun LocationCard(
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     NotesText("Notes: -")
-                    NotesBoxButton(
+                    EditButton(
                         title = "Notes",
                         onClick = {}
                     )
@@ -207,7 +356,7 @@ fun LocationLardCard(
             LocationImage(
                 imageUrl = getStaticMapUrl(address.latitude,address.longitude),
                 name = "location address",
-                modifier = Modifier.fillMaxWidth().height(200.dp),
+                modifier = Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(10.dp)),
             )
 
             Row(
@@ -253,12 +402,17 @@ fun LocationLardCard(
 @Composable
 fun PreviewLocationCard() {
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        LocationSetUpCard(
+            selectedLatLng = LatLng(-6.2000, 106.8166),
+            address = addresses[0]
+        )
         LocationCard(address = addresses[0])
         LocationSelectorCard(
             address = addresses[0],
             onCheckedChange = {}
         )
-        LocationLardCard(addresses[0])
+        //LocationLardCard(addresses[0])
     }
 }

@@ -3,17 +3,15 @@ package com.example.tassty.screen.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
-import com.example.core.domain.usecase.LoginAndConnectChatUseCase
 import com.example.core.domain.usecase.LoginEmailPasswordUseCase
+import com.example.tassty.util.InputValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -22,64 +20,75 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginAndChaConnectChatUseCase: LoginAndConnectChatUseCase
-): ViewModel(){
+    private val loginEmailPasswordUseCase: LoginEmailPasswordUseCase
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LoginUiState())
-    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    private val _internalState = MutableStateFlow(LoginInternalState())
+
+    val uiState: StateFlow<LoginUiState> = _internalState.map { state ->
+        LoginUiState(
+            email = state.email,
+            password = state.password,
+            emailError = state.emailError,
+            passwordError = state.passwordError,
+            isLoading = state.isLoading,
+            isTextEditable = !state.isLoading,
+            isButtonEnabled = state.email.isNotBlank() && state.password.isNotBlank() && !state.isLoading,
+            isBottomSheetVisible = state.isBottomSheetVisible,
+            bottomSheetMessage = state.bottomSheetMessage
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = LoginUiState()
+    )
 
     private val _events = MutableSharedFlow<LoginEvent>()
     val events: SharedFlow<LoginEvent> = _events.asSharedFlow()
 
-    // Update email
     fun onEmailChange(email: String) {
-        _uiState.value = _uiState.value.copy(email = email, emailError = null)
+        _internalState.update { it.copy(email = email, emailError = null) }
     }
 
-    // Update password
     fun onPasswordChange(password: String) {
-        _uiState.value = _uiState.value.copy(password = password, passwordError = null)
+        _internalState.update { it.copy(password = password, passwordError = null) }
     }
 
-    val isLoginEnabled: StateFlow<Boolean> = _uiState.map { state ->
-        state.email.isNotBlank() && state.password.isNotBlank()
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
-
-    fun resetLoginInput(){
-        _uiState.update {
+    fun onDismissBottomSheet() {
+        _internalState.update {
             it.copy(isBottomSheetVisible = false, bottomSheetMessage = null)
         }
     }
 
-    fun setBottomSheetVisible(isVisible: Boolean) {
-        _uiState.update { it.copy(isBottomSheetVisible = isVisible) }
-    }
-
-    fun login() {
-        val state = _uiState.value
-        val emailError = InputValidator.validateEmail(state.email)
-        val passwordError = InputValidator.validatePassword(state.password)
+    fun onLogin() {
+        val currentState = _internalState.value
+        val emailError = InputValidator.validateEmail(currentState.email)
+        val passwordError = InputValidator.validatePassword(currentState.password)
 
         if (emailError != null || passwordError != null) {
-            _uiState.value = state.copy(emailError = emailError, passwordError = passwordError)
+            _internalState.update { it.copy(emailError = emailError, passwordError = passwordError) }
             return
         }
 
         viewModelScope.launch {
-            loginAndChaConnectChatUseCase.invoke(uiState.value.email, uiState.value.password)
+            loginEmailPasswordUseCase(currentState.email, currentState.password)
                 .collect { result ->
-                    when(result) {
-                        is TasstyResponse.Error -> {
-                            _uiState.update {
-                                it.copy(isLoading = false, bottomSheetMessage = result.meta.message)
-                            }
-                            _events.emit(LoginEvent.ShowBottomSheet)
+                    when (result) {
+                        is TasstyResponse.Loading -> {
+                            _internalState.update { it.copy(isLoading = true) }
                         }
-
-                        is TasstyResponse.Loading -> _uiState.update { it.copy(isLoading = true) }
                         is TasstyResponse.Success -> {
-                            _uiState.update { it.copy(isLoading = false) }
+                            _internalState.update { it.copy(isLoading = false) }
                             _events.emit(LoginEvent.NavigateToHome)
+                        }
+                        is TasstyResponse.Error -> {
+                            _internalState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    bottomSheetMessage = result.meta.message,
+                                    isBottomSheetVisible = true
+                                )
+                            }
                         }
                     }
                 }

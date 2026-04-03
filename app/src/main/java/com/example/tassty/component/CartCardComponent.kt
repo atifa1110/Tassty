@@ -26,23 +26,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
-import com.example.tassty.cartUiModel
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange100
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Orange600
 import com.example.tassty.ui.theme.Pink200
@@ -54,12 +50,13 @@ fun CartListCard(
     onCheckedChange: (String)-> Unit,
     onIncrementQuantity:() -> Unit,
     onDecrementQuantity:() -> Unit,
+    onCartNotesClick:()-> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(width = 1.dp, if(cart.isSelected) Orange500 else Color.Transparent),
-        colors = CardDefaults.cardColors(containerColor = if(cart.isSelected) Orange50 else Neutral20)
+        colors = CardDefaults.cardColors(containerColor = if(cart.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -83,12 +80,9 @@ fun CartListCard(
                         Text(
                             text = cart.name,
                             style = LocalCustomTypography.current.h5Bold,
-                            color = Neutral100
+                            color = LocalCustomColors.current.headerText
                         )
-                        val notesDisplay = cart.summary.ifEmpty {
-                            "Notes: -"
-                        }
-                        NotesText(notes = notesDisplay)
+                        NotesText(notes = cart.formatOptions)
                     }
 
                     Checkbox(
@@ -115,7 +109,7 @@ fun CartListCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    NotesBoxButton(title = "Notes", onClick = {})
+                    EditButton(title = "Notes", onClick = onCartNotesClick)
                     QuantityCartContent(
                         itemCount = cart.quantity,
                         enabled = cart.quantity >= 1,
@@ -148,7 +142,7 @@ fun EmptyLocationCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -168,12 +162,12 @@ fun EmptyLocationCard(
                 modifier = Modifier.weight(1f),
                 text = "Select delivery location",
                 style = LocalCustomTypography.current.h6Bold,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = "choose location",
-                tint = Neutral100,
+                tint = LocalCustomColors.current.headerText,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -181,7 +175,7 @@ fun EmptyLocationCard(
 }
 
 @Composable
-fun SelectPaymentCard(
+fun SelectVoucherCard(
     voucher: VoucherUiModel? = null,
     onClick: () -> Unit
 ){
@@ -190,8 +184,8 @@ fun SelectPaymentCard(
     }else{
         EmptyVoucherCard(onClick=onClick)
     }
-
 }
+
 @Composable
 fun VoucherApplyCard(
     voucher: VoucherUiModel,
@@ -244,7 +238,7 @@ fun EmptyVoucherCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick=onClick),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -263,12 +257,12 @@ fun EmptyVoucherCard(
                 modifier = Modifier.weight(1f),
                 text = "Apply promo before order",
                 style = LocalCustomTypography.current.h6Bold,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                 contentDescription = "choose location",
-                tint = Neutral100,
+                tint = LocalCustomColors.current.headerText,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -293,7 +287,7 @@ fun SummaryLineItem(
             Text(
                 text = label,
                 style = if (isTotal) LocalCustomTypography.current.h5Bold else LocalCustomTypography.current.bodySmallRegular,
-                color = if (isTotal) Neutral100 else Neutral70
+                color = if (isTotal) LocalCustomColors.current.headerText else LocalCustomColors.current.text
             )
 
             // Show if discount type and label is not null
@@ -323,29 +317,25 @@ fun OrderSummaryCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Neutral10),
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.background),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(width = 1.dp, color = Neutral30)
+        border = BorderStroke(width = 1.dp, color = LocalCustomColors.current.border)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Total Price Line (Subtotal Item)
             SummaryLineItem(
                 label = "Total price",
                 amount = totalPrice.toCleanRupiahFormat()
             )
 
-            // 2. Delivery & Order fee Line
             SummaryLineItem(
                 label = "Delivery & Order fee",
                 amount = deliveryFee.toCleanRupiahFormat()
             )
 
-            // Discounts Line (Conditional)
             if (voucherDiscount != 0) {
-                // Show label only if voucher have percentage type
                 val discountLabel = if (isPercentageDiscount && voucherDiscountPercent != null) {
                     "${voucherDiscountPercent}% Off"
                 } else {
@@ -362,7 +352,6 @@ fun OrderSummaryCard(
 
             DashedDivider(color = Color(0xFFDEDEDE))
 
-            // Total Order Line (Bold and Orange)
             SummaryLineItem(
                 label = "Total Order",
                 amount = totalOrder.toCleanRupiahFormat(),
@@ -372,19 +361,20 @@ fun OrderSummaryCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewCartCardComponent() {
-    Column (Modifier.fillMaxWidth()){
-        CartListCard(
-            cart = cartUiModel.menus[0],
-            onCheckedChange = {},
-            onIncrementQuantity = {},
-            onDecrementQuantity = {}
-        )
-        Spacer(Modifier.height(10.dp))
-        SelectLocationCard(onClick = {})
-        Spacer(Modifier.height(10.dp))
-        SelectPaymentCard(onClick = {})
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewCartCardComponent() {
+//    Column (Modifier.fillMaxWidth()){
+//        CartListCard(
+//            cart = cartUiModel.menus[0],
+//            onCheckedChange = {},
+//            onIncrementQuantity = {},
+//            onDecrementQuantity = {},
+//            onCartNotesClick = {}
+//        )
+//        Spacer(Modifier.height(10.dp))
+//        SelectLocationCard(onClick = {})
+//        Spacer(Modifier.height(10.dp))
+//        SelectVoucherCard(onClick = {})
+//    }
+//}

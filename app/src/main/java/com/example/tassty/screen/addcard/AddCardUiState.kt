@@ -18,11 +18,12 @@ data class AddCardUiState(
     val buttonEnable: Boolean = false,
     val setupIntentClientSecret: String = "",
     val errorMessage: String="",
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isSuccessSheetVisible: Boolean = false
 )
+
 
 sealed class AddCardUiEffect {
     object NavigateBack : AddCardUiEffect()
-    data class ShowError(val message: String) : AddCardUiEffect()
-    object ShowCanceledMessage : AddCardUiEffect()
+    data class ShowMessage(val message: String) : AddCardUiEffect()
 }

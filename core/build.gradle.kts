@@ -90,4 +90,7 @@ dependencies {
 
     implementation(libs.stream.chat.client)
     implementation(libs.stream.chat.compose)
+    implementation(libs.stream.chat.offline)
+
+    implementation(libs.stream.chat.push.firebase)
 }

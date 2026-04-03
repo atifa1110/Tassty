@@ -14,5 +14,6 @@ data class MenuEntity(
     val name: String,
     val imageUrl: String,
     val description: String,
-    val price: Int
+    val price: Int,
+    val customizable: Boolean
 )

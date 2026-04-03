@@ -3,7 +3,7 @@ package com.example.tassty.screen.card
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetUserCardUseCase
-import com.example.core.domain.utils.toListState
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted

@@ -1,23 +1,23 @@
 package com.example.tassty.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.example.core.data.model.AuthStatus
 import com.example.core.data.model.RegistrationStep
-import com.example.tassty.MainViewModel
+import com.example.tassty.VerificationType
+import com.example.tassty.activity.MainViewModel
+import com.example.tassty.screen.orderprocess.OrderProcessScreen
 
 @Composable
 fun TasstyNavHost(
+    authStatus: AuthStatus,
     navController: NavHostController,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    val authStatus by viewModel.authState.collectAsStateWithLifecycle()
-
     val startDestination = if (authStatus.isLoggedIn) {
         MainGraph.route
     } else {
@@ -26,7 +26,7 @@ fun TasstyNavHost(
 
     val startAuthDestination = when {
         authStatus.registrationStep == RegistrationStep.REGISTERED && !authStatus.isVerified ->
-            VerifyDestination.route
+            VerifyDestination.createRoute(VerificationType.REGISTRATION,300,60)
         authStatus.isVerified && !authStatus.hasCompletedSetup ->
             SetUpCuisineDestination.route
         authStatus.isVerified && authStatus.hasCompletedSetup ->
@@ -52,12 +52,19 @@ fun TasstyNavHost(
         )
         authGraph(
             startAuthDestination = startAuthDestination,
-            onBackButtonClick = {
+            onNavigateBack = {
                 navController.popBackStack()
             },
-            onNavigateToLogin = {
+            onNavigateToLoginFromRegister = {
                 navController.navigate(LoginDestination.route){
                     popUpTo(RegisterDestination.route){
+                        inclusive = true
+                    }
+                }
+            },
+            onNavigateToLoginFromReset = {
+                navController.navigate(LoginDestination.route){
+                    popUpTo(EmailInputDestination.route){
                         inclusive = true
                     }
                 }
@@ -72,11 +79,14 @@ fun TasstyNavHost(
                     }
                 }
             },
-            onNavigateToResetPassword = {
+            onNavigateToEmailInput = {
+                navController.navigate(EmailInputDestination.route)
+            },
+            onNavigateToNewPassword = {
                 navController.navigate(ResetPasswordDestination.route)
             },
-            onNavigateToVerify = {
-                navController.navigate(VerifyDestination.route)
+            onNavigateToVerify = { type, expire, delay->
+                navController.navigate(VerifyDestination.createRoute(type,expire,delay))
             },
             onNavigateToSetUpCuisine = {
                 navController.navigate(SetUpCuisineDestination.route)
@@ -91,9 +101,6 @@ fun TasstyNavHost(
         mainGraph(
             onNavigateBack = {
                 navController.popBackStack()
-            },
-            onNavigateToDetail = { id ->
-                navController.navigate(DetailRestaurantDestination.createRoute(id))
             },
             onNavigateToSearch = {
                 navController.navigate(SearchDestination.route)
@@ -123,8 +130,14 @@ fun TasstyNavHost(
             onNavigateToFavorite = {
                 navController.navigate(FavoriteDestination.route)
             },
+            onNavigateToDetailRest = { id ->
+                navController.navigate(DetailRestaurantDestination.createRoute(id))
+            },
             onNavigateToDetailMenu = { id->
                 navController.navigate(DetailMenuDestination.createRoute(id))
+            },
+            onNavigateToReview = { id ->
+                navController.navigate(ReviewDestination.createRoute(id))
             },
             onNavigateToBestSeller = { id->
                 navController.navigate(BestSellerDestination.createRoute(id))
@@ -135,11 +148,44 @@ fun TasstyNavHost(
             onNavigateToAddress = {
                 navController.navigate(AddressDestination.route)
             },
-            onNavigateToPayment = {
-                navController.navigate(PaymentDestination.route)
+            onNavigateToPayment = { id, total->
+                navController.navigate(PaymentDestination.createRoute(id,total))
+            },
+            onNavigateToCard = {
+                navController.navigate(CardDestination.route)
             },
             onNavigateToAddCard = {
                 navController.navigate(AddCardDestination.route)
+            },
+            onNavigateToOrder = {
+                navController.navigate(OrderDestination.route)
+            },
+            onNavigateToOrderProcess = {id->
+                navController.navigate(OrderProcessDestination.createRoute(id)){
+                    popUpTo(PaymentDestination.route) { inclusive = true }
+                }
+            },
+            onNavigateToOrderDetail = { id->
+                navController.navigate(OrderDetailDestination.createRoute(id))
+            },
+            onNavigateToRating = { data ->
+                navController.navigate(RatingDestination.createRoute(data))
+            },
+            onNavigateToMessage = { channelId->
+                navController.navigate(MessageDestination.createRoute(channelId))
+            },
+            onNavigateToLoginFromHome = {
+                navController.navigate(LoginDestination.route){
+                    popUpTo(MainGraph.route){
+                        inclusive = true
+                    }
+                }
+            },
+            onNavigateToEditProfile = {
+                navController.navigate(EditProfileDestination.route)
+            },
+            onNavigateToTerm = {
+                navController.navigate(TermDestination.route)
             }
         )
     }

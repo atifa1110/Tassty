@@ -27,8 +27,8 @@ class RestaurantRepositoryImpl @Inject constructor(
         private const val META_KEY_NEARBY = "nearby_restaurants"
     }
 
-    override suspend fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
-            emit(TasstyResponse.Loading)
+    override fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+            emit(TasstyResponse.Loading())
 
             val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_RECOMMENDED)
             if (cachedData.isNotEmpty()) {
@@ -56,13 +56,13 @@ class RestaurantRepositoryImpl @Inject constructor(
                     )
                 }
 
-                is TasstyResponse.Error -> emit(result)
-                is TasstyResponse.Loading -> emit(result)
+                is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
+                else -> {}
             }
-        }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+        }.flowOn(Dispatchers.IO)
 
-    override suspend fun getRecommendedCategoryRestaurants(categoryId:String): Flow<TasstyResponse<List<Restaurant>>> = flow {
-        emit(TasstyResponse.Loading)
+    override fun getRecommendedCategoryRestaurants(categoryId:String): Flow<TasstyResponse<List<Restaurant>>> = flow {
+        emit(TasstyResponse.Loading())
         when (val result = remoteDataSource.getRecommendedCategoryRestaurants(categoryId)) {
             is TasstyResponse.Success -> {
                 emit(
@@ -72,14 +72,13 @@ class RestaurantRepositoryImpl @Inject constructor(
                     )
                 )
             }
-
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
+            else -> {}
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
-        emit(TasstyResponse.Loading)
+    override fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+        emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_NEARBY)
         if (cachedData.isNotEmpty()) {
@@ -92,10 +91,8 @@ class RestaurantRepositoryImpl @Inject constructor(
             return@flow
         }
 
-        // Take from remote
         when (val result = remoteDataSource.getNearbyRestaurants()) {
             is TasstyResponse.Success -> {
-                // save to cache
                 cache.saveAll(META_KEY_NEARBY, result.data ?: emptyList())
                 cache.saveMeta(META_KEY_NEARBY, result.meta)
 
@@ -107,13 +104,13 @@ class RestaurantRepositoryImpl @Inject constructor(
                 )
             }
 
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
+            else -> {}
         }
-    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun getSearchRestaurants(filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow {
-        emit(TasstyResponse.Loading)
+    override fun getSearchRestaurants(filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow {
+        emit(TasstyResponse.Loading())
 
         when (val result = searchNetworkDataSource.searchRestaurants(filter)) {
             is TasstyResponse.Success -> {
@@ -125,13 +122,13 @@ class RestaurantRepositoryImpl @Inject constructor(
                 )
             }
 
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
+            else -> {}
         }
-    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun getSearchRestaurantsByCategory(id: String,filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow {
-        emit(TasstyResponse.Loading)
+    override fun getSearchRestaurantsByCategory(id: String,filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow {
+        emit(TasstyResponse.Loading())
 
         when (val result = searchNetworkDataSource.searchRestaurantsByCategory(id,filter)) {
             is TasstyResponse.Success -> {
@@ -143,10 +140,10 @@ class RestaurantRepositoryImpl @Inject constructor(
                 )
             }
 
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
+            else -> {}
         }
-    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
+    }.flowOn(Dispatchers.IO)
 }
 
 

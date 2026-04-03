@@ -7,9 +7,9 @@ import com.example.core.domain.utils.RestaurantSearchFilter
 import kotlinx.coroutines.flow.Flow
 
 interface RestaurantRepository {
-    suspend fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>>
-    suspend fun getRecommendedCategoryRestaurants(categoryId:String): Flow<TasstyResponse<List<Restaurant>>>
-    suspend fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>>
-    suspend fun getSearchRestaurants(filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>>
-    suspend fun getSearchRestaurantsByCategory(id: String,filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>>
+    fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>>
+    fun getRecommendedCategoryRestaurants(categoryId:String): Flow<TasstyResponse<List<Restaurant>>>
+    fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>>
+    fun getSearchRestaurants(filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>>
+    fun getSearchRestaurantsByCategory(id: String,filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>>
 }

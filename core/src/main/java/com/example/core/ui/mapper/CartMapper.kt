@@ -15,15 +15,23 @@ fun CartGroup.toUiModel(): CartGroupUiModel{
 }
 
 fun CartItem.toUiModel(): CartItemUiModel{
+    val combinedResult = listOfNotNull(
+        this.options.takeIf { it.isNotBlank() },
+        this.notes.takeIf { it.isNotBlank() }?.let { "Notes: $it" }
+    ).joinToString(separator = "\n")
+
+    val finalFormat = combinedResult.ifEmpty { "Notes: -" }
     return CartItemUiModel(
         cartId = this.cartId,
         menuId = this.menuId,
         name = this.name,
         imageUrl = this.imageUrl,
+        customizable = this.customizable,
         price = this.price,
         quantity = this.quantity,
-        summary = this.summary,
-        notes = notes,
+        options = this.options,
+        notes = this.notes,
+        formatOptions = finalFormat,
         isSelected = false,
         isSwipeActionVisible = false
     )
@@ -34,7 +42,7 @@ fun CartItemUiModel.toRequest() : OrderItemRequest{
         menuId = this.menuId,
         quantity = this.quantity,
         price = this.price,
-        options = this.summary,
-        notes = this.notes?:""
+        options = this.options,
+        notes = this.notes
     )
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.ui.theme.Green500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
@@ -66,7 +67,7 @@ fun RestaurantCityAndDistanceText(
         Text(
             text = distance,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
     }
 }
@@ -127,7 +128,7 @@ fun CityText(
         Text(
             text = city,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
     }
 }
@@ -148,7 +149,7 @@ fun RatingText(
         Text(
             text = rating.toString(),
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
     }
 }
@@ -170,7 +171,7 @@ fun RatingDeliverTimeText(
         Text(
             text = rating.toString(),
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
 
         Text(
@@ -182,7 +183,7 @@ fun RatingDeliverTimeText(
         Text(
             text = deliveryTime,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70,
+            color = LocalCustomColors.current.text
         )
 
     }
@@ -204,7 +205,7 @@ fun RestaurantCategoryText(
         Text(
             text = category,
             style = LocalCustomTypography.current.bodySmallMedium,
-            color = Neutral70
+            color = LocalCustomColors.current.text
         )
     }
 }
@@ -241,7 +242,7 @@ fun RestaurantLargeListCardContent(
         Text(
             text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         RestaurantCategoryText(
@@ -270,7 +271,7 @@ fun RestaurantTinyGridCardContent(
         Text(
             text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100
+            color = LocalCustomColors.current.headerText
         )
 
         Row(
@@ -294,7 +295,7 @@ fun RestaurantGridCardContent(
         Text(
             text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             maxLines = 2,
             minLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -320,7 +321,7 @@ fun RestaurantLargeGridCardContent(
         Text(
             text = restaurant.name,
             style = LocalCustomTypography.current.h5Bold,
-            color = Neutral100,
+            color = LocalCustomColors.current.headerText,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

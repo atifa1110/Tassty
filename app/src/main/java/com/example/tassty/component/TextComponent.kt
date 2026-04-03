@@ -1,173 +1,152 @@
 package com.example.tassty.component
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.tassty.R
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral60
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
-import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
-import com.example.tassty.ui.theme.Pink600
-
-@Composable
-fun TextFieldComponent(
-    modifier: Modifier = Modifier,
-    text: String,
-    onTextChanged: (String) -> Unit,
-    placeholder: String,
-    textError: String = "",
-    singleLine: Boolean = true,
-    maxLines: Int = if (singleLine) 1 else 5,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None
-) {
-    OutlinedTextField(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedTextColor = Neutral100,
-            unfocusedTextColor = Neutral100,
-            focusedPlaceholderColor = Neutral60,
-            unfocusedPlaceholderColor = Neutral60,
-            focusedContainerColor = Neutral10,
-            unfocusedContainerColor = Neutral10,
-            focusedBorderColor = Neutral30,
-            unfocusedBorderColor = Neutral30,
-            unfocusedLeadingIconColor = Neutral70,
-            focusedLeadingIconColor = Neutral100,
-            unfocusedTrailingIconColor = Neutral60,
-            focusedTrailingIconColor = Neutral60,
-            errorPlaceholderColor = Pink600,
-            errorTextColor = Pink600,
-            errorBorderColor = Pink600,
-            errorContainerColor = Pink50,
-            errorLeadingIconColor = Pink600,
-            errorTrailingIconColor = Pink600
-        ),
-        textStyle = LocalCustomTypography.current.bodyMediumRegular,
-        visualTransformation = visualTransformation,
-        value = text,
-        onValueChange = { onTextChanged(it) },
-        placeholder = {
-            Text(
-                text = placeholder,
-                style = LocalCustomTypography.current.bodyMediumRegular
-            )
-        },
-        trailingIcon = trailingIcon,
-        leadingIcon = leadingIcon,
-        singleLine = singleLine,
-        maxLines = maxLines,
-        keyboardOptions = keyboardOptions,
-        isError = textError.isNotEmpty(),
-    )
-    if(textError.isNotEmpty()){
-        TextFieldError(textError = textError)
-    }
-}
 
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    value: String,
+    value: String = "",
     onValueChange: (String) -> Unit,
     placeholder: String = stringResource(R.string.search_for_something),
     enabled: Boolean = true,
-    isTransparentMode: Boolean = false // Flag untuk bedain Home vs White section
+    isTransparentMode: Boolean = false
 ) {
-    val containerColor = if (isTransparentMode) Neutral10.copy(alpha = 0.10f) else Neutral10
-    val borderColor = if (isTransparentMode) Color.White.copy(alpha = 0.32f) else Neutral30
+    val containerColor = if (isTransparentMode) LocalCustomColors.current.searchBackground else LocalCustomColors.current.background
+    val borderColor = if (isTransparentMode) LocalCustomColors.current.border else LocalCustomColors.current.border
     val iconColor = if (isTransparentMode) Neutral10 else Orange500
-    val textColor = if (isTransparentMode) Neutral10 else Neutral100
-    val placeholderColor = if (isTransparentMode) Neutral10.copy(alpha = 0.50f) else Neutral60
+    val textColor = if (isTransparentMode) Neutral10 else LocalCustomColors.current.headerText
+    val placeholderColor = if (isTransparentMode) Neutral10 else Neutral60
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(99.dp)
-            ),
-        shape = RoundedCornerShape(99.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
-    ) {
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            enabled = enabled,
-            placeholder = {
-                Text(
-                    text = placeholder,
-                    style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = placeholderColor
-                )
-            },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = iconColor
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = LocalCustomTypography.current.bodyMediumMedium.copy(color = textColor),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                focusedTextColor = textColor,
-                unfocusedTextColor = textColor,
-                disabledTextColor = textColor.copy(alpha = 0.5f)
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        enabled = enabled,
+        modifier = modifier.fillMaxWidth(),
+        placeholder = {
+            Text(
+                text = placeholder,
+                style = LocalCustomTypography.current.bodyMediumRegular,
+                color = placeholderColor
             )
-        )
-    }
+        },
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = iconColor
+            )
+        },
+        textStyle = LocalCustomTypography.current.bodyMediumMedium.copy(color = textColor),
+        shape = RoundedCornerShape(99.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = containerColor,
+            unfocusedContainerColor = containerColor,
+            disabledContainerColor = containerColor,
+            focusedBorderColor = if (isTransparentMode) Color.White else Orange500,
+            unfocusedBorderColor = borderColor,
+            disabledBorderColor = borderColor.copy(alpha = 0.5f),
+            cursorColor = if (isTransparentMode) Color.White else Orange500
+        ),
+        singleLine = true
+    )
 }
+
+//@Composable
+//fun SearchBar(
+//    modifier: Modifier = Modifier,
+//    value: String = "",
+//    onValueChange: (String) -> Unit,
+//    placeholder: String = stringResource(R.string.search_for_something),
+//    enabled: Boolean = true,
+//    isTransparentMode: Boolean = false
+//) {
+//    val containerColor = if (isTransparentMode) Neutral10.copy(alpha = 0.10f) else LocalCustomColors.current.background
+//    val borderColor = if (isTransparentMode) Color.White.copy(alpha = 0.32f) else LocalCustomColors.current.border
+//    val iconColor = if (isTransparentMode) Neutral10 else Orange500
+//    val textColor = if (isTransparentMode) Neutral10 else LocalCustomColors.current.headerText
+//    val placeholderColor = if (isTransparentMode) Neutral10.copy(alpha = 0.50f) else Neutral60
+//
+//    Card(
+//        modifier = modifier
+//            .fillMaxWidth()
+//            .border(
+//                width = 1.dp,
+//                color = borderColor,
+//                shape = RoundedCornerShape(99.dp)
+//            ),
+//        shape = RoundedCornerShape(99.dp),
+//        colors = CardDefaults.cardColors(containerColor = containerColor),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+//    ) {
+//        TextField(
+//            value = value,
+//            onValueChange = onValueChange,
+//            enabled = enabled,
+//            placeholder = {
+//                Text(
+//                    text = placeholder,
+//                    style = LocalCustomTypography.current.bodyMediumRegular,
+//                    color = placeholderColor
+//                )
+//            },
+//            trailingIcon = {
+//                Icon(
+//                    imageVector = Icons.Default.Search,
+//                    contentDescription = null,
+//                    tint = iconColor
+//                )
+//            },
+//            modifier = Modifier.fillMaxWidth(),
+//            textStyle = LocalCustomTypography.current.bodyMediumMedium.copy(color = textColor),
+//            colors = TextFieldDefaults.colors(
+//                focusedContainerColor = Color.Transparent,
+//                unfocusedContainerColor = Color.Transparent,
+//                disabledContainerColor = Color.Transparent,
+//                focusedIndicatorColor = Color.Transparent,
+//                unfocusedIndicatorColor = Color.Transparent,
+//                disabledIndicatorColor = Color.Transparent,
+//                focusedTextColor = textColor,
+//                unfocusedTextColor = textColor,
+//                disabledTextColor = textColor.copy(alpha = 0.5f)
+//            )
+//        )
+//    }
+//}
 
 @Composable
 fun CollectionText(
@@ -176,14 +155,15 @@ fun CollectionText(
 ) {
     Text(
         text = buildAnnotatedString {
-            withStyle(style = LocalCustomTypography.current.h6Bold.toSpanStyle().copy(color = Neutral100)) {
+            withStyle(style = LocalCustomTypography.current.h6Bold.toSpanStyle().copy(color = LocalCustomColors.current.headerText)) {
                 append("$itemCount")
             }
-            withStyle(style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle().copy(color = Neutral70)) {
+            withStyle(style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle().copy(color = LocalCustomColors.current.text)) {
                 append(" menus")
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        style = LocalCustomTypography.current.bodySmallMedium
     )
 }
 
@@ -194,11 +174,9 @@ fun StepIndicatorText(
 ) {
     Text(
         text = buildAnnotatedString {
-            // Current step
-            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = Neutral100)) {
+            withStyle(style = LocalCustomTypography.current.h5Bold.toSpanStyle().copy(color = LocalCustomColors.current.headerText)) {
                 append(currentStep.toString())
             }
-            // Total step
             withStyle(style = LocalCustomTypography.current.h5Regular.toSpanStyle().copy(color = Neutral60)) {
                 append(" / $totalStep")
             }
@@ -206,7 +184,7 @@ fun StepIndicatorText(
         },
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Neutral20)
+            .background(LocalCustomColors.current.cardBackground)
             .padding(horizontal = 16.dp, vertical = 6.dp)
     )
 }
@@ -262,7 +240,7 @@ fun SummaryPriceText(
     price: String,
     isDiscount:Boolean,
 ) {
-    val color = if (isDiscount) Pink500 else Neutral70
+    val color = if (isDiscount) Pink500 else LocalCustomColors.current.text
     val formattedPrice = if (isDiscount) "-$price" else price
 
     BasePriceText(
@@ -270,7 +248,7 @@ fun SummaryPriceText(
         modifier = modifier,
         primaryStyle = LocalCustomTypography.current.h6Bold,
         secondaryStyle = LocalCustomTypography.current.h8Regular,
-        primaryColor =color,
+        primaryColor = color,
         secondaryColor = color
     )
 }
@@ -278,7 +256,7 @@ fun SummaryPriceText(
 @Composable
 fun FoodPriceText(
     modifier: Modifier = Modifier,
-    price: String, // Contoh: "Rp20.000" atau "Rp0"
+    price: String,
     color: Color
 ) {
     BasePriceText(
@@ -358,14 +336,14 @@ fun NotesText(
                     text = buildAnnotatedString {
                         withStyle(
                             style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
-                                .copy(color = Neutral100)
+                                .copy(color = LocalCustomColors.current.headerText)
                         ) {
                             append(label)
                         }
 
                         withStyle(
                             style = LocalCustomTypography.current.bodySmallMedium.toSpanStyle()
-                                .copy(color = Neutral70)
+                                .copy(color = LocalCustomColors.current.text)
                         ) {
                             append(data)
                         }
@@ -373,13 +351,67 @@ fun NotesText(
                 )
             } else {
                 Text(
+                    color = LocalCustomColors.current.text,
                     text = line,
                     style = LocalCustomTypography.current.bodySmallMedium
-                        .copy(color = Neutral70)
                 )
             }
         }
     }
+}
+
+@Composable
+fun CustomTwoColorText(
+    modifier: Modifier = Modifier,
+    fullText: String,
+    highlightText: String,
+    highlightColor: Color = Orange500,
+    textColor: Color = LocalCustomColors.current.text,
+    normalStyle: TextStyle = LocalCustomTypography.current.bodySmallRegular,
+    textAlign: TextAlign = TextAlign.Center,
+    onHighlightClick: (() -> Unit)? = null
+) {
+    val annotatedString = buildAnnotatedString {
+        val startIndex = fullText.indexOf(highlightText)
+
+        if (startIndex != -1) {
+            append(fullText.substring(0, startIndex))
+
+            val link = if (onHighlightClick != null) {
+                LinkAnnotation.Clickable(
+                    tag = "highlight_link",
+                    styles = TextLinkStyles(
+                        style = SpanStyle(
+                            color = highlightColor,
+                        )
+                    ),
+                    linkInteractionListener = { onHighlightClick() }
+                )
+            } else null
+
+            if (link != null) {
+                withLink(link) {
+                    append(highlightText)
+                }
+            } else {
+                withStyle(style = SpanStyle(color = highlightColor)) {
+                    append(highlightText)
+                }
+            }
+
+            append(fullText.substring(startIndex + highlightText.length))
+        } else {
+            append(fullText)
+        }
+    }
+
+    Text(
+        modifier = modifier.fillMaxWidth(),
+        text = annotatedString,
+        style = normalStyle,
+        textAlign = textAlign,
+        color = textColor
+    )
 }
 
 @Preview(showBackground = true)

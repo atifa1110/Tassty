@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,60 +21,62 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
-import com.example.core.ui.mapper.empty
-import com.example.tassty.addresses
+import com.example.tassty.util.addresses
 import com.example.tassty.component.AddTopAppBar
 import com.example.tassty.component.EmptyAddressContent
-import com.example.tassty.component.EmptyContent
 import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.ShimmerAddressCard
 import com.example.tassty.component.addressVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
 fun AddressScreen(
+    onNavigateBack:() -> Unit,
     viewModel: AddressViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     AddressContent(
         uiState = uiState,
-        onTabSelected = {viewModel.onTabSelected(it)}
+        onTabSelected = {viewModel.onTabSelected(it)},
+        onNavigateBack = onNavigateBack
     )
 }
 
 @Composable
 fun AddressContent(
     uiState: AddressUiState,
-    onTabSelected: (AddressTab) -> Unit
+    onTabSelected: (AddressTab) -> Unit,
+    onNavigateBack:() -> Unit,
 ) {
     Scaffold(
         containerColor = Neutral10,
         topBar = {
             AddTopAppBar (
                 onAddClick = {},
-                onBackClick = {}
+                onBackClick = onNavigateBack
             )
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding)
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             item{
-                HeaderTitleScreen(title = "My addresses")
+                HeaderTitleScreen(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    title = "My addresses."
+                )
                 Spacer(Modifier.height(8.dp))
                 AddressTabContent (
                     selectedType = uiState.selectedTab,
@@ -83,6 +86,7 @@ fun AddressContent(
 
             val resource = uiState.addressResource
             val address = resource.data.orEmpty()
+
             when{
                 resource.isLoading -> {
                     items(count = 4){
@@ -103,6 +107,7 @@ fun AddressContent(
                         EmptyAddressContent()
                     }
                 }
+
                 else ->{
                     addressVerticalListBlock(
                         headerText = "addresses",
@@ -110,7 +115,6 @@ fun AddressContent(
                     )
                 }
             }
-
         }
     }
 }
@@ -165,8 +169,9 @@ fun AddressListPreview() {
     AddressContent(
         uiState = AddressUiState(
             selectedTab = AddressTab.ALL,
-            addressResource = Resource(data = addresses,isLoading = true)
+            addressResource = Resource(data = addresses)
         ),
-        onTabSelected = {}
+        onTabSelected = {},
+        onNavigateBack = {}
     )
 }

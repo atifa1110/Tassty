@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.usecase.AddCartMenuUseCase
 import com.example.core.domain.usecase.AddFavoriteRestaurantUseCase
+import com.example.core.domain.usecase.CreateNewCollectionUseCase
 import com.example.core.domain.usecase.GetCartsByRestaurantIdUseCase
 import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
@@ -16,20 +17,18 @@ import com.example.core.domain.usecase.GetDetailMenuUseCase
 import com.example.core.domain.usecase.GetDetailRecommendedMenuUseCase
 import com.example.core.domain.usecase.GetDetailRestaurantUseCase
 import com.example.core.domain.usecase.GetRestaurantVouchersUseCase
-import com.example.core.domain.usecase.GetReviewsByRestaurantIdUseCase
+import com.example.core.domain.usecase.GetReviewsByIdUseCase
 import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
 import com.example.core.domain.usecase.RemoveFavoriteRestaurantUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.domain.utils.mapToResource
-import com.example.core.domain.utils.toListState
-import com.example.core.data.mapper.toDomain
+import com.example.core.ui.utils.mapToResource
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toDomainDetail
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.navigation.DetailRestaurantDestination
-import com.example.tassty.screen.detailmenu.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -62,7 +61,8 @@ class DetailRestaurantViewModel @Inject constructor(
     private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase,
     private val getCollectionsByIdUseCase: GetCollectionsByIdUseCase,
     private val getCollectionsUseCase: GetCollectionsUseCase,
-    private val getReviewsByRestaurantIdUseCase: GetReviewsByRestaurantIdUseCase,
+    private val createNewCollectionUseCase: CreateNewCollectionUseCase,
+    private val getReviewsByIdUseCase: GetReviewsByIdUseCase,
     private val addFavoriteRestaurantUseCase: AddFavoriteRestaurantUseCase,
     private val removeFavoriteRestaurantUseCase: RemoveFavoriteRestaurantUseCase,
     private val getCartsByRestaurantIdUseCase: GetCartsByRestaurantIdUseCase,
@@ -75,7 +75,7 @@ class DetailRestaurantViewModel @Inject constructor(
 
     private val _internalState = MutableStateFlow(DetailInternalState())
 
-    private val _uiEffect = Channel<UiEvent>(Channel.BUFFERED)
+    private val _uiEffect = Channel<DetailUiEvent>(Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
     private val restaurantFlow = getDetailRestaurantUseCase(id).map {
@@ -94,7 +94,7 @@ class DetailRestaurantViewModel @Inject constructor(
         getDetailAllMenuUseCase(id),
         getDetailRecommendedMenuUseCase(id),
         getDetailBestSellerMenuUseCase(id),
-        getReviewsByRestaurantIdUseCase(id),
+        getReviewsByIdUseCase(id),
         getRestaurantVouchersUseCase(id),
     ){ all, recommended, best, review, voucher ->
         DetailListContent(
@@ -133,10 +133,10 @@ class DetailRestaurantViewModel @Inject constructor(
                     model.copy(isSelected = internal.selectedCollectionIds.contains(model.id))
                 }
             ),
-            // Internal State (User Interaction)
             isScheduleModalVisible = internal.isScheduleModalVisible,
             isFavoriteModalVisible = internal.isFavoriteModalVisible,
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
+            isAddCollectionSheetVisible = internal.isAddCollectionSheetVisible,
             isShowCloseModalVisible = internal.isShowCloseModalVisible,
             isSearchModalVisible = internal.isSearchModalVisible,
             isDetailMenuModalVisible = internal.isDetailMenuModalVisible,
@@ -145,7 +145,8 @@ class DetailRestaurantViewModel @Inject constructor(
             quantity = internal.quantity,
             totalItems = items,
             totalPrice = price,
-            isEditMode = internal.isEditMode
+            isEditMode = internal.isEditMode,
+            newCollectionName = internal.newCollectionName
         )
     }.stateIn(
         scope = viewModelScope,
@@ -177,8 +178,10 @@ class DetailRestaurantViewModel @Inject constructor(
             is DetailRestaurantEvent.OnShowScheduleSheet -> _internalState.update { it.copy(isScheduleModalVisible = true) }
             is DetailRestaurantEvent.OnRestaurantFavoriteSheet -> handleRestaurantFavoriteClick()
             is DetailRestaurantEvent.OnRestaurantDismissFavoriteSheet -> _internalState.update { it.copy(isFavoriteModalVisible = false) }
-            is DetailRestaurantEvent.OnDismissAddCollectionSheet -> TODO()
-            is DetailRestaurantEvent.OnShowAddCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = false) }
+            is DetailRestaurantEvent.OnDismissAddCollectionSheet -> _internalState.update { it.copy(isAddCollectionSheetVisible = false) }
+            is DetailRestaurantEvent.OnShowAddCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = false, isAddCollectionSheetVisible = true) }
+            is DetailRestaurantEvent.OnCreateCollection -> handleCreateNewCollection()
+            is DetailRestaurantEvent.OnNewCollectionNameChange ->  _internalState.update { it.copy(newCollectionName = event.name) }
             is DetailRestaurantEvent.OnMenuFavoriteClick -> handleMenuFavoriteClick(event.menu)
             is DetailRestaurantEvent.OnShowCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = true) }
             is DetailRestaurantEvent.OnDismissCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = false) }
@@ -196,7 +199,22 @@ class DetailRestaurantViewModel @Inject constructor(
         }
     }
 
-    fun handleRestaurantFavoriteClick() {
+    private fun handleCreateNewCollection() = viewModelScope.launch {
+        try {
+            createNewCollectionUseCase(_internalState.value.newCollectionName)
+            _internalState.update {
+                it.copy(
+                    isAddCollectionSheetVisible = false,
+                    isCollectionSheetVisible = true,
+                    newCollectionName = ""
+                )
+            }
+        }catch (e: Exception){
+            _uiEffect.send(DetailUiEvent.ShowSnackbar(e.message?:""))
+        }
+    }
+
+    private fun handleRestaurantFavoriteClick() {
         viewModelScope.launch {
             val restaurant = uiState.value.restaurantResource.data?: return@launch
             val isFavorite = restaurant.isWishlist
@@ -250,7 +268,7 @@ class DetailRestaurantViewModel @Inject constructor(
         _internalState.update {
             it.copy(isDetailMenuModalVisible = false, selectedMenu = null)
         }
-        _uiEffect.send(UiEvent.ShowSnackbar("Berhasil masuk keranjang!"))
+        _uiEffect.send(DetailUiEvent.ShowSnackbar("Berhasil masuk keranjang!"))
     }
 
     private fun handleMenuFavoriteClick(menu: MenuUiModel) {
@@ -267,21 +285,16 @@ class DetailRestaurantViewModel @Inject constructor(
     }
 
     private fun handleSaveToCollection() {
-        val state = uiState.value
-        val menu = state.menu ?: return
-        val restaurant = state.restaurantResource.data ?: return
-
-        val selectedCollectionIds =
-            state.collectionsResource.data
-                ?.filter { it.isSelected }
-                ?.map { it.id }
-                ?: emptyList()
+        val state = _internalState.value
+        val menu = state.selectedMenu?: return
+        val restaurant = uiState.value.restaurantResource.data?:return
+        val selectedCollectionIds = state.selectedCollectionIds.toList()
 
         viewModelScope.launch {
             try {
                 saveMenuCollectionsUseCase(
                     menu = menu.toDomain(restaurant),
-                    selectedCollectionIds = selectedCollectionIds
+                    collectionIdsFromUser = selectedCollectionIds
                 )
                 _internalState.update {
                     it.copy(isCollectionSheetVisible = false)

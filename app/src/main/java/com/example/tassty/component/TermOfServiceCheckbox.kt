@@ -19,7 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
@@ -42,17 +44,17 @@ fun TermsOfServiceCheckbox(
                 colors = CheckboxDefaults.colors(
                     checkedColor = Orange500,
                     uncheckedColor = Neutral40,
-                    checkmarkColor = Color.White
+                    checkmarkColor = Neutral10
                 )
             )
 
         val annotatedText = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = Neutral100)) {
+            withStyle(style = SpanStyle(color = LocalCustomColors.current.headerText)) {
                 append("I Agree with ")
             }
 
             pushStringAnnotation(tag = "TOS", annotation = "terms_of_service")
-            withStyle(style = SpanStyle(color = Orange500)) { // orange
+            withStyle(style = SpanStyle(color = Orange500)) {
                 append("Terms of Service")
             }
             pop()
@@ -66,35 +68,4 @@ fun TermsOfServiceCheckbox(
             }
         )
     }
-}
-
-@Composable
-fun TermsAndConditionsText(
-    onClickTerms: () -> Unit
-) {
-    val annotatedString = buildAnnotatedString {
-        withStyle(style = SpanStyle(color = Neutral70)) {
-            append("By adding a card, you’ve read & agree to our ")
-        }
-        pushStringAnnotation(tag = "terms", annotation = "terms_url")
-        withStyle(style = SpanStyle(
-            color = Orange500,
-            fontWeight = FontWeight.Medium
-        )) {
-            append("\nTerms and conditions")
-        }
-        pop()
-    }
-
-    Text(
-        text = annotatedString,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onClickTerms()
-            },
-        style = LocalCustomTypography.current.bodySmallRegular.copy(
-            textAlign = TextAlign.Center,
-        )
-    )
 }

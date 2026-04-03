@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.MenuUiModel
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral20
 
 @Composable
@@ -122,7 +123,7 @@ fun ShimmerFoodWideListCard(){
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Neutral20)
+        colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
@@ -167,5 +168,5 @@ fun ShimmerFoodWideListCard(){
 //@Composable
 //fun PreviewShimmerFood(
 //){
-//    ShimmerFoodWideListCard()
+//    ShimmerFoodLargeGridCard()
 //}

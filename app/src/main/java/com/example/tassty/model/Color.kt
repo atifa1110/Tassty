@@ -47,7 +47,7 @@ val patterns = listOf(
 
 // Helper untuk mencari Warna
 fun String.toCardColor(): CardColorOption {
-    return colorList.find { it.id == this } ?: colorList.first() // default ke pink jika tidak ketemu
+    return colorList.find { it.id == this } ?: colorList.first()
 }
 
 // Helper untuk mencari Pattern

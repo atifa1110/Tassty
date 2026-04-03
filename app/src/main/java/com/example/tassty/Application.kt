@@ -1,6 +1,10 @@
 package com.example.tassty
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
@@ -14,9 +18,11 @@ import coil.memory.MemoryCache
 import com.example.core.data.observer.AppLifecycleObserver
 import com.example.core.data.source.local.cache.LocationManager
 import com.example.core.data.worker.DatabaseCleanupWorker
+import com.google.firebase.messaging.FirebaseMessaging
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.stripe.android.PaymentConfiguration
 import dagger.hilt.android.HiltAndroidApp
+import io.getstream.android.push.firebase.FirebaseMessagingDelegate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,7 +46,6 @@ class MyApp : Application(), Configuration.Provider, ImageLoaderFactory {
         AndroidThreeTen.init(this)
 
         CoroutineScope(Dispatchers.IO).launch {
-            locationManager.load()
             setupInitialCleanup()
         }
 
@@ -53,10 +58,31 @@ class MyApp : Application(), Configuration.Provider, ImageLoaderFactory {
             applicationContext,
             BuildConfig.STRIPE_PUBLISH_KEY
         )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val chatChannel = NotificationChannel(
+                "chat_channel",
+                "Chat Driver",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifikasi pesan masuk"
+            }
+
+            val orderChannel = NotificationChannel(
+                "order_channel",
+                "Update Pesanan",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifikasi status pesanan"
+            }
+
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(chatChannel)
+            manager.createNotificationChannel(orderChannel)
+        }
     }
 
     private fun setupInitialCleanup() {
-        // supaya dia langsung jalan di background saat app dibuka.
         val cleanupRequest = OneTimeWorkRequestBuilder<DatabaseCleanupWorker>()
             .build()
 

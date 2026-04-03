@@ -1,5 +1,6 @@
 package com.example.tassty.screen.collection
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,20 +8,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CollectionUiModel
-import com.example.tassty.collectionUiModel
+import com.example.tassty.util.collectionUiModel
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionTopAppBar
 import com.example.tassty.component.CollectionVerticalCard
@@ -31,10 +29,9 @@ import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.HorizontalTitleItemCountSection
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
-import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun CollectionScreen (
@@ -77,7 +74,7 @@ fun CollectionContent (
 ){
     Scaffold(
         snackbarHost = { SnackbarHost(snackHostState) },
-        containerColor = Neutral10,
+        containerColor = LocalCustomColors.current.background,
         topBar = {
             CollectionTopAppBar(
                 onBackClick = onNavigateBack, onAddClick = onAddClick
@@ -85,10 +82,14 @@ fun CollectionContent (
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
             item {
-                HeaderTitleScreen(title = "My collections")
+                HeaderTitleScreen(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    title = "My collections."
+                )
                 Divider32()
             }
 
@@ -98,9 +99,7 @@ fun CollectionContent (
                     onNavigateToDetailCollection = onNavigateToDetailCollection
                 )
             }
-            item {
-                Divider32()
-            }
+
         }
     }
 }
@@ -140,22 +139,42 @@ fun CollectionListSection(
             }
         }
     }
-
 }
 
-@Preview(showBackground = true)
-@Composable
-fun CollectionScreenPreview() {
-    val snackHostState = remember { SnackbarHostState() }
-    CollectionContent(
-        uiState = CollectionUiState(
-            isAddCollectionSheet = false,
-            newCollectionName = "",
-            collections = Resource(isLoading = false, data = collectionUiModel)
-        ),
-        onNavigateToDetailCollection = {_,_,_->},
-        onAddClick = {},
-        onNavigateBack = {},
-        snackHostState = snackHostState
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun CollectionLightPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme {
+//        CollectionContent(
+//            uiState = CollectionUiState(
+//                isAddCollectionSheet = false,
+//                newCollectionName = "",
+//                collections = Resource(isLoading = false, data = collectionUiModel)
+//            ),
+//            onNavigateToDetailCollection = { _, _, _ -> },
+//            onAddClick = {},
+//            onNavigateBack = {},
+//            snackHostState = snackHostState
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun CollectionDarkPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme(darkTheme = true){
+//        CollectionContent(
+//            uiState = CollectionUiState(
+//                isAddCollectionSheet = false,
+//                newCollectionName = "",
+//                collections = Resource(isLoading = false, data = collectionUiModel)
+//            ),
+//            onNavigateToDetailCollection = { _, _, _ -> },
+//            onAddClick = {},
+//            onNavigateBack = {},
+//            snackHostState = snackHostState
+//        )
+//    }
+//}

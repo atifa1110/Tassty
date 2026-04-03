@@ -32,7 +32,7 @@ data class CartEntity(
     val restaurantId: String,
     val quantity: Int,
     val price: Int,
-    val finalSummary: String,
+    val finalSummary: String?,
     val notes: String?,
     val isHidden: Boolean
 )

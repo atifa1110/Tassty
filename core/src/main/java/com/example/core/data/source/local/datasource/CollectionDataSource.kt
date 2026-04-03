@@ -4,7 +4,6 @@ import androidx.room.Transaction
 import com.example.core.data.source.local.database.dao.CleanupDao
 import com.example.core.data.source.local.database.dao.CollectionDao
 import com.example.core.data.source.local.database.dao.CollectionMenuDao
-import com.example.core.data.source.local.database.dao.FavoriteQueryDao
 import com.example.core.data.source.local.database.dao.MenuDao
 import com.example.core.data.source.local.database.dao.RestaurantDao
 import com.example.core.data.source.local.database.entity.CollectionEntity
@@ -13,6 +12,7 @@ import com.example.core.data.source.local.database.entity.MenuEntity
 import com.example.core.data.source.local.database.entity.RestaurantEntity
 import com.example.core.data.source.local.database.model.CollectionWithMenu
 import com.example.core.data.source.local.database.model.MenuWithRestaurant
+import com.example.core.data.source.local.database.model.throwUserFriendlyDbError
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -24,17 +24,25 @@ class CollectionDataSource @Inject constructor(
 ) {
     @Transaction
     suspend fun addCollection(collectionId: String, title: String,isSystem: Boolean = false) {
-        collectionDao.insert(
-            CollectionEntity(
-                id = collectionId,
-                title = title,
-                isSystem = isSystem
+        try {
+            collectionDao.insert(
+                CollectionEntity(
+                    id = collectionId,
+                    title = title,
+                    isSystem = isSystem
+                )
             )
-        )
+        }catch (e: Exception){
+            e.throwUserFriendlyDbError()
+        }
     }
 
     suspend fun updateName(collectionId: String,name: String){
-        return collectionDao.updateName(collectionId,name)
+        try {
+            return collectionDao.updateName(collectionId, name)
+        }catch (e: Exception) {
+            e.throwUserFriendlyDbError()
+        }
     }
 
     fun observeFavoriteMenuIds(): Flow<List<String>>{
@@ -51,25 +59,30 @@ class CollectionDataSource @Inject constructor(
         restaurant: RestaurantEntity,
         collectionIds: List<String>
     ){
-        // 1. Ensure parent is exist
-        restaurantDao.upsert(restaurant)
-        menuDao.upsert(menu)
+        try {
+            // Ensure parent is exist
+            restaurantDao.upsert(restaurant)
+            menuDao.upsert(menu)
 
-        // 2. Insert relation
-        if (collectionIds.isNotEmpty()) {
-            collectionIds.map { collectionId ->
-                collectionMenuDao.insert(
-                    CollectionMenuCrossRef(
+            // Insert relation
+            if (collectionIds.isNotEmpty()) {
+                collectionIds.forEach { collectionId ->
+                    collectionMenuDao.insert(
+                        CollectionMenuCrossRef(
+                            collectionId = collectionId,
+                            restaurantId = restaurant.id,
+                            menuId = menu.id
+                        )
+                    )
+                    // set image only if image url in collection is empty
+                    collectionDao.updateImageIfEmpty(
                         collectionId = collectionId,
-                        restaurantId = restaurant.id,
-                        menuId = menu.id
-                    ))
-                // set image only if image url in collection is empty
-                collectionDao.updateImageIfEmpty(
-                    collectionId = collectionId,
-                    imageUrl = menu.imageUrl
-                )
+                        imageUrl = menu.imageUrl
+                    )
+                }
             }
+        }catch (e: Exception){
+            e.throwUserFriendlyDbError()
         }
     }
 
@@ -78,20 +91,25 @@ class CollectionDataSource @Inject constructor(
         menuId: String,
         collectionIds: List<String>
     ) {
-        // erase relation that is uncheck
-        collectionIds.forEach { collectionId ->
-            collectionMenuDao.deleteByCollectionMenuId(collectionId, menuId)
-            val image = collectionMenuDao.getAnyMenuImage(collectionId)
-            collectionDao.updateImage(collectionId,image)
+        try {
+            collectionIds.forEach { collectionId ->
+                collectionMenuDao.deleteByCollectionMenuId(collectionId, menuId)
+                val image = collectionMenuDao.getAnyMenuImage(collectionId)
+                collectionDao.updateImage(collectionId, image)
+            }
+        }catch (e: Exception){
+            e.throwUserFriendlyDbError()
         }
     }
 
     @Transaction
     suspend fun deleteCollectionById(collectionId: String){
-        // Hapus relation
-        collectionMenuDao.deleteByCollectionId(collectionId)
-        // Hapus collection
-        collectionDao.deleteById(collectionId)
+        try {
+            collectionMenuDao.deleteByCollectionId(collectionId)
+            collectionDao.deleteById(collectionId)
+        }catch (e: Exception){
+            e.throwUserFriendlyDbError()
+        }
     }
 
     fun getCollections() : Flow<List<CollectionWithMenu>>{
@@ -105,5 +123,4 @@ class CollectionDataSource @Inject constructor(
     fun getMenuCollectionById(collectionId: String) : Flow<List<MenuWithRestaurant>>{
         return collectionMenuDao.getFavoriteMenus(collectionId)
     }
-
 }

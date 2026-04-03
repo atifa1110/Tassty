@@ -14,11 +14,11 @@ class SaveMenuCollectionsUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         menu: Menu,
-        selectedCollectionIds: List<String>
+        collectionIdsFromUser: List<String>
     ) = withContext(Dispatchers.IO) {
 
         val existingCollectionIds = repository.getCollectionIdsByMenu(menu.id).toSet()
-        val selectedCollectionIds = selectedCollectionIds.toSet()
+        val selectedCollectionIds = collectionIdsFromUser.toSet()
 
         val toAdd = selectedCollectionIds - existingCollectionIds
         val toRemove = existingCollectionIds - selectedCollectionIds

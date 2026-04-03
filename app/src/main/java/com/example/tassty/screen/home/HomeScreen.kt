@@ -1,11 +1,15 @@
 package com.example.tassty.screen.home
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -35,6 +40,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -48,7 +54,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -74,23 +79,27 @@ import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.ErrorListState
-import com.example.tassty.restaurantUiModel
 import kotlinx.coroutines.launch
 import kotlin.collections.orEmpty
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
-import com.example.tassty.categories
+import com.example.tassty.util.categories
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionContent
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.HomeProfile
 import com.example.tassty.component.NearbyMapBox
+import com.example.tassty.component.ProfileImage
 import com.example.tassty.component.SearchBar
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerGridMenuListPlaceholder
@@ -98,14 +107,16 @@ import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
 import com.example.tassty.component.ShimmerRestaurantGridCard
 import com.example.tassty.component.ShimmerVoucherLargeCard
 import com.example.tassty.component.shimmerLoadingAnimation
-import com.example.tassty.menusItem
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Orange500
-
-private val TOP_APP_BAR_HEIGHT = 70.dp
+import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.menusItem
+import com.example.tassty.util.restaurantUiModel
+import com.example.tassty.util.voucherUiModel
 
 @Composable
 fun HomeScreen(
-    onNavigateToDetail: (String) -> Unit,
+    onNavigateToDetailRest: (String) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,
@@ -114,14 +125,27 @@ fun HomeScreen(
     onNavigateToVoucher: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.homeState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { event->
+            when(event){
+                is HomeUiEffect.ShowSnackbar -> {
+                    snackHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     HomeContent(
         snackHostState = snackHostState,
         uiState = uiState,
         onNavigateToSearch = onNavigateToSearch,
-        onNavigateToDetail = onNavigateToDetail,
+        onNavigateToDetail = onNavigateToDetailRest,
         onNavigateToCategory = onNavigateToCategory,
         onNavigateToRecommended = onNavigateToRecommended,
         onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
@@ -137,7 +161,9 @@ fun HomeScreen(
     ) {
         CollectionContent(
             resource = uiState.collectionsResource,
-            onCollectionSelected = {id, check -> viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id,check))},
+            onCollectionSelected = { id, check ->
+                viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id,check))
+            },
             onSaveCollectionClick = {viewModel.onEvent(HomeEvent.OnSaveToCollection)},
             onAddCollectionClick = { viewModel.onEvent(HomeEvent.OnShowAddCollectionSheet) }
         )
@@ -162,6 +188,7 @@ fun HomeScreen(
 fun HomeContent(
     snackHostState : SnackbarHostState,
     uiState: HomeUiState,
+    onRefresh: () -> Unit,
     onNavigateToDetail: (String) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
@@ -169,96 +196,90 @@ fun HomeContent(
     onNavigateToNearbyRestaurant:() -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:() -> Unit,
-    onRefresh: () -> Unit,
     onFavoriteClicked: (MenuUiModel) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
 
-    val listState = rememberLazyListState()
-    val colorChangeThreshold = 80.dp
-    val thresholdPx = with(LocalDensity.current) { colorChangeThreshold.toPx() }
-
-    val scrolledPastThreshold by remember {
+    val scrollState = rememberLazyListState()
+    val isScrolled by remember {
         derivedStateOf {
-            val currentScrollOffset = if (listState.firstVisibleItemIndex == 0) {
-                listState.firstVisibleItemScrollOffset.toFloat()
-            } else {
-                thresholdPx + 1f
-            }
-            currentScrollOffset > thresholdPx
+            scrollState.firstVisibleItemIndex > 0 ||
+                    scrollState.firstVisibleItemScrollOffset > 100
         }
     }
-    val topBarColor = if (scrolledPastThreshold) Orange500 else Color.Transparent
+
+    val appBarAlpha by animateFloatAsState(
+        targetValue = if (isScrolled) 1f else 0f,
+        animationSpec = tween(300),
+        label = "alpha"
+    )
 
     Scaffold(
+        containerColor = LocalCustomColors.current.background,
         snackbarHost = { SnackbarHost(snackHostState) },
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize().background(Color.Transparent)
-
+        BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxSize()
+            .background(Color.Transparent)
         ) {
-            TopAppBarSection(
-                profileImage = uiState.profileImage,
-                addressName = uiState.addressName,
-                modifier = Modifier.background(topBarColor).zIndex(2f)
-            )
+            val screenHeight = maxHeight
 
             LazyColumn(
-                state = listState,
+                state = scrollState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Neutral10)
                     .pullToRefresh(
                         state = refreshState,
                         isRefreshing = uiState.isRefreshing,
                         onRefresh = {
                             scope.launch { onRefresh() }
                         }
-                    )
+                    ),
+                contentPadding = PaddingValues(bottom = 32.dp)
             ) {
-                item {
-                    Box(
-                        modifier = Modifier
+                item(key = "header_section"){
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Box(modifier = Modifier
                             .fillMaxWidth()
-                    ) {
-                        Box(
+                            .height(screenHeight * 0.5f)
+                            .drawBehind {
+                                drawRect(
+                                    brush = Brush.linearGradient(
+                                        colorStops = arrayOf(
+                                            0.0f to Color(0xFF737373),
+                                            0.57f to Color(0xFF3E3E3E),
+                                            1.0f to Color(0xFF343333)
+                                        ),
+                                        start = Offset(0f, 0f),
+                                        end = Offset(0f, size.height)
+                                    )
+                                )
+                            }
+                        )
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(460.dp)
-                                .offset(y = -TOP_APP_BAR_HEIGHT)
-                                .drawBehind {
-                                    drawRect(
-                                        brush = Brush.radialGradient(
-                                            colorStops = arrayOf(
-                                                0.0f to Color(0xFF737373),
-                                                0.57f to Color(0xFF3E3E3E),
-                                                0.78f to Color(0xFF1F1E1E)
-                                            ),
-                                            center = center,
-                                            radius = 1900f,
-                                        )
-                                    )
-                                }
-                        )
-                        Column(modifier = Modifier.offset(y = TOP_APP_BAR_HEIGHT)) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            HeaderSection(userName = uiState.userName, onClick = onNavigateToSearch)
+                                .statusBarsPadding()
+                        ) {
+                            Spacer(modifier = Modifier.height(80.dp))
+                            HeaderSection(
+                                userName = uiState.userName,
+                                onClick = onNavigateToSearch
+                            )
                             Spacer(modifier = Modifier.height(24.dp))
                             BannerSection()
                         }
                     }
                 }
-                item {
-                    Spacer(Modifier.height(32.dp))
+                item(key = "category_section") {
+                    Spacer(Modifier.height(24.dp))
                     CategorySection(
                         resource = uiState.allCategories,
                         onNavigateToCategory = onNavigateToCategory
                     )
                     Divider32()
                 }
-                item {
+                item(key = "recommend_menu_section") {
                     RecommendationSection(
                         resource = uiState.recommendedMenus,
                         onFavoriteClicked = onFavoriteClicked,
@@ -274,7 +295,7 @@ fun HomeContent(
                     )
                     Spacer(Modifier.height(32.dp))
                 }
-                item {
+                item(key = "recommend_restaurant_section") {
                     RecommendationRestaurant(
                         resource = uiState.recommendedRestaurants,
                         onNavigateToRecommended = onNavigateToRecommended,
@@ -282,29 +303,40 @@ fun HomeContent(
                     )
                     Spacer(Modifier.height(32.dp))
                 }
-                item {
+                item(key = "voucher_section"){
                     TodayDeal(
                         resource = uiState.todayVouchers,
                         onNavigateToVoucher = onNavigateToVoucher
                     )
                     Spacer(Modifier.height(32.dp))
                 }
-                item {
+                item(key = "suggested_section"){
                     SuggestedMenu(
                         resource = uiState.suggestedMenus,
                         onFavoriteClicked = onFavoriteClicked,
                         onAddCart = {},
                         onNavigateToDetailMenu = onNavigateToDetailMenu
                     )
-                    Spacer(Modifier.height(32.dp))
                 }
             }
+
+            TopAppBarSection(
+                userName = uiState.userName,
+                profileImage = uiState.profileImage,
+                addressName = uiState.addressName,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Orange500.copy(alpha = appBarAlpha)
+                    )
+                    .statusBarsPadding(),
+            )
 
             PullToRefreshDefaults.Indicator(
                 state = refreshState,
                 isRefreshing = uiState.isRefreshing,
                 modifier = Modifier.align(Alignment.TopCenter)
-                    .padding(top = TOP_APP_BAR_HEIGHT)
+                    .padding(top = 80.dp)
             )
         }
     }
@@ -312,6 +344,7 @@ fun HomeContent(
 
 @Composable
 fun TopAppBarSection(
+    userName: String,
     profileImage: String,
     addressName: String,
     modifier: Modifier = Modifier
@@ -327,16 +360,15 @@ fun TopAppBarSection(
             modifier = Modifier.align(Alignment.CenterStart),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CommonImage(
+           HomeProfile(
                 imageUrl = profileImage,
-                name = profileImage,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
+                name = userName
             )
 
-            Row (modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center){
+            Row (
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center
+            ){
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
@@ -363,7 +395,6 @@ fun TopAppBarSection(
                 }
             }
 
-            // Kanan (notif button)
             IconButton(
                 onClick = {},
                 modifier = Modifier
@@ -385,7 +416,6 @@ fun TopAppBarSection(
     }
 }
 
-// --- Header Section ---
 @Composable
 fun HeaderSection(
     userName: String,
@@ -407,7 +437,7 @@ fun HeaderSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "👋", // Emoji
+                text = "👋",
                 fontSize = 28.sp
             )
         }
@@ -415,8 +445,7 @@ fun HeaderSection(
 
         SearchBar(
             modifier = Modifier.clickable(onClick = onClick),
-            value = "",
-            onValueChange = {  },
+            onValueChange = {},
             placeholder = stringResource(R.string.search_delicacies),
             isTransparentMode = true,
             enabled = false
@@ -424,7 +453,6 @@ fun HeaderSection(
     }
 }
 
-// ---- Banner Section ---
 @Composable
 fun BannerSection() {
     Column(
@@ -481,7 +509,7 @@ fun BannerSection() {
 
                     }
                     Button(
-                        onClick = { /* Handle button click */ },
+                        onClick = {},
                         shape = RoundedCornerShape(20.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Orange900
@@ -491,10 +519,12 @@ fun BannerSection() {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text(text = "Get Now", color = Color.White, style = LocalCustomTypography.current.bodySmallMedium)
+                            Text(text = "Get Now", color = Neutral10,
+                                style = LocalCustomTypography.current.bodySmallMedium)
                             Icon(
                                 painter = painterResource(R.drawable.arrow_left_up),
-                                contentDescription = "arrow left up"
+                                contentDescription = "arrow left up",
+                                tint = Neutral10
                             )
                         }
                     }
@@ -659,7 +689,7 @@ fun RestaurantNearby(
             ) {
                 HeaderListTitleButton(
                     title = "Restos Nearby you",
-                    titleColor = Neutral100,
+                    titleColor = LocalCustomColors.current.headerText,
                     onClick = onNavigateToNearbyRestaurant,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
@@ -736,9 +766,8 @@ fun TodayDeal(
         else ->{
             Column(modifier = Modifier
                 .fillMaxWidth()
-                .background(Neutral20)
-                .padding(vertical = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                .background(LocalCustomColors.current.cardBackground)
+                .padding(vertical = 24.dp)
             ) {
                 HorizontalTitleButtonSection(
                     title= "Today's deals",
@@ -786,28 +815,62 @@ fun SuggestedMenu(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewHomeScreen() {
-    val snackHostState = remember { SnackbarHostState() }
-    HomeContent(
-        snackHostState = snackHostState,
-        uiState = HomeUiState(
-            allCategories = Resource(data = categories,isLoading = false),
-            recommendedRestaurants = Resource(data = restaurantUiModel,isLoading = false),
-            nearbyRestaurants = Resource(data= restaurantUiModel,isLoading = false),
-            todayVouchers = Resource(data = emptyList(),isLoading = false),
-            recommendedMenus = Resource(data = menusItem,isLoading = false),
-            suggestedMenus = Resource(data = menusItem,isLoading = false),
-        ),
-        onRefresh = {},
-        onFavoriteClicked = {},
-        onNavigateToDetail = {},
-        onNavigateToSearch = {},
-        onNavigateToRecommended = {},
-        onNavigateToCategory = {_,_,_->},
-        onNavigateToNearbyRestaurant = {},
-        onNavigateToDetailMenu = {},
-        onNavigateToVoucher = {}
-    )
-}
+//@Preview(showBackground = true, name = "Light Mode")
+//@Composable
+//fun HomeLightPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme(darkTheme = false){
+//        HomeContent(
+//            snackHostState = snackHostState,
+//            uiState = HomeUiState(
+//                userName = "Atifa",
+//                addressName = "Guest",
+//                allCategories = Resource(data = categories, isLoading = false),
+//                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+//                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+//                todayVouchers = Resource(data = emptyList(), isLoading = false),
+//                recommendedMenus = Resource(data = menusItem, isLoading = false),
+//                suggestedMenus = Resource(data = menusItem, isLoading = false),
+//            ),
+//            onRefresh = {},
+//            onFavoriteClicked = {},
+//            onNavigateToDetail = {},
+//            onNavigateToSearch = {},
+//            onNavigateToRecommended = {},
+//            onNavigateToCategory = { _, _, _ -> },
+//            onNavigateToNearbyRestaurant = {},
+//            onNavigateToDetailMenu = {},
+//            onNavigateToVoucher = {}
+//        )
+//    }
+//}
+//
+//@Preview(showBackground = true, name = "DarkMode")
+//@Composable
+//fun HomeDarkPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme(darkTheme = true){
+//        HomeContent(
+//            snackHostState = snackHostState,
+//            uiState = HomeUiState(
+//                userName = "Guest",
+//                addressName = "Guest",
+//                allCategories = Resource(data = categories, isLoading = false),
+//                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+//                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+//                todayVouchers = Resource(data = voucherUiModel, isLoading = false),
+//                recommendedMenus = Resource(data = menusItem, isLoading = false),
+//                suggestedMenus = Resource(data = menusItem, isLoading = false),
+//            ),
+//            onRefresh = {},
+//            onFavoriteClicked = {},
+//            onNavigateToDetail = {},
+//            onNavigateToSearch = {},
+//            onNavigateToRecommended = {},
+//            onNavigateToCategory = { _, _, _ -> },
+//            onNavigateToNearbyRestaurant = {},
+//            onNavigateToDetailMenu = {},
+//            onNavigateToVoucher = {}
+//        )
+//    }
+//}

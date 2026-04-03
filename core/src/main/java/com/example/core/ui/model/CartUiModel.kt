@@ -11,10 +11,12 @@ data class CartItemUiModel(
     val menuId: String,
     val name: String,
     val imageUrl: String,
+    val customizable: Boolean,
     val price: Int,
     val quantity: Int,
-    val summary: String,
-    val notes: String?,
+    val options: String,
+    val notes: String,
+    val formatOptions: String,
     val isSelected: Boolean,
     val isSwipeActionVisible: Boolean
 )

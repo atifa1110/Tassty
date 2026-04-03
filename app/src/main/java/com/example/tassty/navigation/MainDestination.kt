@@ -1,6 +1,7 @@
 package com.example.tassty.navigation
 
 import android.net.Uri
+import android.os.Parcelable
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import com.example.tassty.RatingType
 import com.example.tassty.navigation.CategoryDestination.idArg
 import com.example.tassty.navigation.CategoryDestination.imageArg
 import com.example.tassty.navigation.CategoryDestination.nameArg
@@ -26,13 +28,23 @@ import com.example.tassty.screen.dashboard.DashboardScreen
 import com.example.tassty.screen.detailmenu.DetailMenuScreen
 import com.example.tassty.screen.detailorder.DetailOrderScreen
 import com.example.tassty.screen.detailrestaurant.DetailRestaurantScreen
+import com.example.tassty.screen.editprofile.EditProfileScreen
 import com.example.tassty.screen.favorite.FavoriteScreen
+import com.example.tassty.screen.message.MessageScreen
 import com.example.tassty.screen.nearby.NearbyRestaurantScreen
+import com.example.tassty.screen.orderprocess.OrderProcessEvent
+import com.example.tassty.screen.orderprocess.OrderProcessScreen
 import com.example.tassty.screen.orders.OrderScreen
 import com.example.tassty.screen.payment.PaymentScreen
+import com.example.tassty.screen.rating.RatingScreen
 import com.example.tassty.screen.recommended.RecommendedRestaurantScreen
+import com.example.tassty.screen.review.ReviewScreen
 import com.example.tassty.screen.search.SearchRoute
+import com.example.tassty.screen.terms.TermsScreen
 import com.example.tassty.screen.voucher.VoucherScreen
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable
+import com.google.gson.Gson
+import kotlinx.parcelize.Parcelize
 
 object MainGraph : TasstyNavigationDestination {
     override val route = "main_graph"
@@ -98,6 +110,24 @@ object DetailMenuDestination : TasstyNavigationDestination {
     }
 }
 
+object ReviewDestination : TasstyNavigationDestination {
+    override val route = "review"
+    override val destination = "review"
+
+    const val idArg = "id"
+    private const val IdNullMessage = "Id is null."
+
+    val routeWithArgs = "${route}/{$idArg}"
+
+    fun createRoute(id: String): String {
+        return "${route}/$id"
+    }
+
+    fun getId(savedStateHandle: SavedStateHandle): String {
+        return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
+    }
+}
+
 object SearchDestination : TasstyNavigationDestination {
     override val route: String = "search"
     override val destination: String = "search"
@@ -147,6 +177,11 @@ object FavoriteDestination : TasstyNavigationDestination {
     override val destination: String = "favorite"
 }
 
+object TermDestination : TasstyNavigationDestination {
+    override val route: String = "term"
+    override val destination: String = "term"
+}
+
 object VoucherDestination : TasstyNavigationDestination {
     override val route: String = "voucher"
     override val destination: String = "voucher"
@@ -182,6 +217,7 @@ object AddressDestination : TasstyNavigationDestination {
     override val route: String = "address"
     override val destination: String = "address"
 }
+
 object PaymentDestination : TasstyNavigationDestination {
     override val route: String = "payment"
     override val destination: String = "payment"
@@ -205,6 +241,7 @@ object CardDestination : TasstyNavigationDestination {
     override val route: String = "card"
     override val destination: String = "card"
 }
+
 object AddCardDestination : TasstyNavigationDestination {
     override val route: String = "add_card"
     override val destination: String = "add_card"
@@ -215,7 +252,25 @@ object OrderDestination : TasstyNavigationDestination {
     override val destination: String = "order"
 }
 
-object DetailOrderDestination : TasstyNavigationDestination {
+object OrderProcessDestination : TasstyNavigationDestination {
+    override val route: String = "order_process"
+    override val destination: String = "order_process"
+
+    const val idArg = "id"
+    private const val IdNullMessage = "Id is null."
+
+    val routeWithArgs = "${route}/{${idArg}}"
+
+    fun createRoute(id: String): String {
+        return "${route}/$id"
+    }
+
+    fun getId(savedStateHandle: SavedStateHandle): String {
+        return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
+    }
+}
+
+object OrderDetailDestination : TasstyNavigationDestination {
     override val route: String = "detail_order"
     override val destination: String = "detail_order"
 
@@ -233,10 +288,62 @@ object DetailOrderDestination : TasstyNavigationDestination {
     }
 }
 
+@Parcelize
+data class RatingNavArg(
+    val orderId: String,
+    val orderNumber: String,
+    val createdAt: String,
+    val menuId: String,
+    val name: String,
+    val imageUrl: String,
+    val ratingType: RatingType
+) : Parcelable
+
+object RatingDestination : TasstyNavigationDestination {
+    override val route = "rating"
+    override val destination = "rating"
+
+    const val ratingDataArg = "ratingData"
+    private const val DataNullMessage = "Rating data is null."
+
+    val routeWithArgs = "${route}/{${ratingDataArg}}"
+
+    fun createRoute(arg: RatingNavArg): String {
+        val argJson = Gson().toJson(arg)
+        val encodedJson = Uri.encode(argJson)
+        return "${route}/$encodedJson"
+    }
+
+    fun getRatingData(savedStateHandle: SavedStateHandle): RatingNavArg {
+        val jsonString: String = checkNotNull(savedStateHandle[ratingDataArg]) { DataNullMessage }
+        return Gson().fromJson(jsonString, RatingNavArg::class.java)
+    }
+}
+object MessageDestination : TasstyNavigationDestination {
+    override val route: String = "message"
+    override val destination: String = "message"
+
+    const val idArg = "id"
+    private const val IdNullMessage = "Id is null."
+
+    val routeWithArgs = "${route}/{${idArg}}"
+
+    fun createRoute(id: String): String {
+        return "${route}/$id"
+    }
+
+    fun getId(savedStateHandle: SavedStateHandle): String {
+        return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
+    }
+}
+
+object EditProfileDestination : TasstyNavigationDestination {
+    override val route = "edit_profile"
+    override val destination = "edit_profile"
+}
 
 fun NavGraphBuilder.mainGraph(
     onNavigateBack:() -> Unit,
-    onNavigateToDetail: (String) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,
@@ -246,15 +353,23 @@ fun NavGraphBuilder.mainGraph(
     onAddCartSuccess:(String,String) -> Unit,
     onDeleteSuccess:(String) -> Unit,
     onNavigateToFavorite:() -> Unit,
+    onNavigateToDetailRest: (String) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
+    onNavigateToReview:(String) -> Unit,
     onNavigateToBestSeller:(String) -> Unit,
     onNavigateToVoucher:()-> Unit,
     onNavigateToAddress: () -> Unit,
     onNavigateToPayment: (String, String)-> Unit,
     onNavigateToCard:() -> Unit,
     onNavigateToAddCard: ()-> Unit,
-    onNavigateToOrder: ()-> Unit,
-    onNavigateToDetailOrder:(String) -> Unit
+    onNavigateToOrder:() -> Unit,
+    onNavigateToOrderProcess: (String)-> Unit,
+    onNavigateToOrderDetail: (String)-> Unit,
+    onNavigateToRating: (RatingNavArg) -> Unit,
+    onNavigateToMessage:(String) -> Unit,
+    onNavigateToLoginFromHome: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
+    onNavigateToTerm: () -> Unit
 ) {
     navigation(
         route = MainGraph.route,
@@ -262,7 +377,7 @@ fun NavGraphBuilder.mainGraph(
     ) {
         composable(route = MainDestination.route) {
             DashboardScreen(
-                onNavigateToDetail = onNavigateToDetail,
+                onNavigateToDetailRest = onNavigateToDetailRest,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToCategory = onNavigateToCategory,
                 onNavigateToRecommended = onNavigateToRecommended,
@@ -274,13 +389,18 @@ fun NavGraphBuilder.mainGraph(
                 onNavigateToAddress = onNavigateToAddress,
                 onNavigateToCard = onNavigateToCard,
                 onNavigateToOrder = onNavigateToOrder,
-                onNavigateToPayment = onNavigateToPayment
+                onNavigateToPayment = onNavigateToPayment,
+                onNavigateToLogin = onNavigateToLoginFromHome,
+                onNavigateToMessage = onNavigateToMessage,
+                onNavigateToEditProfile = onNavigateToEditProfile,
+                onNavigateToTerm = onNavigateToTerm
             )
         }
 
         composable(route = SearchDestination.route) {
             SearchRoute(
-                onNavigateToDetail = onNavigateToDetail
+                onNavigateBack = onNavigateBack,
+                onNavigateToDetail = onNavigateToDetailRest
             )
         }
 
@@ -296,7 +416,6 @@ fun NavGraphBuilder.mainGraph(
         ) { backStackEntry ->
             val snackHostState = remember { SnackbarHostState() }
 
-            // Use collectAsState for better Compose integration than observeAsState (livedata)
             val message by backStackEntry.savedStateHandle
                 .getStateFlow<String?>("snack_message", null)
                 .collectAsStateWithLifecycle()
@@ -310,8 +429,22 @@ fun NavGraphBuilder.mainGraph(
 
             DetailRestaurantScreen(
                 snackHostState = snackHostState,
+                onNavigateBack = onNavigateBack,
                 onNavigateToDetailMenu = onNavigateToDetailMenu,
-                onNavigateToBestSeller=onNavigateToBestSeller
+                onNavigateToBestSeller=onNavigateToBestSeller,
+                onNavigateToReview = onNavigateToReview,
+                onNavigateToVoucher = onNavigateToVoucher
+            )
+        }
+
+        composable(
+            route = ReviewDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(ReviewDestination.idArg) { type = NavType.StringType }
+            )
+        ){
+            ReviewScreen(
+                onNavigateBack = onNavigateBack
             )
         }
 
@@ -332,14 +465,17 @@ fun NavGraphBuilder.mainGraph(
             arguments = listOf(
                 navArgument(idArg) { type = NavType.StringType })
         ){ backStackEntry ->
-            BestSellerScreen()
+            BestSellerScreen(
+                onNavigateToDetailMenu = onNavigateToDetailMenu
+            )
         }
 
         composable(
             route = RecommendedDestination.route
         ){
             RecommendedRestaurantScreen(
-                onNavigateToDetail = onNavigateToDetail
+                onNavigateBack = onNavigateBack,
+                onNavigateToDetailRest = onNavigateToDetailRest
             )
         }
 
@@ -354,13 +490,17 @@ fun NavGraphBuilder.mainGraph(
             val name = backStackEntry.arguments?.getString(nameArg) ?: ""
             val image = backStackEntry.arguments?.getString(imageArg) ?: ""
 
-            CategoryScreen(name = name,image = image,onNavigateToDetail=onNavigateToDetail)
+            CategoryScreen(
+                name = name,
+                image = image,
+                onNavigateToDetail = onNavigateToDetailRest,
+                onNavigateBack = onNavigateBack
+            )
         }
 
         composable(route = CollectionDestination.route) { backStackEntry ->
             val snackHostState = remember { SnackbarHostState() }
 
-            // Use collectAsState for better Compose integration than observeAsState (livedata)
             val message by backStackEntry.savedStateHandle
                 .getStateFlow<String?>("snack_message", null)
                 .collectAsStateWithLifecycle()
@@ -389,7 +529,8 @@ fun NavGraphBuilder.mainGraph(
         ) {
             CollectionDetailScreen(
                 onNavigateBack = onNavigateBack,
-                onDeleteSuccess = onDeleteSuccess
+                onDeleteSuccess = onDeleteSuccess,
+                onNavigateToDetailRest = onNavigateToDetailRest
             )
         }
 
@@ -404,13 +545,17 @@ fun NavGraphBuilder.mainGraph(
         composable(
             route = VoucherDestination.route,
         ) {
-            VoucherScreen()
+            VoucherScreen(
+                onNavigateBack = onNavigateBack
+            )
         }
 
         composable(
             route = AddressDestination.route,
         ) {
-            AddressScreen()
+            AddressScreen(
+                onNavigateBack = onNavigateBack
+            )
         }
 
         composable(
@@ -422,9 +567,11 @@ fun NavGraphBuilder.mainGraph(
             )
         ) { backStackEntry ->
             val total = backStackEntry.arguments?.getString(PaymentDestination.totalArg) ?: ""
+
             PaymentScreen(
                 total = total,
-                onNavigateToOrderDetail = onNavigateToDetailOrder
+                onNavigateBack = onNavigateBack,
+                onNavigateToOrderProcess = onNavigateToOrderProcess
             )
         }
 
@@ -432,6 +579,7 @@ fun NavGraphBuilder.mainGraph(
             route = CardDestination.route,
         ) {
             CardScreen(
+                onNavigateBack = onNavigateBack,
                 onNavigateToAddCard = onNavigateToAddCard
             )
         }
@@ -448,15 +596,64 @@ fun NavGraphBuilder.mainGraph(
             route = OrderDestination.route,
         ) {
             OrderScreen(
+                onNavigateBack = onNavigateBack,
                 onNavigateToPayment = onNavigateToPayment,
-                onNavigateToDetailOrder = onNavigateToDetailOrder
+                onNavigateToOrderProcess = onNavigateToOrderProcess,
+                onNavigateToOrderDetail = onNavigateToOrderDetail
             )
         }
 
         composable(
-            route = DetailOrderDestination.routeWithArgs,
+            route = OrderProcessDestination.routeWithArgs,
         ) {
-            DetailOrderScreen()
+            OrderProcessScreen(
+                onNavigateToMessage = onNavigateToMessage
+            )
+        }
+
+        composable(
+            route = OrderDetailDestination.routeWithArgs,
+        ) {
+            DetailOrderScreen(
+                onNavigateToRating = onNavigateToRating,
+                onNavigateBack = onNavigateBack
+            )
+        }
+
+        composable(
+            route = RatingDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(RatingDestination.ratingDataArg) { type = NavType.StringType }
+            )
+        ) {
+            RatingScreen(
+                onNavigateBack = onNavigateBack
+            )
+        }
+
+
+        composable(
+            route = MessageDestination.routeWithArgs,
+        ) {
+            MessageScreen(
+                onNavigateBack = onNavigateBack
+            )
+        }
+
+        composable(
+            route = EditProfileDestination.route,
+        ) {
+            EditProfileScreen(
+                onNavigateBack = onNavigateBack
+            )
+        }
+
+        composable(
+            route = TermDestination.route,
+        ) {
+            TermsScreen(
+                onNavigateBack = onNavigateBack
+            )
         }
 
     }

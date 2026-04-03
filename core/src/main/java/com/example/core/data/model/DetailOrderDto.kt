@@ -23,6 +23,10 @@ data class DetailOrderDto(
     @SerializedName("queue_number")
     val queueNumber: Int,
     val driver: DriverDto,
+    @SerializedName("chat_channel_id")
+    val chatChannelId : String? = null,
+    @SerializedName("restaurant_review_id")
+    val restaurantReviewId: String?= null,
     val restaurant: RestaurantDto,
     @SerializedName("user_addresses")
     val userAddress: UserAddressDto,

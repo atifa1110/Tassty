@@ -8,5 +8,4 @@ interface LocationProvider {
 
     fun getCurrentLocation(): Flow<LocationDetail>
 
-    suspend fun syncLocation()
 }

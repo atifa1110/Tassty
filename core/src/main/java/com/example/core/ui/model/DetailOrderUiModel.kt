@@ -14,6 +14,8 @@ data class DetailOrderUiModel(
     val createdAt: String,
     val queueNumber: String,
     val driver: DriverUiModel,
+    val chatChannelId: String,
+    val restaurantReviewId: String,
     val restaurant: RestaurantUiModel,
     val userAddress: UserAddressUiModel,
     val orderItems: List<OrderItemUiModel>,

@@ -3,6 +3,7 @@ package com.example.core.ui.mapper
 import com.example.core.domain.model.DetailOrder
 import com.example.core.ui.model.DetailOrderUiModel
 import com.example.core.ui.model.OrderStatus
+import com.example.core.ui.utils.DateFormatter
 import java.util.Locale
 
 fun DetailOrder.toUiModel(): DetailOrderUiModel {
@@ -24,8 +25,10 @@ fun DetailOrder.toUiModel(): DetailOrderUiModel {
         discount = this.discount,
         finalAmount = this.finalAmount,
         paymentStatus = this.paymentStatus,
-        createdAt = this.createdAt,
+        createdAt = DateFormatter.formatOrderDate(this.createdAt),
         driver = this.driver.toUiModel(),
+        chatChannelId = this.chatChannelId,
+        restaurantReviewId = this.restaurantReviewId,
         restaurant = this.restaurant.toUiModel(),
         userAddress = this.userAddress.toUiModel(),
         orderItems = this.orderItems.map { it.toUiModel() },

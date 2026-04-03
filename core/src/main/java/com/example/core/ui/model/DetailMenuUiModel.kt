@@ -29,6 +29,7 @@ data class DetailMenuUiModel(
 data class OptionGroupUiModel(
     val id: String,
     val title: String,
+    val subtitle: String,
     val required: Boolean,
     val maxPick: Int,
     val options: List<OptionUiModel>

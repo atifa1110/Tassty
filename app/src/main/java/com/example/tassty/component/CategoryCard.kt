@@ -1,6 +1,5 @@
 package com.example.tassty.component
 
-import androidx.appcompat.widget.DialogTitle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,10 +13,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CategoryUiModel
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange50
-import com.example.core.domain.model.Category
-import com.example.tassty.categories
+import com.example.tassty.util.categories
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
@@ -29,10 +28,10 @@ fun CategoryCard(
             .clip(CircleShape)
             .border(
                 width = 1.dp,
-                color = if(category.isSelected) Orange500 else Orange200,
+                color = if(category.isSelected) Orange500 else LocalCustomColors.current.selectedOrangeStroke,
                 shape = CircleShape
             )
-            .background(if(category.isSelected) Orange500 else Orange50)
+            .background(if(category.isSelected) Orange500 else LocalCustomColors.current.selectedOrangeBackground)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -49,20 +48,18 @@ fun CategoryCard(
     image: String,
     onClick:() -> Unit
 ) {
-    Box(modifier = Modifier.clickable(onClick = onClick)
-        .clip(CircleShape)
-        .border(
-            width = 1.dp,
-            color = Orange200,
-            shape = CircleShape
-        )
-        .background(Orange50)
+    Box(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .clip(CircleShape)
+            .border(width = 1.dp, color = LocalCustomColors.current.selectedOrangeStroke,shape = CircleShape)
+        .background(LocalCustomColors.current.selectedOrangeBackground)
         .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         CategoryImageCircle(
-            categoryName =title,
-            imageUrl=image
+            categoryName = title,
+            imageUrl = image
         )
     }
 }

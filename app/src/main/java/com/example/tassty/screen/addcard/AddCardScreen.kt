@@ -1,10 +1,10 @@
 package com.example.tassty.screen.addcard
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,14 +36,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.BuildConfig
-import com.example.tassty.CardTransformations
 import com.example.tassty.R
 import com.example.tassty.component.AddCardTopAppBar
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CardBackgroundItem
 import com.example.tassty.component.CardColorItem
+import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.CustomTwoColorText
 import com.example.tassty.component.Divider32
-import com.example.tassty.component.TermsAndConditionsText
+import com.example.tassty.component.LoadingOverlay
+import com.example.tassty.component.ModalStatusContent
+import com.example.tassty.component.SuccessIcon
 import com.example.tassty.component.TextSection
 import com.example.tassty.component.TextTransformationSection
 import com.example.tassty.model.CardColorOption
@@ -55,6 +58,7 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.util.Transformations
 import com.stripe.android.Stripe
 import com.stripe.android.payments.paymentlauncher.PaymentResult
 import com.stripe.android.payments.paymentlauncher.rememberPaymentLauncher
@@ -106,17 +110,13 @@ fun AddCardScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.uiEffect.collect { effect ->
-            when (effect) {
+        viewModel.uiEffect.collect { event ->
+            when (event) {
                 is AddCardUiEffect.NavigateBack -> {
-                    Toast.makeText(context, "Add Payment Success", Toast.LENGTH_SHORT).show()
                     onNavigateBack()
                 }
-                is AddCardUiEffect.ShowError -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_LONG).show()
-                }
-                is AddCardUiEffect.ShowCanceledMessage -> {
-                    Toast.makeText(context, "Payment canceled", Toast.LENGTH_SHORT).show()
+                is AddCardUiEffect.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -131,26 +131,28 @@ fun AddCardScreen(
             onCvvNumberChange = viewModel::onCvvChange,
             onSaveCardCLicked = { viewModel.onSaveClicked() },
             onColorSelected = viewModel::onColorSelected,
-            onImageSelected = viewModel::onPatternSelected
+            onImageSelected = viewModel::onPatternSelected,
+            onNavigateBack = onNavigateBack
         )
 
-        AnimatedVisibility(
-            visible = uiState.isLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
+        LoadingOverlay(
+            isLoading = uiState.isLoading,
+            text = "Securely processing..."
+        )
+    }
+
+    CustomBottomSheet(
+        visible = uiState.isSuccessSheetVisible,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        ModalStatusContent(
+            title = "A new card has \nbeen added!",
+            subtitle = "You can now use this card for faster \ncheckout on all your orders.",
+            buttonTitle = "Confirm",
+            onClick = viewModel::onDismissSheet
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Neutral100.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Green500)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Securely processing...", color = Neutral10)
-                }
-            }
+            SuccessIcon()
         }
     }
 }
@@ -164,26 +166,35 @@ fun AddCardContent(
     onCvvNumberChange: (String) -> Unit,
     onSaveCardCLicked:()-> Unit,
     onColorSelected: (CardColorOption) -> Unit,
-    onImageSelected:(PatternImage) -> Unit
+    onImageSelected:(PatternImage) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
         Scaffold(
             containerColor = Neutral10,
             bottomBar = {
-                Column(Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     ButtonComponent(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = uiState.buttonEnable,
                         labelResId = R.string.save,
                         onClick = onSaveCardCLicked
                     )
-                    TermsAndConditionsText (onClickTerms = {})
+                    CustomTwoColorText(
+                        modifier = Modifier.fillMaxWidth(),
+                        fullText = "By adding a card, you've read & agree to our \nTerms and conditions",
+                        highlightText = "Terms and conditions",
+                        onHighlightClick = {}
+                    )
                 }
             },
+
             topBar = {
                 AddCardTopAppBar(
                     onAddClick = {},
-                    onBackClick = {}
+                    onBackClick = onNavigateBack
                 )
             }
         ) { padding ->
@@ -240,7 +251,7 @@ fun AddCardContent(
                             text = uiState.cardNumber,
                             leadingIcon = R.drawable.credit_card,
                             onTextChanged = onCardNumberChange,
-                            visualTransformation = CardTransformations.CardNumber()
+                            visualTransformation = Transformations.CardNumber()
                         )
 
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -251,7 +262,7 @@ fun AddCardContent(
                                 text = uiState.expireDate,
                                 leadingIcon = R.drawable.calendar,
                                 onTextChanged = onExpireDateChange,
-                                visualTransformation = CardTransformations.ExpiryDateTransformation()
+                                visualTransformation = Transformations.ExpiryDateTransformation()
                             )
 
                             TextTransformationSection(
@@ -372,26 +383,8 @@ fun AddCardScreenPreview() {
             onExpireDateChange = {},
             onSaveCardCLicked = {},
             onColorSelected = {},
-            onImageSelected = {}
+            onImageSelected = {},
+            onNavigateBack = {}
         )
-
-        AnimatedVisibility(
-            visible = mockUiState.isLoading,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Neutral100.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Green500)
-                    Spacer(Modifier.height(8.dp))
-                    Text("Securely processing...", color = Neutral10)
-                }
-            }
-        }
     }
 }

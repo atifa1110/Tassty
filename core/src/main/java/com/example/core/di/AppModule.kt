@@ -1,10 +1,9 @@
 package com.example.core.di
 
-import com.example.core.ui.FilterManager
-import com.example.core.ui.FilterManagerImpl
+import com.example.core.ui.utils.FilterManager
+import com.example.core.ui.utils.FilterManagerImpl
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton

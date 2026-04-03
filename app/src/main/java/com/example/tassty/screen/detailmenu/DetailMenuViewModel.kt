@@ -12,9 +12,8 @@ import com.example.core.domain.usecase.GetDetailMenuUseCase
 import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
 import com.example.core.domain.usecase.ObserveIsMenuFavoriteUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.domain.utils.mapToResource
-import com.example.core.domain.utils.toListState
-import com.example.core.data.mapper.toDomain
+import com.example.core.ui.utils.mapToResource
+import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.DetailMenuUiModel
@@ -61,7 +60,6 @@ class DetailMenuViewModel @Inject constructor(
         val detailUi = detailRes.mapToResource { menu ->
             val detailUiModel = menu.toUiModel(isFav)
 
-            // 2. Update option groups-nya based on internal state
             val updatedGroups = detailUiModel.optionGroups.map { group ->
                 group.copy(
                     options = group.options.map { option ->
@@ -91,7 +89,12 @@ class DetailMenuViewModel @Inject constructor(
             isSuccessSheetVisible = internal.isSuccessSheetVisible,
             isAddCollectionSheet = internal.isAddCollectionSheet,
             newCollectionName = internal.newCollectionName,
-            savedCollectionName = internal.savedCollectionName
+            savedCollectionName = internal.savedCollectionName,
+            titleSuccess = if (internal.savedCollectionName.isEmpty()) {
+                "Successfully updated your collections!"
+            } else {
+                "Saved to “${internal.savedCollectionName}” Collection!"
+            }
         )
     }.stateIn(
         scope = viewModelScope,
@@ -208,7 +211,7 @@ class DetailMenuViewModel @Inject constructor(
             try {
                 saveMenuCollectionsUseCase(
                     menu = menu.toDomain(),
-                    selectedCollectionIds = selectedCollectionIds
+                    collectionIdsFromUser = selectedCollectionIds
                 )
 
                 _internalState.update {

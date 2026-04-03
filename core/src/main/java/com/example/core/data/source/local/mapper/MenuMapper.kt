@@ -10,6 +10,7 @@ fun Menu.toDatabase(restaurantId: String): MenuEntity{
         name = this.name,
         imageUrl = this.imageUrl,
         description = this.description,
-        price = this.price
+        price = this.price,
+        customizable = this.customizable
     )
 }

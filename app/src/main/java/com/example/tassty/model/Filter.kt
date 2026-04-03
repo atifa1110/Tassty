@@ -2,13 +2,12 @@ package com.example.tassty.model
 
 import android.util.Log
 import androidx.compose.ui.graphics.Color
-import com.example.core.ui.FilterDataState
+import com.example.core.ui.utils.FilterDataState
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.FilterIconKeys
 import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.R
-import com.example.tassty.component.LogoImage
 import com.example.tassty.screen.category.FilterState
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
