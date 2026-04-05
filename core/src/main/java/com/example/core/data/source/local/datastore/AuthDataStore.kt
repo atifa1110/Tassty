@@ -19,6 +19,8 @@ class AuthDataStore @Inject constructor(
     @AuthDataStore private val dataStore: DataStore<Preferences>
 ) {
     private object PreferencesKeys {
+        val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
+        val IS_BOARDING = booleanPreferencesKey("is_boarding_completed")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         val REGISTRATION_STEP = stringPreferencesKey("registration_step")
         val IS_VERIFIED = booleanPreferencesKey("is_verified")
@@ -45,6 +47,8 @@ class AuthDataStore @Inject constructor(
         }
 
         AuthStatus(
+            isDarkMode =  preferences[PreferencesKeys.IS_DARK_MODE] ?: false,
+            isBoardingCompleted = preferences[PreferencesKeys.IS_BOARDING] ?: false,
             isLoggedIn = preferences[PreferencesKeys.IS_LOGGED_IN] ?: false,
             registrationStep = step,
             isVerified = preferences[PreferencesKeys.IS_VERIFIED]?:false,
@@ -67,6 +71,8 @@ class AuthDataStore @Inject constructor(
         val newStatus = transform(currentStatus)
 
         dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_DARK_MODE] = newStatus.isDarkMode
+            preferences[PreferencesKeys.IS_BOARDING] = newStatus.isBoardingCompleted
             preferences[PreferencesKeys.IS_LOGGED_IN] = newStatus.isLoggedIn
             preferences[PreferencesKeys.IS_VERIFIED] = newStatus.isVerified
             preferences[PreferencesKeys.REGISTRATION_STEP] = newStatus.registrationStep.name
@@ -86,7 +92,31 @@ class AuthDataStore @Inject constructor(
     }
 
 
-    // Erase all
+    suspend fun logout() {
+        dataStore.edit { preferences ->
+            val keysToRemove = listOf(
+                PreferencesKeys.IS_LOGGED_IN,
+                PreferencesKeys.REGISTRATION_STEP,
+                PreferencesKeys.IS_VERIFIED,
+                PreferencesKeys.HAS_COMPLETED_SETUP,
+                PreferencesKeys.USER_ID,
+                PreferencesKeys.ROLE,
+                PreferencesKeys.EMAIL,
+                PreferencesKeys.PROFILE_IMAGE,
+                PreferencesKeys.NAME,
+                PreferencesKeys.ADDRESS_NAME,
+                PreferencesKeys.ACCESS_TOKEN,
+                PreferencesKeys.REFRESH_TOKEN,
+                PreferencesKeys.STREAM_TOKEN,
+                PreferencesKeys.FIREBASE_TOKEN
+            )
+
+            keysToRemove.forEach { key ->
+                preferences.remove(key)
+            }
+        }
+    }
+
     suspend fun clearAuthStatus() {
         dataStore.edit { it.clear() }
     }

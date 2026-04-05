@@ -21,5 +21,5 @@ interface AuthRepository {
     fun forgotPassword(email: String): Flow<TasstyResponse<OtpTimer>>
     fun verifyResetOtp(email: String,code: String): Flow<TasstyResponse<String>>
     fun resetPassword(newPassword: String): Flow<TasstyResponse<String>>
-    suspend fun logout()
+    suspend fun logout(): Flow<TasstyResponse<String>>
 }

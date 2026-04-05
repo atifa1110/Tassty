@@ -19,7 +19,7 @@ interface AuthAuthenticatedApiService {
         @Body request: PasswordRequest
     ): BaseResponse<Unit>
 
-    @POST("logout")
+    @POST("auth/logout")
     suspend fun logout(
     ): BaseResponse<Unit>
 }

@@ -131,7 +131,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { event->
             when(event){
-                is HomeUiEffect.ShowSnackbar -> {
+                is HomeEffect.ShowSnackbar -> {
                     snackHostState.showSnackbar(
                         message = event.message,
                         duration = SnackbarDuration.Short
@@ -839,33 +839,33 @@ fun SuggestedMenu(
 //        )
 //    }
 //}
-//
-@Preview(showBackground = true, name = "DarkMode")
-@Composable
-fun HomeDarkPreview() {
-    val snackHostState = remember { SnackbarHostState() }
-    TasstyTheme(darkTheme = true){
-        HomeContent(
-            snackHostState = snackHostState,
-            uiState = HomeUiState(
-                userName = "Guest",
-                addressName = "Guest",
-                allCategories = Resource(data = categories, isLoading = false),
-                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-                todayVouchers = Resource(data = voucherUiModel, isLoading = false),
-                recommendedMenus = Resource(data = menusItem, isLoading = false),
-                suggestedMenus = Resource(data = menusItem, isLoading = false),
-            ),
-            onRefresh = {},
-            onFavoriteClicked = {},
-            onNavigateToDetail = {},
-            onNavigateToSearch = {},
-            onNavigateToRecommended = {},
-            onNavigateToCategory = { _, _, _ -> },
-            onNavigateToNearbyRestaurant = {},
-            onNavigateToDetailMenu = {},
-            onNavigateToVoucher = {}
-        )
-    }
-}
+ 
+//@Preview(showBackground = true, name = "DarkMode")
+//@Composable
+//fun HomeDarkPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
+//    TasstyTheme(darkTheme = true){
+//        HomeContent(
+//            snackHostState = snackHostState,
+//            uiState = HomeUiState(
+//                userName = "Guest",
+//                addressName = "Guest",
+//                allCategories = Resource(data = categories, isLoading = false),
+//                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+//                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
+//                todayVouchers = Resource(data = voucherUiModel, isLoading = false),
+//                recommendedMenus = Resource(data = menusItem, isLoading = false),
+//                suggestedMenus = Resource(data = menusItem, isLoading = false),
+//            ),
+//            onRefresh = {},
+//            onFavoriteClicked = {},
+//            onNavigateToDetail = {},
+//            onNavigateToSearch = {},
+//            onNavigateToRecommended = {},
+//            onNavigateToCategory = { _, _, _ -> },
+//            onNavigateToNearbyRestaurant = {},
+//            onNavigateToDetailMenu = {},
+//            onNavigateToVoucher = {}
+//        )
+//    }
+//}

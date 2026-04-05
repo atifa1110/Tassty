@@ -325,4 +325,35 @@ class ChatStreamDataSource @Inject constructor(
         }
         awaitClose { disposable.dispose() }
     }
+
+    suspend fun removeAllDevices(): Result<Unit> = try {
+        val result = chatClient.getDevices().await()
+
+        if (result.isSuccess) {
+            val devices = result.getOrNull() ?: emptyList()
+            devices.forEach { device ->
+                val deleteResult = chatClient.deleteDevice(device).await()
+
+                if (deleteResult.isFailure) {
+                    val error = deleteResult.errorOrNull()
+                    Log.e(tag, "Gagal hapus device ${device.token}: ${error?.message}")
+                }
+            }
+            Result.Success(Unit)
+        } else {
+            Result.Success(Unit)
+        }
+    } catch (e: Exception) {
+        Log.e(tag, "Exception di removeAllDevices: ${e.message}")
+        Result.Success(Unit)
+    }
+
+    suspend fun disconnect() {
+        try {
+            chatClient.disconnect(flushPersistence = true).await()
+            Log.d(tag, "Stream Chat disconnected & persistence flushed")
+        } catch (e: Exception) {
+            Log.e(tag, "Gagal disconnect chat: ${e.message}")
+        }
+    }
 }

@@ -10,7 +10,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import android.app.Activity
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -65,7 +64,9 @@ private val DarkCustomColors = CustomColors(
     blue = DarkBlue,
     processStatus = Blue300,
     completedStatus = Green300,
-    cancelStatus = Pink300
+    cancelStatus = Pink300,
+    switchThumb = Neutral40,
+    switchTrack = Neutral70
 )
 
 private val LightCustomColors = CustomColors(
@@ -99,7 +100,9 @@ private val LightCustomColors = CustomColors(
     blue = Blue50,
     processStatus = Blue600,
     completedStatus = Green600,
-    cancelStatus = Pink600
+    cancelStatus = Pink600,
+    switchThumb = Neutral80,
+    switchTrack = Neutral40
 )
 
 

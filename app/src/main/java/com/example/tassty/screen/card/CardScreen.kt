@@ -87,7 +87,7 @@ fun LazyListScope.cardSection(
 ) {
     val cardItems = resource.data.orEmpty()
     when{
-        resource.isLoading -> {
+        resource.isLoading || resource.data != null-> {
             items(3){
                 Column(Modifier.padding(horizontal = 24.dp)) {
                     ShimmerDebitPaymentCard()
@@ -95,6 +95,7 @@ fun LazyListScope.cardSection(
                 }
             }
         }
+
         resource.errorMessage != null -> {
             item {
                 ErrorScreen()

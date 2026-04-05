@@ -31,13 +31,10 @@ class MainViewModel @Inject constructor(
     val authState = getAuthStatusUseCase()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5000),
             initialValue = AuthStatus()
         )
 
-    // 3. Gabungkan isAuthLoaded agar lebih reaktif (Splash Screen Logic)
-    // Alih-alih pakai init collect, kita buat Flow yang bakal bernilai true
-    // setelah data pertama kali masuk (ditambah delay jika memang ingin splash screen agak lama)
     val isAuthLoaded: StateFlow<Boolean> = authState
         .transform { auth ->
             delay(3000)

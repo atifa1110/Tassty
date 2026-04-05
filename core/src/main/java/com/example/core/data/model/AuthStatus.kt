@@ -1,6 +1,8 @@
 package com.example.core.data.model
 
 data class AuthStatus(
+    val isDarkMode : Boolean = false,
+    val isBoardingCompleted: Boolean = false,
     val isLoggedIn: Boolean = false,
     val registrationStep: RegistrationStep = RegistrationStep.NONE,
     val isVerified: Boolean = false,

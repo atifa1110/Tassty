@@ -1,17 +1,16 @@
 package com.example.core.data.repository
 
-import android.util.Log
 import com.example.core.data.mapper.toDomainOtp
 import com.example.core.data.model.AuthStatus
 import com.example.core.data.model.RegistrationStep
 import com.example.core.data.source.local.datastore.AuthDataStore
 import com.example.core.data.source.remote.datasource.AuthNetworkDataSource
+import com.example.core.data.source.remote.datasource.ChatStreamDataSource
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.OtpTimer
 import com.example.core.domain.model.UserAddress
 import com.example.core.domain.repository.AuthRepository
 import com.example.core.ui.mapper.toRequestDto
-import io.getstream.chat.android.client.ChatClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -19,7 +18,7 @@ import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val chatClient: ChatClient,
+    private val chatStream: ChatStreamDataSource,
     private val authNetworkDataSource: AuthNetworkDataSource,
     private val authDataStore: AuthDataStore,
 ) : AuthRepository{
@@ -229,24 +228,20 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun logout() {
-        try {
-            val devicesResult = chatClient.getDevices().await()
+    override suspend fun logout(): Flow<TasstyResponse<String>> = flow {
+        emit(TasstyResponse.Loading())
+        chatStream.removeAllDevices()
+        val response = authNetworkDataSource.logout()
 
-            if (devicesResult.isSuccess) {
-                val devices = devicesResult.getOrNull()?:emptyList()
-
-                devices.forEach { device ->
-                    chatClient.deleteDevice(device).await()
-                    Log.d(tag, "Device dengan token ${device.token} berhasil dihapus")
-                }
+        when(response) {
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
+            is TasstyResponse.Success -> {
+                chatStream.disconnect()
+                authDataStore.logout()
+                emit(TasstyResponse.Success(response.meta.message, response.meta))
             }
-        } catch (e: Exception) {
-            Log.e(tag, "Gagal mengambil/menghapus list devices: ${e.message}")
+            else -> {}
         }
-
-        authDataStore.clearAuthStatus()
-        chatClient.disconnect(flushPersistence = true).await()
-    }
+    }.flowOn(Dispatchers.IO)
 }
 

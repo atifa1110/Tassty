@@ -6,48 +6,49 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tassty.R
+import com.example.tassty.component.ButtonComponent
+import com.example.tassty.component.CustomTwoColorText
 import com.example.tassty.component.WormIndicator
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.ui.theme.TasstyTheme
 import kotlinx.coroutines.launch
 
 @Composable
 fun OnBoardingScreen(
-    onNavigateToAuth: () -> Unit
+    onNavigateToAuth: () -> Unit,
+    viewModel: OnBoardingViewModel = hiltViewModel()
 ) {
     val pages = listOf(OnBoardingPage.First, OnBoardingPage.Second, OnBoardingPage.Third)
     val pagerState = rememberPagerState(initialPage = 0) { pages.size }
@@ -56,9 +57,11 @@ fun OnBoardingScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White).padding(vertical=24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+            .background(LocalCustomColors.current.background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HorizontalPager(
             modifier = Modifier.weight(1f),
@@ -68,141 +71,153 @@ fun OnBoardingScreen(
             PagerScreen(onBoardingPage = pages[position])
         }
 
-        WormIndicator(pagerState, pages.size)
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            WormIndicator(pagerState, pages.size)
 
-        HorizontalDivider()
+            HorizontalDivider(
+                color = LocalCustomColors.current.text.copy(alpha = 0.1f)
+            )
 
-        if (pagerState.currentPage == pages.lastIndex) {
-            TextButton(
-                onClick = onNavigateToAuth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp)
-                    .height(60.dp)
-                    .background(
-                        color = Orange500,
-                        shape = MaterialTheme.shapes.extraLarge
-                    ),
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color.Transparent
-                )
-            ) {
-                Text(
-                    text = "Get Started",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            OnBoardingNavigation(
+                isLastPage = pagerState.currentPage == pages.lastIndex,
+                onNextClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(
+                            page = pagerState.currentPage + 1,
+                            animationSpec = tween(600, easing = FastOutSlowInEasing)
+                        )
+                    }
+                },
+                onSkipClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(
+                            page = pages.lastIndex,
+                            animationSpec = tween(600, easing = FastOutSlowInEasing)
+                        )
+                    }
+                },
+                onGetStartedClick = {
+                    viewModel.onGetStartClick()
+                    onNavigateToAuth()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun OnBoardingNavigation(
+    isLastPage: Boolean,
+    onNextClick: () -> Unit,
+    onSkipClick: () -> Unit,
+    onGetStartedClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .height(56.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isLastPage) {
+            ButtonComponent(
+                modifier = Modifier.fillMaxWidth(),
+                labelResId = R.string.get_started,
+                onClick = onGetStartedClick
+            )
         } else {
-
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
+
                 Text(
                     text = stringResource(id = R.string.skip),
-                    fontSize = 14.sp,
-                    color = Neutral70,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            scope.launch {
-                                pagerState.animateScrollToPage(
-                                    page = pages.lastIndex,
-                                    animationSpec = tween(
-                                        durationMillis = 600,  // lama animasi
-                                        easing = FastOutSlowInEasing // efek easing
-                                    )
-                                )
-                            }
-                        }
+                    style = LocalCustomTypography.current.bodyMediumMedium,
+                    color = LocalCustomColors.current.text,
+                    modifier = Modifier.clickable(onClick = onSkipClick)
                 )
 
                 Row(
-                    modifier = Modifier.weight(1f).clickable {
-                        if (pagerState.currentPage + 1 < pages.size) {
-                            scope.launch {
-                                pagerState.animateScrollToPage(page = pagerState.currentPage + 1,
-                                    animationSpec = tween(
-                                        durationMillis = 600,  // lama animasi
-                                        easing = FastOutSlowInEasing // efek easing
-                                    ))
-                            }
-                        }
-                    },
+                    modifier = Modifier.clickable(onClick = onNextClick),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = stringResource(id = R.string.next),
-                        fontSize = 14.sp,
-                        color = Neutral100,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier
-                            .weight(1f)
-                            .alpha(if (pagerState.currentPage == pages.size - 1) 0f else 1f)
+                        style = LocalCustomTypography.current.bodyMediumSemiBold,
+                        color = LocalCustomColors.current.headerText
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Next",
+                        contentDescription = null,
                         tint = Orange500,
                         modifier = Modifier.size(20.dp)
                     )
                 }
-
             }
         }
     }
 }
 
 @Composable
-fun PagerScreen(
-    onBoardingPage: OnBoardingPage,
-) {
-    Column (modifier = Modifier.fillMaxSize(),
+fun PagerScreen(onBoardingPage: OnBoardingPage) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ){
+    ) {
         Image(
             painter = painterResource(id = onBoardingPage.image),
-            contentDescription = "Pager Image"
+            contentDescription = null,
+            modifier = Modifier.size(280.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        Column (modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            Text(
-                text = onBoardingPage.title,
-                textAlign = TextAlign.Center,
-                fontSize = 40.sp,
-                lineHeight = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+        CustomTwoColorText(
+            fullText = onBoardingPage.title,
+            highlightText = ".",
+            textColor = LocalCustomColors.current.headerText,
+            normalStyle = LocalCustomTypography.current.h1Bold,
+            textAlign = TextAlign.Center
+        )
 
-            Text(
-                text = onBoardingPage.subtitle,
-                textAlign = TextAlign.Center,
-                fontSize = 14.sp,
-                lineHeight = 22.sp,
-                color = Color(0XFF656565)
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
+        Text(
+            text = onBoardingPage.subtitle,
+            style = LocalCustomTypography.current.bodyMediumRegular,
+            color = LocalCustomColors.current.text,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
     }
 }
-//
-//@Preview(showBackground = true)
+
+//@Preview(showBackground = true, name = "Light Mode")
 //@Composable
-//fun OnBoardingPreview() {
-//    OnBoardingScreen(
-//        onNavigateToAuth = {}
-//    )
+//fun OnBoardingLightPreview() {
+//    TasstyTheme {
+//        OnBoardingScreen(
+//            onNavigateToAuth = {}
+//        )
+//    }
 //}
 //
+//@Preview(showBackground = true, name = "Dark Mode")
+//@Composable
+//fun OnBoardingDarkPreview() {
+//    TasstyTheme(darkTheme = true) {
+//        OnBoardingScreen(
+//            onNavigateToAuth = {}
+//        )
+//    }
+//}

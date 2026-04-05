@@ -122,5 +122,7 @@ data class CustomColors(
     val blue: Color,
     val processStatus: Color,
     val completedStatus: Color,
-    val cancelStatus: Color
+    val cancelStatus: Color,
+    val switchThumb: Color,
+    val switchTrack: Color
 )

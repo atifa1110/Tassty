@@ -55,7 +55,7 @@ class HomeViewModel @Inject constructor(
     private val _internalState = MutableStateFlow(HomeInternalState())
     private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
 
-    private val _uiEffect = Channel<HomeUiEffect>(Channel.BUFFERED)
+    private val _uiEffect = Channel<HomeEffect>(Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -190,7 +190,7 @@ class HomeViewModel @Inject constructor(
                 )
                 _internalState.update { it.copy(isCollectionSheetVisible = false) }
             } catch (e: Exception) {
-                _uiEffect.send(HomeUiEffect.ShowSnackbar(e.message?:""))
+                _uiEffect.send(HomeEffect.ShowSnackbar(e.message?:""))
             }
         }
     }
@@ -214,7 +214,7 @@ class HomeViewModel @Inject constructor(
                 )
             }
         }catch (e: Exception){
-            _uiEffect.send(HomeUiEffect.ShowSnackbar(e.message?:""))
+            _uiEffect.send(HomeEffect.ShowSnackbar(e.message?:""))
         }
     }
 }

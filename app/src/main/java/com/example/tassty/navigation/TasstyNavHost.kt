@@ -9,7 +9,6 @@ import com.example.core.data.model.AuthStatus
 import com.example.core.data.model.RegistrationStep
 import com.example.tassty.VerificationType
 import com.example.tassty.activity.MainViewModel
-import com.example.tassty.screen.orderprocess.OrderProcessScreen
 
 @Composable
 fun TasstyNavHost(
@@ -18,11 +17,17 @@ fun TasstyNavHost(
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
-    val startDestination = if (authStatus.isLoggedIn) {
-        MainGraph.route
-    } else {
-        AuthGraph.route
+    val startDestination = when{
+        !authStatus.isBoardingCompleted -> OnBoardingDestination.route
+        authStatus.isLoggedIn -> MainGraph.route
+        else -> AuthGraph.route
     }
+
+//        if (authStatus.isLoggedIn) {
+//        MainGraph.route
+//    } else {
+//        AuthGraph.route
+//    }
 
     val startAuthDestination = when {
         authStatus.registrationStep == RegistrationStep.REGISTERED && !authStatus.isVerified ->

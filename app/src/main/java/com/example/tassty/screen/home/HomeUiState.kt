@@ -70,6 +70,6 @@ sealed class HomeEvent{
     object OnCreateCollection : HomeEvent()
 }
 
-sealed class HomeUiEffect {
-    data class ShowSnackbar(val message: String) : HomeUiEffect()
+sealed class HomeEffect {
+    data class ShowSnackbar(val message: String) : HomeEffect()
 }

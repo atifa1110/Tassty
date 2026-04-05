@@ -29,9 +29,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +43,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,18 +55,15 @@ import com.example.tassty.component.Divider32
 import com.example.tassty.component.LogoutContent
 import com.example.tassty.component.ProfileTopAppBar
 import com.example.tassty.ui.theme.Blue100
-import com.example.tassty.ui.theme.Blue400
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green100
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Green600
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral40
-import com.example.tassty.ui.theme.Neutral80
 import com.example.tassty.ui.theme.Orange100
 import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange600
@@ -72,6 +72,7 @@ import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
@@ -88,10 +89,24 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { event ->
+            when(event){
+                is ProfileEffect.NavigateToLogin -> { onNavigateToLogin() }
+                is ProfileEffect.ShowMessage -> {
+                    snackHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
 
     ProfileContent (
         uiState = uiState,
+        snackHostState = snackHostState,
         onShowLogoutSheet = {viewModel.handleShowLogoutSheet(true)},
+        onDarkMode = viewModel::onDarkMode,
         onNavigateToCollection = onNavigateToCollection,
         onNavigateToFavorite = onNavigateToFavorite,
         onNavigateToVoucher = onNavigateToVoucher,
@@ -108,31 +123,29 @@ fun ProfileScreen(
         dismissOnClickOutside = false
     ) {
         LogoutContent(
-            onLogout = {
-                viewModel.onLogout()
-                onNavigateToLogin()
-            },
-            onDismissClick = {
-                viewModel.handleShowLogoutSheet(false)
-            }
+            onLogout = viewModel::onLogout,
+            onDismissClick = { viewModel.handleShowLogoutSheet(false) }
         )
     }
 }
 @Composable
 fun ProfileContent(
     uiState: ProfileUiState,
+    snackHostState : SnackbarHostState,
+    onShowLogoutSheet:() -> Unit,
+    onDarkMode:(Boolean) -> Unit,
     onNavigateToCollection: () -> Unit,
     onNavigateToFavorite:() -> Unit,
     onNavigateToVoucher: () -> Unit,
     onNavigateToAddress: () -> Unit,
     onNavigateToCard: ()-> Unit,
     onNavigateToOrder: ()-> Unit,
-    onShowLogoutSheet:() -> Unit,
     onNavigateToTerm: () -> Unit,
     onNavigateToEditProfile: () -> Unit
 ) {
     Scaffold (
         containerColor = LocalCustomColors.current.background,
+        snackbarHost = { SnackbarHost(snackHostState) },
         topBar = {
             ProfileTopAppBar(
                 onEditClick = onNavigateToEditProfile
@@ -166,7 +179,9 @@ fun ProfileContent(
 
             item (key = "support_section"){
                 SupportSection(
-                    onNavigateToTerm = onNavigateToTerm
+                    isDarkMode = uiState.isDarkMode,
+                    onNavigateToTerm = onNavigateToTerm,
+                    onDarkMode = onDarkMode
                 )
                 Spacer(Modifier.height(24.dp))
             }
@@ -447,7 +462,9 @@ fun ProfileMenuSection(
 
 @Composable
 fun SupportSection(
+    isDarkMode: Boolean,
     onNavigateToTerm: () -> Unit,
+    onDarkMode:(Boolean) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -465,15 +482,14 @@ fun SupportSection(
                 containerColor = LocalCustomColors.current.cardBackground
             )
         ) {
-            Column {
+            Column(Modifier.fillMaxWidth()) {
                 ProfileMenuSwitchItem(
                     icon = R.drawable.calendar,
                     iconColor = Blue500,
                     boxColor = Blue100,
                     title = "Dark Mode",
-                    isSwitch = true,
-                    onSwitchChange ={},
-                    onClick = {}
+                    isSwitch = isDarkMode,
+                    onSwitchChange = { onDarkMode(!isDarkMode) }
                 )
 
                 HorizontalDivider(color = LocalCustomColors.current.divider)
@@ -545,16 +561,14 @@ fun ProfileMenuSwitchItem(
     title: String,
     textColor: Color = LocalCustomColors.current.headerText,
     isSwitch: Boolean = false,
-    onSwitchChange:(Boolean) -> Unit,
-    onClick: () -> Unit
+    onSwitchChange:(Boolean) -> Unit
 ) {
     Row(modifier = Modifier
-        .fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp)
-        .clickable(onClick= onClick),
+        .fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CircleImageIcon(
-            boxColor =boxColor,
+            boxColor = boxColor,
             icon = icon,
             iconColor = iconColor,
             iconSize = 16.dp,
@@ -575,10 +589,12 @@ fun ProfileMenuSwitchItem(
             checked = isSwitch,
             onCheckedChange = onSwitchChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = Blue500,
-                checkedTrackColor = Blue400,
-                uncheckedThumbColor = Neutral80,
-                uncheckedTrackColor = Neutral70
+                checkedThumbColor = Neutral10,
+                checkedTrackColor = Blue500,
+                checkedBorderColor = LocalCustomColors.current.cardBackground,
+                uncheckedBorderColor = LocalCustomColors.current.cardBackground,
+                uncheckedThumbColor = LocalCustomColors.current.switchThumb,
+                uncheckedTrackColor = LocalCustomColors.current.switchTrack
             )
         )
     }
@@ -588,13 +604,18 @@ fun ProfileMenuSwitchItem(
 //@Preview(showBackground = true, name = "Light Mode")
 //@Composable
 //fun ProfileLightPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
 //    TasstyTheme {
 //        ProfileContent(
 //            uiState = ProfileUiState(
 //                name = "Atifa Fiorenza",
 //                email = "atifafiorenza24@gmail.com",
 //                imageUrl = "",
+//                isDarkMode = true
 //            ),
+//            onShowLogoutSheet = {},
+//            onDarkMode = {},
+//            snackHostState = snackHostState,
 //            onNavigateToCard = {},
 //            onNavigateToOrder = {},
 //            onNavigateToVoucher = {},
@@ -602,7 +623,7 @@ fun ProfileMenuSwitchItem(
 //            onNavigateToFavorite = {},
 //            onNavigateToCollection = {},
 //            onNavigateToEditProfile = {},
-//            onShowLogoutSheet = {}
+//            onNavigateToTerm = {}
 //        )
 //    }
 //}
@@ -610,13 +631,18 @@ fun ProfileMenuSwitchItem(
 //@Preview(showBackground = true, name = "Dark Mode")
 //@Composable
 //fun ProfileDarkPreview() {
+//    val snackHostState = remember { SnackbarHostState() }
 //    TasstyTheme (darkTheme = true){
 //        ProfileContent(
 //            uiState = ProfileUiState(
 //                name = "Atifa Fiorenza",
 //                email = "atifafiorenza24@gmail.com",
 //                imageUrl = "",
+//                isDarkMode = true
 //            ),
+//            onShowLogoutSheet = {},
+//            onDarkMode = {},
+//            snackHostState = snackHostState,
 //            onNavigateToCard = {},
 //            onNavigateToOrder = {},
 //            onNavigateToVoucher = {},
@@ -624,7 +650,7 @@ fun ProfileMenuSwitchItem(
 //            onNavigateToFavorite = {},
 //            onNavigateToCollection = {},
 //            onNavigateToEditProfile = {},
-//            onShowLogoutSheet = {}
+//            onNavigateToTerm = {}
 //        )
 //    }
 //}

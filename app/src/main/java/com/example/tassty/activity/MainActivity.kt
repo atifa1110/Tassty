@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            TasstyTheme {
+            TasstyTheme(authStatus.isDarkMode) {
                 LaunchedEffect(isAuthLoaded) {
                     if (isAuthLoaded) {
                         viewModel.snackbarMessage.collect { message ->
