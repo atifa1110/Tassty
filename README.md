@@ -26,11 +26,25 @@
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## 🏗️ Arsitektur & Modularisasi
 
-Aplikasi ini menerapkan **Clean Architecture** dengan pendekatan *State Management* yang pragmatis:
-- **Android:** Hybrid **MVI** (Untuk fitur kompleks guna memastikan *Unidirectional Data Flow* (UDF)) & **MVVM** (untuk fitur sederhana) menggunakan `StateFlow` & `SharedFlow`.
-- **Backend:** REST API dengan arsitektur modular di Node.js.
+Aplikasi ini menerapkan **Clean Architecture** dengan pemisahan modul (**Multi-module**) untuk meningkatkan *maintainability* dan *build speed*:
+
+* **`:app` Module:** Berisi UI Layer utama, ViewModels, Navigasi, serta **Design System & Themes** (Color, Type, Shape) yang mengatur tampilan visual aplikasi.
+* **`:core` Module:** *Core engine* aplikasi yang menyediakan fungsionalitas dasar bagi seluruh modul:
+    * **`domain`:** Berisi *Business Logic* murni seperti Use Cases, Models, dan Repository Interfaces.
+    * **`data`:** Implementasi Repository, integrasi Retrofit/Supabase, dan manajemen **Room Database** (Offline-first).
+    * **`di`:** Konfigurasi **Dagger Hilt** untuk manajemen *dependency injection* lintas modul.
+    * **`ui`:** Berisi **UI Models** (Data classes khusus untuk tampilan) dan service
+  
+**State Management:**
+- **Hybrid MVI:** Digunakan pada fitur kompleks (seperti Tracking) untuk memastikan *Unidirectional Data Flow* (UDF).
+- **MVVM:** Digunakan pada fitur sederhana untuk menjaga efisiensi kode.
+- Menggunakan `StateFlow` untuk UI State dan `SharedFlow` untuk *one-time events*.
+
+---
+
+## 🛠️ Tech Stack Ecosystem
 
 ### 📱 Mobile (Frontend)
 | Category | Technology |
