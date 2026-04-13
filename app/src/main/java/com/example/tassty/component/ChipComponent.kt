@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
-import com.example.tassty.model.getFilterDrawable
-import com.example.tassty.model.getFilterPalette
+import com.example.tassty.model.FilterPalette
+import com.example.tassty.model.FilterUiMapper
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomColors
@@ -34,7 +34,6 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange50
@@ -196,17 +195,28 @@ fun CustomFilterChip(
     option: FilterOptionUi<FilterCategory>,
     onClick: () -> Unit,
 ) {
-    val image = getFilterDrawable(option.iconRes)
-    val pallet = getFilterPalette(option.category)
+    val config = FilterUiMapper.getConfig(option.category)
+    val customColors = LocalCustomColors.current
+
+    val palette = if (option.isSelected) {
+        config.selectedPalette
+    } else {
+        FilterPalette(
+            backgroundColor = customColors.cardBackground,
+            labelColor = customColors.text,
+            iconColor = customColors.text,
+            borderColor = Color.Transparent
+        )
+    }
+
     CustomShortChip(
-        image = image,
-        color = if(option.isSelected) pallet.backgroundColor else LocalCustomColors.current.cardBackground,
-        iconColor = if(option.isSelected) pallet.iconColor else LocalCustomColors.current.text,
+        modifier = Modifier.border(1.dp,palette.borderColor,
+            RoundedCornerShape(100.dp)).clickable(onClick = onClick),
+        image = FilterUiMapper.getDrawable(option.iconRes),
+        color = palette.backgroundColor,
+        iconColor = palette.iconColor,
         label = option.label,
-        labelColor = if(option.isSelected) pallet.labelColor else LocalCustomColors.current.text,
-        modifier = Modifier.border(1.dp,if(option.isSelected) pallet.borderColor else Color.Transparent,
-            RoundedCornerShape(100.dp)
-        ).clickable(onClick = onClick)
+        labelColor = palette.labelColor,
     )
 }
 

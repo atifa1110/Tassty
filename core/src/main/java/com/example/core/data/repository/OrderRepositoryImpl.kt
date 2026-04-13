@@ -2,6 +2,7 @@ package com.example.core.data.repository
 
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.model.OrderDto
+import com.example.core.data.model.RouteUpdatePayload
 import com.example.core.data.source.remote.datasource.OrderNetworkDataSource
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.data.source.remote.request.CreateChannelRequest
@@ -10,6 +11,7 @@ import com.example.core.data.source.remote.request.PaymentRequest
 import com.example.core.domain.model.DetailOrder
 import com.example.core.domain.model.Order
 import com.example.core.domain.model.PaymentChannel
+import com.example.core.domain.model.Route
 import com.example.core.domain.repository.OrderRepository
 import com.example.core.ui.model.OrderStatus
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +50,8 @@ class OrderRepositoryImpl @Inject constructor(
             else -> {}
         }
     }.flowOn(Dispatchers.IO)
+
+
 
     override fun createOrder(request: OrderRequest): Flow<TasstyResponse<String>> = flow {
         emit(TasstyResponse.Loading())
@@ -97,35 +101,50 @@ class OrderRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getDetailOrder(orderId: String): Flow<TasstyResponse<DetailOrder>> = flow {
-        emit(TasstyResponse.Loading())
+    override fun getDetailOrder(orderId: String): Flow<TasstyResponse<DetailOrder>> =
+        refreshSignal
+            .filter { it == orderId }
+            .onStart { emit(orderId) }
+            .transform { id ->
+                val result = dataSource.getDetailOrder(orderId=id)
+                emit(when(result) {
+                    is TasstyResponse.Success -> TasstyResponse.Success(result.data?.toDomain(), result.meta)
+                    is TasstyResponse.Error -> TasstyResponse.Error(result.meta)
+                    else -> TasstyResponse.Loading()
+                })
+            }.flowOn(Dispatchers.IO)
 
-        val result = dataSource.getDetailOrder(orderId)
-        when(result){
-            is TasstyResponse.Success -> {
-                emit(TasstyResponse.Success(result.data?.toDomain(), result.meta))
+    override fun getDetailRoute(orderId: String): Flow<TasstyResponse<Route>>  =
+        refreshSignal
+            .filter { it == orderId }
+            .onStart { emit(orderId) }
+            .transform { id ->
+                emit(TasstyResponse.Loading())
+                val result = dataSource.getDetailRoute(orderId = id)
+                emit(when(result) {
+                    is TasstyResponse.Success -> TasstyResponse.Success(result.data?.toDomain(), result.meta)
+                    is TasstyResponse.Error -> TasstyResponse.Error(result.meta)
+                    else -> TasstyResponse.Loading()
+                })
+            }.flowOn(Dispatchers.IO)
+
+    override fun trackDriverLocation(orderId: String): Flow<RouteUpdatePayload> {
+        return dataSource.getDriverLocationStream(orderId)
+            .onStart {
+                emit(RouteUpdatePayload(currentStepIndex = 0, isSimulated = false))
             }
-            is TasstyResponse.Error -> {
-                emit(TasstyResponse.Error(result.meta))
-            }
-            else -> {}
-        }
-    }.flowOn(Dispatchers.IO)
+    }
 
     override fun getOrderSummary(orderId: String): Flow<TasstyResponse<Order>> =
         refreshSignal
-            // Filter: Cuma dengerin notif yang ID-nya cocok
             .filter { id -> id == orderId }
-            // Trik Sakti: Tambahin satu sinyal "palsu" di awal buat pemicu pertama
             .onStart { emit(orderId) }
-            // 3. Transformasi: Setiap ada sinyal (awal/notif), panggil API
             .transform { id ->
                 emit(TasstyResponse.Loading())
                 val response = dataSource.getOrderSummary(id)
                 val result = handleResponse(response)
                 emit(result)
 
-                // Kalau sudah selesai, kita nggak butuh dengerin lagi
                 if ((result as? TasstyResponse.Success)?.data?.status == OrderStatus.COMPLETED) {
                     return@transform
                 }

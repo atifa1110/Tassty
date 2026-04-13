@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
@@ -64,6 +65,7 @@ import com.example.tassty.component.LoadingOverlay
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.Transformations
+import com.example.tassty.util.UiText
 
 @Composable
 fun EditProfileScreen(
@@ -138,7 +140,7 @@ fun EditProfileScreen(
 
         LoadingOverlay(
             isLoading = uiState.isLoading,
-            text = "Securely processing..."
+            text = stringResource(R.string.securely_processing)
         )
     }
 }
@@ -170,7 +172,9 @@ fun EditProfileContent(
         }
     ){ paddingValues ->
         LazyColumn(
-            modifier = Modifier.padding(paddingValues).fillMaxSize()
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
         ) {
             item(key = "header_section"){
                 EditProfileHeader(
@@ -186,17 +190,16 @@ fun EditProfileContent(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ){
                     TextSection(
-                        label = "Full name",
+                        label = stringResource(R.string.full_name),
                         leadingIcon = R.drawable.person,
                         text = uiState.name,
-                        textError = "",
                         onTextChanged = onNameChanged
                     )
 
                     TextTransformationSection(
-                        label = "Phone",
+                        label = stringResource(R.string.phone),
                         leadingIcon = R.drawable.phone,
-                        placeholder = "Enter your phone number",
+                        placeholder = stringResource(R.string.enter_your_phone_number),
                         text = uiState.phone,
                         visualTransformation = Transformations.PhoneNumberTransformation(),
                         onTextChanged = onPhoneChanged
@@ -205,7 +208,7 @@ fun EditProfileContent(
                     EmailSection(
                         enabled = false,
                         email = uiState.email,
-                        emailError = "",
+                        emailError = null,
                         onEmailChanged = {}
                     )
                 }
@@ -222,13 +225,15 @@ fun EditProfileHeader(
     onEditPhotoClick: () -> Unit
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 24.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp, top = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         HeaderTitleScreen(
             modifier = modifier.weight(1f),
-            title = "Edit your \nprofile."
+            title = stringResource(R.string.edit_your_profile)
         )
         Box(
             modifier = Modifier.wrapContentSize(),
@@ -267,39 +272,39 @@ fun EditProfileHeader(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun EditProfileLightPreview(){
-//    TasstyTheme {
-//        EditProfileContent(
-//            uiState = EditProfileUiState(
-//                name = "Atifa Fiorenza",
-//                phone = "087878601919",
-//                email = "atifafiorenza24@gmail.com"
-//            ),
-//            onPhoneChanged = {},
-//            onNameChanged = {},
-//            onSaveChanged = {},
-//            onEditPhotoClick = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun EditProfileLightPreview(){
+    TasstyTheme {
+        EditProfileContent(
+            uiState = EditProfileUiState(
+                name = "Atifa Fiorenza",
+                phone = "087878601919",
+                email = "atifafiorenza24@gmail.com"
+            ),
+            onPhoneChanged = {},
+            onNameChanged = {},
+            onSaveChanged = {},
+            onEditPhotoClick = {},
+            onNavigateBack = {}
+        )
+    }
+}
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun EditProfileDarkPreview(){
-//    TasstyTheme(darkTheme = true) {
-//        EditProfileContent(
-//            uiState = EditProfileUiState(
-//                name = "Atifa Fiorenza",
-//                phone = "087878601919",
-//                email = "atifafiorenza24@gmail.com"
-//            ),
-//            onPhoneChanged = {},
-//            onNameChanged = {},
-//            onSaveChanged = {},
-//            onEditPhotoClick = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun EditProfileDarkPreview(){
+    TasstyTheme(darkTheme = true) {
+        EditProfileContent(
+            uiState = EditProfileUiState(
+                name = "Atifa Fiorenza",
+                phone = "087878601919",
+                email = "atifafiorenza24@gmail.com"
+            ),
+            onPhoneChanged = {},
+            onNameChanged = {},
+            onSaveChanged = {},
+            onEditPhotoClick = {},
+            onNavigateBack = {}
+        )
+    }
+}

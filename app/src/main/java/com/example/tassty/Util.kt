@@ -1,48 +1,23 @@
 package com.example.tassty
 
-import android.content.Context
-import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
-import java.net.URLEncoder
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.VoucherType
 import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.ui.theme.Blue200
-import com.example.tassty.ui.theme.Blue50
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green200
-import com.example.tassty.ui.theme.Green50
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.Orange200
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink200
-import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
-import com.google.android.gms.maps.model.BitmapDescriptor
-import androidx.core.graphics.createBitmap
-import coil.ImageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
-import coil.transform.CircleCropTransformation
-import com.example.tassty.component.LocationItem
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
+import org.threeten.bp.LocalTime
 
 data class VerifyArgs(
     val type: VerificationType,
@@ -50,11 +25,21 @@ data class VerifyArgs(
     val resendDelay: Int
 )
 
-enum class VerificationType(val title: String, val instruction: String, val recoveryInfo: String) {
-    REGISTRATION("Verify Your Email.",
-        "Please enter the 6-digit activation code sent to: ", "to activate your account."),
-    FORGOT_PASSWORD("Reset Your Password.",
-        "Please enter the security code sent to: ","to recover your account.")
+enum class VerificationType(
+    @StringRes val titleRes: Int,
+    @StringRes val instructionRes: Int,
+    @StringRes val recoveryInfoRes: Int
+) {
+    REGISTRATION(
+        R.string.verify_email_title,
+        R.string.verify_email_instruction,
+        R.string.verify_email_recovery
+    ),
+    FORGOT_PASSWORD(
+        R.string.reset_password_title,
+        R.string.reset_password_instruction,
+        R.string.reset_password_recovery
+    )
 }
 
 enum class RatingType(val title: String) {
@@ -242,128 +227,12 @@ enum class ChatTab(val title: String) {
     NOTIFICATION("Notification")
 }
 
-
-// Helper function (bisa taruh di file terpisah atau di dalam ViewModel/Composable)
-suspend fun loadCircularBitmapFromUrl(
-    context: Context,
-    imageUrl: String,
-    sizeDp: Dp = 40.dp // Sesuaikan ukuran marker
-): BitmapDescriptor? {
-    val loader = ImageLoader(context)
-    val sizePx = with(Density(context)) { sizeDp.toPx() }.toInt()
-
-    val request = ImageRequest.Builder(context)
-        .data(imageUrl)
-        .allowHardware(false) // WAJIB false biar bisa di-crop
-        .transformations(CircleCropTransformation()) // Otomatis jadi bulat dari Coil
-        .size(sizePx)
-        .build()
-
-    return try {
-        // 1. Download Gambar
-        val result = (loader.execute(request) as? SuccessResult)?.drawable
-        val bitmap = (result as? BitmapDrawable)?.bitmap
-
-        // 2. Ubah Bitmap jadi BitmapDescriptor (format yang diminta Google Maps)
-        if (bitmap != null) {
-            BitmapDescriptorFactory.fromBitmap(bitmap)
-        } else {
-            // Kalau gagal, kasih marker default/placeholder
-            BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        // Kalau error (internet mati/url salah), kasih marker default
-        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+private fun getGreetingMessage(): String {
+    val hour = LocalTime.now().hour
+    return when (hour) {
+        in 0..11 -> "Good Morning! 👋"
+        in 12..15 -> "Good Afternoon! ☀️"
+        in 16..18 -> "Good Evening! 🌆"
+        else -> "Good Night! 🌙"
     }
-}
-
-/**
- * Helper untuk mengambil daftar titik yang sudah dilewati driver
- */
-fun calculatePathTraveled(fullPath: List<LatLng>, currentPos: LatLng): List<LatLng> {
-    // Cari index titik terdekat, jangan pakai indexOf biasa karena rentan beda presisi
-    val index = fullPath.indexOfFirst {
-        it.latitude == currentPos.latitude && it.longitude == currentPos.longitude
-    }
-
-    return if (index != -1) {
-        fullPath.subList(0, index + 1)
-    } else {
-        // Kalau nggak ketemu, balikin minimal titik awal biar nggak kosong banget
-        if (fullPath.isNotEmpty()) listOf(fullPath.first(), currentPos) else emptyList()
-    }
-}
-
-suspend fun getDirections(origin: LatLng, dest: LatLng): List<LatLng> {
-    return withContext(Dispatchers.IO) {
-        val url = "https://maps.googleapis.com/maps/api/directions/json?" +
-                "origin=${origin.latitude},${origin.longitude}" +
-                "&destination=${dest.latitude},${dest.longitude}" +
-                "&key=${BuildConfig.MAPS_API_KEY}"
-
-        try {
-            val response = URL(url).readText()
-            val json = JSONObject(response)
-
-            // 1. Cek status dulu sebelum ambil 'routes'
-            val status = json.getString("status")
-            if (status != "OK") {
-                println("DEBUG_MAP_ERROR: Status dari Google = $status")
-                if (json.has("error_message")) {
-                    println("DEBUG_MAP_ERROR: Pesan = ${json.getString("error_message")}")
-                }
-                return@withContext emptyList() // Langsung keluar kalau gak OK
-            }
-
-            val routes = json.getJSONArray("routes")
-            if (routes.length() > 0) {
-                val encodedPoints = routes.getJSONObject(0)
-                    .getJSONObject("overview_polyline")
-                    .getString("points")
-
-                decodePolyline(encodedPoints)
-            } else {
-                emptyList()
-            }
-        } catch (e: Exception) {
-            println("DEBUG_MAP_EXCEPTION: ${e.message}")
-            e.printStackTrace()
-            emptyList()
-        }
-    }
-}
-
-fun decodePolyline(encoded: String): List<LatLng> {
-    val poly = ArrayList<LatLng>()
-    var index = 0
-    val len = encoded.length
-    var lat = 0
-    var lng = 0
-
-    while (index < len) {
-        var b: Int
-        var shift = 0
-        var result = 0
-        do {
-            b = encoded[index++].code - 63
-            result = result or (b and 0x1f shl shift)
-            shift += 5
-        } while (b >= 0x20)
-        val dlat = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-        lat += dlat
-
-        shift = 0
-        result = 0
-        do {
-            b = encoded[index++].code - 63
-            result = result or (b and 0x1f shl shift)
-            shift += 5
-        } while (b >= 0x20)
-        val dlng = if (result and 1 != 0) (result shr 1).inv() else result shr 1
-        lng += dlng
-
-        poly.add(LatLng(lat.toDouble() / 1E5, lng.toDouble() / 1E5))
-    }
-    return poly
 }

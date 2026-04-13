@@ -86,68 +86,6 @@ fun SearchBar(
     )
 }
 
-//@Composable
-//fun SearchBar(
-//    modifier: Modifier = Modifier,
-//    value: String = "",
-//    onValueChange: (String) -> Unit,
-//    placeholder: String = stringResource(R.string.search_for_something),
-//    enabled: Boolean = true,
-//    isTransparentMode: Boolean = false
-//) {
-//    val containerColor = if (isTransparentMode) Neutral10.copy(alpha = 0.10f) else LocalCustomColors.current.background
-//    val borderColor = if (isTransparentMode) Color.White.copy(alpha = 0.32f) else LocalCustomColors.current.border
-//    val iconColor = if (isTransparentMode) Neutral10 else Orange500
-//    val textColor = if (isTransparentMode) Neutral10 else LocalCustomColors.current.headerText
-//    val placeholderColor = if (isTransparentMode) Neutral10.copy(alpha = 0.50f) else Neutral60
-//
-//    Card(
-//        modifier = modifier
-//            .fillMaxWidth()
-//            .border(
-//                width = 1.dp,
-//                color = borderColor,
-//                shape = RoundedCornerShape(99.dp)
-//            ),
-//        shape = RoundedCornerShape(99.dp),
-//        colors = CardDefaults.cardColors(containerColor = containerColor),
-//        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
-//    ) {
-//        TextField(
-//            value = value,
-//            onValueChange = onValueChange,
-//            enabled = enabled,
-//            placeholder = {
-//                Text(
-//                    text = placeholder,
-//                    style = LocalCustomTypography.current.bodyMediumRegular,
-//                    color = placeholderColor
-//                )
-//            },
-//            trailingIcon = {
-//                Icon(
-//                    imageVector = Icons.Default.Search,
-//                    contentDescription = null,
-//                    tint = iconColor
-//                )
-//            },
-//            modifier = Modifier.fillMaxWidth(),
-//            textStyle = LocalCustomTypography.current.bodyMediumMedium.copy(color = textColor),
-//            colors = TextFieldDefaults.colors(
-//                focusedContainerColor = Color.Transparent,
-//                unfocusedContainerColor = Color.Transparent,
-//                disabledContainerColor = Color.Transparent,
-//                focusedIndicatorColor = Color.Transparent,
-//                unfocusedIndicatorColor = Color.Transparent,
-//                disabledIndicatorColor = Color.Transparent,
-//                focusedTextColor = textColor,
-//                unfocusedTextColor = textColor,
-//                disabledTextColor = textColor.copy(alpha = 0.5f)
-//            )
-//        )
-//    }
-//}
-
 @Composable
 fun CollectionText(
     modifier: Modifier = Modifier,

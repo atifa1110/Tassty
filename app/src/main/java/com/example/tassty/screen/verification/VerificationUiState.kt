@@ -10,9 +10,9 @@ data class VerificationUiState(
     val errorMessage: String = "",
     val timerSeconds: Int = 60,
     val isResendEnabled: Boolean = false,
-    val title: String = "",
-    val instruction: String = "",
-    val recoveryInfo: String = ""
+    val title: Int = 0,
+    val instruction: Int = 0,
+    val recoveryInfo: Int = 0
 )
 
 data class VerificationInternalState(

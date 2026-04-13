@@ -1,5 +1,6 @@
 package com.example.tassty.screen.voucher
 
+import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,8 +42,11 @@ fun VoucherScreen(
     onNavigateBack: () -> Unit,
     viewModel: VoucherViewModel = hiltViewModel()
 ){
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     VoucherContent(
+        context = context,
         uiState = uiState,
         onNavigateBack = onNavigateBack
     )
@@ -49,6 +54,7 @@ fun VoucherScreen(
 
 @Composable
 fun VoucherContent(
+    context: Context,
     onNavigateBack: () -> Unit,
     uiState: VoucherUiState
 ){
@@ -57,17 +63,22 @@ fun VoucherContent(
         topBar = {
             FavoriteTopAppBar(
                 onBackClick = onNavigateBack,
-                onSearchClick = {}
+                onSearchClick = {},
+                iconBackground = LocalCustomColors.current.topBarBackgroundColor
             )
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier .padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
             item(key="header"){
                 HeaderTitleScreen(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     title = stringResource(R.string.promo_vouchers)
                 )
                 Divider32()
@@ -98,7 +109,7 @@ fun VoucherContent(
                 val (headerName, voucherList) = entry
 
                 voucherVerticalListBlock(
-                    headerText = "$headerName Vouchers",
+                    headerText = context.getString(R.string.header_vouchers, headerName),
                     voucherItems = voucherList,
                     onNavigateToDetailVoucher = {}
                 )
@@ -114,35 +125,37 @@ fun VoucherContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun VoucherLightPreview(){
-//    TasstyTheme {
-//        VoucherContent(
-//            uiState = VoucherUiState(
-//                vouchers = Resource(
-//                    isLoading = false,
-//                    data = voucherUiModel,
-//                    errorMessage = null
-//                )
-//            ),
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun VoucherLightPreview(){
+    TasstyTheme {
+        VoucherContent(
+            context = LocalContext.current,
+            uiState = VoucherUiState(
+                vouchers = Resource(
+                    isLoading = false,
+                    data = voucherUiModel,
+                    errorMessage = null
+                )
+            ),
+            onNavigateBack = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun VoucherDarkPreview(){
-//    TasstyTheme(darkTheme = true) {
-//        VoucherContent(
-//            uiState = VoucherUiState(
-//                vouchers = Resource(
-//                    isLoading = false,
-//                    data = voucherUiModel,
-//                    errorMessage = null
-//                )
-//            ),
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun VoucherDarkPreview(){
+    TasstyTheme(darkTheme = true) {
+        VoucherContent(
+            context = LocalContext.current,
+            uiState = VoucherUiState(
+                vouchers = Resource(
+                    isLoading = false,
+                    data = voucherUiModel,
+                    errorMessage = null
+                )
+            ),
+            onNavigateBack = {}
+        )
+    }
+}

@@ -149,7 +149,7 @@ fun ResetNewPasswordContent(
                     placeholder = stringResource(R.string.new_password),
                     label = stringResource(R.string.new_password),
                     password = uiState.password,
-                    passwordError = uiState.passwordError?:"",
+                    passwordError = uiState.passwordError,
                     onPasswordChanged = onPasswordChange,
                     enabled = uiState.isTextEditable
                 )
@@ -158,7 +158,7 @@ fun ResetNewPasswordContent(
                     label = stringResource(R.string.confirm_password),
                     placeholder = stringResource(R.string.confirm_password),
                     password = uiState.confirmPassword,
-                    passwordError = uiState.confirmPasswordError?:"",
+                    passwordError = uiState.confirmPasswordError,
                     onPasswordChanged = onConfirmChange,
                     enabled = uiState.isTextEditable
                 )

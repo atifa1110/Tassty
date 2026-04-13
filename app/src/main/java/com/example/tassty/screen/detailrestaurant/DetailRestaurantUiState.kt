@@ -5,6 +5,7 @@ import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.ui.model.RestaurantLocationArgs
 import com.example.core.ui.model.ReviewUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.screen.home.HomeEvent
@@ -25,12 +26,9 @@ data class DetailRestaurantUiState(
     val isScheduleModalVisible: Boolean = false,
     val isShowCloseModalVisible: Boolean = false,
     val isSearchModalVisible: Boolean = false,
-    val isDetailMenuModalVisible: Boolean = false,
 
     val menu: MenuUiModel? = null,
     val searchQuery: String = "",
-    val quantity: Int = 1,
-    val isEditMode: Boolean = false,
     val totalItems : Int = 0,
     val totalPrice: Int = 0,
     val newCollectionName: String = ""
@@ -45,10 +43,7 @@ data class DetailInternalState(
     val isScheduleModalVisible: Boolean = false,
     val isShowCloseModalVisible: Boolean = false,
     val isSearchModalVisible: Boolean = false,
-    val isDetailMenuModalVisible: Boolean = false,
     val searchQuery: String = "",
-    val quantity: Int = 1,
-    val isEditMode: Boolean = false,
     val newCollectionName: String = ""
 )
 
@@ -84,14 +79,9 @@ sealed class DetailRestaurantEvent {
     data object OnCreateCollection: DetailRestaurantEvent()
 
     data class OnMenuFavoriteClick(val menu: MenuUiModel) : DetailRestaurantEvent()
-
-    data class OnMenuAddToCartClick(val menu: MenuUiModel): DetailRestaurantEvent()
-    object OnDismissDetailMenuSheet: DetailRestaurantEvent()
-    data class OnAddToCart(val menu: DetailMenuUiModel) : DetailRestaurantEvent()
-    data class OnQuantityIncrease(val quantity: Int) : DetailRestaurantEvent()
-    data class OnQuantityDecrease(val quantity: Int) : DetailRestaurantEvent()
 }
 
 sealed interface DetailUiEvent {
     data class ShowSnackbar(val message: String) : DetailUiEvent
+    data class NavigateToLocation(val data: RestaurantLocationArgs) : DetailUiEvent
 }

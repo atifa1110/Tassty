@@ -1,24 +1,16 @@
 package com.example.tassty.screen.addcard
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,10 +19,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,13 +46,9 @@ import com.example.tassty.model.CardColorOption
 import com.example.tassty.model.PatternImage
 import com.example.tassty.model.colorList
 import com.example.tassty.model.patterns
-import com.example.tassty.screen.rating.HeaderIconText
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.Transformations
 import com.stripe.android.Stripe
@@ -92,7 +80,7 @@ fun AddCardScreen(
                         val realPmId = setupIntent.paymentMethodId
 
                         if (realPmId != null) {
-                            viewModel.onStripeValidationSuccess(realPmId)
+                            viewModel.onStripeValidationSuccess(paymentMethodId = realPmId)
                         }
                     }
                 }
@@ -141,7 +129,7 @@ fun AddCardScreen(
 
         LoadingOverlay(
             isLoading = uiState.isLoading,
-            text = "Securely processing..."
+            text = stringResource(R.string.securely_processing)
         )
     }
 
@@ -151,9 +139,9 @@ fun AddCardScreen(
         onDismiss = {}
     ) {
         ModalStatusContent(
-            title = "A new card has \nbeen added!",
-            subtitle = "You can now use this card for faster \ncheckout on all your orders.",
-            buttonTitle = "Confirm",
+            title = stringResource(R.string.a_new_card_has_been_added),
+            subtitle = stringResource(R.string.now_use_card),
+            buttonTitle = stringResource(R.string.confirm),
             onClick = viewModel::onDismissSheet
         ) {
             SuccessIcon()
@@ -188,8 +176,8 @@ fun AddCardContent(
                 )
                 CustomTwoColorText(
                     modifier = Modifier.fillMaxWidth(),
-                    fullText = "By adding a card, you've read & agree to our \nTerms and conditions",
-                    highlightText = "Terms and conditions",
+                    fullText = stringResource(R.string.by_adding_a_card_you_ve_read_agree_to_our_terms_and_conditions),
+                    highlightText = stringResource(R.string.terms_and_conditions),
                     onHighlightClick = {}
                 )
             }
@@ -202,12 +190,16 @@ fun AddCardContent(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
             item {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
@@ -215,7 +207,7 @@ fun AddCardContent(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Add card",
+                            text = stringResource(R.string.add_card),
                             style = LocalCustomTypography.current.h2Bold,
                             color = LocalCustomColors.current.headerText
                         )
@@ -227,7 +219,7 @@ fun AddCardContent(
                         )
                     }
                     Text(
-                        text = "Your card details will be saved securely",
+                        text = stringResource(R.string.your_card_details_will_be_saved_securely),
                         style = LocalCustomTypography.current.bodyMediumRegular,
                         color = LocalCustomColors.current.text
                     )
@@ -236,21 +228,22 @@ fun AddCardContent(
             }
 
             item {
-                Column(Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                Column(Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     TextSection(
-                        label = "Card holder's name",
-                        placeholder = "Enter name",
+                        label = stringResource(R.string.card_holder_s_name),
+                        placeholder = stringResource(R.string.enter_name),
                         text = uiState.cardName,
                         leadingIcon = R.drawable.person,
-                        onTextChanged = onCardNameChange,
-                        textError = ""
+                        onTextChanged = onCardNameChange
                     )
 
                     TextTransformationSection(
-                        label = "Card number",
-                        placeholder = "Enter number",
+                        label = stringResource(R.string.card_number),
+                        placeholder = stringResource(R.string.enter_number),
                         text = uiState.cardNumber,
                         leadingIcon = R.drawable.credit_card,
                         onTextChanged = onCardNumberChange,
@@ -260,8 +253,8 @@ fun AddCardContent(
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TextTransformationSection(
                             modifier = Modifier.weight(1f),
-                            label = "Expiry Date",
-                            placeholder = "MM/YY",
+                            label = stringResource(R.string.expiry_date),
+                            placeholder = stringResource(R.string.mm_yy),
                             text = uiState.expireDate,
                             leadingIcon = R.drawable.calendar,
                             onTextChanged = onExpireDateChange,
@@ -270,8 +263,8 @@ fun AddCardContent(
 
                         TextTransformationSection(
                             modifier = Modifier.weight(1f),
-                            label = "CVV",
-                            placeholder = "CVV",
+                            label = stringResource(R.string.cvv),
+                            placeholder = stringResource(R.string.cvv),
                             text = uiState.cvv,
                             leadingIcon = R.drawable.lock,
                             onTextChanged = onCvvNumberChange
@@ -283,7 +276,9 @@ fun AddCardContent(
 
             item {
                 Column(
-                    Modifier.fillMaxSize().padding(horizontal = 24.dp),
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     CardBackgroundListContent(
@@ -316,13 +311,13 @@ fun CardBackgroundListContent(
     ) {
         Text(
             textAlign = TextAlign.Start,
-            text = "Card color",
+            text = stringResource(R.string.card_color),
             style = LocalCustomTypography.current.h5Bold,
             color = LocalCustomColors.current.headerText
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp) // Kasih jarak antar item
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             patterns.forEach { resId ->
                 CardBackgroundItem(
@@ -347,7 +342,7 @@ fun CardColorListContent(
     ) {
         Text(
             textAlign = TextAlign.Start,
-            text = "Card color",
+            text = stringResource(R.string.card_color),
             style = LocalCustomTypography.current.h5Bold,
             color = LocalCustomColors.current.headerText
         )
@@ -365,57 +360,57 @@ fun CardColorListContent(
 
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun AddCardLightPreview() {
-//    val mockUiState = AddCardUiState(
-//        selectedColor = colorList[3],
-//        selectedImage = patterns[0],
-//        cardName = "Luna Fiorenza",
-//        cardNumber = "4242424242424242",
-//        expireDate = "1226",
-//        cvv = "123",
-//        isLoading = true
-//    )
-//
-//    TasstyTheme {
-//        AddCardContent(
-//            uiState = mockUiState,
-//            onCardNumberChange = {},
-//            onCardNameChange = {},
-//            onCvvNumberChange = {},
-//            onExpireDateChange = {},
-//            onSaveCardCLicked = {},
-//            onColorSelected = {},
-//            onImageSelected = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun AddCardLightPreview() {
+    val mockUiState = AddCardUiState(
+        selectedColor = colorList[3],
+        selectedImage = patterns[0],
+        cardName = "Luna Fiorenza",
+        cardNumber = "4242424242424242",
+        expireDate = "1226",
+        cvv = "123",
+        isLoading = true
+    )
+
+    TasstyTheme {
+        AddCardContent(
+            uiState = mockUiState,
+            onCardNumberChange = {},
+            onCardNameChange = {},
+            onCvvNumberChange = {},
+            onExpireDateChange = {},
+            onSaveCardCLicked = {},
+            onColorSelected = {},
+            onImageSelected = {},
+            onNavigateBack = {}
+        )
+    }
+}
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun AddCardDarkPreview() {
-//    val mockUiState = AddCardUiState(
-//        selectedColor = colorList[3],
-//        selectedImage = patterns[0],
-//        cardName = "Luna Fiorenza",
-//        cardNumber = "4242424242424242",
-//        expireDate = "1226",
-//        cvv = "123",
-//        isLoading = true
-//    )
-//
-//    TasstyTheme(darkTheme = true) {
-//        AddCardContent(
-//            uiState = mockUiState,
-//            onCardNumberChange = {},
-//            onCardNameChange = {},
-//            onCvvNumberChange = {},
-//            onExpireDateChange = {},
-//            onSaveCardCLicked = {},
-//            onColorSelected = {},
-//            onImageSelected = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun AddCardDarkPreview() {
+    val mockUiState = AddCardUiState(
+        selectedColor = colorList[3],
+        selectedImage = patterns[0],
+        cardName = "Luna Fiorenza",
+        cardNumber = "4242424242424242",
+        expireDate = "1226",
+        cvv = "123",
+        isLoading = true
+    )
+
+    TasstyTheme(darkTheme = true) {
+        AddCardContent(
+            uiState = mockUiState,
+            onCardNumberChange = {},
+            onCardNameChange = {},
+            onCvvNumberChange = {},
+            onExpireDateChange = {},
+            onSaveCardCLicked = {},
+            onColorSelected = {},
+            onImageSelected = {},
+            onNavigateBack = {}
+        )
+    }
+}

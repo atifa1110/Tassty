@@ -96,7 +96,7 @@ fun EmptySearchContent(){
 @Composable
 fun EmptyContent(
     title: String,
-    highlight: String = "!",
+    highlight: String = stringResource(R.string.exclamation),
     subtitle: String,
     buttonText: String = "",
     icon: Int? = null,
@@ -138,7 +138,8 @@ fun EmptyContent(
             )
             if (onClick != null) {
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .clickable(onClick = onClick),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -194,6 +195,16 @@ fun EmptyCollectionContent(){
         onClick = {}
     )
 }
+
+@Composable
+fun EmptyCollectionSmallContent(){
+    EmptyContent(
+        title = "Your collection \nis empty!",
+        subtitle = "You can add your favorite menus by clicking the love button on the menu details page.",
+        icon = R.drawable.phone_boarding,
+    )
+}
+
 
 @Composable
 fun EmptyFavoriteContent(){
@@ -294,7 +305,7 @@ fun LoadingScreen(){
 @Composable
 fun LoadingOverlay(
     isLoading: Boolean,
-    text: String = "Sending..",
+    text: String = stringResource(R.string.sending),
     isEmpty: Boolean = false
 ) {
     AnimatedVisibility(
@@ -324,7 +335,9 @@ fun LoadingOverlay(
 @Composable
 fun ErrorScreen(){
     Column (
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ){

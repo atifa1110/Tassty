@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.model.AddressType
 import com.example.tassty.R
@@ -62,6 +64,7 @@ import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink400
 import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink600
+import com.example.tassty.util.UiText
 
 fun iconPainter(resId: Int) = @Composable {
     Icon(painter = painterResource(resId), contentDescription = null, modifier = Modifier.size(20.dp))
@@ -72,12 +75,35 @@ fun iconVector(vector: ImageVector, description: String = "") = @Composable {
 }
 
 @Composable
+fun EditTextHeader(
+    label: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    labelStyle: TextStyle = LocalCustomTypography.current.h5Bold,
+    spacing: Dp = 8.dp,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(spacing)
+    ) {
+        Text(
+            text = label,
+            style = labelStyle,
+            color = if (enabled) LocalCustomColors.current.headerText else LocalCustomColors.current.text,
+            modifier = Modifier.fillMaxWidth()
+        )
+        content()
+    }
+}
+
+@Composable
 fun TextFieldComponent(
     modifier: Modifier = Modifier,
     text: String,
     onTextChanged: (String) -> Unit,
     placeholder: String,
-    textError: String = "",
+    textError: UiText? = null,
     singleLine: Boolean = true,
     enabled: Boolean = true,
     maxLines: Int = if (singleLine) 1 else 5,
@@ -88,6 +114,8 @@ fun TextFieldComponent(
     textStyle: TextStyle = LocalCustomTypography.current.bodyMediumMedium,
     placeholderStyle:  TextStyle = LocalCustomTypography.current.bodyMediumRegular,
 ) {
+    val errorMessage = textError?.asString() ?: ""
+
     OutlinedTextField(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(30.dp),
@@ -99,7 +127,7 @@ fun TextFieldComponent(
             unfocusedPlaceholderColor = Neutral60,
             focusedContainerColor = LocalCustomColors.current.background,
             unfocusedContainerColor = LocalCustomColors.current.background,
-            disabledContainerColor = Color.Transparent,
+            disabledContainerColor = LocalCustomColors.current.background,
             focusedBorderColor = LocalCustomColors.current.border,
             unfocusedBorderColor = LocalCustomColors.current.borderUnfocused,
             disabledBorderColor = LocalCustomColors.current.border,
@@ -132,11 +160,11 @@ fun TextFieldComponent(
         singleLine = singleLine,
         maxLines = maxLines,
         keyboardOptions = keyboardOptions,
-        isError = textError.isNotEmpty(),
+        isError = errorMessage.isNotEmpty(),
     )
 
-    if(textError.isNotEmpty()){
-        TextFieldError(textError = textError)
+    if(errorMessage.isNotEmpty()){
+        TextFieldError(textError = errorMessage)
     }
 }
 
@@ -163,7 +191,7 @@ fun TextFieldError(textError: String) {
 fun EmailComponent(
     placeholder: String = "Enter your email",
     text: String,
-    textError: String = "",
+    textError: UiText?,
     enabled: Boolean = true,
     onTextChanged: (String) -> Unit,
 ) {
@@ -186,21 +214,10 @@ fun EmailSection(
     label: String = stringResource(R.string.email_address),
     enabled: Boolean = true,
     email: String,
-    emailError: String,
+    emailError: UiText?,
     onEmailChanged: (String) -> Unit
 ) {
-    Column (
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Start,
-            text = label,
-            style = LocalCustomTypography.current.h5Bold,
-            color = if(enabled) LocalCustomColors.current.headerText else LocalCustomColors.current.text
-        )
-
+    EditTextHeader(label = label) {
         EmailComponent(
             text = email,
             enabled = enabled,
@@ -215,7 +232,7 @@ fun PasswordComponent(
     placeholder: String = stringResource(R.string.enter_password),
     enabled: Boolean = true,
     text: String,
-    textError: String = "",
+    textError: UiText?,
     onTextChanged: (String) -> Unit,
 ) {
     var isVisible by remember { mutableStateOf(false) }
@@ -252,21 +269,10 @@ fun PasswordSection(
     enabled: Boolean = true,
     label: String = stringResource(R.string.password),
     password: String,
-    passwordError: String,
+    passwordError: UiText?,
     onPasswordChanged: (String) -> Unit
 ) {
-    Column (
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Start,
-            text = label,
-            style = LocalCustomTypography.current.h5Bold,
-            color = if(enabled) LocalCustomColors.current.headerText else LocalCustomColors.current.text
-        )
-
+    EditTextHeader(label = label) {
         PasswordComponent(
             placeholder = placeholder,
             enabled = enabled,
@@ -282,7 +288,7 @@ fun TextComponent(
     placeholder: String = stringResource(R.string.enter_your_name),
     enabled: Boolean = true,
     text: String,
-    textError: String = "",
+    textError: UiText? = null,
     singleLine: Boolean = true,
     onTextChanged: (String) -> Unit,
     leadingIcon: Int? = null,
@@ -308,23 +314,12 @@ fun TextSection(
     placeholder: String = "Enter name",
     enabled: Boolean = true,
     text: String,
-    textError: String,
+    textError: UiText? = null,
     singleLine: Boolean = true,
     leadingIcon: Int? = null,
     onTextChanged: (String) -> Unit
 ) {
-    Column (
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Start,
-            text = label,
-            style = LocalCustomTypography.current.h5Bold,
-            color = LocalCustomColors.current.headerText
-        )
-
+    EditTextHeader(label = label) {
         TextComponent(
             placeholder = placeholder,
             text = text,
@@ -342,18 +337,7 @@ fun AddressTypeSection(
     addressType: AddressType,
     onTypeSelected: (AddressType) -> Unit
 ){
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Start,
-            text = "Address type",
-            color = LocalCustomColors.current.headerText,
-            style = LocalCustomTypography.current.h5Bold,
-        )
-
+    EditTextHeader(label = "Address type") {
         AddressTypeRow(
             selectedType = addressType,
             onTypeSelected = onTypeSelected
@@ -386,7 +370,6 @@ fun DetailNotesSection(
         }
         TextComponent(
             text = text,
-            textError = "",
             singleLine = false,
             placeholder = "Place your notes here...",
             onTextChanged = onTextChanged,
@@ -406,7 +389,7 @@ fun TextTransformationSection(
     onTextChanged: (String) -> Unit
 ){
     Column(
-        modifier=  modifier.fillMaxWidth(),
+        modifier =  modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
@@ -415,7 +398,6 @@ fun TextTransformationSection(
             style = LocalCustomTypography.current.h5Bold,
             color = Neutral100
         )
-
         TextFieldComponent(
             text = text,
             placeholder = placeholder,
@@ -539,22 +521,22 @@ fun EditTextReview(){
     ) {
         EmailSection(
             email = "",
-            emailError = "",
+            emailError = UiText.DynamicString(""),
             onEmailChanged = {}
         )
 
         PasswordSection(
             password = "",
-            passwordError = "",
+            passwordError = UiText.DynamicString(""),
             onPasswordChanged = {}
         )
 
         TextSection(
             text = "",
-            textError = "",
             onTextChanged = {}
         )
 
-        MessageInputBar(text = "Placed", placeholder = "", onTextChanged = {}, onSendMessage = {}) { }
+        MessageInputBar(text = "Placed", placeholder = "",
+            onTextChanged = {}, onSendMessage = {}) { }
     }
 }

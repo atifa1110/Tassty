@@ -40,7 +40,7 @@ class CategoryViewModel @Inject constructor(
     private val _internalState = MutableStateFlow(CategoryInternalState())
 
     private val filterFlow = getFilterOptionsUseCase().map {
-        it.mapToResource { data->
+        it.mapToResource { data ->
             FilterState(
                 sortList = data.sortOptions.map { it.toUiModel(FilterCategory.SORT) },
                 priceRanges = data.priceRangeOptions.map { it.toUiModel(FilterCategory.PRICE) },
@@ -58,11 +58,11 @@ class CategoryViewModel @Inject constructor(
     ) { query, filters ->
         RestaurantSearchFilter(
             keyword = query.ifEmpty { "" },
-            sorting = filters.appliedSort,
-            priceRange = filters.appliedPrice,
-            minRating = filters.appliedRating,
-            mode = filters.appliedMode,
-            cuisineId = filters.appliedCuisine
+            sorting = filters.applied[FilterCategory.SORT],
+            priceRange = filters.applied[FilterCategory.PRICE],
+            minRating = filters.applied[FilterCategory.RATING],
+            mode = filters.applied[FilterCategory.MODE],
+            cuisineId = filters.applied[FilterCategory.CUISINE]
         )
     }.flatMapLatest { finalFilter ->
         getSearchRestaurantsByCategoryUseCase(id, finalFilter)
@@ -73,22 +73,25 @@ class CategoryViewModel @Inject constructor(
             }
     }
 
-    val uiState : StateFlow<CategoryUiState> = combine(
+    val uiState: StateFlow<CategoryUiState> = combine(
         _internalState,
         filterFlow,
         filterData,
         restaurantFlow
-    ) { internal, filterMaster,filterData, restaurant ->
+    ) { internal, filterMaster, filterData, restaurant ->
 
-        val data = filterMaster.data ?: return@combine CategoryUiState()
+        val data = filterMaster.data ?: return@combine CategoryUiState(
+            query = internal.query,
+            restaurants = restaurant,
+            activeFilters = emptyList()
+        )
 
-        val sortedList = data.sortList.map { it.copy(isSelected = it.key == filterData.selectedSort) }
-        val priceList = data.priceRanges.map { it.copy(isSelected = it.key == filterData.selectedPrice) }
-        val ratingList = data.ratingsOptions.map { it.copy(isSelected = it.key == filterData.selectedRating) }
-        val modeList = data.modesOptions.map { it.copy(isSelected = it.key == filterData.selectedMode) }
-        val cuisineList = data.cuisineOptions.map { it.copy(isSelected = it.key == filterData.selectedCuisine) }
+        val sortedList = data.sortList.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.SORT]) }
+        val priceList = data.priceRanges.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.PRICE]) }
+        val ratingList = data.ratingsOptions.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.RATING]) }
+        val modeList = data.modesOptions.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.MODE]) }
+        val cuisineList = data.cuisineOptions.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.CUISINE]) }
 
-        // 3. Return State ke UI
         CategoryUiState(
             query = internal.query,
             sortList = sortedList,
@@ -96,7 +99,7 @@ class CategoryViewModel @Inject constructor(
             ratingsOptions = ratingList,
             modesOptions = modeList,
             cuisineOptions = cuisineList,
-            activeFilters = mapToActiveFilters(filterData,data),
+            activeFilters = mapToActiveFilters(filterData, data),
             restaurants = restaurant,
             isFilterSheetVisible = internal.isFilterSheetVisible,
             isSortSheetVisible = internal.isSortSheetVisible
@@ -108,48 +111,25 @@ class CategoryViewModel @Inject constructor(
         initialValue = CategoryUiState()
     )
 
-    /**
-     * Called every time search text changes (from user input).
-     */
-    private fun onQueryChange(query: String) {
-        _internalState.update {
-            it.copy(query = query)
-        }
-    }
-
     fun onEvent(event: CategoryEvent) {
-        when(event){
-            is CategoryEvent.onQueryChange -> onQueryChange(event.query)
+        when (event) {
+            is CategoryEvent.onQueryChange -> _internalState.update { it.copy(query = event.query) }
             is CategoryEvent.ShowFilterSheet -> _internalState.update { it.copy(isFilterSheetVisible = true) }
             is CategoryEvent.ShowSortSheet -> _internalState.update { it.copy(isSortSheetVisible = true) }
-            is CategoryEvent.UpdateDraftFilter -> onFilterSelected(event.category,event.value)
+            is CategoryEvent.UpdateDraftFilter -> onFilterSelected(event.category, event.value)
             is CategoryEvent.ApplyFilters -> {
-                _internalState.update { currentState ->
-                    applyFilters()
-                    currentState.copy(
-                        isFilterSheetVisible = false,
-                    )
-                }
+                applyFilters()
+                _internalState.update { it.copy(isFilterSheetVisible = false) }
             }
-            is CategoryEvent.ApplySort-> {
-                _internalState.update { currentState->
-                    applySort()
-                    currentState.copy(
-                        isSortSheetVisible = false,
-                    )
-                }
+            is CategoryEvent.ApplySort -> {
+                applySort()
+                _internalState.update { it.copy(isSortSheetVisible = false) }
             }
             is CategoryEvent.ResetFilter -> {
-                _internalState.update {
-                    resetFilters()
-                    it.copy(isFilterSheetVisible = false)
-                }
+                resetFilters()
+                _internalState.update { it.copy(isFilterSheetVisible = false) }
             }
-            is CategoryEvent.ResetSort -> {
-                resetSort()
-            }
+            is CategoryEvent.ResetSort -> resetSort()
         }
     }
-
 }
-

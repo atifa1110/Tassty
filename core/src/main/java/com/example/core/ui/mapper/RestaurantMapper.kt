@@ -5,12 +5,14 @@ import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantWithMenu
 import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
+import com.google.android.gms.maps.model.LatLng
 
 fun Restaurant.toUiModel(): RestaurantUiModel{
     return RestaurantUiModel(
         id = this.id,
         name = this.name,
         imageUrl = this.imageUrl,
+        location = LatLng(this.latitude,this.longitude),
         categories = this.categories.joinToString(", "),
         rank = this.rank,
         rating = this.rating,

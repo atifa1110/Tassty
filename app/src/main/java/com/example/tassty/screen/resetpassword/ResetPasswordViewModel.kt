@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.ResetPasswordUseCase
 import com.example.tassty.util.InputValidator
+import com.example.tassty.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,12 +59,15 @@ class ResetPasswordViewModel @Inject constructor(
         val password = state.password
         val confirm = state.confirmPassword
 
-        val passwordError = InputValidator.validatePassword(password)
-        val confirmError = InputValidator.validateConfirmPassword(password, confirm)
+        val passwordErrorRes = InputValidator.validatePassword(password)
+        val confirmErrorRes = InputValidator.validateConfirmPassword(password, confirm)
 
-        if(passwordError!= null || confirmError!= null) {
+        if(passwordErrorRes!= null || confirmErrorRes!= null) {
             _internalState.update {
-                it.copy(passwordError = passwordError, confirmPasswordError = confirmError)
+                it.copy(
+                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res) },
+                    confirmPasswordError =  confirmErrorRes?.let { res -> UiText.StringResource(res) }
+                )
             }
             return
         }

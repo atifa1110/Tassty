@@ -25,9 +25,11 @@ import com.example.core.ui.utils.mapToResource
 import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toDomainDetail
+import com.example.core.ui.mapper.toNavArg
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.ui.model.RestaurantLocationArgs
 import com.example.tassty.navigation.DetailRestaurantDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -66,7 +68,7 @@ class DetailRestaurantViewModel @Inject constructor(
     private val addFavoriteRestaurantUseCase: AddFavoriteRestaurantUseCase,
     private val removeFavoriteRestaurantUseCase: RemoveFavoriteRestaurantUseCase,
     private val getCartsByRestaurantIdUseCase: GetCartsByRestaurantIdUseCase,
-    private val getDetailMenuUseCase: GetDetailMenuUseCase,
+    //private val getDetailMenuUseCase: GetDetailMenuUseCase,
     private val observeCartByMenuIdUseCase: ObserveCartByMenuIdUseCase,
     private val addCartMenuUseCase: AddCartMenuUseCase
 ): ViewModel() {
@@ -106,7 +108,7 @@ class DetailRestaurantViewModel @Inject constructor(
         )
     }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(5_000),
+        SharingStarted.WhileSubscribed(5000),
         DetailListContent()
     )
 
@@ -139,37 +141,16 @@ class DetailRestaurantViewModel @Inject constructor(
             isAddCollectionSheetVisible = internal.isAddCollectionSheetVisible,
             isShowCloseModalVisible = internal.isShowCloseModalVisible,
             isSearchModalVisible = internal.isSearchModalVisible,
-            isDetailMenuModalVisible = internal.isDetailMenuModalVisible,
             menu = internal.selectedMenu,
             searchQuery = internal.searchQuery,
-            quantity = internal.quantity,
             totalItems = items,
             totalPrice = price,
-            isEditMode = internal.isEditMode,
             newCollectionName = internal.newCollectionName
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = DetailRestaurantUiState()
-    )
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val detailMenuFlow = _internalState
-        .map { it.selectedMenu?.id }
-        .distinctUntilChanged()
-        .flatMapLatest { menuId ->
-            if (menuId.isNullOrEmpty()) {
-                flowOf(Resource(isLoading = false))
-            } else {
-                getDetailMenuUseCase(menuId).map {
-                    it.mapToResource { it.toUiModel(false) }
-                }
-            }
-    }.stateIn(
-        scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = Resource(isLoading = true)
+        initialValue = DetailRestaurantUiState()
     )
 
     fun onEvent(event: DetailRestaurantEvent) {
@@ -191,12 +172,13 @@ class DetailRestaurantViewModel @Inject constructor(
             is DetailRestaurantEvent.OnShowSearchSheet -> _internalState.update { it.copy(isSearchModalVisible = true) }
             is DetailRestaurantEvent.OnSearchQueryChange -> handleSearchQueryChange(event.newQuery)
             is DetailRestaurantEvent.OnDismissCloseSheet -> _internalState.update { it.copy(isShowCloseModalVisible = false) }
-            is DetailRestaurantEvent.OnDismissDetailMenuSheet -> _internalState.update { it.copy(isDetailMenuModalVisible = false) }
-            is DetailRestaurantEvent.OnMenuAddToCartClick -> handleMenuAddToCartClick(event.menu)
-            is DetailRestaurantEvent.OnAddToCart -> handleAddToCart(event.menu)
-            is DetailRestaurantEvent.OnQuantityDecrease -> handleQuantity(-1)
-            is DetailRestaurantEvent.OnQuantityIncrease -> handleQuantity(1)
         }
+    }
+
+    fun onLocationClick() = viewModelScope.launch {
+        val state = uiState.value.restaurantResource.data?: return@launch
+        val data = state.toNavArg()
+        _uiEffect.send(DetailUiEvent.NavigateToLocation(data))
     }
 
     private fun handleCreateNewCollection() = viewModelScope.launch {
@@ -227,48 +209,6 @@ class DetailRestaurantViewModel @Inject constructor(
                 _internalState.update { it.copy(isFavoriteModalVisible = true) }
             }
         }
-    }
-
-    private fun handleMenuAddToCartClick(menu: MenuUiModel) {
-        viewModelScope.launch {
-            val cartItem = observeCartByMenuIdUseCase(menu.id).firstOrNull()
-            val existsInCart = cartItem != null
-            val initialQuantity = cartItem?.quantity ?: 1
-
-            _internalState.update { state ->
-                state.copy(
-                    isDetailMenuModalVisible = true,
-                    selectedMenu = menu,
-                    quantity = initialQuantity,
-                    isEditMode = existsInCart
-                )
-            }
-        }
-    }
-
-    private fun handleQuantity(delta: Int) {
-        _internalState.update { state ->
-            val max = detailMenuFlow.value.data?.maxQuantity ?: 10
-            val newQty = (state.quantity + delta).coerceIn(1, max)
-            state.copy(quantity = newQty)
-        }
-    }
-
-    private fun handleAddToCart(menu: DetailMenuUiModel) = viewModelScope.launch {
-        val state = uiState.value
-        val menu = menu.toDomain()
-        val restaurant = menu.restaurant
-
-        addCartMenuUseCase(
-            menu = menu , restaurant = restaurant,
-            quantity = state.quantity,
-            totalPrice = 0,
-            summary = "", notes = ""
-        )
-        _internalState.update {
-            it.copy(isDetailMenuModalVisible = false, selectedMenu = null)
-        }
-        _uiEffect.send(DetailUiEvent.ShowSnackbar("Berhasil masuk keranjang!"))
     }
 
     private fun handleMenuFavoriteClick(menu: MenuUiModel) {

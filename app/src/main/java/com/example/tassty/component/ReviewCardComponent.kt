@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -125,9 +126,11 @@ fun ReviewLargeCard(
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
             CommonImage(
-                imageUrl = "",
+                imageUrl = review.profileImage,
                 name = "profile reviewers",
-                modifier = Modifier.size(44.dp).clip(CircleShape)
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
             )
 
             Column(
@@ -180,7 +183,7 @@ fun ReviewLargeCard(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Indah Café offers a fantastic dining experience with a warm ambiance and friendly staff. It's the perfect place for a special occasion or simply to enjoy a great meal with loved ones. I look forward to my next visit!",
+                    text = review.comment,
                     style = LocalCustomTypography.current.bodySmallRegular,
                     color = LocalCustomColors.current.text
                 )
@@ -188,7 +191,6 @@ fun ReviewLargeCard(
         }
 
         Row(
-            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)){
             Icon(
                 painter = painterResource(R.drawable.clipboard_list),
@@ -196,7 +198,7 @@ fun ReviewLargeCard(
                 contentDescription = "order review"
             )
             Text(
-                text = "Order: ",
+                text = stringResource(R.string.order),
                 style = LocalCustomTypography.current.bodyXtraSmallSemiBold,
                 color = LocalCustomColors.current.headerText
             )
@@ -310,30 +312,47 @@ fun ShimmerReviewLargeCard() {
 @Composable
 fun ShimmerRatingSummaryCard() {
     Card(
-        modifier = Modifier.fillMaxWidth().height(136.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(136.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         border = BorderStroke(1.dp, Neutral30)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically) {
             Column(
-                modifier = Modifier.weight(0.4f).background(Neutral20)
-                    .fillMaxHeight().padding(16.dp),
+                modifier = Modifier
+                    .weight(0.4f)
+                    .background(Neutral20)
+                    .fillMaxHeight()
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center
             ) {
-                Spacer(Modifier.size(60.dp, 30.dp).shimmerLoadingAnimation())
+                Spacer(Modifier
+                    .size(60.dp, 30.dp)
+                    .shimmerLoadingAnimation())
                 Spacer(Modifier.height(8.dp))
-                Spacer(Modifier.size(80.dp, 14.dp).shimmerLoadingAnimation())
+                Spacer(Modifier
+                    .size(80.dp, 14.dp)
+                    .shimmerLoadingAnimation())
                 Spacer(Modifier.height(12.dp))
-                Spacer(Modifier.size(100.dp, 12.dp).shimmerLoadingAnimation())
+                Spacer(Modifier
+                    .size(100.dp, 12.dp)
+                    .shimmerLoadingAnimation())
             }
             Column(
-                modifier = Modifier.weight(0.6f).padding(16.dp),
+                modifier = Modifier
+                    .weight(0.6f)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 repeat(5) {
-                    Spacer(Modifier.fillMaxWidth().height(8.dp)
+                    Spacer(Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
                         .shimmerLoadingAnimation())
                 }
             }

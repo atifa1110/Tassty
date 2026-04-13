@@ -1,6 +1,7 @@
 package com.example.core.ui.model
 
 import com.example.core.domain.model.AddressType
+import com.google.android.gms.maps.model.LatLng
 
 data class UserAddressUiModel (
     val id: String,
@@ -9,6 +10,7 @@ data class UserAddressUiModel (
     val landmarkDetail: String,
     val latitude: Double,
     val longitude: Double,
+    val location: LatLng,
     val addressType: AddressType = AddressType.NONE,
     val isPrimary: Boolean,
     val isSelected: Boolean

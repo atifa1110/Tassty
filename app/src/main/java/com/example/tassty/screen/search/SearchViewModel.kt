@@ -117,11 +117,11 @@ class SearchViewModel @Inject constructor(
 
                         val finalFilter = RestaurantSearchFilter(
                             keyword = query,
-                            sorting = filters.appliedSort,
-                            priceRange = filters.appliedPrice,
-                            minRating = filters.appliedRating,
-                            mode = filters.appliedMode,
-                            cuisineId = filters.appliedCuisine
+                            sorting = filters.applied[FilterCategory.SORT],
+                            priceRange = filters.applied[FilterCategory.PRICE],
+                            minRating = filters.applied[FilterCategory.RATING],
+                            mode = filters.applied[FilterCategory.MODE],
+                            cuisineId = filters.applied[FilterCategory.CUISINE]
                         )
 
                         getSearchRestaurantUseCase(finalFilter).collect { response ->
@@ -147,11 +147,12 @@ class SearchViewModel @Inject constructor(
     ){ internal, filterMaster, filterData, content, search ->
         val data = filterMaster.data?: return@combine SearchUiState()
 
-        val sortedList = data.sortList.map { it.copy(isSelected = it.key == filterData.selectedSort) }
-        val priceList = data.priceRanges.map { it.copy(isSelected = it.key == filterData.selectedPrice) }
-        val ratingList = data.ratingsOptions.map { it.copy(isSelected = it.key == filterData.selectedRating) }
-        val modeList = data.modesOptions.map { it.copy(isSelected = it.key == filterData.selectedMode) }
-        val cuisineList = data.cuisineOptions.map { it.copy(isSelected = it.key == filterData.selectedCuisine) }
+        val sortedList = data.sortList.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.SORT]) }
+        val priceList = data.priceRanges.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.PRICE]) }
+        val ratingList = data.ratingsOptions.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.RATING]) }
+        val modeList = data.modesOptions.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.MODE]) }
+        val cuisineList = data.cuisineOptions.map { it.copy(isSelected = it.key == filterData.selected[FilterCategory.CUISINE]) }
+
 
         SearchUiState(
             isSearching = internal.query.isNotEmpty(),
@@ -196,7 +197,6 @@ class SearchViewModel @Inject constructor(
                     it.copy(isFilterSheetVisible = false)
                 }
             }
-            // Sort
             is SearchEvent.ShowSortSheet -> _internalState.update { it.copy(isSortSheetVisible = true) }
             is SearchEvent.ApplySort -> {
                 _internalState.update {

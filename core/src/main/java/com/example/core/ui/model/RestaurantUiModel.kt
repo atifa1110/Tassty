@@ -1,11 +1,14 @@
 package com.example.core.ui.model
 
 import com.example.core.domain.model.LocationDetail
+import com.google.android.gms.maps.model.LatLng
+
 // UI Model
 data class RestaurantUiModel(
     val id: String,
     val name: String,
     val imageUrl: String,
+    val location : LatLng,
     val rank: Int,
     val rating: Double,
     val totalReviews: Int,

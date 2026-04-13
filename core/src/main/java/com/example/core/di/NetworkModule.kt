@@ -6,9 +6,12 @@ import com.example.core.data.source.remote.api.DetailApiService
 import com.example.core.data.source.remote.api.MenuApiService
 import com.example.core.data.source.remote.api.OrderApiService
 import com.example.core.data.source.remote.api.AuthPublicApiService
+import com.example.core.data.source.remote.api.CategoryLocationApiService
+import com.example.core.data.source.remote.api.DetailLocationApiService
 import com.example.core.data.source.remote.api.RestaurantApiService
 import com.example.core.data.source.remote.api.ReviewApiService
 import com.example.core.data.source.remote.api.SearchApiService
+import com.example.core.data.source.remote.api.SearchLocationApiService
 import com.example.core.data.source.remote.api.UserApiService
 import com.example.core.data.source.remote.api.VoucherApiService
 import com.google.gson.Gson
@@ -28,7 +31,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://10.0.2.2:3000/api/"
+    private const val BASE_URL = "http://10.0.2.2:3000/"
 
     @Singleton
     @Provides
@@ -52,8 +55,8 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    @MainClient
-    fun provideMainOkHttpClient(
+    @LocationClient
+    fun provideLocationOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
         locationInterceptor: LocationInterceptor,
         headerInterceptor: HeaderInterceptor
@@ -68,15 +71,41 @@ object NetworkModule {
             .build()
     }
 
+    @Singleton
+    @Provides
+    @MainClient
+    fun provideMainOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        headerInterceptor: HeaderInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(headerInterceptor)
+            .build()
+    }
+
     @Provides
     @Singleton
     fun provideGson(): Gson = GsonBuilder().create()
-
 
     @Provides
     @Singleton
     @AuthClient
     fun provideAuthRetrofit(@AuthClient client: OkHttpClient, gson: Gson): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(client)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @LocationClient
+    fun provideLocationRetrofit(@LocationClient client: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
@@ -108,15 +137,19 @@ object NetworkModule {
         retrofit.create(CategoryApiService::class.java)
 
     @Provides
+    fun provideCategoryLocationApi(@LocationClient retrofit: Retrofit): CategoryLocationApiService =
+        retrofit.create(CategoryLocationApiService::class.java)
+
+    @Provides
     fun provideUserApi(@MainClient retrofit: Retrofit): UserApiService =
         retrofit.create(UserApiService::class.java)
 
     @Provides
-    fun provideRestaurantApi(@MainClient retrofit: Retrofit): RestaurantApiService =
+    fun provideRestaurantApi(@LocationClient retrofit: Retrofit): RestaurantApiService =
         retrofit.create(RestaurantApiService::class.java)
 
     @Provides
-    fun provideMenuApi(@MainClient retrofit: Retrofit): MenuApiService =
+    fun provideMenuApi(@LocationClient retrofit: Retrofit): MenuApiService =
         retrofit.create(MenuApiService::class.java)
 
     @Provides
@@ -128,8 +161,16 @@ object NetworkModule {
         retrofit.create(SearchApiService::class.java)
 
     @Provides
+    fun provideSearchLocationApi(@LocationClient retrofit: Retrofit): SearchLocationApiService=
+        retrofit.create(SearchLocationApiService::class.java)
+
+    @Provides
     fun provideDetailApi(@MainClient retrofit: Retrofit): DetailApiService =
         retrofit.create(DetailApiService::class.java)
+
+    @Provides
+    fun provideDetailLocationApi(@LocationClient retrofit: Retrofit): DetailLocationApiService =
+        retrofit.create(DetailLocationApiService::class.java)
 
     @Provides
     fun provideReviewApi(@MainClient retrofit: Retrofit): ReviewApiService =

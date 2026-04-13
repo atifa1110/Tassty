@@ -13,10 +13,14 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import com.example.core.ui.model.RestaurantLocationArgs
 import com.example.tassty.RatingType
 import com.example.tassty.navigation.CategoryDestination.idArg
 import com.example.tassty.navigation.CategoryDestination.imageArg
 import com.example.tassty.navigation.CategoryDestination.nameArg
+import com.example.tassty.navigation.RatingDestination.DataNullMessage
+import com.example.tassty.navigation.RatingDestination.ratingDataArg
+import com.example.tassty.screen.addaddress.AddAddressScreen
 import com.example.tassty.screen.addcard.AddCardScreen
 import com.example.tassty.screen.address.AddressScreen
 import com.example.tassty.screen.bestseller.BestSellerScreen
@@ -28,11 +32,11 @@ import com.example.tassty.screen.dashboard.DashboardScreen
 import com.example.tassty.screen.detailmenu.DetailMenuScreen
 import com.example.tassty.screen.detailorder.DetailOrderScreen
 import com.example.tassty.screen.detailrestaurant.DetailRestaurantScreen
+import com.example.tassty.screen.detailroute.DetailLocationScreen
 import com.example.tassty.screen.editprofile.EditProfileScreen
 import com.example.tassty.screen.favorite.FavoriteScreen
 import com.example.tassty.screen.message.MessageScreen
 import com.example.tassty.screen.nearby.NearbyRestaurantScreen
-import com.example.tassty.screen.orderprocess.OrderProcessEvent
 import com.example.tassty.screen.orderprocess.OrderProcessScreen
 import com.example.tassty.screen.orders.OrderScreen
 import com.example.tassty.screen.payment.PaymentScreen
@@ -70,6 +74,26 @@ object DetailRestaurantDestination : TasstyNavigationDestination {
 
     fun getId(savedStateHandle: SavedStateHandle): String {
         return checkNotNull(savedStateHandle[idArg]) { IdNullMessage }
+    }
+}
+
+object DetailLocationDestination : TasstyNavigationDestination {
+    const val RESTAURANT_DATA_ARG = "data"
+    override val route: String = "detail_location/{$RESTAURANT_DATA_ARG}"
+    override val destination: String = "detail_location"
+
+    fun createRoute(args: RestaurantLocationArgs): String {
+        val argJson = Gson().toJson(args)
+        val encodedJson = Uri.encode(argJson)
+        return "$destination/$encodedJson"
+    }
+
+    fun getData(savedStateHandle: SavedStateHandle): RestaurantLocationArgs {
+        val jsonString: String = checkNotNull(savedStateHandle[RESTAURANT_DATA_ARG]) {
+            "Data is not found"
+        }
+        val decodedJson = Uri.decode(jsonString)
+        return Gson().fromJson(decodedJson, RestaurantLocationArgs::class.java)
     }
 }
 
@@ -341,6 +365,11 @@ object EditProfileDestination : TasstyNavigationDestination {
     override val destination = "edit_profile"
 }
 
+object AddAddressDestination : TasstyNavigationDestination {
+    override val route: String = "add_address"
+    override val destination: String = "add_address"
+}
+
 fun NavGraphBuilder.mainGraph(
     onNavigateBack:() -> Unit,
     onNavigateToSearch: () -> Unit,
@@ -363,12 +392,15 @@ fun NavGraphBuilder.mainGraph(
     onNavigateToAddCard: ()-> Unit,
     onNavigateToOrder:() -> Unit,
     onNavigateToOrderProcess: (String)-> Unit,
+    onNavigateFromOrderToOrderProcess: (String)-> Unit,
     onNavigateToOrderDetail: (String)-> Unit,
     onNavigateToRating: (RatingNavArg) -> Unit,
     onNavigateToMessage:(String) -> Unit,
     onNavigateToLoginFromHome: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
-    onNavigateToTerm: () -> Unit
+    onNavigateToTerm: () -> Unit,
+    onNavigateToAddAddress: () -> Unit,
+    onNavigateToDetailLocation: (RestaurantLocationArgs) -> Unit
 ) {
     navigation(
         route = MainGraph.route,
@@ -404,7 +436,9 @@ fun NavGraphBuilder.mainGraph(
         }
 
         composable(route = NearbyDestination.route) {
-            NearbyRestaurantScreen()
+            NearbyRestaurantScreen(
+                onNavigateBack = onNavigateBack
+            )
         }
 
         composable(
@@ -432,7 +466,21 @@ fun NavGraphBuilder.mainGraph(
                 onNavigateToDetailMenu = onNavigateToDetailMenu,
                 onNavigateToBestSeller=onNavigateToBestSeller,
                 onNavigateToReview = onNavigateToReview,
-                onNavigateToVoucher = onNavigateToVoucher
+                onNavigateToVoucher = onNavigateToVoucher,
+                onNavigateToDetailLocation = onNavigateToDetailLocation
+            )
+        }
+
+        composable(
+            route = DetailLocationDestination.route,
+            arguments = listOf(
+                navArgument(DetailLocationDestination.RESTAURANT_DATA_ARG) {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            DetailLocationScreen(
+                onNavigateBack = onNavigateBack
             )
         }
 
@@ -554,6 +602,15 @@ fun NavGraphBuilder.mainGraph(
             route = AddressDestination.route,
         ) {
             AddressScreen(
+                onNavigateBack = onNavigateBack,
+                onNavigateToAddAddress = onNavigateToAddAddress
+            )
+        }
+
+        composable(
+            route = AddAddressDestination.route
+        ) {
+            AddAddressScreen(
                 onNavigateBack = onNavigateBack
             )
         }
@@ -598,7 +655,7 @@ fun NavGraphBuilder.mainGraph(
             OrderScreen(
                 onNavigateBack = onNavigateBack,
                 onNavigateToPayment = onNavigateToPayment,
-                onNavigateToOrderProcess = onNavigateToOrderProcess,
+                onNavigateToOrderProcess = onNavigateFromOrderToOrderProcess,
                 onNavigateToOrderDetail = onNavigateToOrderDetail
             )
         }
@@ -607,6 +664,7 @@ fun NavGraphBuilder.mainGraph(
             route = OrderProcessDestination.routeWithArgs,
         ) {
             OrderProcessScreen(
+                onNavigateBack = onNavigateBack,
                 onNavigateToMessage = onNavigateToMessage
             )
         }
@@ -623,7 +681,7 @@ fun NavGraphBuilder.mainGraph(
         composable(
             route = RatingDestination.routeWithArgs,
             arguments = listOf(
-                navArgument(RatingDestination.ratingDataArg) { type = NavType.StringType }
+                navArgument(ratingDataArg) { type = NavType.StringType }
             )
         ) {
             RatingScreen(
@@ -655,6 +713,5 @@ fun NavGraphBuilder.mainGraph(
                 onNavigateBack = onNavigateBack
             )
         }
-
     }
 }

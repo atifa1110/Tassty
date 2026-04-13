@@ -1,5 +1,6 @@
 package com.example.tassty.screen.payment
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -108,6 +110,7 @@ fun PaymentScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         PaymentContent(
             total = total,
+            context = context,
             uiState = uiState,
             onCardSelected = viewModel::onCardSelected,
             onChannelSelected = viewModel::onChannelSelected,
@@ -152,6 +155,7 @@ fun PaymentScreen(
 @Composable
 fun PaymentContent(
     total: String,
+    context: Context,
     uiState: PaymentUiState,
     onCardSelected:(String) -> Unit,
     onChannelSelected:(String) -> Unit,
@@ -161,7 +165,9 @@ fun PaymentContent(
     Scaffold(
         containerColor = LocalCustomColors.current.background,
         bottomBar = {
-            Column(Modifier.fillMaxWidth().background(LocalCustomColors.current.modalBackgroundFrame)
+            Column(Modifier
+                .fillMaxWidth()
+                .background(LocalCustomColors.current.modalBackgroundFrame)
                 .padding(horizontal = 24.dp, vertical = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -170,7 +176,7 @@ fun PaymentContent(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Total Order",
+                        text = stringResource(R.string.total_order),
                         style = LocalCustomTypography.current.h5Bold,
                         color = LocalCustomColors.current.headerText
                     )
@@ -184,7 +190,9 @@ fun PaymentContent(
             }
         },
         topBar = {
-            Column(modifier = Modifier.fillMaxWidth().statusBarsPadding()) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()) {
                 CenterAlignedTopAppBar(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -192,7 +200,7 @@ fun PaymentContent(
                     ),
                     title = {
                         Text(
-                            text = "Payment",
+                            text = stringResource(R.string.payment),
                             style = LocalCustomTypography.current.h5Bold,
                             color = LocalCustomColors.current.headerText
                         )
@@ -211,17 +219,22 @@ fun PaymentContent(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             contentPadding = PaddingValues(vertical = 24.dp)
         ) {
             cardUserSection(
+                context = context,
                 resource = uiState.cardPayment,
                 onCardSelected = onCardSelected
             )
 
             uiState.groupedPaymentChannels.forEach { (category, channels) ->
                 item {
-                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
                     ) {
                         HeaderListBlackTitle(title = category)
                         Spacer(modifier = Modifier.height(12.dp))
@@ -247,6 +260,7 @@ fun PaymentContent(
 }
 
 fun LazyListScope.cardUserSection(
+    context: Context,
     resource: Resource<List<CardUserUiModel>>,
     onCardSelected: (String) -> Unit
 ) {
@@ -263,7 +277,7 @@ fun LazyListScope.cardUserSection(
         resource.errorMessage != null  -> {
             item {
                 ErrorListState(
-                    title = "Our recommended menu",
+                    title = stringResource(R.string.card),
                     onRetry = {}
                 )
             }
@@ -273,7 +287,7 @@ fun LazyListScope.cardUserSection(
 
         else->{
             cardUserSelectedVerticalListBlock(
-                headerText = "Card",
+                headerText = context.getString(R.string.card),
                 cards = cardItems,
                 onCardSelected = onCardSelected
             )
@@ -310,12 +324,12 @@ fun PaymentSuccessOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Neutral10),
+            .background(LocalCustomColors.current.background),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             LottieAnimation(
                 composition = composition,
                 progress = { progress },
@@ -325,16 +339,18 @@ fun PaymentSuccessOverlay(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Payment Successful",
+                text = stringResource(R.string.payment_successful),
                 style = LocalCustomTypography.current.h2Bold,
-                color = Neutral100
+                color = LocalCustomColors.current.headerText
             )
 
             Text(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                text = "Your order has been placed successfully and \nnow being prepared by the restaurant.",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                text = stringResource(R.string.your_order_has_been_placed_successfully_and_now_being_prepared_by_the_restaurant),
                 style = LocalCustomTypography.current.bodyMediumRegular,
-                color = Neutral70,
+                color = LocalCustomColors.current.text,
                 textAlign = TextAlign.Center
             )
         }
@@ -342,43 +358,45 @@ fun PaymentSuccessOverlay(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun PaymentLightPreview() {
-//    TasstyTheme {
-//        PaymentContent(
-//            total = "Rp150.0000",
-//            uiState = PaymentUiState(
-//                cardPayment = Resource(data = cardList),
-//                paymentChannel = Resource(data = paymentChannel),
-//                selectedCardId = "",
-//                isButtonEnabled = true,
-//                isLoading = true
-//            ),
-//            onCardSelected = {},
-//            onChannelSelected = {},
-//            onSwipePayment = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun PaymentLightPreview() {
+    TasstyTheme {
+        PaymentContent(
+            total = "Rp150.0000",
+            uiState = PaymentUiState(
+                cardPayment = Resource(data = cardList),
+                paymentChannel = Resource(data = paymentChannel),
+                selectedCardId = "",
+                isButtonEnabled = true,
+                isLoading = true
+            ),
+            onCardSelected = {},
+            onChannelSelected = {},
+            onSwipePayment = {},
+            onNavigateBack = {},
+            context = LocalContext.current
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun PaymentDarkPreview() {
-//    TasstyTheme(darkTheme = true){
-//        PaymentContent(
-//            total = "Rp150.0000",
-//            uiState = PaymentUiState(
-//                cardPayment = Resource(data = cardList),
-//                paymentChannel = Resource(data = paymentChannel),
-//                selectedCardId = "",
-//                isButtonEnabled = true,
-//                isLoading = true
-//            ),
-//            onCardSelected = {},
-//            onChannelSelected = {},
-//            onSwipePayment = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun PaymentDarkPreview() {
+    TasstyTheme(darkTheme = true){
+        PaymentContent(
+            total = "Rp150.0000",
+            uiState = PaymentUiState(
+                cardPayment = Resource(data = cardList),
+                paymentChannel = Resource(data = paymentChannel),
+                selectedCardId = "",
+                isButtonEnabled = true,
+                isLoading = true
+            ),
+            onCardSelected = {},
+            onChannelSelected = {},
+            onSwipePayment = {},
+            onNavigateBack = {},
+            context = LocalContext.current
+        )
+    }
+}

@@ -1,5 +1,6 @@
 package com.example.tassty.screen.search
 
+import android.content.Context
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,9 +67,11 @@ fun SearchScreen(
     onNavigateToDetail:(String) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     SearchRoute(
+        context = context,
         uiState = uiState,
         onQueryChange = {viewModel.onEvent(SearchEvent.ChangeQuery(it))},
         onFilterClick = {viewModel.onEvent(SearchEvent.ShowFilterSheet)},
@@ -109,6 +113,7 @@ fun SearchScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchRoute(
+    context: Context,
     uiState: SearchUiState,
     onQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit,
@@ -126,7 +131,7 @@ fun SearchRoute(
                     ),
                     title = {
                         Text(
-                            text = "Search",
+                            text = stringResource(R.string.search),
                             style = LocalCustomTypography.current.h5Bold,
                             color = LocalCustomColors.current.headerText
                         )
@@ -135,16 +140,18 @@ fun SearchRoute(
                         TopBarButton(
                             icon = R.drawable.arrow_left,
                             boxColor = LocalCustomColors.current.topBarBackgroundColor,
-                            iconColor = LocalCustomColors.current.iconFocused
-                        ) { onNavigateBack() }
+                            iconColor = LocalCustomColors.current.iconFocused,
+                            onClick = onNavigateBack
+                        )
                     },
                     actions = {
                         if (uiState.isSearching) {
                             TopBarButton(
                                 icon = R.drawable.filter,
                                 boxColor = Orange500,
-                                iconColor = Neutral10
-                            ) { onFilterClick() }
+                                iconColor = Neutral10,
+                                onClick = onFilterClick
+                            )
                         }
                     }
                 )
@@ -152,7 +159,8 @@ fun SearchRoute(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding)
+            modifier = Modifier
+                .padding(padding)
                 .fillMaxSize(),
             contentPadding = PaddingValues(top = 12.dp,bottom = 24.dp),
         ) {
@@ -183,6 +191,7 @@ fun SearchRoute(
 
             if (uiState.isSearching) {
                 filterListSection(
+                    context = context,
                     resource = uiState.queryResult,
                     onNavigateToDetail = onNavigateToDetail
                 )
@@ -360,51 +369,53 @@ fun MenuSection(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun SearchLightPreview() {
-//    TasstyTheme {
-//        SearchRoute(
-//            uiState = SearchUiState(
-//                history = Resource(data = historyOptions),
-//                popular = Resource(data = popularOptions),
-//                categories = Resource(data = categories),
-//                restaurants = Resource(data = restaurantUiModel),
-//                menus = Resource(data = menusItem),
-//                activeFilters = defaultFilter,
-//                isSearching = true,
-//                query = "cafe",
-//                queryResult = Resource(restaurantMenuUiModel)
-//            ),
-//            onQueryChange = {},
-//            onFilterClick = {},
-//            onSortClick = {},
-//            onNavigateToDetail = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun SearchLightPreview() {
+    TasstyTheme {
+        SearchRoute(
+            context = LocalContext.current,
+            uiState = SearchUiState(
+                history = Resource(data = historyOptions),
+                popular = Resource(data = popularOptions),
+                categories = Resource(data = categories),
+                restaurants = Resource(data = restaurantUiModel),
+                menus = Resource(data = menusItem),
+                activeFilters = defaultFilter,
+                isSearching = true,
+                query = "cafe",
+                queryResult = Resource(restaurantMenuUiModel)
+            ),
+            onQueryChange = {},
+            onFilterClick = {},
+            onSortClick = {},
+            onNavigateToDetail = {},
+            onNavigateBack = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun SearchDarkPreview() {
-//    TasstyTheme(darkTheme = true){
-//        SearchRoute(
-//            uiState = SearchUiState(
-//                history = Resource(data = historyOptions),
-//                popular = Resource(data = popularOptions),
-//                categories = Resource(data = categories),
-//                restaurants = Resource(data = restaurantUiModel),
-//                menus = Resource(data = menusItem),
-//                activeFilters = defaultFilter,
-//                isSearching = true,
-//                query = "cafe",
-//                queryResult = Resource(restaurantMenuUiModel, errorMessage = "error")
-//            ),
-//            onQueryChange = {},
-//            onFilterClick = {},
-//            onSortClick = {},
-//            onNavigateToDetail = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun SearchDarkPreview() {
+    TasstyTheme(darkTheme = true){
+        SearchRoute(
+            context = LocalContext.current,
+            uiState = SearchUiState(
+                history = Resource(data = historyOptions),
+                popular = Resource(data = popularOptions),
+                categories = Resource(data = categories),
+                restaurants = Resource(data = restaurantUiModel),
+                menus = Resource(data = menusItem),
+                activeFilters = defaultFilter,
+                isSearching = true,
+                query = "cafe",
+                queryResult = Resource(restaurantMenuUiModel, errorMessage = "error")
+            ),
+            onQueryChange = {},
+            onFilterClick = {},
+            onSortClick = {},
+            onNavigateToDetail = {},
+            onNavigateBack = {}
+        )
+    }
+}

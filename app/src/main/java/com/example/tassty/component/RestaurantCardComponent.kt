@@ -42,6 +42,7 @@ import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
+import com.google.android.datatransport.cct.StringMerger
 
 @Composable
 fun RestaurantSmallListCard (
@@ -74,7 +75,9 @@ fun RestaurantLargeListCard(
     onClick: () -> Unit
 ){
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
@@ -123,7 +126,8 @@ fun RestaurantGridCard (
     onNavigateToDetail: () -> Unit,
 ){
     Card(
-        modifier = Modifier.width(156.dp)
+        modifier = Modifier
+            .width(156.dp)
             .clickable(onClick = onNavigateToDetail),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground),
@@ -148,7 +152,9 @@ fun RestaurantLargeGridCard (
     onClick: () -> Unit
 ){
     Card(
-        modifier = Modifier.width(196.dp).clickable(onClick = onClick),
+        modifier = Modifier
+            .width(196.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
@@ -192,7 +198,7 @@ fun RestaurantCloseStatus(
                 Spacer(Modifier.width(4.dp))
                 Text(
                     text = stringResource(R.string.closed),
-                    color = Color.White,
+                    color = Neutral10,
                     style = LocalCustomTypography.current.bodySmallSemiBold
                 )
             }
@@ -280,7 +286,7 @@ fun RestaurantInfoCard(
                     )
                 }
 
-                SeeInfoButton(text = "See reviews", onClick = onReviewsClick)
+                SeeInfoButton(text = stringResource(R.string.see_reviews), onClick = onReviewsClick)
             }
 
             VerticalDivider(Modifier.height(24.dp))
@@ -305,7 +311,7 @@ fun RestaurantInfoCard(
                     )
                 }
 
-                SeeInfoButton(text = "See location", onClick = onLocationClick)
+                SeeInfoButton(text = stringResource(R.string.see_location), onClick = onLocationClick)
             }
 
             VerticalDivider(Modifier.height(24.dp))
@@ -330,7 +336,7 @@ fun RestaurantInfoCard(
                     )
                 }
 
-                SeeInfoButton(text = "See schedule", onClick = onScheduleClick)
+                SeeInfoButton(text = stringResource(R.string.see_schedule), onClick = onScheduleClick)
             }
         }
     }
@@ -338,25 +344,26 @@ fun RestaurantInfoCard(
 
 @Composable
 fun RestaurantShortInfoCard(
-    onScheduleClick:() -> Unit,
-    onReviewsClick:() -> Unit,
+    rating: String,
+    totalReviews: String,
+    todayHour: String,
+    onScheduleClick:() -> Unit = {},
+    onReviewsClick:() -> Unit = {},
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Neutral10
+            containerColor = LocalCustomColors.current.background
         )
     ) {
-        Row(
-            modifier = Modifier
+        Row(modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column (verticalArrangement = Arrangement.spacedBy(4.dp)){
-                // Icon Verified
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -368,17 +375,16 @@ fun RestaurantShortInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
 
-                    // Text "Verified"
                     Text(
-                        text = "Verified",
+                        text = stringResource(R.string.verified),
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
                 Text(
-                    text = "Restaurant",
+                    text = stringResource(R.string.restaurant),
                     style = LocalCustomTypography.current.bodyXtraSmallMedium,
-                    color = Neutral70
+                    color = LocalCustomColors.current.text
                 )
             }
 
@@ -387,7 +393,6 @@ fun RestaurantShortInfoCard(
             Column (
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Rating
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -399,18 +404,18 @@ fun RestaurantShortInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "4.8",
+                        text = rating,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                     Text(
-                        text = "(200+)",
+                        text = totalReviews,
                         style = LocalCustomTypography.current.h8Regular,
-                        color = Neutral70
+                        color = LocalCustomColors.current.text
                     )
                 }
 
-                SeeInfoButton(text = "See reviews", onClick = onReviewsClick)
+                SeeInfoButton(text = stringResource(R.string.see_reviews), onClick = onReviewsClick)
             }
 
             VerticalDivider(Modifier.height(24.dp))
@@ -429,13 +434,13 @@ fun RestaurantShortInfoCard(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "10.00 - 20.00",
+                        text = todayHour,
                         style = LocalCustomTypography.current.h6Bold,
-                        color = Neutral100
+                        color = LocalCustomColors.current.headerText
                     )
                 }
 
-                SeeInfoButton(text = "See schedule", onClick = onScheduleClick)
+                SeeInfoButton(text = stringResource(R.string.see_schedule), onClick = onScheduleClick)
             }
         }
     }
@@ -457,8 +462,8 @@ fun RestaurantMenuInfoCard(
         )
     ) {
         Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
+            .fillMaxWidth()
+            .padding(24.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -555,7 +560,6 @@ fun RestaurantMenuInfoCard(
 @Composable
 fun RestaurantOperationalCard(day: OperationalDayUi) {
     val isToday = day.isToday
-
     val bgColor = if (isToday) LocalCustomColors.current.background else Color.Transparent
     val iconColor = if (isToday) Color(0xFF7251F8) else LocalCustomColors.current.iconDisable
 

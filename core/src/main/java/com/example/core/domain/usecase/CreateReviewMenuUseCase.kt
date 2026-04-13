@@ -11,7 +11,6 @@ class CreateReviewMenuUseCase @Inject constructor(
     private val repository: ReviewRepository
 ) {
     operator fun invoke(
-        orderId: String,
         orderItemId: String,
         rating: Int,
         tags: String,
@@ -25,6 +24,6 @@ class CreateReviewMenuUseCase @Inject constructor(
             return flowOf(TasstyResponse.Error(Meta(code = 404, status = "error", message ="Pilih minimal satu tag untuk review ini.")))
         }
 
-        return repository.createReviewMenu(orderId, orderItemId, rating, tags, comment)
+        return repository.createReviewMenu(orderItemId = orderItemId, rating = rating, tags = tags, comment = comment)
     }
 }

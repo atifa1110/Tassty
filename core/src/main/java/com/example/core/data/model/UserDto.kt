@@ -11,3 +11,8 @@ data class UserDto (
     @SerializedName("category_ids")
     val categoryIds: List<CategoryDto>
 )
+
+data class ProfileDto (
+    val name: String,
+    val profileImage: String,
+)

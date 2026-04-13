@@ -43,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -153,7 +154,9 @@ fun ProfileContent(
         }
     ){ padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             contentPadding = PaddingValues(top = 12.dp, bottom = 24.dp)
         ) {
             item(key = "header") {
@@ -190,7 +193,9 @@ fun ProfileContent(
                 ButtonComponent(
                     labelResId = R.string.logout,
                     onClick = onShowLogoutSheet,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Pink50,
                         contentColor = Pink500,
@@ -231,7 +236,9 @@ fun ProfileHeaderSection(
                     )
             ) {
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Row(
@@ -258,7 +265,9 @@ fun ProfileHeaderSection(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Column(
-                            modifier = Modifier.fillMaxWidth().height(60.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp),
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
@@ -290,8 +299,10 @@ fun ProfileHeaderSection(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Box(
-                            modifier = Modifier.size(26.dp)
-                                .clip(CircleShape).background(Orange200),
+                            modifier = Modifier
+                                .size(26.dp)
+                                .clip(CircleShape)
+                                .background(Orange200),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -304,19 +315,19 @@ fun ProfileHeaderSection(
                         Spacer(Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Gold Member",
+                                text = stringResource(R.string.gold_member),
                                 style = LocalCustomTypography.current.h7Bold,
                                 color = Neutral10
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "2,230",
+                                    text = stringResource(R.string.point_number),
                                     style = LocalCustomTypography.current.h8Bold,
                                     color = Neutral10
                                 )
                                 Spacer(Modifier.width(2.dp))
                                 Text(
-                                    text = "points",
+                                    text = stringResource(R.string.points),
                                     style = LocalCustomTypography.current.bodyXtraSmallMedium,
                                     color = Neutral10
                                 )
@@ -333,7 +344,8 @@ fun ProfileHeaderSection(
                 }
 
                 Box(
-                    modifier = Modifier.size(110.dp)
+                    modifier = Modifier
+                        .size(110.dp)
                         .offset(y = -(18).dp)
                         .align(Alignment.TopEnd)
                 ) {
@@ -382,7 +394,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.icon,
                     iconColor = Green600,
                     boxColor = Green100,
-                    title = "My orders",
+                    title = stringResource(R.string.my_orders),
                     onClick = onNavigateToOrder
                 )
                 
@@ -392,7 +404,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.promo,
                     iconColor = Orange600,
                     boxColor = Orange100,
-                    title = "Vouchers",
+                    title = stringResource(R.string.vouchers),
                     onClick = onNavigateToVoucher
                 )
 
@@ -402,7 +414,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.calendar,
                     iconColor = Orange600,
                     boxColor = Orange100,
-                    title = "Subscriptions",
+                    title = stringResource(R.string.subscriptions),
                     onClick = {}
                 )
 
@@ -412,7 +424,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.heart,
                     iconColor = Pink600,
                     boxColor = Pink100,
-                    title = "Collections",
+                    title = stringResource(R.string.collections),
                     onClick = onNavigateToCollection
                 )
 
@@ -422,7 +434,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.store,
                     iconColor = Pink600,
                     boxColor = Pink100,
-                    title = "Favorite Restaurants",
+                    title = stringResource(R.string.favorite_restaurants),
                     onClick = onNavigateToFavorite
                 )
 
@@ -432,7 +444,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.credit_card,
                     iconColor = Pink600,
                     boxColor = Pink100,
-                    title = "Payment Methods",
+                    title = stringResource(R.string.payment_methods),
                     onClick = onNavigateToCard
                 )
 
@@ -442,7 +454,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.location,
                     iconColor = Blue500,
                     boxColor = Blue100,
-                    title = "My Addresses",
+                    title = stringResource(R.string.my_addresses),
                     onClick = onNavigateToAddress
                 )
 
@@ -452,7 +464,7 @@ fun ProfileMenuSection(
                     icon = R.drawable.calendar,
                     iconColor = Blue500,
                     boxColor = Blue100,
-                    title = "Invite Friends",
+                    title = stringResource(R.string.invite_friends),
                     onClick = {}
                 )
             }
@@ -466,7 +478,9 @@ fun SupportSection(
     onNavigateToTerm: () -> Unit,
     onDarkMode:(Boolean) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
@@ -498,7 +512,7 @@ fun SupportSection(
                     icon = R.drawable.question_mark_circle,
                     iconColor = Orange600,
                     boxColor = Orange100,
-                    title = "Help Center",
+                    title = stringResource(R.string.help_center),
                     onClick = {}
                 )
 
@@ -508,7 +522,7 @@ fun SupportSection(
                     icon = R.drawable.clipboard_list,
                     iconColor = Orange600,
                     boxColor = Orange100,
-                    title = "Terms of Service",
+                    title = stringResource(R.string.terms_of_service),
                     onClick = onNavigateToTerm
                 )
             }
@@ -525,8 +539,10 @@ fun ProfileMenuItem(
     textColor: Color = LocalCustomColors.current.headerText,
     onClick: () -> Unit
 ) {
-    Row(modifier = Modifier.fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 14.dp).clickable(onClick = onClick),
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 12.dp, vertical = 14.dp)
+        .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CircleImageIcon(
@@ -564,7 +580,8 @@ fun ProfileMenuSwitchItem(
     onSwitchChange:(Boolean) -> Unit
 ) {
     Row(modifier = Modifier
-        .fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
+        .fillMaxWidth()
+        .padding(horizontal = 12.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CircleImageIcon(

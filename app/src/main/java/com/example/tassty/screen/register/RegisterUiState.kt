@@ -1,12 +1,14 @@
 package com.example.tassty.screen.register
 
+import com.example.tassty.util.UiText
+
 data class RegisterUiState (
     val fullName: String = "",
-    val fullNameError: String? = null,
+    val fullNameError: UiText? = null,
     val email: String = "",
-    val emailError: String? = null,
+    val emailError: UiText? = null,
     val password: String = "",
-    val passwordError: String? = null,
+    val passwordError: UiText? = null,
     val isTermSelected: Boolean = false,
     val isButtonEnabled: Boolean = false,
     val isTextEditable: Boolean = true,
@@ -18,11 +20,11 @@ data class RegisterUiState (
 
 data class RegisterInternalState (
     val fullName: String = "",
-    val fullNameError: String? = null,
+    val fullNameError: UiText? = null,
     val email: String = "",
-    val emailError: String? = null,
+    val emailError: UiText? = null,
     val password: String = "",
-    val passwordError: String? = null,
+    val passwordError: UiText? = null,
     val isTermSelected: Boolean = false,
     val isLoading: Boolean = false,
     val isBottomSuccessVisible: Boolean = false,

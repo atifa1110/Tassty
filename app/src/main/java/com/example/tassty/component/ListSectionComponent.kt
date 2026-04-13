@@ -1,5 +1,6 @@
 package com.example.tassty.component
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.FilterCategory
@@ -51,6 +53,7 @@ import com.example.core.ui.model.RestaurantMenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
+import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral100
@@ -359,7 +362,7 @@ fun LazyListScope.cartVerticalListBlock(
             Row(
                 verticalAlignment = Alignment.CenterVertically){
                 Text(
-                    text = "select all",
+                    text = stringResource(R.string.select_all),
                     style = LocalCustomTypography.current.h6Regular,
                     color = LocalCustomColors.current.text
                 )
@@ -460,7 +463,7 @@ fun LazyListScope.restaurantRecommendedSection(
 }
 
 fun LazyListScope.restaurantVerticalListBlock(
-    headerText: String,
+    headerText: String = "Favorite Restaurants",
     restaurantItems: List<RestaurantUiModel>,
     onNavigateToDetail: (String) -> Unit
 ) {
@@ -539,16 +542,14 @@ fun LazyListScope.addressVerticalListBlock(
 
 
 fun LazyListScope.menuItemCountVerticalListBlock(
-    headerText: String,
     menus : List<MenuUiModel>,
     onFavoriteClick: (MenuUiModel) -> Unit,
-    onAddToCart: (MenuUiModel) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit
 ) {
     item {
         HeaderListItemCountTitle(
             itemCount = menus.size,
-            title = headerText,
+            title = stringResource(R.string.all_menus),
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(Modifier.height(12.dp))
@@ -562,13 +563,10 @@ fun LazyListScope.menuItemCountVerticalListBlock(
             FoodListCard(
                 menu = menu,
                 onFavoriteClick = { onFavoriteClick(menu) },
-                onAddToCart ={
-                    if(menu.customizable) onNavigateToDetailMenu(menu.id)
-                    else onAddToCart(menu)
-                }
+                onAddToCart ={ onNavigateToDetailMenu(menu.id) }
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 
@@ -578,8 +576,7 @@ fun GridMenuListSection(
     title: String,
     menuItems: List<MenuUiModel>,
     onFavoriteClick: (MenuUiModel) -> Unit,
-    onAddToCartClick:(MenuUiModel)-> Unit,
-    onNavigateToDetailMenu:(String) -> Unit
+    onAddToCartClick:(String)-> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -603,11 +600,8 @@ fun GridMenuListSection(
                     isDetail = isDetail,
                     menu = item,
                     onFavoriteClick = { onFavoriteClick(item) },
-                    onAddToCart = {
-                        if(item.customizable) onNavigateToDetailMenu(item.id) else onAddToCartClick(item)
-                    },
-                    modifier = Modifier
-                        .weight(1f, fill = true)
+                    onAddToCart = { onAddToCartClick(item.id) },
+                    modifier = Modifier.weight(1f, fill = true)
                 )
             }
         }
@@ -661,7 +655,10 @@ fun FilterSection(
         contentPadding = PaddingValues(horizontal = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(option) { option ->
+        items(
+            items = option,
+            key = { it.category }
+        ) { option ->
             CustomFilterChip(
                 option = option,
                 onClick = {
@@ -675,6 +672,7 @@ fun FilterSection(
 }
 
 fun LazyListScope.filterListSection(
+    context: Context,
     resource: Resource<List<RestaurantMenuUiModel>>,
     onNavigateToDetail: (String) -> Unit
 ){
@@ -682,7 +680,9 @@ fun LazyListScope.filterListSection(
     when{
         resource.isLoading || resource.data ==null ->{
             items(count = 4){
-                Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)){
+                Column(Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)){
                     ShimmerRestaurantLargeListCard()
                     Spacer(Modifier.height(12.dp))
                 }
@@ -703,7 +703,7 @@ fun LazyListScope.filterListSection(
         else -> {
             restaurantMenuListBlock(
                 itemCount = items.size,
-                headerText = "Search founds",
+                headerText = context.getString(R.string.search_founds),
                 restaurantItems = items,
                 onNavigateToDetail = onNavigateToDetail
             )

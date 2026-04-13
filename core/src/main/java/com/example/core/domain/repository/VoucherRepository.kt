@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface VoucherRepository {
     fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>>
+
     fun getRestaurantVouchers(id: String): Flow<TasstyResponse<List<Voucher>>>
+
     fun getUserVouchers(): Flow<TasstyResponse<List<Voucher>>>
 }

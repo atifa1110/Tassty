@@ -440,7 +440,8 @@ class CartViewModel @Inject  constructor(
             _internalState.update {
                 it.copy(
                     isNoteSheetVisible = true,
-                    note = currentCartItem.notes
+                    note = currentCartItem.notes,
+                    selectedCart = currentCartItem
                 )
             }
         }

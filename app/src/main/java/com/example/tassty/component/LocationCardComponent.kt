@@ -58,6 +58,7 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -67,9 +68,27 @@ import kotlin.collections.forEach
 @Composable
 fun NearbyMapBox(
     restaurant: List<RestaurantUiModel>,
-){
+) {
     val mapOptions = remember {
         GoogleMapOptions().liteMode(true)
+    }
+
+    val uiSettings = remember {
+        MapUiSettings(
+            zoomControlsEnabled = false,
+            scrollGesturesEnabled = false,
+            zoomGesturesEnabled = false,
+            rotationGesturesEnabled = false,
+            tiltGesturesEnabled = false,
+            myLocationButtonEnabled = false
+        )
+    }
+
+    val mapProperties = remember {
+        MapProperties(
+            isBuildingEnabled = false,
+            isIndoorEnabled = false
+        )
     }
 
     val cameraPositionState = rememberCameraPositionState()
@@ -88,35 +107,29 @@ fun NearbyMapBox(
 
     Box(
         modifier = Modifier
-            .fillMaxWidth().background(LocalCustomColors.current.cardBackground)
+            .fillMaxWidth()
+            .background(LocalCustomColors.current.cardBackground)
             .height(200.dp)
     ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState,
             googleMapOptionsFactory = { mapOptions },
-            uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                scrollGesturesEnabled = false,
-                zoomGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-                myLocationButtonEnabled = false
-            )
+            uiSettings = uiSettings,
+            properties = mapProperties
         ) {
             restaurant.forEach { resto ->
-                key (resto.id) {
-                    val position = LatLng(
-                        resto.locationDetail.latitude,
-                        resto.locationDetail.longitude
-                    )
-
-                    val markerState = rememberMarkerState(position = position)
+                key(resto.id) {
+                    val position = remember(resto.id) {
+                        LatLng(
+                            resto.locationDetail.latitude,
+                            resto.locationDetail.longitude
+                        )
+                    }
 
                     Marker(
-                        state = markerState,
-                        title = resto.name,
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                        state = rememberMarkerState(position = position),
+                        title = resto.name
                     )
                 }
             }
@@ -398,7 +411,7 @@ fun LocationLardCard(
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun PreviewLocationCard() {
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp),

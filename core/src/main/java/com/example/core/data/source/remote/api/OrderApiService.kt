@@ -6,6 +6,7 @@ import com.example.core.data.model.OrderData
 import com.example.core.data.model.OrderDto
 import com.example.core.data.model.PaymentChannelDto
 import com.example.core.data.model.PaymentDto
+import com.example.core.data.model.RouteDto
 import com.example.core.data.source.remote.network.BaseResponse
 import com.example.core.data.source.remote.request.CreateChannelRequest
 import com.example.core.data.source.remote.request.OrderRequest
@@ -17,24 +18,14 @@ import retrofit2.http.Path
 
 interface OrderApiService {
 
-    @GET("orders/payment_channels")
-    suspend fun getPaymentChannel(
-    ): BaseResponse<List<PaymentChannelDto>>
-
     @POST("orders")
     suspend fun createOrder(
         @Body request: OrderRequest
     ): BaseResponse<OrderData>
 
-    @GET("orders/list")
+    @GET("orders")
     suspend fun getUserOrders(
     ): BaseResponse<List<OrderDto>>
-
-    @POST("orders/{orderId}/payments/stripe")
-    suspend fun paymentStripe(
-        @Path("orderId") orderId: String,
-        @Body request: PaymentRequest
-    ): BaseResponse<PaymentDto>
 
     @GET("orders/{orderId}")
     suspend fun getDetailOrder(
@@ -45,6 +36,21 @@ interface OrderApiService {
     suspend fun getOrderSummary(
         @Path("orderId") orderId: String,
     ): BaseResponse<OrderDto>
+
+    @GET("orders/{orderId}/route")
+    suspend fun getDetailRoute(
+        @Path("orderId") orderId: String,
+    ): BaseResponse<RouteDto>
+
+    @POST("orders/{orderId}/payments/stripe")
+    suspend fun paymentStripe(
+        @Path("orderId") orderId: String,
+        @Body request: PaymentRequest
+    ): BaseResponse<PaymentDto>
+
+    @GET("orders/payment_channels")
+    suspend fun getPaymentChannel(
+    ): BaseResponse<List<PaymentChannelDto>>
 
     @POST("chats/channel")
     suspend fun createChatChannel(

@@ -116,7 +116,7 @@ class CollectionDataSource @Inject constructor(
         return collectionDao.getCollectionsWithMenuCount()
     }
 
-    fun getCollectionIdsByMenu(menuId: String): List<String>{
+    suspend fun getCollectionIdsByMenu(menuId: String): List<String>{
         return collectionMenuDao.getCollectionIdsByMenuId(menuId)
     }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.ForgotPasswordUseCase
 import com.example.tassty.util.InputValidator
+import com.example.tassty.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,7 +52,7 @@ class EmailInputViewModel @Inject constructor(
         val emailError = InputValidator.validateEmail(state.email)
 
         if (emailError != null) {
-            _internalState.update { it.copy(emailError = emailError) }
+            _internalState.update { it.copy(emailError = UiText.StringResource(emailError)) }
             return
         }
 

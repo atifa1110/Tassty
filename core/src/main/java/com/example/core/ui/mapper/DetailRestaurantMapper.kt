@@ -5,14 +5,20 @@ import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.Restaurant
 import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.OperationalDayUi
+import com.example.core.ui.model.RestaurantLocationArgs
+import com.google.android.gms.maps.model.LatLng
 
 fun DetailRestaurant.toUiModel(): DetailRestaurantUiModel{
+    val day = this.operationalHours.map { it.toUiModel(this.currentDay)}
+
     return DetailRestaurantUiModel(
         id = this.id,
         name = this.name,
         imageUrl = this.imageUrl,
         city = this.city,
         fullAddress = this.fullAddress,
+        lat = this.latitude,
+        lng = this.longitude,
         categories = this.categories.joinToString(", "),
         rank = this.rank,
         rating = this.rating,
@@ -20,10 +26,16 @@ fun DetailRestaurant.toUiModel(): DetailRestaurantUiModel{
         deliveryTime = this.deliveryTime,
         distance = this.distance,
         isVerified = this.isVerified,
-        operationalDay = this.operationalHours.map { it.toUiModel(this.currentDay)},
+        operationalDay = day,
         statusResult = this.statusResult,
         deliveryCost = this.deliveryCost,
-        isWishlist = this.isWishlist
+        isWishlist = this.isWishlist,
+        todayHour = day.firstOrNull { it.isToday }?.hours?:"",
+        formatDistance = this.distance.let { meters ->
+            if (meters < 1000) "$meters m" else "%.1f km".format(meters / 1000.0)
+        },
+        formatRating = this.rating.toString(),
+        formatReviewCount = if(this.totalReviews <= 200) "${this.totalReviews}" else "(200+)"
     )
 }
 
@@ -80,5 +92,20 @@ fun DetailRestaurantUiModel.toDomainDetail(): DetailRestaurant{
         isOpen = false,
         closingTimeServer = "",
         currentDay = "",
+    )
+}
+
+fun DetailRestaurantUiModel.toNavArg(): RestaurantLocationArgs{
+    return RestaurantLocationArgs(
+        id = this.id,
+        imageUrl = this.imageUrl,
+        name = this.name,
+        city = this.city,
+        fullAddress = this.fullAddress,
+        location = LatLng(this.lat,this.lng),
+        todayHour = this.todayHour,
+        isVerified = this.isVerified,
+        rating = this.formatRating,
+        totalReviews = this.formatReviewCount
     )
 }

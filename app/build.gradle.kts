@@ -57,8 +57,8 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig =true
-        viewBinding=true
+        buildConfig = true
+        viewBinding = true
     }
 }
 
@@ -116,7 +116,6 @@ dependencies {
 
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
-    // Hilt Extension untuk WorkManager
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
 
@@ -141,6 +140,8 @@ dependencies {
     implementation(libs.stream.push.delegate)
 
     implementation(libs.canhub.cropper)
+    implementation(libs.kotlinx.collections.immutable)
 
+    implementation(libs.maps.utils)
     implementation(project(":core"))
 }

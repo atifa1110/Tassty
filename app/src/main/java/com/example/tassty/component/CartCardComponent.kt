@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.core.domain.utils.toCleanRupiahFormat
 import com.example.core.ui.model.CartItemUiModel
@@ -59,13 +60,17 @@ fun CartListCard(
         colors = CardDefaults.cardColors(containerColor = if(cart.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.cardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             CommonImage(
                 imageUrl = cart.imageUrl,
                 name = "cart item",
-                modifier = Modifier.size(100.dp).clip(CircleShape)
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
             )
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -74,7 +79,9 @@ fun CartListCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
@@ -93,7 +100,9 @@ fun CartListCard(
                             checkedColor = Orange500,
                             uncheckedColor = Neutral40
                         ),
-                        modifier = Modifier.padding(0.dp).size(24.dp)
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .size(24.dp)
                     )
                 }
 
@@ -109,7 +118,7 @@ fun CartListCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    EditButton(title = "Notes", onClick = onCartNotesClick)
+                    EditButton(title = stringResource(R.string.notes), onClick = onCartNotesClick)
                     QuantityCartContent(
                         itemCount = cart.quantity,
                         enabled = cart.quantity >= 1,
@@ -140,11 +149,15 @@ fun EmptyLocationCard(
     onClick:() -> Unit
 ){
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ){
@@ -160,7 +173,7 @@ fun EmptyLocationCard(
 
             Text(
                 modifier = Modifier.weight(1f),
-                text = "Select delivery location",
+                text = stringResource(R.string.select_delivery_location),
                 style = LocalCustomTypography.current.h6Bold,
                 color = LocalCustomColors.current.headerText
             )
@@ -192,11 +205,15 @@ fun VoucherApplyCard(
     onClick: () -> Unit
 ){
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ){
@@ -236,11 +253,15 @@ fun EmptyVoucherCard(
     onClick: () -> Unit
 ){
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick=onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ){
@@ -255,7 +276,7 @@ fun EmptyVoucherCard(
 
             Text(
                 modifier = Modifier.weight(1f),
-                text = "Apply promo before order",
+                text = stringResource(R.string.apply_promo_before_order),
                 style = LocalCustomTypography.current.h6Bold,
                 color = LocalCustomColors.current.headerText
             )
@@ -290,14 +311,12 @@ fun SummaryLineItem(
                 color = if (isTotal) LocalCustomColors.current.headerText else LocalCustomColors.current.text
             )
 
-            // Show if discount type and label is not null
             if (isDiscount && discountLabel != null) {
                 Spacer(Modifier.width(4.dp))
                 VoucherDiscount(discountLabel)
             }
         }
 
-        // isTotal is available than color and style change
         if (isTotal) {
             FoodPriceText(price = amount, color = Orange500)
         } else {
@@ -326,12 +345,12 @@ fun OrderSummaryCard(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             SummaryLineItem(
-                label = "Total price",
+                label = stringResource(R.string.total_price),
                 amount = totalPrice.toCleanRupiahFormat()
             )
 
             SummaryLineItem(
-                label = "Delivery & Order fee",
+                label = stringResource(R.string.delivery_order_fee),
                 amount = deliveryFee.toCleanRupiahFormat()
             )
 
@@ -343,7 +362,7 @@ fun OrderSummaryCard(
                 }
 
                 SummaryLineItem(
-                    label = "Discounts",
+                    label = stringResource(R.string.discounts),
                     amount = voucherDiscount.toCleanRupiahFormat(),
                     isDiscount = true,
                     discountLabel = discountLabel
@@ -353,7 +372,7 @@ fun OrderSummaryCard(
             DashedDivider(color = Color(0xFFDEDEDE))
 
             SummaryLineItem(
-                label = "Total Order",
+                label = stringResource(R.string.total_order),
                 amount = totalOrder.toCleanRupiahFormat(),
                 isTotal = true
             )

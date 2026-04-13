@@ -9,6 +9,7 @@ import com.example.core.data.model.AuthStatus
 import com.example.core.data.model.RegistrationStep
 import com.example.tassty.VerificationType
 import com.example.tassty.activity.MainViewModel
+import com.example.tassty.screen.dashboard.CartDestination
 
 @Composable
 fun TasstyNavHost(
@@ -22,12 +23,6 @@ fun TasstyNavHost(
         authStatus.isLoggedIn -> MainGraph.route
         else -> AuthGraph.route
     }
-
-//        if (authStatus.isLoggedIn) {
-//        MainGraph.route
-//    } else {
-//        AuthGraph.route
-//    }
 
     val startAuthDestination = when {
         authStatus.registrationStep == RegistrationStep.REGISTERED && !authStatus.isVerified ->
@@ -167,8 +162,15 @@ fun TasstyNavHost(
             },
             onNavigateToOrderProcess = {id->
                 navController.navigate(OrderProcessDestination.createRoute(id)){
-                    popUpTo(PaymentDestination.route) { inclusive = true }
+                    // Hapus dari Payment sampai ke Cart
+                    popUpTo(CartDestination.route) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
                 }
+            },
+            onNavigateFromOrderToOrderProcess = { id->
+                navController.navigate(OrderProcessDestination.createRoute(id))
             },
             onNavigateToOrderDetail = { id->
                 navController.navigate(OrderDetailDestination.createRoute(id))
@@ -191,6 +193,12 @@ fun TasstyNavHost(
             },
             onNavigateToTerm = {
                 navController.navigate(TermDestination.route)
+            },
+            onNavigateToAddAddress = {
+                navController.navigate(AddAddressDestination.route)
+            },
+            onNavigateToDetailLocation = { data ->
+                navController.navigate(DetailLocationDestination.createRoute(data))
             }
         )
     }

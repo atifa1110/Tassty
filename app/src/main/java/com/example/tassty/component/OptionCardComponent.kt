@@ -26,11 +26,9 @@ import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
-import com.example.tassty.model.getFilterDrawable
+import com.example.tassty.model.FilterUiMapper
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Orange500
 import kotlin.collections.forEach
@@ -56,7 +54,7 @@ fun ChipFilterSection(
             options.forEach { option ->
                 CustomBorderChip(
                     label = option.label,
-                    icon = getFilterDrawable(option.iconRes)?:0,
+                    icon = FilterUiMapper.getDrawable(option.iconRes)?:0,
                     selected = option.isSelected,
                     onClick = { onToggleOption(option.key) }
                 )
@@ -139,7 +137,7 @@ fun ChipSearchExpandSection(
 
 @Composable
 fun RadioFilterTitleSection(
-    title: String,
+    title: String = "",
     isTitleShown: Boolean = true,
     options: List<FilterOptionUi<FilterCategory>>,
     onOptionSelected: (String) -> Unit

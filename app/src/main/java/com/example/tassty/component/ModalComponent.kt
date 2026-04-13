@@ -21,12 +21,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,7 +37,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.MenuStatus
-import com.example.core.domain.model.RestaurantStatus
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.ChatUiModel
@@ -55,19 +52,12 @@ import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.addresses
-import com.example.tassty.util.defaultFilter
-import com.example.tassty.util.dummyMessages
-import com.example.tassty.util.menuDetailItem
-import com.example.tassty.util.restaurantDetailItem
-import com.example.tassty.util.voucherUiModel
+import kotlinx.collections.immutable.ImmutableList
 import org.threeten.bp.LocalDate
 
 @Composable
@@ -154,6 +144,84 @@ fun CollectionContent(
         .fillMaxWidth()
         .clip(
             RoundedCornerShape(
+                topStart = 24.dp, topEnd = 24.dp
+            )
+        )
+        .background(LocalCustomColors.current.cardBackground)
+        .padding(top = 24.dp, bottom = 24.dp)
+    ) {
+        HeaderModalTitleSubtitle(
+            modifier = Modifier,
+            title = R.string.save_to_collection,
+            subtitle = R.string.save_your_favorite
+        ){
+            TopBarButton(
+                icon = Icons.Default.Add,
+                boxColor = Orange500,
+                iconColor = Neutral10,
+                onClick = onAddCollectionClick
+            )
+        }
+        Divider32()
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                HeaderListItemCountTitle(
+                    itemCount = items.size,
+                    title = "Collection",
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            when {
+                resource.isLoading -> {
+                    item { LoadingRowState() }
+                }
+                resource.errorMessage != null || items.isEmpty() -> {
+                    item { EmptyCollectionSmallContent() }
+                }
+                else -> {
+                    items(
+                        items = items,
+                        key = { it.id }
+                    ) { collection ->
+                        CollectionCard(
+                            collection = collection,
+                            onCheckedChange = { onCollectionSelected(collection.id, it) }
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+        ButtonComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            enabled = items.isNotEmpty(),
+            labelResId = R.string.save,
+            onClick = onSaveCollectionClick
+        )
+    }
+}
+
+@Composable
+fun CollectionImmutableContent(
+    resource: Resource<ImmutableList<CollectionUiModel>>,
+    onCollectionSelected: (String, Boolean) -> Unit,
+    onSaveCollectionClick:() -> Unit,
+    onAddCollectionClick: () -> Unit
+){
+    val items = resource.data.orEmpty()
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(
+            RoundedCornerShape(
                 topStart = 24.dp,
                 topEnd = 24.dp
             )
@@ -161,65 +229,63 @@ fun CollectionContent(
         .background(LocalCustomColors.current.cardBackground)
         .padding(top = 24.dp, bottom = 24.dp)
     ) {
-        Row(
+        HeaderModalTitleSubtitle(
+            modifier = Modifier,
+            title = R.string.save_to_collection,
+            subtitle = R.string.save_your_favorite
+        ){
+            TopBarButton(
+                icon = Icons.Default.Add,
+                boxColor = Orange500,
+                iconColor = Neutral10,
+                onClick = onAddCollectionClick
+            )
+        }
+        Divider32()
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
+                .weight(1f, fill = false)
                 .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)){
-                Text(
-                    text = stringResource(R.string.save_to_collection),
-                    style = LocalCustomTypography.current.h3Bold,
-                    color = LocalCustomColors.current.headerText
-                )
-                Text(
-                    text = stringResource(R.string.save_your_favorite),
-                    style = LocalCustomTypography.current.bodySmallMedium,
-                    color = LocalCustomColors.current.text
+            item {
+                HeaderListItemCountTitle(
+                    itemCount = items.size,
+                    title = "Collection",
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
             }
 
-            TopBarButton(icon = Icons.Default.Add,
-                boxColor = Orange500, iconColor = Neutral10
-            ) { onAddCollectionClick() }
-        }
-
-        HorizontalDivider(Modifier.padding(vertical = 32.dp))
-        HeaderListItemCountTitle(
-            itemCount = items.size,
-            title = "Collection",
-            modifier = Modifier.padding(horizontal = 24.dp)
-        )
-        Spacer(Modifier.height(12.dp))
-
-        Column(Modifier.padding(horizontal = 24.dp)) {
-            when{
-                resource.isLoading ->{
-                    LoadingRowState()
+            when {
+                resource.isLoading -> {
+                    item { LoadingRowState() }
                 }
-
-                resource.errorMessage!=null || items.isEmpty()-> {
-                    ErrorListState("") { }
+                resource.errorMessage != null || items.isEmpty() -> {
+                    item { EmptyCollectionSmallContent() }
                 }
                 else -> {
-                    items.forEach { collection ->
+                    items(
+                        items = items,
+                        key = { it.id }
+                    ) { collection ->
                         CollectionCard(
                             collection = collection,
-                            onCheckedChange = {onCollectionSelected(collection.id,it)}
+                            onCheckedChange = { onCollectionSelected(collection.id, it) }
                         )
-                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }
-            Spacer(Modifier.height(24.dp))
-            ButtonComponent(
-                modifier = Modifier.fillMaxWidth(),
-                enabled = items.isNotEmpty(),
-                labelResId = R.string.save,
-                onClick = onSaveCollectionClick
-            )
         }
+
+        Spacer(Modifier.height(24.dp))
+        ButtonComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
+            enabled = items.isNotEmpty(),
+            labelResId = R.string.save,
+            onClick = onSaveCollectionClick
+        )
     }
 }
 
@@ -233,42 +299,30 @@ fun CollectionAddContent(
     Column(modifier = Modifier
         .fillMaxWidth()
         .clip(
-            RoundedCornerShape(
-                topStart = 24.dp,
-                topEnd = 24.dp
-            )
+            RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         )
         .background(LocalCustomColors.current.cardBackground)
         .padding(top = 24.dp, bottom = 24.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+        HeaderModalTitle(
+            title = R.string.create_collection
         ) {
-            Text(
-                text= "Create collection",
-                style = LocalCustomTypography.current.h3Bold,
-                color = LocalCustomColors.current.headerText
-            )
-
-            TopBarButton(icon = R.drawable.arrow_left,
+            TopBarButton(
+                icon = R.drawable.arrow_left,
                 boxColor = LocalCustomColors.current.background,
-                iconColor = LocalCustomColors.current.iconFocused
-            ) { onDismissClick() }
+                iconColor = LocalCustomColors.current.iconFocused,
+                onClick = onDismissClick
+            )
         }
 
-        HorizontalDivider(Modifier.padding(vertical = 32.dp))
-
+        Divider32()
         Column(Modifier.padding(horizontal = 24.dp)) {
             TextSection(
-                label = "Collection Name",
-                placeholder = "Enter collection name",
+                label = stringResource(R.string.collection_name),
+                placeholder = stringResource(R.string.enter_collection_name),
                 leadingIcon = R.drawable.collection,
                 text = collectionName,
-                onTextChanged = onValueName,
-                textError = ""
+                onTextChanged = onValueName
             )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
@@ -299,34 +353,26 @@ fun CollectionEditContent(
         .background(LocalCustomColors.current.cardBackground)
         .padding(top = 24.dp, bottom = 24.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+        HeaderModalTitle(
+            title = R.string.edit_collection
         ) {
-            Text(
-                text= "Edit collection",
-                style = LocalCustomTypography.current.h3Bold,
-                color = LocalCustomColors.current.headerText
-            )
-
-            TopBarButton(icon = R.drawable.x,
+            TopBarButton(
+                icon = R.drawable.x,
                 boxColor = LocalCustomColors.current.background,
-                iconColor = LocalCustomColors.current.iconFocused
-            ) { onDismissClick() }
+                iconColor = LocalCustomColors.current.iconFocused,
+                onClick = onDismissClick
+            )
         }
 
-        HorizontalDivider(Modifier.padding(vertical = 32.dp))
+        Divider32()
 
         Column(Modifier.padding(horizontal = 24.dp)) {
             TextSection(
-                label = "Collection Name",
-                placeholder = "Enter collection name",
+                label = stringResource(R.string.collection_name),
+                placeholder = stringResource(R.string.enter_collection_name),
                 leadingIcon = R.drawable.collection,
                 text = collectionName,
-                onTextChanged = onValueName,
-                textError = ""
+                onTextChanged = onValueName
             )
             Spacer(Modifier.height(24.dp))
             ButtonComponent(
@@ -346,7 +392,8 @@ fun CollectionDeleteContent(
     onDeleteCollection: () -> Unit
 ){
     Column(modifier = Modifier
-        .fillMaxWidth().clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
         .background(LocalCustomColors.current.cardBackground)
         .padding(top = 24.dp, bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -354,14 +401,14 @@ fun CollectionDeleteContent(
         OverlapImage(imageUrl = collectionImage)
 
         StatusTwoColorModalContent(
-            title = "Are you sure want to \ndelete this collection?"
+            title = stringResource(R.string.sure_want_delete_this_collection)
         )
 
         Divider32()
 
         BottomModalButton(
-            noText = "Cancel",
-            yesText ="Delete",
+            noText = stringResource(R.string.cancel),
+            yesText = stringResource(R.string.delete),
             onNoClick = onDismissClick,
             onYesClick = onDeleteCollection
         )
@@ -375,25 +422,26 @@ fun CollectionSaveContent(
     onCheckCollection: () -> Unit,
     onConfirmClick:() -> Unit,
 ){
-    Column(modifier = Modifier.fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            .background(LocalCustomColors.current.cardBackground)
-            .padding(top = 24.dp, bottom = 46.dp),
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+        .background(LocalCustomColors.current.cardBackground)
+        .padding(top = 24.dp, bottom = 46.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SuccessIcon()
         Spacer(Modifier.height(24.dp))
         StatusTwoColorModalContent(
             title = title,
-            highlight = "!",
+            highlight = stringResource(R.string.exclamation),
             highlightColor = Orange500,
-            subtitle =  "Your menu collection preference \nhas been updated."
+            subtitle = stringResource(R.string.menu_collection_updated)
         )
         Divider32()
         BottomModalButton(
-            noText = "Check collection",
+            noText = stringResource(R.string.check_collection),
             noTextColor = Orange500,
-            yesText = "Confirm",
+            yesText = stringResource(R.string.confirm),
             yesTextColor = Orange500,
             onNoClick = onCheckCollection,
             onYesClick = onConfirmClick
@@ -496,7 +544,7 @@ fun DetailScheduleContent(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Operational Hour",
+                text = stringResource(R.string.operational_hour),
                 style = typography.h5Bold,
                 color = colors.headerText
             )
@@ -522,38 +570,28 @@ fun SortContent(
             .background(LocalCustomColors.current.cardBackground)
             .padding(vertical = 24.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
+        HeaderModalTitle(
+            title = R.string.sort_restos_by
         ) {
-            Text(
-                text = stringResource(R.string.sort_restos_by),
-                style = LocalCustomTypography.current.h3Bold,
-                color = LocalCustomColors.current.headerText,
-                modifier = Modifier.weight(1f)
-            )
             ResetButton(onClick=onResetSort)
         }
-
         Divider32()
-
         RadioFilterTitleSection(
-            title = "",
             isTitleShown = false,
             options = sortList,
-        ) { key -> onUpdateDraftFilter(FilterCategory.SORT,key) }
-
-        Column (Modifier.padding(horizontal = 24.dp)){
-            Spacer(Modifier.height(24.dp))
-            ButtonComponent(
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true,
-                labelResId = R.string.apply,
-                onClick = onApplySort
-            )
-        }
+            onOptionSelected = { key -> onUpdateDraftFilter(FilterCategory.SORT,key) }
+        )
+        ButtonComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = 24.dp,
+                    start = 24.dp, end = 24.dp
+                ),
+            enabled = true,
+            labelResId = R.string.apply,
+            onClick = onApplySort
+        )
     }
 }
 
@@ -594,7 +632,7 @@ fun FilterContent(
 
         item(key= "price_filter"){
             RadioFilterTitleSection(
-                title = "Price range",
+                title = stringResource(R.string.price_range),
                 options = rupiahPriceRanges,
             ) { key -> onUpdateDraftFilter(FilterCategory.PRICE,key) }
             Divider32()
@@ -610,7 +648,7 @@ fun FilterContent(
 
         item(key= "mode_filter") {
             ChipFilterSection(
-                title = "Modes",
+                title = stringResource(R.string.modes),
                 options = modesOptions,
             ) { key ->  onUpdateDraftFilter(FilterCategory.MODE,key)}
             Divider32()
@@ -618,20 +656,21 @@ fun FilterContent(
 
         item(key= "cuisine_filter") {
             RadioFilterTitleSection(
-                title = "Cuisines type",
+                title = stringResource(R.string.cuisines_type),
                 options = cuisineOption,
             ) { key->  onUpdateDraftFilter(FilterCategory.CUISINE,key)}
             Spacer(Modifier.height(24.dp))
         }
 
         item (key= "button_content"){
-            Column (Modifier.padding(horizontal = 24.dp)){
-                ButtonComponent(
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true,
-                    labelResId = R.string.apply
-                ) { onApplyFilter() }
-            }
+            ButtonComponent(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                enabled = true,
+                labelResId = R.string.apply,
+                onClick = onApplyFilter
+            )
         }
     }
 }
@@ -653,13 +692,13 @@ fun CartRemoveMenuContent(
             OverlapImage(imageUrl = cart.imageUrl)
             Spacer(Modifier.height(24.dp))
             StatusTwoColorModalContent(
-                title = "Remove this menu?",
-                subtitle = "You can add this menu back from the \nrestaurant details page"
+                title = stringResource(R.string.remove_this_menu),
+                subtitle = stringResource(R.string.add_menu_back_from_details)
             )
             Divider32()
             BottomModalButton(
-                noText = "Cancel",
-                yesText = "Remove",
+                noText = stringResource(R.string.cancel),
+                yesText = stringResource(R.string.remove),
                 onNoClick = onDismiss,
                 onYesClick = { onRemoveCartItem(cart.cartId) }
             )
@@ -679,21 +718,11 @@ fun CartEditContent(
         .fillMaxWidth()
         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
         .background(LocalCustomColors.current.cardBackground)
-        .padding(top = 24.dp, bottom = 32.dp)
+        .padding(top = 24.dp, bottom = 32.dp).imePadding()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        HeaderModalTitle(
+            title = R.string.edit_notes
         ) {
-            Text(
-                text= "Edit Notes",
-                style = LocalCustomTypography.current.h3Bold,
-                color = LocalCustomColors.current.headerText
-            )
-
             TopBarButton(
                 icon = Icons.Default.Clear,
                 boxColor = LocalCustomColors.current.background,
@@ -704,18 +733,16 @@ fun CartEditContent(
 
         Divider32()
 
-        Column (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+        Column (modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
         ){
             TextSection(
                 text = text,
-                textError = "",
                 singleLine = false,
                 onTextChanged = onTextChange,
-                label = "Notes",
-                placeholder = "Write your notes here...",
+                label = stringResource(R.string.notes),
+                placeholder = stringResource(R.string.write_your_notes_here),
                 leadingIcon = R.drawable.note,
             )
             Spacer(Modifier.height(24.dp))
@@ -747,30 +774,31 @@ fun CartDeliveryLocationContent(
         .background(LocalCustomColors.current.cardBackground)
         .padding(top = 24.dp, bottom = 32.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 24.dp),
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = "Choose delivery location",
+                    text = stringResource(R.string.choose_delivery_location),
                     style = LocalCustomTypography.current.h3Bold,
                     color = LocalCustomColors.current.headerText
                 )
                 Text(
                     text = buildAnnotatedString {
-                        append("You can add a new delivery address on the \n")
+                        append(stringResource(R.string.you_can_add_a_new_delivery_address_on_the))
 
                         withStyle(
                             style = SpanStyle(
                                 color = LocalCustomColors.current.headerText
                             )
                         ) {
-                            append("My Addresses ")
+                            append("${stringResource(R.string.my_addresses)} ")
                         }
 
-                        append("page")
+                        append(stringResource(R.string.page))
                     },
                     style = LocalCustomTypography.current.bodySmallMedium,
                     color = LocalCustomColors.current.text
@@ -780,8 +808,9 @@ fun CartDeliveryLocationContent(
             TopBarButton(
                 icon = Icons.Default.Clear,
                 boxColor = LocalCustomColors.current.background,
-                iconColor = LocalCustomColors.current.iconFocused
-            ) { onDismiss() }
+                iconColor = LocalCustomColors.current.iconFocused,
+                onClick = onDismiss
+            )
         }
 
         Divider32()
@@ -794,9 +823,9 @@ fun CartDeliveryLocationContent(
         ) {
             item {
                 HeaderListItemCountTitleButton(
-                    title = "Addresses",
+                    title = stringResource(R.string.addresses),
                     itemCount = items.size,
-                    textButton = "Go to My Addresses",
+                    textButton = stringResource(R.string.go_to_my_addresses),
                     onClick = onNavigateToAddress
                 ) 
                 Spacer(Modifier.height(12.dp))
@@ -819,7 +848,9 @@ fun CartDeliveryLocationContent(
 
         Spacer(Modifier.height(24.dp))
         ButtonComponent(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
             enabled = items.isNotEmpty(),
             labelResId = R.string.confirm,
             onClick = onSetLocationClicked
@@ -843,18 +874,9 @@ fun CartPromoContent(
             .background(LocalCustomColors.current.cardBackground)
             .padding(top = 24.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        HeaderModalTitle(
+            title = R.string.choose_promo
         ) {
-            Text(
-                text = "Choose promo",
-                style = LocalCustomTypography.current.h3Bold,
-                color = LocalCustomColors.current.headerText
-            )
-
             TopBarButton(
                 icon = Icons.Default.Clear,
                 boxColor = LocalCustomColors.current.background,
@@ -862,6 +884,7 @@ fun CartPromoContent(
                 onClick = onDismiss
             )
         }
+
         Divider32()
 
         Box(
@@ -869,7 +892,7 @@ fun CartPromoContent(
         ) {
             VerticalTitleItemCountSection(
                 itemCount = items.size,
-                headerText = "Vouchers"
+                headerText = stringResource(R.string.vouchers)
             ) {
                 if (items.isEmpty()) {
                     item(key = "empty_content") {
@@ -887,7 +910,8 @@ fun CartPromoContent(
         }
 
         ButtonComponent(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             enabled = items.isNotEmpty(),
             labelResId = R.string.confirm,
@@ -915,10 +939,10 @@ fun CartDoubleCheckContent(
         )
         Divider32()
         BottomModalButton(
-            noText = "Recheck",
+            noText = stringResource(R.string.recheck),
             onNoClick = onRecheck,
             noTextColor = Neutral70,
-            yesText = "Continue Payment",
+            yesText = stringResource(R.string.continue_payment),
             yesTextColor = Orange500,
             onYesClick = onContinueToPayment
         )
@@ -939,14 +963,15 @@ fun RestaurantCloseModal(
     ) {
         StatusContent(
             icon = R.drawable.sorry,
-            title = "Sorry, we’re closed.",
-            subtitle = "You can check out other restaurant options \nfor an amazing dining experience!"
+            title = stringResource(R.string.sorry_we_re_closed),
+            subtitle = stringResource(R.string.you_can_check_out_other_restaurant)
         )
         Divider32()
         TextButton(
-            text = "I understand",
+            text = stringResource(R.string.i_understand),
             textColor = Orange500,
-            onClick = onDismiss)
+            onClick = onDismiss
+        )
     }
 }
 
@@ -1051,20 +1076,15 @@ fun DatePickerContent(
     onSelectClick: () -> Unit,
     onCancelClick: () -> Unit
 ){
-    Column(modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier
+        .fillMaxWidth()
         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
         .background(LocalCustomColors.current.background)
         .padding(top = 24.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        HeaderModalTitle(
+            title = R.string.select_date
         ) {
-            Text(
-                text = "Select Date",
-                style = LocalCustomTypography.current.h3Bold,
-                color = LocalCustomColors.current.headerText
-            )
             TopBarButton(
                 icon = Icons.Default.Clear,
                 boxColor = LocalCustomColors.current.cardBackground,
@@ -1084,7 +1104,9 @@ fun DatePickerContent(
         )
 
         ButtonComponent(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 32.dp),
             enabled = true,
             labelResId = R.string.select,
             onClick = onSelectClick
@@ -1110,13 +1132,13 @@ fun ChatRemoveContent(
             OverlapImage(imageUrl = chat.profileImage)
             Spacer(Modifier.height(24.dp))
             StatusTwoColorModalContent(
-                title = "Are you sure want to \ndelete this message?"
+                title = stringResource(R.string.sure_want_to_delete_message)
             )
             Divider32()
             BottomModalButton(
-                noText = "Cancel",
+                noText = stringResource(R.string.cancel),
                 onNoClick = onDismiss,
-                yesText = "Delete",
+                yesText = stringResource(R.string.delete),
                 onYesClick = onRemoveChat
             )
         }
@@ -1128,7 +1150,8 @@ fun LogoutContent(
     onDismissClick:() -> Unit,
     onLogout: () -> Unit
 ){
-    Column(modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier
+        .fillMaxWidth()
         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
         .background(LocalCustomColors.current.cardBackground)
         .padding(top = 24.dp, bottom = 32.dp),
@@ -1137,13 +1160,13 @@ fun LogoutContent(
         DangerIcon()
         Spacer(Modifier.height(24.dp))
         StatusTwoColorModalContent(
-            title = "Are you sure want \nto logout?"
+            title = stringResource(R.string.sure_want_to_logout)
         )
         Divider32(color = Neutral40)
         BottomModalButton(
-            noText = "Cancel",
+            noText = stringResource(R.string.cancel),
             onNoClick = onDismissClick,
-            yesText = "Logout",
+            yesText = stringResource(R.string.logout),
             onYesClick = onLogout
         )
     }
@@ -1236,7 +1259,8 @@ fun MessageImageContent(
             CommonImage(
                 imageUrl = message.imageAttachment,
                 name = "attachment",
-                modifier = Modifier.height(400.dp)
+                modifier = Modifier
+                    .height(400.dp)
                     .clip(RoundedCornerShape(20.dp))
             )
         }
@@ -1258,13 +1282,13 @@ fun DeleteNotificationContent(
         DangerIcon()
         Spacer(Modifier.height(24.dp))
         StatusTwoColorModalContent(
-            title = "Delete all your\n notifcations?",
+            title = stringResource(R.string.delete_all_your_notifications),
         )
         Divider32()
         BottomModalButton(
-            noText = "Cancel",
+            noText = stringResource(R.string.cancel),
             onNoClick = onDismissClick,
-            yesText = "Delete",
+            yesText = stringResource(R.string.delete),
             onYesClick = onDelete
         )
     }
@@ -1294,21 +1318,21 @@ fun CompletedContent(
             Spacer(Modifier.height(24.dp))
 
             CustomTwoColorText(
-                fullText = "Your order has arrived!",
+                fullText = stringResource(R.string.your_order_has_arrived),
                 textColor = LocalCustomColors.current.headerText,
-                highlightText = "!",
+                highlightText = stringResource(R.string.exclamation),
                 normalStyle = LocalCustomTypography.current.h2Bold,
             )
             Spacer(Modifier.height(10.dp))
             Text(
                 text = buildAnnotatedString {
-                    append("Right on time, we delivered your order in ")
+                    append(stringResource(R.string.right_on_time_we_delivered_your_order_in))
                     withStyle(LocalCustomTypography.current.bodyMediumBold.toSpanStyle()
                         .copy(
                             color = Orange500
                         )
                     ) {
-                        append("$time min")
+                        append(stringResource(R.string.min, time))
                     }
                 },
                 style = LocalCustomTypography.current.bodyMediumRegular,
@@ -1318,10 +1342,10 @@ fun CompletedContent(
         }
         Divider32()
         BottomModalButton(
-            noText = "Exit",
+            noText = stringResource(R.string.exit),
             noTextColor = Neutral70,
             onNoClick = onDismissClick,
-            yesText = "Rating Driver",
+            yesText = stringResource(R.string.rating_driver),
             yesTextColor = Orange500,
             onYesClick = onRatingDriver
         )
@@ -1343,30 +1367,27 @@ fun DeleteAllCartContent(
         DangerIcon()
         Spacer(Modifier.height(24.dp))
         StatusTwoColorModalContent(
-            title = "Are you sure want to \ndelete all your carts?",
+            title = stringResource(R.string.sure_want_to_delete_all_carts),
         )
         Divider32()
         BottomModalButton(
-            noText = "Cancel",
+            noText = stringResource(R.string.cancel),
             onNoClick = onDismissClick,
-            yesText = "Delete",
+            yesText = stringResource(R.string.delete),
             onYesClick = onDelete
         )
     }
 }
 
 //@Preview(showBackground = true)
-//@Composable
-//fun ModalPreview() {
-//    TasstyTheme(darkTheme = true){
-//        Column(
-//            modifier = Modifier.fillMaxSize(),
-//            verticalArrangement = Arrangement.Bottom
-//        ) {
-//            MessageImageContent(
-//                message = dummyMessages[0],
-//                status = "Seen"
-//            )
-//        }
-//    }
-//}
+@Composable
+fun ModalPreview() {
+    TasstyTheme{
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Bottom
+        ) {
+
+        }
+    }
+}

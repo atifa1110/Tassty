@@ -8,17 +8,8 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 data class FilterDataState(
-    val selectedSort: String? = null,
-    val selectedPrice: String? = null,
-    val selectedRating: String? = null,
-    val selectedMode: String? = null,
-    val selectedCuisine: String? = null,
-
-    val appliedSort: String? = null,
-    val appliedPrice: String? = null,
-    val appliedRating: String? = null,
-    val appliedMode: String? = null,
-    val appliedCuisine: String? = null
+    val selected: Map<FilterCategory, String?> = emptyMap(),
+    val applied: Map<FilterCategory, String?> = emptyMap()
 )
 
 interface FilterManager {
@@ -32,42 +23,47 @@ interface FilterManager {
 
 class FilterManagerImpl @Inject constructor() : FilterManager {
     private val _state = MutableStateFlow(FilterDataState())
-    override val filterData: StateFlow<FilterDataState> = _state.asStateFlow()
+    override val filterData = _state.asStateFlow()
 
     override fun onFilterSelected(category: FilterCategory, optionKey: String) {
         _state.update { current ->
-            when (category) {
-                FilterCategory.SORT -> current.copy(selectedSort = if (current.selectedSort == optionKey) null else optionKey)
-                FilterCategory.PRICE -> current.copy(selectedPrice = if (current.selectedPrice == optionKey) null else optionKey)
-                FilterCategory.RATING -> current.copy(selectedRating = if (current.selectedRating == optionKey) null else optionKey)
-                FilterCategory.CUISINE -> current.copy(selectedCuisine = if (current.selectedCuisine == optionKey) null else optionKey)
-                FilterCategory.MODE -> current.copy(selectedMode = if (current.selectedMode == optionKey) null else optionKey)
-                else -> current
+            val isSame = current.selected[category] == optionKey
+            val newVal = if (isSame) null else optionKey
+
+            val newSelected = current.selected + (category to newVal)
+
+            if (category == FilterCategory.SORT) {
+                current.copy(
+                    selected = newSelected,
+                    applied = current.applied + (FilterCategory.SORT to newVal)
+                )
+            } else {
+                current.copy(selected = newSelected)
             }
         }
     }
 
     override fun applyFilters() {
-        _state.update { it.copy(
-            appliedPrice = it.selectedPrice,
-            appliedRating = it.selectedRating,
-            appliedMode = it.selectedMode,
-            appliedCuisine = it.selectedCuisine
-        )}
+        _state.update { it.copy(applied = it.selected) }
     }
 
     override fun applySort() {
-        _state.update { it.copy(appliedSort = it.selectedSort) }
+        _state.update { it.copy(
+            applied = it.applied + (FilterCategory.SORT to it.selected[FilterCategory.SORT])
+        )}
     }
 
     override fun resetFilters() {
         _state.update { it.copy(
-            selectedPrice = null, selectedRating = null, selectedMode = null, selectedCuisine = null,
-            appliedPrice = null, appliedRating = null, appliedMode = null, appliedCuisine = null
+            selected = it.selected.filter { s -> s.key == FilterCategory.SORT },
+            applied = it.applied.filter { a -> a.key == FilterCategory.SORT }
         )}
     }
 
     override fun resetSort() {
-        _state.update { it.copy(selectedSort = null, appliedSort = null) }
+        _state.update { it.copy(
+            selected = it.selected - FilterCategory.SORT,
+            applied = it.applied - FilterCategory.SORT
+        )}
     }
 }

@@ -21,11 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
+import com.example.tassty.R
 import com.example.tassty.util.addresses
 import com.example.tassty.component.AddTopAppBar
 import com.example.tassty.component.EmptyAddressContent
@@ -44,6 +46,7 @@ import com.example.tassty.ui.theme.TasstyTheme
 @Composable
 fun AddressScreen(
     onNavigateBack:() -> Unit,
+    onNavigateToAddAddress: () -> Unit,
     viewModel: AddressViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,7 +54,8 @@ fun AddressScreen(
     AddressContent(
         uiState = uiState,
         onTabSelected = {viewModel.onTabSelected(it)},
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onNavigateToAddAddress = onNavigateToAddAddress
     )
 }
 
@@ -60,24 +64,29 @@ fun AddressContent(
     uiState: AddressUiState,
     onTabSelected: (AddressTab) -> Unit,
     onNavigateBack:() -> Unit,
+    onNavigateToAddAddress: () -> Unit
 ) {
     Scaffold(
         containerColor = LocalCustomColors.current.background,
         topBar = {
             AddTopAppBar (
-                onAddClick = {},
+                onAddClick = onNavigateToAddAddress,
                 onBackClick = onNavigateBack
             )
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
             item(key = "header"){
                 HeaderTitleScreen(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                    title = "My addresses."
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    title = stringResource(R.string.my_addressess)
                 )
                 Spacer(Modifier.height(8.dp))
                 AddressTabContent (
@@ -92,7 +101,9 @@ fun AddressContent(
             when{
                 resource.isLoading -> {
                     items(count = 4){
-                        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+                        Column(Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)) {
                             ShimmerAddressCard()
                             Spacer(Modifier.height(12.dp))
                         }
@@ -149,13 +160,13 @@ fun AddressTabContent(
                         .background(
                             if (isSelected) Orange500 else Color.Transparent
                         )
-                        .clickable { onTabSelected(type)}
+                        .clickable { onTabSelected(type) }
                         .padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = type.title,
-                        color = if (isSelected) LocalCustomColors.current.headerText else LocalCustomColors.current.text,
+                        color = if (isSelected) Neutral10 else LocalCustomColors.current.text,
                         style = LocalCustomTypography.current.h7Bold
                     )
                 }
@@ -166,31 +177,33 @@ fun AddressTabContent(
 
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun AddressLightPreview() {
-//    TasstyTheme {
-//        AddressContent(
-//            uiState = AddressUiState(
-//                selectedTab = AddressTab.ALL,
-//                addressResource = Resource(data = addresses)
-//            ),
-//            onTabSelected = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun AddressLightPreview() {
+    TasstyTheme {
+        AddressContent(
+            uiState = AddressUiState(
+                selectedTab = AddressTab.ALL,
+                addressResource = Resource(data = addresses)
+            ),
+            onTabSelected = {},
+            onNavigateBack = {},
+            onNavigateToAddAddress = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun AddressDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        AddressContent(
-//            uiState = AddressUiState(
-//                selectedTab = AddressTab.ALL,
-//                addressResource = Resource(data = addresses)
-//            ),
-//            onTabSelected = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun AddressDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        AddressContent(
+            uiState = AddressUiState(
+                selectedTab = AddressTab.ALL,
+                addressResource = Resource(data = addresses)
+            ),
+            onTabSelected = {},
+            onNavigateBack = {},
+            onNavigateToAddAddress = {}
+        )
+    }
+}

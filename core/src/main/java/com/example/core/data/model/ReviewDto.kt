@@ -30,9 +30,9 @@ data class ReviewDto(
     @SerializedName("restaurant_id")
     val restaurantId: String,
     @SerializedName("user_name")
-    val username: String,
+    val username: String?= null,
     @SerializedName("profile_image")
-    val profileImage: String,
+    val profileImage: String?= null,
     val rating: Int,
     val comment: String,
     @SerializedName("created_at")

@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -229,7 +230,7 @@ fun CartContent(
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()
-                        .background(Neutral10)
+                        .background(LocalCustomColors.current.background)
                 )
             }
 
@@ -246,7 +247,7 @@ fun CartContent(
             uiState.carts.isLoading ->{
                 LoadingOverlay(
                     isLoading = uiState.carts.isLoading,
-                    text = "Load..."
+                    text = stringResource(R.string.load)
                 )
             }
 
@@ -258,7 +259,9 @@ fun CartContent(
                 ) {
                     item(key = "header_cart") {
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 24.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 24.dp, end = 24.dp, top = 24.dp)
                         ) {
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
@@ -289,7 +292,8 @@ fun CartContent(
                                         color = Orange500
                                     )
                                     Box(
-                                        modifier = Modifier.size(14.dp)
+                                        modifier = Modifier
+                                            .size(14.dp)
                                             .align(Alignment.CenterVertically),
                                         ) {
                                         Icon(
@@ -322,9 +326,9 @@ fun CartContent(
                         Divider32()
                         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                             HeaderListTitleButton(
-                                title = "Delivery location",
+                                title = stringResource(R.string.delivery_location),
                                 titleColor = LocalCustomColors.current.headerText,
-                                textButton = "Change location",
+                                textButton = stringResource(R.string.change_location),
                                 onClick = {
                                     if (uiState.selectedAddress != null) {
                                         onSelectLocationClicked()
@@ -343,7 +347,7 @@ fun CartContent(
                         Divider32()
                         Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                             Text(
-                                text = "Payment detail",
+                                text = stringResource(R.string.payment_detail),
                                 color = LocalCustomColors.current.headerText,
                                 style = LocalCustomTypography.current.h5Bold
                             )

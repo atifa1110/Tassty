@@ -18,9 +18,9 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class MenuRepositoryImpl @Inject constructor(
-    private val remoteDataSource: MenuNetworkDataSource,
     private val cache: MenuCache,
-    private val cleanDataSource: CleanDataSource
+    private val cleanDataSource: CleanDataSource,
+    private val remoteDataSource: MenuNetworkDataSource,
 ): MenuRepository {
 
     companion object {
@@ -89,7 +89,6 @@ class MenuRepositoryImpl @Inject constructor(
                 val menus = result.data?.map { menuDto ->
                     menuDto.toDomain()
                 }
-                Log.d("MenuRepositoryImpl","Menu: ${menus}")
 
                 emit(TasstyResponse.Success(menus, result.meta))
             }
@@ -98,61 +97,19 @@ class MenuRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading())
-
-        val result = remoteDataSource.getSearchMenus()
-        when (result) {
-            is TasstyResponse.Success -> {
-                val menus = result.data?.map { menuDto -> menuDto.toDomain() }
-                emit(TasstyResponse.Success(menus, result.meta))
-            }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
-        }
-    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
-
-    override fun getDetailBestSellerMenu(id:String): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading())
-
-        val result = remoteDataSource.getDetailBestSellerMenu(id)
-        when (result) {
-            is TasstyResponse.Success -> {
-                val menus = result.data?.map { menuDto -> menuDto.toDomain() }
-                emit(TasstyResponse.Success(menus, result.meta))
-            }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override fun getDetailRecommendedMenu(id: String): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading())
-
-        val result = remoteDataSource.getDetailRecommendedMenu(id)
-        when (result) {
-            is TasstyResponse.Success -> {
-                val menus = result.data?.map { menuDto -> menuDto.toDomain() }
-                emit(TasstyResponse.Success(menus, result.meta))
-            }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
-        }
-    }.flowOn(Dispatchers.IO) // Flow running in IO dispatcher
-
-    override fun getDetailAllMenu(id: String): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading())
-
-        val result = remoteDataSource.getDetailAllMenu(id)
-        when (result) {
-            is TasstyResponse.Success -> {
-                val menus = result.data?.map { menuDto -> menuDto.toDomain() }
-                emit(TasstyResponse.Success(menus, result.meta))
-            }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
-        }
-    }.flowOn(Dispatchers.IO)
+//    override fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
+//        emit(TasstyResponse.Loading())
+//
+//        val result = remoteDataSource.getSearchMenus()
+//        when (result) {
+//            is TasstyResponse.Success -> {
+//                val menus = result.data?.map { menuDto -> menuDto.toDomain() }
+//                emit(TasstyResponse.Success(menus, result.meta))
+//            }
+//            is TasstyResponse.Error -> emit(result)
+//            is TasstyResponse.Loading -> emit(result)
+//        }
+//    }.flowOn(Dispatchers.IO)
 
     override suspend fun runDatabaseMaintenance() {
         withContext(Dispatchers.IO){

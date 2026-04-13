@@ -1,5 +1,8 @@
 package com.example.tassty.screen.favorite
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,15 +18,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -70,15 +77,40 @@ fun FavoriteContent(
     snackHostState: SnackbarHostState,
     onNavigateBack:() -> Unit
 ) {
+
+    val scrollState = rememberLazyListState()
+    val isScrolled by remember {
+        derivedStateOf {
+            scrollState.firstVisibleItemIndex > 0 ||
+                    scrollState.firstVisibleItemScrollOffset > 100
+        }
+    }
+
+    val iconBackground by animateColorAsState(
+        targetValue = if (isScrolled) LocalCustomColors.current.cardBackground else LocalCustomColors.current.topBarBackgroundColor,
+        animationSpec = tween(300),
+        label = "iconBackground"
+    )
+
+    val appBarAlpha by animateFloatAsState(
+        targetValue = if (isScrolled) 1f else 0f,
+        animationSpec = tween(300),
+        label = "alpha"
+    )
+    val background = LocalCustomColors.current.background
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackHostState) },
-        containerColor = LocalCustomColors.current.background
+        containerColor = background
     ) { padding ->
         BoxWithConstraints(
-            modifier = Modifier.padding(padding).fillMaxSize()) {
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()) {
             val screenHeight = maxHeight
 
             LazyColumn(
+                state = scrollState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 32.dp)
             ) {
@@ -96,6 +128,12 @@ fun FavoriteContent(
             }
 
             FavoriteTopAppBar(
+                iconBackground = iconBackground,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .drawBehind {
+                        drawRect(color = background.copy(alpha = appBarAlpha))
+                    },
                 onBackClick = onNavigateBack,
                 onSearchClick = {}
             )
@@ -124,24 +162,29 @@ fun HeaderContent(
         )
 
         Column(
-            modifier = Modifier.fillMaxWidth().align(Alignment.BottomEnd)
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomEnd)
                 .background(LocalCustomColors.current.modalBackgroundFrame),
             verticalArrangement = Arrangement.Center
         ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Favorite Restaurants",
+                        text = stringResource(R.string.favorite_restaurants),
                         style = LocalCustomTypography.current.h3Bold,
                         color = LocalCustomColors.current.headerText
                     )
                     TopBarButton(
                         icon = R.drawable.store,
-                        boxColor = Pink500, iconColor = Neutral10
-                    ) { }
+                        boxColor = Pink500, iconColor = Neutral10,
+                        onClick = {}
+                    )
                 }
         }
     }
@@ -161,7 +204,7 @@ fun LazyListScope.favoriteRestaurantSection(
             item {
                 HeaderListItemCountTitle(
                     itemCount = items.size,
-                    title = "Favorite restaurants",
+                    title = stringResource(R.string.favorite_restaurants),
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -170,7 +213,6 @@ fun LazyListScope.favoriteRestaurantSection(
         }
         else -> {
             restaurantVerticalListBlock(
-                headerText = "Favorite restaurants",
                 restaurantItems = items,
                 onNavigateToDetail = {}
             )
@@ -179,27 +221,27 @@ fun LazyListScope.favoriteRestaurantSection(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun FavoriteLightReview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme {
-//        FavoriteContent(
-//            resource = Resource(data = restaurantUiModel),
-//            snackHostState = snackHostState,
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun FavoriteLightReview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme {
+        FavoriteContent(
+            resource = Resource(data = restaurantUiModel),
+            snackHostState = snackHostState,
+            onNavigateBack = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun FavoriteDarkReview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme (darkTheme = true){
-//        FavoriteContent(
-//            resource = Resource(data = restaurantUiModel),
-//            snackHostState = snackHostState,
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun FavoriteDarkReview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme (darkTheme = true){
+        FavoriteContent(
+            resource = Resource(data = restaurantUiModel),
+            snackHostState = snackHostState,
+            onNavigateBack = {}
+        )
+    }
+}

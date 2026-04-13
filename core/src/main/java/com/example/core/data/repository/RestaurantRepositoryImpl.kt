@@ -18,7 +18,6 @@ import javax.inject.Inject
 
 class RestaurantRepositoryImpl @Inject constructor(
     private val remoteDataSource: RestaurantNetworkDataSource,
-    private val searchNetworkDataSource: SearchNetworkDataSource,
     private val cache: RestaurantCache
 ) : RestaurantRepository {
 
@@ -96,42 +95,6 @@ class RestaurantRepositoryImpl @Inject constructor(
                 cache.saveAll(META_KEY_NEARBY, result.data ?: emptyList())
                 cache.saveMeta(META_KEY_NEARBY, result.meta)
 
-                emit(
-                    TasstyResponse.Success(
-                        data = result.data?.map { it.toDomain() },
-                        meta = result.meta
-                    )
-                )
-            }
-
-            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
-            else -> {}
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override fun getSearchRestaurants(filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow {
-        emit(TasstyResponse.Loading())
-
-        when (val result = searchNetworkDataSource.searchRestaurants(filter)) {
-            is TasstyResponse.Success -> {
-                emit(
-                    TasstyResponse.Success(
-                        data = result.data?.map { it.toDomain() },
-                        meta = result.meta
-                    )
-                )
-            }
-
-            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
-            else -> {}
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override fun getSearchRestaurantsByCategory(id: String,filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>> = flow {
-        emit(TasstyResponse.Loading())
-
-        when (val result = searchNetworkDataSource.searchRestaurantsByCategory(id,filter)) {
-            is TasstyResponse.Success -> {
                 emit(
                     TasstyResponse.Success(
                         data = result.data?.map { it.toDomain() },

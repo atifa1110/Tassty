@@ -1,10 +1,12 @@
 package com.example.tassty.component
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -322,9 +324,32 @@ fun HeaderRestaurantCollection(
             text = "See resto",
             style = LocalCustomTypography.current.bodySmallMedium,
             color = Orange500,
-            modifier = Modifier.padding(start = 12.dp).clickable(
-                onClick = onClick
-            )
+            modifier = Modifier
+                .padding(start = 12.dp)
+                .clickable(
+                    onClick = onClick
+                )
+        )
+    }
+}
+
+@Composable
+fun HeaderTitleSubtitleScreen(
+    modifier: Modifier = Modifier,
+    title: Int,
+    subtitle: Int
+){
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        HeaderTitleScreen(title = stringResource(title))
+
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = stringResource(subtitle),
+            style = LocalCustomTypography.current.bodyMediumRegular,
+            color = LocalCustomColors.current.text,
+            textAlign = TextAlign.Start
         )
     }
 }
@@ -345,8 +370,68 @@ fun HeaderTitleScreen(
 }
 
 @Composable
+fun HeaderModalTitleSubtitle(
+    modifier: Modifier = Modifier,
+    @StringRes title: Int,
+    @StringRes subtitle: Int,
+    content: @Composable () -> Unit
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .then(modifier),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = stringResource(title),
+                style = LocalCustomTypography.current.h3Bold,
+                color = LocalCustomColors.current.headerText
+            )
+            Text(
+                text = stringResource(subtitle),
+                style = LocalCustomTypography.current.bodySmallMedium,
+                color = LocalCustomColors.current.text
+            )
+        }
+
+        content()
+    }
+}
+
+@Composable
+fun HeaderModalTitle(
+    modifier: Modifier = Modifier,
+    @StringRes title: Int,
+    content: @Composable () -> Unit
+){
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp)
+        .then(modifier),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = modifier.weight(1f),
+            text = stringResource(title),
+            style = LocalCustomTypography.current.h3Bold,
+            color = LocalCustomColors.current.headerText
+        )
+        content()
+    }
+}
+
+
+@Composable
 fun DateHeader(date: String) {
-    Box(modifier = Modifier.fillMaxWidth()
+    Box(modifier = Modifier
+        .fillMaxWidth()
         .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -367,7 +452,9 @@ fun DateHeader(date: String) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewHeader(){
-    Column (Modifier.fillMaxWidth().padding(24.dp),
+    Column (Modifier
+        .fillMaxWidth()
+        .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)){
 
         HeaderTitleScreen(

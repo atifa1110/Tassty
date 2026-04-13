@@ -42,7 +42,7 @@ interface CollectionMenuDao {
         FROM collection_menu
         WHERE menuId = :menuId
     """)
-    fun getCollectionIdsByMenuId(menuId: String): List<String>
+    suspend fun getCollectionIdsByMenuId(menuId: String): List<String>
 
     /**
      * Ambil SEMUA menuId

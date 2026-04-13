@@ -8,8 +8,9 @@ import javax.inject.Inject
 class GetCollectionsByIdUseCase @Inject constructor(
     private val collectionRepository: CollectionRepository
 ) {
-    suspend operator fun invoke(menuId: String) : List<String> =
-        withContext(Dispatchers.IO) {
+    suspend operator fun invoke(menuId: String): List<String> {
+        return withContext(Dispatchers.IO) {
             collectionRepository.getCollectionIdsByMenu(menuId)
         }
+    }
 }

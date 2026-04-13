@@ -7,7 +7,6 @@ import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.AddCardToStripeUseCase
 import com.example.tassty.model.CardColorOption
 import com.example.tassty.model.PatternImage
-import com.example.tassty.screen.home.HomeUiEffect
 import com.stripe.android.model.ConfirmSetupIntentParams
 import com.stripe.android.model.PaymentMethodCreateParams
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -180,9 +179,9 @@ class AddCardViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
             addCardToStripeUseCase.finalize(
-                paymentMethodId,
-                state.selectedColor.id,
-                state.selectedImage.id
+                id = paymentMethodId,
+                color = state.selectedColor.id,
+                background = state.selectedImage.id
             ).collect { response ->
                 when (response) {
                     is TasstyResponse.Loading -> {
@@ -191,7 +190,7 @@ class AddCardViewModel @Inject constructor(
 
                     is TasstyResponse.Error -> {
                         _uiState.update {
-                            it.copy(isLoading = false, errorMessage = response.meta.message, isSuccessSheetVisible = true)
+                            it.copy(isLoading = false, errorMessage = response.meta.message)
                         }
                     }
 

@@ -13,13 +13,12 @@ import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class GetDetailAllMenuUseCase @Inject constructor(
-    private val menuRepository: MenuRepository,
     private val detailRepository: DetailRepository,
     private val collectionRepository: CollectionRepository
 ) {
     operator fun invoke(restaurantId: String): Flow<TasstyResponse<List<Menu>>> {
         return combine(
-            menuRepository.getDetailAllMenu(restaurantId),
+            detailRepository.getDetailAllMenu(restaurantId),
             detailRepository.getDetailRestaurant(restaurantId),
             collectionRepository.observeFavoriteMenuIds()
         ) { menuRes, restoRes, favIds ->

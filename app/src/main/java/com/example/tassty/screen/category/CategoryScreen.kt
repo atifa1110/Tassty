@@ -15,7 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -32,6 +34,7 @@ import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
+import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.restaurantMenuUiModel
 
@@ -97,11 +100,12 @@ fun CategoryContent(
     onNavigateToDetail: (String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val scrollState = rememberLazyListState()
     val isScrolled by remember {
         derivedStateOf {
             scrollState.firstVisibleItemIndex > 0 ||
-                    scrollState.firstVisibleItemScrollOffset > 200
+                    scrollState.firstVisibleItemScrollOffset > 100
         }
     }
 
@@ -117,8 +121,10 @@ fun CategoryContent(
         label = "iconTint"
     )
 
+    val background = LocalCustomColors.current.background
+
     Scaffold (
-        containerColor = LocalCustomColors.current.background
+        containerColor = background
     ){ paddingValues ->
         BoxWithConstraints(modifier = Modifier.padding(paddingValues)
             .fillMaxSize()) {
@@ -148,6 +154,7 @@ fun CategoryContent(
                 }
 
                 filterListSection(
+                    context = context,
                     resource = uiState.restaurants,
                     onNavigateToDetail = onNavigateToDetail
                 )
@@ -159,9 +166,9 @@ fun CategoryContent(
                 onBackClick = onNavigateBack,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .background(
-                        LocalCustomColors.current.background.copy(alpha = appBarAlpha)
-                    )
+                    .drawBehind {
+                        drawRect(color = background.copy(alpha = appBarAlpha))
+                    }
             )
         }
     }
@@ -254,42 +261,42 @@ fun CategoryHeader(
 }
 
 
-//@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun CategoryLightPreview() {
-//    TasstyTheme {
-//        CategoryContent(
-//            categoryName = "Ramen",
-//            imageUrl = "",
-//            uiState = CategoryUiState(
-//                restaurants = Resource(data = restaurantMenuUiModel),
-//                activeFilters = defaultFilter
-//            ),
-//            onFilterClick = {},
-//            onSortClick = {},
-//            onQueryChange = {},
-//            onNavigateToDetail = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Preview(showBackground = true, name = "Light Mode")
+@Composable
+fun CategoryLightPreview() {
+    TasstyTheme {
+        CategoryContent(
+            categoryName = "Ramen",
+            imageUrl = "",
+            uiState = CategoryUiState(
+                restaurants = Resource(data = restaurantMenuUiModel),
+                activeFilters = defaultFilter
+            ),
+            onFilterClick = {},
+            onSortClick = {},
+            onQueryChange = {},
+            onNavigateToDetail = {},
+            onNavigateBack = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun CategoryDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        CategoryContent(
-//            categoryName = "Ramen",
-//            imageUrl = "",
-//            uiState = CategoryUiState(
-//                restaurants = Resource(data = restaurantMenuUiModel),
-//                activeFilters = defaultFilter
-//            ),
-//            onFilterClick = {},
-//            onSortClick = {},
-//            onQueryChange = {},
-//            onNavigateToDetail = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun CategoryDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        CategoryContent(
+            categoryName = "Ramen",
+            imageUrl = "",
+            uiState = CategoryUiState(
+                restaurants = Resource(data = restaurantMenuUiModel),
+                activeFilters = defaultFilter
+            ),
+            onFilterClick = {},
+            onSortClick = {},
+            onQueryChange = {},
+            onNavigateToDetail = {},
+            onNavigateBack = {}
+        )
+    }
+}

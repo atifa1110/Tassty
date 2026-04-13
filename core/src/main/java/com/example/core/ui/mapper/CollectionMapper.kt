@@ -10,6 +10,16 @@ import com.example.core.ui.model.CollectionRestaurantUiModel
 import com.example.core.ui.model.CollectionRestaurantWithMenuUiModel
 import com.example.core.ui.model.CollectionUiModel
 
+//fun Collection.toUiModel(isSelected: Boolean) : CollectionUiModel {
+//    return CollectionUiModel(
+//        id = this.id,
+//        title = this.title,
+//        imageUrl = this.imageUrl,
+//        menuCount = this.menuCount,
+//        isSelected = isSelected
+//    )
+//}
+
 fun Collection.toUiModel() : CollectionUiModel {
     return CollectionUiModel(
         id = this.id,
@@ -19,6 +29,7 @@ fun Collection.toUiModel() : CollectionUiModel {
         isSelected = false
     )
 }
+
 
 fun CollectionRestaurant.toUiModel(): CollectionRestaurantUiModel{
     return CollectionRestaurantUiModel(

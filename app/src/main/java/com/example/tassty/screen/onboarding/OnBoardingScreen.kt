@@ -183,7 +183,7 @@ fun PagerScreen(onBoardingPage: OnBoardingPage) {
         Spacer(modifier = Modifier.height(40.dp))
 
         CustomTwoColorText(
-            fullText = onBoardingPage.title,
+            fullText = stringResource(onBoardingPage.title),
             highlightText = ".",
             textColor = LocalCustomColors.current.headerText,
             normalStyle = LocalCustomTypography.current.h1Bold,
@@ -193,7 +193,7 @@ fun PagerScreen(onBoardingPage: OnBoardingPage) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = onBoardingPage.subtitle,
+            text = stringResource(onBoardingPage.subtitle),
             style = LocalCustomTypography.current.bodyMediumRegular,
             color = LocalCustomColors.current.text,
             textAlign = TextAlign.Center,

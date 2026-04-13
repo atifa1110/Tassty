@@ -44,6 +44,7 @@ import com.example.tassty.component.Divider32
 import com.example.tassty.component.FoodCategoryCard
 import com.example.tassty.component.Header
 import com.example.tassty.component.HeaderTitleScreen
+import com.example.tassty.component.HeaderTitleSubtitleScreen
 import com.example.tassty.component.SearchBar
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.TasstyTheme
@@ -127,38 +128,29 @@ fun SetupCuisineScreen(
         }
     ) { innerPadding ->
         LazyColumn (
-            modifier = Modifier.padding(innerPadding)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp)
+            modifier = Modifier.padding(innerPadding).fillMaxSize(),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
             item(key = "header_content") {
-                Spacer(modifier = Modifier.height(16.dp))
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    HeaderTitleScreen(title = stringResource(R.string.choose_your_preferred_cuisine),)
-
-                    Text(
-                        text = stringResource(R.string.dozens_food),
-                        style = LocalCustomTypography.current.bodyMediumRegular,
-                        color = LocalCustomColors.current.text,
-                        textAlign = TextAlign.Start
+                    HeaderTitleSubtitleScreen(
+                        title = R.string.choose_your_preferred_cuisine,
+                        subtitle = R.string.dozens_food
                     )
-
-                    Spacer(Modifier.height(12.dp))
 
                     SearchBar(
                         value = searchText,
                         onValueChange = onSearchText
                     )
                 }
-            }
 
-            item {
                 Divider32()
             }
 
-            item {
+            item(key = "content"){
                 if (uiState.isLoading || uiState.categories.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -221,43 +213,43 @@ fun CategoriesContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun SetupCuisineLightPreview() {
-//    TasstyTheme(darkTheme = false) {
-//        SetupCuisineScreen(
-//            uiState = SetupCuisineUiState(
-//                categories = categories,
-//                selectedCategoryIds = listOf("CAT-001"),
-//                currentSearchQuery = "bakery",
-//                filteredCategories = categories
-//            ),
-//            searchText = "",
-//            onSearchText = {},
-//            onSelectedCategory = {},
-//            onNextClick = {},
-//            onSkipClick = {},
-//            onBackButtonClick = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun SetupCuisineLightPreview() {
+    TasstyTheme(darkTheme = false) {
+        SetupCuisineScreen(
+            uiState = SetupCuisineUiState(
+                categories = categories,
+                selectedCategoryIds = listOf("CAT-001"),
+                currentSearchQuery = "bakery",
+                filteredCategories = categories
+            ),
+            searchText = "",
+            onSearchText = {},
+            onSelectedCategory = {},
+            onNextClick = {},
+            onSkipClick = {},
+            onBackButtonClick = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun SetupCuisineDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        SetupCuisineScreen(
-//            uiState = SetupCuisineUiState(
-//                categories = categories,
-//                selectedCategoryIds = listOf("CAT-001"),
-//                currentSearchQuery = "bakery",
-//                filteredCategories = categories
-//            ),
-//            searchText = "",
-//            onSearchText = {},
-//            onSelectedCategory = {},
-//            onNextClick = {},
-//            onSkipClick = {},
-//            onBackButtonClick = {}
-//        )
-//    }
-//}
+@Composable
+fun SetupCuisineDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        SetupCuisineScreen(
+            uiState = SetupCuisineUiState(
+                categories = categories,
+                selectedCategoryIds = listOf("CAT-001"),
+                currentSearchQuery = "bakery",
+                filteredCategories = categories
+            ),
+            searchText = "",
+            onSearchText = {},
+            onSelectedCategory = {},
+            onNextClick = {},
+            onSkipClick = {},
+            onBackButtonClick = {}
+        )
+    }
+}

@@ -3,8 +3,10 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 val localProps = Properties()
@@ -93,4 +95,20 @@ dependencies {
     implementation(libs.stream.chat.offline)
 
     implementation(libs.stream.chat.push.firebase)
+
+    implementation(libs.kotlinx.collections.immutable)
+
+    implementation(libs.maps.utils)
+
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.realtime)
+    implementation(libs.supabase.postgrest)
+
+    //implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.plugins)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+
 }

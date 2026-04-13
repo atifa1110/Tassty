@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -139,7 +140,9 @@ fun MessageContent(
     Scaffold (
         containerColor = LocalCustomColors.current.background,
         topBar = {
-            Column(modifier = Modifier.fillMaxWidth().statusBarsPadding()) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()) {
                 ChatTopBar(
                     user = uiState.user,
                     onBackClick = onNavigateBack,
@@ -181,8 +184,9 @@ fun MessageContent(
             if (orderStatus != OrderStatus.COMPLETED) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth().background(LocalCustomColors.current.modalBackgroundFrame)
-                        .padding(24.dp),
+                        .fillMaxWidth()
+                        .background(LocalCustomColors.current.modalBackgroundFrame)
+                        .padding(24.dp).imePadding(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     if (uiState.isImagePreviewVisible && uiState.selectedImageUri != null) {
@@ -207,7 +211,7 @@ fun MessageContent(
                     shadowElevation = 4.dp
                 ) {
                     Text(
-                        text = "This chat is closed because the order is completed.",
+                        text = stringResource(R.string.this_chat_is_closed_because_the_order_is_completed),
                         modifier = Modifier.padding(16.dp),
                         style = LocalCustomTypography.current.bodySmallRegular,
                         color = LocalCustomColors.current.text,

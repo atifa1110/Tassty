@@ -159,7 +159,7 @@ fun ShimmerRestaurantLargeListCard(){
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun ShimmerRestaurantCardPreview(){
     ShimmerRestaurantLargeListCard()

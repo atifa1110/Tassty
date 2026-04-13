@@ -3,12 +3,14 @@ package com.example.core.data.source.remote.datasource
 import android.content.Context
 import android.net.Uri
 import com.example.core.data.model.CardUserDto
+import com.example.core.data.model.ProfileDto
 import com.example.core.data.model.SetupDto
 import com.example.core.data.model.UserAddressDto
 import com.example.core.data.model.UserDto
 import com.example.core.data.source.remote.api.UserApiService
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.data.source.remote.network.safeApiCall
+import com.example.core.data.source.remote.request.AddressRequest
 import com.example.core.data.source.remote.request.ProfileRequest
 import com.example.core.data.source.remote.request.SaveCardRequest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -24,7 +26,7 @@ class UserNetworkDataSource@Inject constructor(
         return safeApiCall { userApiService.getUserProfile() }
     }
 
-    suspend fun updateUserProfile(name: String, imageUri: Uri?, context: Context): TasstyResponse<Unit> {
+    suspend fun updateUserProfile(name: String, imageUri: Uri?, context: Context): TasstyResponse<ProfileDto> {
         return safeApiCall {
             userApiService.updateUserProfile(
                 name = name.toPart(),
@@ -35,6 +37,10 @@ class UserNetworkDataSource@Inject constructor(
 
     suspend fun getUserAddress(): TasstyResponse<List<UserAddressDto>>{
         return safeApiCall { userApiService.getUserAddress()}
+    }
+
+    suspend fun createUserAddress(request: AddressRequest): TasstyResponse<Unit>{
+        return safeApiCall { userApiService.createUserAddress(request)}
     }
 
     suspend fun createSetupIntent(): TasstyResponse<SetupDto> {

@@ -8,13 +8,13 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RestaurantApiService {
-    @GET("restaurants/recommendations/home")
+    @GET("restaurants/recommendations")
     suspend fun getRecommendedRestaurants(
     ): BaseResponse<List<RestaurantDto>>
 
-    @GET("restaurants/recommendations/{id}")
+    @GET("restaurants/recommendations/{categoryId}")
     suspend fun getRecommendedCategoryRestaurants(
-        @Path("id") id: String
+        @Path("categoryId") categoryId: String
     ): BaseResponse<List<RestaurantDto>>
 
     @GET("restaurants/nearby")

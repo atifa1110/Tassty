@@ -2,112 +2,322 @@
     <string name="app_name">Tassty</string>
     <string name="skip">Skip</string>
     <string name="next">Next</string>
-    <string name="email_error">username not found!</string>
-    <string name="password_error">password incorrect!</string>
-    <string name="hide_password">Hide Password</string>
-    <string name="show_password">Show Password</string>
-    <string name="text_error">Name is Empty</string>
-    <string name="register">Register</string>
-    <string name="create_an_account_to_start_looking_for_the">Create an account to start looking the food you like.</string>
-    <string name="create_your_new_account">Create your new account.</string>
-    <string name="full_name">Full Name</string>
-    <string name="email_address">Email address</string>
-    <string name="password">Password</string>
-    <string name="forgot_password">Forgot password?</string>
-    <string name="already_have_an_account">Already have an account?</string>
-    <string name="login">" Login"</string>
-    <string name="don_t_have_an_account">Don\'t have an account?</string>
-    <string name="verify">Verify</string>
-    <string name="didnt_get_the_email">Didn’t get the email? check your spam / resend</string>
-    <string name="resend_code">Resend code</string>
-    <string name="send_otp">Send OTP</string>
-    <string name="reset_password">Reset Password.</string>
-    <string name="order_reset_password">In order to reset your password, we need to verify your identity.</string>
-    <string name="change_password">Change Password</string>
-    <string name="password_contain_combination">Password must contain a combination of uppercase, lowercase letters, and numbers.</string>
-    <string name="choose_your_preferred_cuisine">Choose your \npreferred cuisine.</string>
-    <string name="dozens_food">We have dozens of different types of food!</string>
-    <string name="search_for_something">Search for something..</string>
-    <string name="submit">Submit</string>
-    <string name="primary_delivery_location">This will be your primary delivery location</string>
-    <string name="setup_your_delivery_location">Setup your \ndelivery location.</string>
-    <string name="primary_address">Primary address</string>
-    <string name="set_location">Set location</string>
-    <string name="save_address">Save Address</string>
-    <string name="address_name">Address name</string>
-    <string name="landmark_detail">Landmark detail</string>
-    <string name="enter_landmark">Enter landmark</string>
-    <string name="login_to_your_account">Login to \nyour account.</string>
-    <string name="welcome_back_you_ve_been_missed">Welcome back you\'ve been missed!</string>
-    <string name="more_address_from_profile_menu">You can change your preferred cuisine or add \nmore address from profile menu.</string>
-    <string name="setup_account_completed">Setup account\ncompleted.</string>
-    <string name="explore_home">Explore Home</string>
-    <string name="search_delicacies">Search delicacies..</string>
-    <string name="rating">rating</string>
-    <string name="restaurant">Restaurant</string>
-    <string name="verified">Verified</string>
-    <string name="closed">Closed!</string>
-    <string name="places_notes_here">Place your notes here</string>
-    <string name="save_to_collection">Save to collection</string>
-    <string name="save_your_favorite">You can save your favorite menu by adding \nthem to a new or existing collection.</string>
-    <string name="save">Save</string>
-    <string name="create">Create</string>
-    <string name="add_collection_name">Add collection name</string>
-    <string name="sorry">Sorry!</string>
-    <string name="apply">Apply</string>
-    <string name="sort_restos_by">Sort restos by</string>
-    <string name="filter_search">Filter search</string>
-    <string name="menus_you_ve_searched">Menus you’ve searched</string>
-    <string name="restos_you_ve_searched">Restos you’ve searched</string>
-    <string name="popular_searches">Popular searches</string>
-    <string name="your_search_history">Your search history</string>
-    <string name="explore_by_cuisine">Explore by cuisine</string>
-    <string name="refresh">Refresh</string>
-    <string name="recommended_restaurant">Recommended Restaurant</string>
-    <string name="restos_that_have">Restos that have %1$s</string>
-    <string name="see_all">See All</string>
-    <string name="continue_payment">Continue payment</string>
-    <string name="logout">Logout</string>
-    <string name="update">Update</string>
-    <string name="confirm">Confirm</string>
-    <string name="try_different">Try a different search keyword or look for your \nfavorite menu at other restaurants.</string>
-    <string name="we_couldn_t_find_this_menu">We couldn’t find \nthis menu.</string>
-    <string name="we_cant_cancel_your_order">We can’t cancel your order after you have \nmade the payment process.</string>
-    <string name="please_double_check_your_order">Please double check your order.</string>
-    <string name="start_exploring_your_favorite">Start exploring your favorite restaurants and add \ndelicious meals to your cart.</string>
-    <string name="your_cart_is_empty">Your cart is empty!</string>
-    <string name="exclamation">!</string>
-    <string name="dummy_restaurant_name">Indah Cafe</string>
-    <string name="dummy_location">Gerunung Lombok Tengah, Praya</string>
-    <string name="resto_ratings">Resto ratings</string>
+    <string name="get_started">Get Started</string>
+    <string name="our_unmatched_delicacies">Our unmatched delicacies.</string>
+    <string name="the_finest_restaurants">The finest restaurants eagerly await your order, showcasing their top menus just for you!</string>
+    <string name="ordering_food_in_a_simple_way">Ordering food in a simple way.</string>
+    <string name="effortlessly_placing">Effortlessly placing an uncomplicated food order to enjoy a hassle-free dining experience</string>
+    <string name="be_a_member_of_tassty">Be a member of Tassty and get more benefits such as extra daily discount!</string>
+    <string name="get_extra_daily_vouchers">Get extra daily vouchers.</string>
+
+    <!-- Bottom Navigation Section-->
     <string name="logo">Logo</string>
     <string name="tasstty">Tasstty!</string>
     <string name="home">Home</string>
     <string name="chat">Chat</string>
     <string name="profile">Profile</string>
     <string name="cart">Cart</string>
-    <string name="add_to_cart">Add to cart</string>
-    <string name="update_cart">Update Cart</string>
+
+    <!-- Login Section-->
+    <string name="login_to_your_account">Login to \nyour account.</string>
+    <string name="welcome_back_you_ve_been_missed">Welcome back you\'ve been missed!</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="login_failed">Login Failed!</string>
+    <string name="email_error">username not found!</string>
+    <string name="password_error">password incorrect!</string>
+    <string name="hide_password">Hide Password</string>
+    <string name="show_password">Show Password</string>
+    <string name="text_error">Name is Empty</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="email_cannot_be_empty">Email cannot be empty</string>
+    <string name="email_is_not_valid">Email is not valid</string>
+    <string name="password_cannot_be_empty">Password cannot be empty</string>
+    <string name="password_too_short">Password must be at least %1$d characters</string>
+    <string name="confirm_password_cannot_be_empty">Confirm password cannot be empty</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="ok">OK</string>
     <string name="enter_password">Enter password</string>
     <string name="enter_your_name">Enter your name</string>
+
+    <!-- Register Section -->
+    <string name="register">Register</string>
+    <string name="create_an_account_to_start_looking_for_the">Create an account to start looking the food you like.</string>
+    <string name="create_your_new_account">Create your new account.</string>
+    <string name="full_name">Full Name</string>
+    <string name="error_field_empty">%1$s cannot be empty</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="login">Login</string>
+    <string name="register_success">Register Success!</string>
+    <string name="congratulation_youre_now_registered">Congratulation, you\'re now registered.\nNext, you need to setup your account first.</string>
+    <string name="continue_setup_account">Continue setup account</string>
+    <string name="register_failed">Register Failed!</string>
     <string name="new_password">New Password</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="lanjutkan">Lanjut</string>
-    <string name="batal">Batal</string>
-    <string name="orderanmu">Orderanmu masih nungguin nih. \nSelesaikan pembayarannya sekarang, yuk?</string>
-    <string name="select">Select</string>
-    <string name="download">Download Receipt</string>
-    <string name="promo_vouchers"><![CDATA[Promo & Vouchers.]]></string>
-    <string name="available">Available</string>
-    <string name="password_changed">Password Changed!</string>
+
+    <!-- Rest password Section-->
     <string name="back_to_login">Back to Login</string>
     <string name="success_reset_password">Your password has been successfully reset. \nYou can now log in with your new password.</string>
-    <string name="belum_ada_percakapan">Belum ada percakapan. Mulai chat dengan drivermu!</string>
+    <string name="password_changed">Password Changed!</string>
+    <string name="send_otp">Send OTP</string>
+    <string name="reset_password">Reset Password.</string>
+    <string name="order_reset_password">In order to reset your password, we need to verify your identity.</string>
+    <string name="change_password">Change Password</string>
+    <string name="password_contain_combination">Password must contain a combination of uppercase, lowercase letters, and numbers.</string>
+
+    <!-- Verification Section -->
+    <string name="verify">Verify</string>
+    <string name="didnt_get_the_email">Didn’t get the email? check your spam / resend</string>
+    <string name="resend_code">Resend code</string>
+    <string name="resend_code_timer">Resend code in %1$ds</string>
+    <string name="reset_password_title">Reset Your Password.</string>
+    <string name="reset_password_instruction">Please enter the security code sent to: </string>
+    <string name="reset_password_recovery">to recover your account.</string>
+    <string name="verify_email_title">Verify Your Email.</string>
+    <string name="verify_email_instruction">Please enter the 6-digit activation code sent to: </string>
+    <string name="verify_email_recovery">to activate your account.</string>
+
+    <!-- Setup Menu Section-->
+    <string name="choose_your_preferred_cuisine">Choose your \npreferred cuisine.</string>
+    <string name="dozens_food">We have dozens of different types of food!</string>
+    <string name="search_for_something">Search for something..</string>
+    <string name="submit">Submit</string>
+
+    <!-- Setup Location Section -->
+    <string name="primary_delivery_location">This will be your primary delivery location</string>
+    <string name="setup_your_delivery_location">Setup your \ndelivery location.</string>
+    <string name="primary_address">Primary address</string>
+    <string name="set_location">Set location</string>
+    <string name="enter_name">Enter name</string>
+    <string name="save_address">Save Address</string>
+    <string name="address_name">Address name</string>
+    <string name="landmark_detail">Landmark detail</string>
+    <string name="enter_landmark">Enter landmark</string>
+
+    <!-- Complete Setup Section-->
+    <string name="more_address_from_profile_menu">You can change your preferred cuisine or add \nmore address from profile menu.</string>
+    <string name="setup_account_completed">Setup account\ncompleted.</string>
+    <string name="explore_home">Explore Home</string>
+
+    <!-- Home Section -->
+    <string name="search_delicacies">Search delicacies..</string>
+    <string name="special_offers">Special Offers</string>
+    <string name="recommended_for_you">Recommended for you</string>
+    <string name="restos_nearby_you">Restos Nearby you</string>
+    <string name="recommended_restaurant">Recommended Restaurant</string>
+    <string name="today_deals">Today\'s deals</string>
+    <string name="see_all">See All</string>
+    <string name="suggested_menu_for_you">Suggested menu for you!</string>
+    <string name="happy_sunday">Happy Sunday</string>
+    <string name="get_50_discount">Get 50%+ Discount!</string>
+    <string name="get_now">Get Now</string>
+    <string name="refresh">Refresh</string>
+
+    <!-- Modal Section -->
+    <string name="save">Save</string>
+    <string name="create">Create</string>
+    <string name="filter_search">Filter search</string>
+    <string name="select">Select</string>
+    <string name="save_to_collection">Save to collection</string>
+    <string name="save_your_favorite">You can save your favorite menu by adding \nthem to a new or existing collection.</string>
+    <string name="create_collection">Create collection</string>
+    <string name="collection_name">Collection Name</string>
+    <string name="enter_collection_name">Enter collection name</string>
+    <string name="edit_collection">Edit collection</string>
+    <string name="sure_want_delete_this_collection">Are you sure want to \ndelete this collection?</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="menu_collection_updated">Your menu collection preference \nhas been updated.</string>
+    <string name="check_collection">Check collection</string>
+    <string name="confirm">Confirm</string>
+    <string name="operational_hour">Operational Hour</string>
+    <string name="sort_restos_by">Sort restos by</string>
+    <string name="price_range">Price range</string>
+    <string name="resto_ratings">Resto ratings</string>
+    <string name="modes">Modes</string>
+    <string name="cuisines_type">Cuisines type</string>
+    <string name="apply">Apply</string>
+    <string name="remove_this_menu">Remove this menu?</string>
+    <string name="add_menu_back_from_details">You can add this menu back from the \nrestaurant details page</string>
+    <string name="remove">Remove</string>
+    <string name="edit_notes">Edit Notes</string>
+    <string name="write_your_notes_here">Write your notes here…</string>
+    <string name="notes">Notes</string>
+    <string name="update">Update</string>
+    <string name="addresses">Addresses</string>
+    <string name="you_can_add_a_new_delivery_address_on_the">You can add a new delivery address on the \n</string>
+    <string name="my_addresses">"My Addresses "</string>
+    <string name="page">page</string>
+    <string name="go_to_my_addresses">Go to My Addresses</string>
+    <string name="choose_delivery_location">Choose delivery location</string>
+    <string name="choose_promo">Choose promo</string>
+    <string name="vouchers">Vouchers</string>
+    <string name="please_double_check_your_order">Please double check your order.</string>
+    <string name="we_cant_cancel_your_order">We can’t cancel your order after you have \nmade the payment process.</string>
+    <string name="recheck">Recheck</string>
+    <string name="continue_payment">Continue payment</string>
+    <string name="sorry_we_re_closed">Sorry, we’re closed.</string>
+    <string name="you_can_check_out_other_restaurant">You can check out other restaurant options \nfor an amazing dining experience!</string>
+    <string name="i_understand">I understand</string>
+    <string name="select_date">Select Date</string>
+    <string name="sure_want_to_delete_message">Are you sure want to \ndelete this message?</string>
+    <string name="sure_want_to_logout">Are you sure want \nto logout?</string>
+    <string name="delete_all_your_notifications">Delete all your\n notifications?</string>
+    <string name="your_order_has_arrived">Your order has arrived!</string>
+    <string name="exit">Exit</string>
+    <string name="rating_driver">Rating Driver</string>
+    <string name="right_on_time_we_delivered_your_order_in">"Right on time, we delivered your order in "</string>
+    <string name="min">%1$d min</string>
+    <string name="sure_want_to_delete_all_carts">Are you sure want to \ndelete all your carts?</string>
+    <string name="a_new_card_has_been_added">A new card has \nbeen added!</string>
+    <string name="now_use_card">You can now use this card for faster \ncheckout on all your orders.</string>
+    <string name="exclamation">!</string>
     <string name="reset">Reset</string>
-    <string name="how_much_rating">How much rating would you like to give?</string>
-    <string name="edit">Edit</string>
+    <string name="securely_processing">Securely processing…</string>
+    <string name="sending">Sending..</string>
+    <string name="start_exploring_your_favorite">Start exploring your favorite restaurants and add \ndelicious meals to your cart.</string>
+
+    <!-- Detail Restaurant Section -->
+    <string name="saved_to_my_favorite_restaurants">Saved to my favorite restaurants!</string>
+    <string name="your_favorite_preference_has_been_updated">Your favorite preference has been updated.</string>
+    <string name="what_people_say_about_us">What people say about us</string>
+    <string name="our_recommended_menu">Our recommended menu</string>
+    <string name="all_menus">All menus</string>
+    <string name="our_best_seller">Our best seller</string>
+    <string name="rating">rating</string>
+    <string name="restaurant">Restaurant</string>
+    <string name="verified">Verified</string>
+    <string name="see_reviews">See reviews</string>
+    <string name="see_location">See location</string>
+    <string name="see_schedule">See schedule</string>
+    <string name="closed">Closed!</string>
+
+    <!-- Detail Menu Section -->
+    <string name="sorry">Sorry!</string>
+    <string name="this_menu_is_out_stock">This menu is out stock</string>
+
+    <!-- Recommended Section -->
+    <string name="our_recommended_places_to_explore">Our recommended places to explore!</string>
+
+    <!-- Add Card Section -->
+    <string name="terms_and_conditions">Terms and conditions</string>
+    <string name="by_adding_a_card_you_ve_read_agree_to_our_terms_and_conditions"><![CDATA[By adding a card, you\'ve read & agree to our \nTerms and conditions]]></string>
+    <string name="add_card">Add card</string>
+    <string name="your_card_details_will_be_saved_securely">Your card details will be saved securely</string>
+    <string name="card_holder_s_name">Card holder\'s name</string>
+    <string name="card_number">Card number</string>
+    <string name="enter_number">Enter number</string>
+    <string name="expiry_date">Expiry Date</string>
+    <string name="mm_yy">MM/YY</string>
+    <string name="cvv">CVV</string>
+    <string name="card_color">Card color</string>
+
+    <!-- Detail Voucher Section -->
     <string name="use_voucher">Use Voucher</string>
-    <string name="accept">Accept</string>
+
+    <!-- Favorite Section -->
+    <string name="favorite_restaurants">Favorite Restaurants</string>
+
+    <!-- Voucher Section -->
+    <string name="promo_vouchers"><![CDATA[Promo & Vouchers.]]></string>
+    <string name="available">Available</string>
+
+    <!-- Edit Profile Section -->
+    <string name="phone">Phone</string>
+    <string name="enter_your_phone_number">Enter your phone number</string>
+    <string name="edit_your_profile">Edit your \nprofile.</string>
+
+    <!-- Profile Section -->
+    <string name="my_orders">My orders</string>
+    <string name="subscriptions">Subscriptions</string>
+    <string name="collections">Collections</string>
+    <string name="payment_methods">Payment Methods</string>
+    <string name="invite_friends">Invite Friends</string>
+    <string name="help_center">Help Center</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="gold_member">Gold Member</string>
+    <string name="point_number">2,230</string>
+    <string name="points">points</string>
+    <string name="logout">Logout</string>
+
+    <!-- Review Section -->
+    <string name="order">"Order: "</string>
+    <string name="reviews">%1$d+ reviews</string>
+
+    <!-- MessageSection -->
+    <string name="this_chat_is_closed_because_the_order_is_completed">This chat is closed because the order is completed.</string>
+    <string name="belum_ada_percakapan">Belum ada percakapan. Mulai chat dengan drivermu!</string>
+
+    <!-- Order Section -->
+    <string name="search_for_your_order">Search for your order..</string>
+    <string name="my_orders_header">My orders.</string>
+    <string name="processed">Processed</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
     <string name="reorder">Reorder</string>
-    <string name="get_started">Get Started</string>
+    <string name="see_order">See order</string>
+    <string name="delivery_details">Delivery details</string>
+    <string name="restaurant_location">Restaurant location</string>
+    <string name="delivery_location">Delivery location</string>
+    <string name="delivery_detail">Delivery detail</string>
+
+    <!-- Payment Section -->
+    <string name="total_order">Total Order</string>
+    <string name="payment">Payment</string>
+    <string name="card">Card</string>
+    <string name="payment_successful">Payment Successful</string>
+    <string name="your_order_has_been_placed_successfully_and_now_being_prepared_by_the_restaurant">Your order has been placed successfully and \nnow being prepared by the restaurant.</string>
+
+    <!-- Rating Section -->
+    <string name="by_submitting_you_agree_to_our_terms_and_conditions">By submitting, you agree to our Terms and conditions</string>
+    <string name="how_much_rating">How much rating would you like to give?</string>
+    <string name="what_did_you_love_about_the_food">What did you love about the food?</string>
+    <string name="star">Star %1$d</string>
+
+    <!-- Search Section -->
+    <string name="search">Search</string>
+    <string name="your_search_history">Your search history</string>
+    <string name="menus_you_ve_searched">Menus you’ve searched</string>
+    <string name="restos_you_ve_searched">Restos you’ve searched</string>
+    <string name="popular_searches">Popular searches</string>
+    <string name="explore_by_cuisine">Explore by cuisine</string>
+    <string name="try_different">Try a different search keyword or look for your \nfavorite menu at other restaurants.</string>
+    <string name="we_couldn_t_find_this_menu">We couldn’t find \nthis menu.</string>
+
+    <!-- Terms Section -->
+    <string name="accept">Accept</string>
+    <string name="terms_of_service_license_warranty_agreement"><![CDATA[Terms of Service,\nLicense & Warranty\nAgreement.]]></string>
+    <string name="last_update">"Last update : "</string>
+    <string name="mar_2026">15 Mar 2026</string>
+    <string name="your_agreement">1. Your Agreement</string>
+    <string name="privacy_data"><![CDATA[2. Privacy & Data]]></string>
+    <string name="orders_payments"><![CDATA[3. Orders & Payments]]></string>
+    <string name="delivery_services">4. Delivery Services</string>
+    <string name="your_agreement_detail">By accessing or using the Tassty! app, you agree to be bound by these terms. We provide a platform that connects you with local restaurants and delivery partners. You are responsible for maintaining the confidentiality of your account and for all activities that occur under your password.</string>
+    <string name="privacy_data_detail">Your privacy is our priority. Tassty! collects location data to provide accurate delivery tracking and personalized restaurant recommendations. We use secure encryption to protect your payment information and will never share your personal data with third parties without your explicit consent, except as required to fulfill your orders.</string>
+    <string name="order_payment_detail">All orders placed through the app are subject to restaurant availability. Once an order is confirmed, the payment will be processed via your selected method. Cancellations and refunds are handled according to our specific refund policy, which varies depending on whether the restaurant has started preparing your meal.</string>
+    <string name="delivery_services_detail">Delivery times provided are estimates. While we strive to deliver your food as quickly as possible, factors like traffic, weather, and restaurant preparation time may affect the final delivery window. You agree to provide a safe and accessible delivery location for our partners.</string>
+
+    <!-- Cart Section -->
+    <string name="your_cart_is_empty">Your cart is empty!</string>
+    <string name="add_to_cart">Add to cart</string>
+    <string name="update_cart">Update Cart</string>
+    <string name="load">Load…</string>
+    <string name="change_location">Change location</string>
+    <string name="payment_detail">Payment detail</string>
+    <string name="select_delivery_location">Select delivery location</string>
+    <string name="search_founds">Search founds</string>
+    <string name="select_all">select all</string>
+    <string name="total_price">Total price</string>
+    <string name="delivery_order_fee"><![CDATA[Delivery & Order fee]]></string>
+    <string name="discounts">Discounts</string>
+    <string name="apply_promo_before_order">Apply promo before order</string>
+    <string name="header_vouchers">%1$s Vouchers</string>
+    <string name="address_name_placeholder">e.g. Rafiq\'s Home</string>
+    <string name="landmark_placeholder">e.g. The most corner house</string>
+    <string name="my_addressess">My addresses.</string>
+    <string name="restaurants_nearby">Restaurants nearby</string>
+    <string name="my_payment_methods">My payment methods.</string>
+
 </resources>

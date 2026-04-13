@@ -90,14 +90,13 @@ class EditProfileViewModel @Inject constructor(
                     is TasstyResponse.Error -> {
                         _internalState.update { it.copy(isLoading = false) }
                         _events.emit(EditProfileEvent.ShowMessage(result.meta.message))
-                        _events.emit(EditProfileEvent.NavigateBack)
                     }
                     is TasstyResponse.Loading -> {
                         _internalState.update { it.copy(isLoading = true) }
                     }
                     is TasstyResponse.Success -> {
                         _internalState.update { it.copy(isLoading = false) }
-                        _events.emit(EditProfileEvent.ShowMessage(result.data?:""))
+                        _events.emit(EditProfileEvent.NavigateBack)
                     }
                 }
             }

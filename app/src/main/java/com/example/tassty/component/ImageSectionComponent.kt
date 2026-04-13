@@ -1,18 +1,21 @@
 package com.example.tassty.component
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,13 +28,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -39,6 +44,7 @@ import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.size.Size
@@ -52,15 +58,16 @@ import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.ui.theme.Blue100
 import com.example.tassty.ui.theme.Blue500
+import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral30
+import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral70
-import com.example.tassty.ui.theme.Orange100
-import com.example.tassty.ui.theme.Orange200
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink500
+import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
 fun <T : DisplayStatus> StatusItemImage(
@@ -356,11 +363,14 @@ fun ImageIcon(
 }
 
 @Composable
-fun LogoImage(){
+fun LogoImage() {
+    val configuration = LocalConfiguration.current
+    val logoSize = if (configuration.screenHeightDp < 600) 48.dp else 62.dp
+
     ImageIcon(
         image = R.drawable.logo,
         contentDescription = "App Logo",
-        modifier = Modifier.size(62.dp)
+        modifier = Modifier.size(logoSize)
     )
 }
 
@@ -547,5 +557,59 @@ fun CircleModalIcon(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun CustomMarkerDesign(
+    @DrawableRes iconRes: Int,
+    borderColor: Color = Pink500
+) {
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.wrapContentSize()
+    ) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .background(borderColor, CircleShape)
+                .padding(3.dp)
+                .background(LocalCustomColors.current.background, CircleShape)
+                .padding(2.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircleImageIcon(
+                boxColor = Color.Transparent,
+                iconSize = 24.dp,
+                icon = iconRes,
+                iconColor = borderColor,
+                contentDescription = ""
+            )
+        }
+
+        Canvas(
+            modifier = Modifier
+                .size(16.dp, 12.dp)
+                .offset(y = (-2).dp)
+        ) {
+            val path = Path().apply {
+                moveTo(0f, 0f)
+                lineTo(size.width, 0f)
+                lineTo(size.width / 2f, size.height)
+                close()
+            }
+            drawPath(path, color = borderColor)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun Preview(){
+    TasstyTheme (darkTheme = true){
+        CustomMarkerDesign(
+            R.drawable.store
+        )
     }
 }

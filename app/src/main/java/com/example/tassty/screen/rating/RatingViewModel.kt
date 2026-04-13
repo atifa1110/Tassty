@@ -79,8 +79,12 @@ class RatingViewModel @Inject constructor(
         val state = _uiState.value
         val tags = state.selectedTags.joinToString(",")
 
-        createReviewMenuUseCase(orderId = state.orderId, orderItemId = state.orderItemId,
-            rating = state.rating,tags, comment = state.feedback).collect { result->
+        createReviewMenuUseCase(
+            orderItemId = state.orderItemId,
+            rating = state.rating,
+            tags = tags,
+            comment = state.feedback
+        ).collect { result->
             when(result){
                 is TasstyResponse.Error -> {
                     _uiState.update { it.copy(isLoading = false) }

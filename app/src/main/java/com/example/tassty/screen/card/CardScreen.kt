@@ -14,12 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CardUserUiModel
+import com.example.tassty.R
 import com.example.tassty.util.cardList
 import com.example.tassty.component.AddTopAppBar
 import com.example.tassty.component.Divider32
@@ -64,15 +66,20 @@ fun CardContent(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             item {
                 HeaderTitleScreen(
-                    modifier = Modifier.fillMaxWidth().padding(start = 24.dp,
-                        end = 24.dp, top = 24.dp
-                    ),
-                    title = "My payment methods."
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 24.dp,
+                            end = 24.dp, top = 24.dp
+                        ),
+                    title = stringResource(R.string.my_payment_methods)
                 )
                 Divider32()
             }
@@ -87,7 +94,7 @@ fun LazyListScope.cardSection(
 ) {
     val cardItems = resource.data.orEmpty()
     when{
-        resource.isLoading || resource.data != null-> {
+        resource.isLoading-> {
             items(3){
                 Column(Modifier.padding(horizontal = 24.dp)) {
                     ShimmerDebitPaymentCard()

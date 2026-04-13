@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -93,19 +94,24 @@ fun OrderListCard(
     onCardClick:(OrderUiModel) -> Unit
 ){
     val (text, color) = when (order.status) {
-        OrderStatus.PLACED ,OrderStatus.PENDING,OrderStatus.PREPARING,OrderStatus.ON_DELIVERY -> "Processed" to LocalCustomColors.current.processStatus
-        OrderStatus.COMPLETED -> "Completed" to LocalCustomColors.current.completedStatus
-        OrderStatus.CANCELLED -> "Cancelled" to LocalCustomColors.current.cancelStatus
+        OrderStatus.PLACED ,OrderStatus.PENDING,OrderStatus.PREPARING,OrderStatus.ON_DELIVERY -> stringResource(
+            R.string.processed
+        ) to LocalCustomColors.current.processStatus
+        OrderStatus.COMPLETED -> stringResource(R.string.completed) to LocalCustomColors.current.completedStatus
+        OrderStatus.CANCELLED -> stringResource(R.string.cancelled) to LocalCustomColors.current.cancelStatus
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = {onCardClick(order)}),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = { onCardClick(order) }),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth().padding(10.dp)
+                .fillMaxWidth()
+                .padding(10.dp)
                 .height(IntrinsicSize.Max),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -180,7 +186,7 @@ fun OrderListCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Reorder",
+                        text = stringResource(R.string.reorder),
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Orange500
                     )
@@ -220,7 +226,8 @@ fun OrderCard(
         )
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.Top
@@ -301,7 +308,7 @@ fun OrderCard(
                     modifier = Modifier.clickable { onCardClick(order) }
                 ) {
                     Text(
-                        text = "See order",
+                        text = stringResource(R.string.see_order),
                         style = LocalCustomTypography.current.bodySmallMedium,
                         color = Orange500
                     )
@@ -329,13 +336,16 @@ fun OrderMenuListCard(
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             CommonImage(
                 imageUrl = item.imageUrl,
                 name = item.menuName,
-                modifier = Modifier.size(80.dp)
+                modifier = Modifier
+                    .size(80.dp)
                     .clip(CircleShape)
             )
 
@@ -359,7 +369,9 @@ fun DeliveryDriverCard(
             border = BorderStroke(1.dp, Neutral40)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -466,9 +478,11 @@ fun DeliveryDriverCard(
                             iconSize = 16.dp,
                             iconColor = Neutral10,
                             contentDescription = "top app bar icon",
-                            modifier = Modifier.size(36.dp).clickable(
-                                onClick = { onMessageClick() }
-                            )
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clickable(
+                                    onClick = { onMessageClick() }
+                                )
                         )
                     }
                 }
@@ -483,11 +497,13 @@ fun DeliveryLocationCard(
     userAddress: UserAddressUiModel
 ){
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Delivery details",
+            text = stringResource(R.string.delivery_details),
             style = LocalCustomTypography.current.h5Bold,
             color = LocalCustomColors.current.headerText
         )
@@ -512,10 +528,12 @@ fun LocationCard(
         border = BorderStroke(1.dp,Neutral40)
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             LocationItem(
-                label = "Restaurant location",
+                label = stringResource(R.string.restaurant_location),
                 address = restaurant.locationDetail.fullAddress,
                 icon = Icons.Default.Store,
                 iconBgColor = Orange100,
@@ -525,7 +543,7 @@ fun LocationCard(
             DashedDivider(modifier = Modifier.padding(vertical = 16.dp))
 
             LocationItem(
-                label = "Delivery location",
+                label = stringResource(R.string.delivery_location),
                 address = userAddress.fullAddress,
                 icon = Icons.Default.LocationOn,
                 iconBgColor = Pink100,
@@ -584,12 +602,13 @@ fun DeliveryDetailCard(
     order: List<OrderItemUiModel>
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Delivery detail",
+            text = stringResource(R.string.delivery_detail),
             style = LocalCustomTypography.current.h5Bold,
             color = LocalCustomColors.current.headerText
         )
@@ -665,12 +684,15 @@ fun OrderStatusCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(status.containerColor).border(1.dp, status.strokeColor, RoundedCornerShape(16.dp))
+                .background(status.containerColor)
+                .border(1.dp, status.strokeColor, RoundedCornerShape(16.dp))
                 .padding(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier.size(32.dp).background(status.iconColor, CircleShape),
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(status.iconColor, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -712,7 +734,9 @@ fun OrderStepProgress(
     val currentIndex = statuses.indexOf(currentStatus)
 
     Row(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -781,7 +805,9 @@ fun DashedLine(
         label = "phase"
     )
 
-    Canvas(modifier = modifier.height(2.dp).padding(horizontal = 4.dp)) {
+    Canvas(modifier = modifier
+        .height(2.dp)
+        .padding(horizontal = 4.dp)) {
         drawLine(
             color = lineColor,
             start = Offset(0f, size.height / 2),

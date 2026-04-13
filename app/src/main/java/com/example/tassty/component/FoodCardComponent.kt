@@ -167,7 +167,9 @@ fun FoodListCard(
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             FoodRoundImageWithOverlays(
@@ -196,7 +198,9 @@ fun FoodWideListCard(
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -224,7 +228,9 @@ fun FoodCollectionCard(
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             FoodRoundImageWithOverlays(
@@ -247,7 +253,9 @@ fun OptionCard(
     onClick: () -> Unit
 ){
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(enabled = enabled) {
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled) {
                 onClick()
             }
             .padding(vertical = 16.dp),
@@ -278,7 +286,9 @@ fun OptionCard(
                             checkedColor = Orange500,
                             uncheckedColor = Neutral40
                         ),
-                        modifier = Modifier.padding(0.dp).size(24.dp)
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .size(24.dp)
                     )
                 } else {
                     RadioButton(
@@ -289,7 +299,9 @@ fun OptionCard(
                             selectedColor = Orange500,
                             unselectedColor = Neutral40
                         ),
-                        modifier = Modifier.padding(0.dp).size(24.dp)
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .size(24.dp)
                     )
                 }
             }
@@ -332,7 +344,7 @@ fun MenuStockStatus(
             )
             Spacer(Modifier.width(2.dp))
             Text(
-                text = "This menu is out stock",
+                text = stringResource(R.string.this_menu_is_out_stock),
                 color = Neutral10,
                 style = LocalCustomTypography.current.bodySmallMedium
             )
@@ -340,11 +352,13 @@ fun MenuStockStatus(
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun FoodGridCardPreview() {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -359,10 +373,12 @@ fun FoodGridCardPreview() {
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun FoodListCardPreview() {
-    Column (modifier = Modifier.fillMaxWidth().padding(24.dp),
+    Column (modifier = Modifier
+        .fillMaxWidth()
+        .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         FoodListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})

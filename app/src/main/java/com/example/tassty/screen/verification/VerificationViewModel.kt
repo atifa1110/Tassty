@@ -58,14 +58,19 @@ class VerificationViewModel @Inject constructor(
             isTextEditable = !state.isLoading,
             isButtonEnabled = state.otp.length == 6 && currentEmail.isNotEmpty() && !state.isLoading,
             errorMessage = state.errorMessage,
-            title = args.type.title,
-            instruction = args.type.instruction,
-            recoveryInfo = args.type.recoveryInfo
+            title = args.type.titleRes,
+            instruction = args.type.instructionRes,
+            recoveryInfo = args.type.recoveryInfoRes
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = VerificationUiState()
+        initialValue = VerificationUiState(
+            title = args.type.titleRes,
+            instruction = args.type.instructionRes,
+            recoveryInfo = args.type.recoveryInfoRes,
+            timerSeconds = args.resendDelay
+        )
     )
 
     private val _event = MutableSharedFlow<VerificationEvent>()

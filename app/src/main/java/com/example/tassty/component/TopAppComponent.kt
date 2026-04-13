@@ -141,7 +141,8 @@ fun AuthTopAppBar(){
         LogoImage()
         TopBarButton(
             icon = R.drawable.question_mark_circle,
-            boxColor = Neutral20, iconColor = Neutral100
+            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+            iconColor = LocalCustomColors.current.iconFocused
         ) { }
     }
 }
@@ -229,7 +230,7 @@ fun CollectionDetailTopAppBar(
 ) {
     CustomBarSpaceBetween(modifier = modifier) {
         TopBarButton(icon = R.drawable.arrow_left,
-            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+            boxColor = iconBackground,
             iconColor = LocalCustomColors.current.iconFocused
         ) { onBackClick() }
 
@@ -406,7 +407,7 @@ fun MapSearchTopAppBar(
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
-    CustomBarSpaceBetween {
+    CustomBarSpaceBetween(modifier = Modifier.statusBarsPadding()) {
         TopBarButton(icon = R.drawable.arrow_left,
             boxColor = LocalCustomColors.current.topBarBackgroundColor, iconColor = LocalCustomColors.current.iconFocused
         ) { onBackClick() }
@@ -419,17 +420,19 @@ fun MapSearchTopAppBar(
 
 @Composable
 fun FavoriteTopAppBar(
+    modifier: Modifier = Modifier,
+    iconBackground: Color,
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit
 ) {
-    CustomBarSpaceBetween (modifier = Modifier.statusBarsPadding()){
+    CustomBarSpaceBetween (modifier = modifier){
         TopBarButton(icon = R.drawable.arrow_left,
-            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+            boxColor = iconBackground,
             iconColor = LocalCustomColors.current.iconFocused
         ) { onBackClick() }
 
         TopBarButton(icon = Icons.Default.Search,
-            boxColor = LocalCustomColors.current.topBarBackgroundColor,
+            boxColor = iconBackground,
             iconColor = LocalCustomColors.current.iconFocused
         ) { onSearchClick() }
     }

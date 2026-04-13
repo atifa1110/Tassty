@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Devices.PIXEL
+import androidx.compose.ui.tooling.preview.Devices.PIXEL_8
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,6 +45,7 @@ import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmailSection
 import com.example.tassty.component.FailedIcon
 import com.example.tassty.component.HeaderTitleScreen
+import com.example.tassty.component.HeaderTitleSubtitleScreen
 import com.example.tassty.component.LoadingButtonComponent
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.PasswordSection
@@ -56,6 +61,7 @@ import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.UiText
 
 @Composable
 fun RegisterRoute(
@@ -91,9 +97,9 @@ fun RegisterRoute(
         onDismiss = { }
     ) {
         ModalStatusContent(
-            title = "Register Success!",
-            subtitle = "Congratulation, you're now registered.\nNext, you need to setup your account first.",
-            buttonTitle ="Continue setup account",
+            title = stringResource(R.string.register_success),
+            subtitle = stringResource(R.string.congratulation_youre_now_registered),
+            buttonTitle = stringResource(R.string.continue_setup_account),
             onClick = viewModel::onConfirmVerification
         ){
             SuccessIcon()
@@ -106,9 +112,9 @@ fun RegisterRoute(
         onDismiss = {}
     ) {
         ModalStatusContent(
-            title = "Register Failed!",
+            title = stringResource(R.string.register_failed),
             subtitle = uiState.bottomSheetMessage?:"",
-            buttonTitle = "OK",
+            buttonTitle = stringResource(R.string.ok),
             onClick = viewModel::onDismissBottomSheet
         ) {
             FailedIcon()
@@ -132,35 +138,22 @@ fun RegisterScreen(
             AuthTopAppBar()
         },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier.padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(10.dp))
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                HeaderTitleScreen(
-                    title = stringResource(R.string.create_your_new_account),
-                )
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.create_an_account_to_start_looking_for_the),
-                    style = LocalCustomTypography.current.bodyMediumRegular,
-                    color = LocalCustomColors.current.text
-                )
-            }
-
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                HeaderTitleSubtitleScreen(
+                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+                    title = R.string.create_your_new_account,
+                    subtitle = R.string.create_an_account_to_start_looking_for_the
+                )
                 TextSection(
                     label = stringResource(R.string.full_name),
                     text = uiState.fullName,
-                    textError = uiState.fullNameError?:"",
+                    textError = uiState.fullNameError,
                     leadingIcon = R.drawable.person,
                     onTextChanged = onTextChange,
                     enabled = uiState.isTextEditable
@@ -168,14 +161,14 @@ fun RegisterScreen(
 
                 EmailSection (
                     email = uiState.email,
-                    emailError = uiState.emailError?:"",
+                    emailError = uiState.emailError,
                     onEmailChanged = onEmailChange,
                     enabled = uiState.isTextEditable
                 )
 
                 PasswordSection(
                     password = uiState.password,
-                    passwordError = uiState.passwordError?:"",
+                    passwordError = uiState.passwordError,
                     onPasswordChanged = onPasswordChange,
                     enabled = uiState.isTextEditable
                 )
@@ -185,12 +178,8 @@ fun RegisterScreen(
                     onCheckedChange = onTermCheckChange,
                     onTermsClick = {}
                 )
-            }
-
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-            ) {
                 LoadingButtonComponent (
+                    modifier = Modifier.padding(top = 8.dp),
                     enabled = uiState.isButtonEnabled,
                     labelResId = R.string.register,
                     onClick = onRegisterClick,
@@ -199,97 +188,76 @@ fun RegisterScreen(
             }
 
             Divider32()
-
             ButtonLogin()
 
-            CustomTwoColorText(
-                fullText = "Already have an account? Login",
-                highlightText = "Login",
-                highlightColor = Orange500,
-                textColor = Neutral60,
-                normalStyle = LocalCustomTypography.current.bodyMediumRegular,
-                onHighlightClick = onLoginClick
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.already_have_an_account),
+                    style = LocalCustomTypography.current.bodyMediumRegular,
+                    color = Neutral60
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = stringResource(R.string.login),
+                    color = Orange500,
+                    style = LocalCustomTypography.current.bodyMediumMedium,
+                    modifier = Modifier.clickable(
+                        onClick = onLoginClick,
+                        enabled = uiState.isTextEditable
+                    )
+                )
+            }
         }
     }
 }
 
-//@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun RegisterLightPreview() {
-//    TasstyTheme(darkTheme = false) {
-//        RegisterScreen(
-//            uiState = RegisterUiState(
-//                isLoading = false,
-//                email = "",
-//                password = "123456",
-//                fullName = "",
-//                fullNameError = "",
-//                isTermSelected = true
-//            ),
-//            onTermCheckChange = {},
-//            onRegisterClick = {},
-//            onLoginClick = {},
-//            onTextChange = {},
-//            onEmailChange = {},
-//            onPasswordChange = {}
-//        )
-//
-//        CustomBottomSheet(
-//            visible = false,
-//            dismissOnClickOutside = false,
-//            onDismiss = { }
-//        ) {
-//            ModalStatusContent(
-//                title = "Register Success!",
-//                subtitle = "Congratulation, you're now registered.\nNext, you need to setup your account first.",
-//                buttonTitle ="Continue setup account",
-//                onClick = {}
-//            ){
-//                SuccessIcon()
-//            }
-//        }
-//    }
-//}
-//
-//@Preview(
-//    showBackground = true,
-//    uiMode = Configuration.UI_MODE_NIGHT_YES,
-//    name = "Dark Mode",
-//)
-//@Composable
-//fun RegisterDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        RegisterScreen(
-//            uiState = RegisterUiState(
-//                isLoading = true,
-//                email = "atifafiorenza24@gmail.com",
-//                password = "123456",
-//                fullName = "",
-//                isTermSelected = true,
-//                isButtonEnabled = false,
-//            ),
-//            onTermCheckChange = {},
-//            onRegisterClick = {},
-//            onLoginClick = {},
-//            onTextChange = {},
-//            onEmailChange = {},
-//            onPasswordChange = {}
-//        )
-//
-//        CustomBottomSheet(
-//            visible = false,
-//            dismissOnClickOutside = false,
-//            onDismiss = { }
-//        ) {
-//            ModalStatusContent(
-//                title = "Register Success!",
-//                subtitle = "Congratulation, you're now registered.\nNext, you need to setup your account first.",
-//                buttonTitle ="Continue setup account",
-//                onClick = {}
-//            ){
-//                SuccessIcon()
-//            }
-//        }
-//    }
-//}
+//@Preview(name = "Small Phone", device = "spec:width=320dp,height=480dp")
+//@Preview(name = "Normal Phone", device = PIXEL_8)
+//@Preview(name = "Foldable/Tablet", device = Devices.FOLDABLE)
+@Composable
+fun RegisterLightPreview() {
+    TasstyTheme(darkTheme = false) {
+        RegisterScreen(
+            uiState = RegisterUiState(
+                email = "",
+                password = "123456",
+                fullName = "",
+                fullNameError = UiText.StringResource(R.string.error_field_empty,"Name"),
+            ),
+            onTermCheckChange = {},
+            onRegisterClick = {},
+            onLoginClick = {},
+            onTextChange = {},
+            onEmailChange = {},
+            onPasswordChange = {}
+        )
+    }
+}
+
+
+//@Preview(name = "Small Phone", device = "spec:width=320dp,height=480dp")
+//@Preview(name = "Normal Phone", device = PIXEL_8)
+//@Preview(name = "Foldable/Tablet", device = Devices.FOLDABLE)
+@Composable
+fun RegisterDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        RegisterScreen(
+            uiState = RegisterUiState(
+                email = "atifafiorenza24@gmail.com",
+                password = "123456",
+                fullName = "",
+                isButtonEnabled = false,
+            ),
+            onTermCheckChange = {},
+            onRegisterClick = {},
+            onLoginClick = {},
+            onTextChange = {},
+            onEmailChange = {},
+            onPasswordChange = {}
+        )
+    }
+}

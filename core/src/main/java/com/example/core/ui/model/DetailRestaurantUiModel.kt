@@ -1,14 +1,32 @@
 package com.example.core.ui.model
 
+import android.os.Parcelable
 import com.example.core.domain.model.RestaurantStatus
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.parcelize.Parcelize
 
-// UI Model
+@Parcelize
+data class RestaurantLocationArgs(
+    val id: String,
+    val imageUrl: String,
+    val name: String,
+    val city: String,
+    val fullAddress: String,
+    val location: LatLng,
+    val todayHour : String,
+    val isVerified: Boolean,
+    val rating: String,
+    val totalReviews: String
+) : Parcelable
+
 data class DetailRestaurantUiModel(
     val id: String,
     val name: String,
     val imageUrl: String,
     val city: String,
     val fullAddress: String,
+    val lat: Double,
+    val lng: Double,
     val categories: String,
     val rank: Int,
     val rating: Double,
@@ -19,21 +37,12 @@ data class DetailRestaurantUiModel(
     val operationalDay: List<OperationalDayUi>,
     val deliveryCost: Int,
     val statusResult: RestaurantStatusResult,
-    val isWishlist: Boolean
-){
-    val todayHour = operationalDay.firstOrNull { it.isToday }?.hours
-
-    val formatDistance: String
-        get() = distance.let { meters ->
-            if (meters < 1000) "$meters m" else "%.1f km".format(meters / 1000.0)
-        }
-
-    val formatRating: String
-        get() = rating.toString()
-
-    val formatReviewCount: String
-        get() = if(totalReviews <= 200) "$totalReviews" else "(200+)"
-}
+    val todayHour : String,
+    val formatDistance: String,
+    val formatRating: String,
+    val formatReviewCount: String,
+    val isWishlist: Boolean,
+)
 
 data class OperationalDayUi(
     val day: String,

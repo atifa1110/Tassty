@@ -12,14 +12,15 @@ interface ReviewRepository {
         rating: Int,
         comment: String
     ): Flow<TasstyResponse<String>>
+
     fun createReviewMenu(
-        orderId: String,
         orderItemId: String,
         rating: Int,
         tags: String,
         comment: String
     ): Flow<TasstyResponse<String>>
 
-    fun getReview(restaurantId: String): Flow<TasstyResponse<List<Review>>>
-    fun getReviewDetail(restaurantId: String): Flow<TasstyResponse<RestaurantReview>>
+    fun getReview(restId: String): Flow<TasstyResponse<List<Review>>>
+
+    fun getReviewDetail(restId: String): Flow<TasstyResponse<RestaurantReview>>
 }

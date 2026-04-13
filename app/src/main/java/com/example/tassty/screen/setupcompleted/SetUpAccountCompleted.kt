@@ -51,6 +51,7 @@ fun SetUpCompletedScreen (
         onExploreButtonClick = viewModel::updateLogin
     )
 }
+
 @Composable
 fun SetUpCompletedContent (
     onExploreButtonClick: () -> Unit
@@ -65,14 +66,12 @@ fun SetUpCompletedContent (
                 modifier = Modifier.fillMaxWidth()
             ) {
                 HorizontalDivider(color = LocalCustomColors.current.divider)
-                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 32.dp)) {
-                    ButtonComponent(
-                        modifier= Modifier.fillMaxWidth(),
-                        enabled = true,
-                        labelResId = R.string.explore_home,
-                        onClick = onExploreButtonClick
-                    )
-                }
+                ButtonComponent(
+                    modifier= Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp),
+                    enabled = true,
+                    labelResId = R.string.explore_home,
+                    onClick = onExploreButtonClick
+                )
             }
         }
     ) { innerPadding ->
@@ -113,17 +112,17 @@ fun SetUpCompletedContent (
 
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun SetupCompletedLightPreview() {
-//    TasstyTheme(darkTheme = false) {
-//        SetUpCompletedContent { }
-//    }
-//}
-//
+@Composable
+fun SetupCompletedLightPreview() {
+    TasstyTheme(darkTheme = false) {
+        SetUpCompletedContent { }
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun SetupCompletedDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        SetUpCompletedContent { }
-//    }
-//}
+@Composable
+fun SetupCompletedDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        SetUpCompletedContent { }
+    }
+}

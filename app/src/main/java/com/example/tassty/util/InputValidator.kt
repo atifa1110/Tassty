@@ -1,23 +1,25 @@
 package com.example.tassty.util
 
 import android.util.Patterns
+import androidx.compose.ui.res.stringResource
+import com.example.tassty.R
 
 object InputValidator {
 
-    fun validateEmail(email: String): String? {
+    fun validateEmail(email: String): Int? {
         return if (email.isBlank()) {
-            "Email cannot be empty"
+            R.string.email_cannot_be_empty
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            "Email is not valid"
+            R.string.email_is_not_valid
         } else null
     }
 
-    fun validatePassword(password: String, minLength: Int = 8): String? {
-        return if (password.isBlank()) {
-            "Password cannot be empty"
-        } else if (password.length < minLength) {
-            "Password must be at least $minLength characters"
-        } else null
+    fun validatePassword(password: String, minLength: Int = 8): Int? {
+        return when {
+            password.isBlank() -> R.string.password_cannot_be_empty
+            password.length < minLength -> R.string.password_too_short
+            else -> null
+        }
     }
 
 //    fun validatePassword(password: String, minLength: Int = 8): String? {
@@ -35,14 +37,14 @@ object InputValidator {
 //        }
 //    }
 
-    fun validateNotEmpty(value: String, fieldName: String): String? {
-        return if (value.isBlank()) "$fieldName cannot be empty" else null
+    fun validateNotEmpty(value: String): Int? {
+        return if (value.isBlank()) R.string.error_field_empty else null
     }
 
-    fun validateConfirmPassword(password: String, confirm: String): String? {
+    fun validateConfirmPassword(password: String, confirm: String): Int? {
         return when {
-            confirm.isBlank() -> "Confirm password cannot be empty"
-            password != confirm -> "Passwords do not match"
+            confirm.isBlank() -> R.string.confirm_password_cannot_be_empty
+            password != confirm -> R.string.passwords_do_not_match
             else -> null
         }
     }

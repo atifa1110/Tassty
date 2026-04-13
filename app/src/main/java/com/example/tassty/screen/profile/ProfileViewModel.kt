@@ -6,7 +6,6 @@ import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.GetAuthStatusUseCase
 import com.example.core.domain.usecase.LogoutUseCase
 import com.example.core.domain.usecase.UpdateAuthStatusUseCase
-import com.example.tassty.screen.home.HomeUiEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,6 +56,7 @@ class ProfileViewModel @Inject constructor(
             when(result){
                 is TasstyResponse.Error -> {
                     _uiEffect.send(ProfileEffect.ShowMessage(result.meta.message))
+                    _uiEffect.send(ProfileEffect.NavigateToLogin)
                 }
                 is TasstyResponse.Loading -> {}
                 is TasstyResponse.Success-> {

@@ -1,12 +1,12 @@
 package com.example.core.data.source.remote.api
 
-import android.provider.ContactsContract
 import com.example.core.data.model.CardUserDto
+import com.example.core.data.model.ProfileDto
 import com.example.core.data.model.SetupDto
 import com.example.core.data.model.UserAddressDto
 import com.example.core.data.model.UserDto
 import com.example.core.data.source.remote.network.BaseResponse
-import com.example.core.data.source.remote.request.ProfileRequest
+import com.example.core.data.source.remote.request.AddressRequest
 import com.example.core.data.source.remote.request.SaveCardRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -14,7 +14,6 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Part
 
 interface UserApiService {
@@ -28,11 +27,16 @@ interface UserApiService {
     suspend fun updateUserProfile(
         @Part("name") name: RequestBody,
         @Part profileImage: MultipartBody.Part?
-    ): BaseResponse<Unit>
+    ): BaseResponse<ProfileDto>
 
     @GET("users/addresses")
     suspend fun getUserAddress(
     ): BaseResponse<List<UserAddressDto>>
+
+    @POST("users/addresses")
+    suspend fun createUserAddress(
+        @Body request: AddressRequest
+    ): BaseResponse<Unit>
 
     @POST("users/stripe/setup-intent")
     suspend fun createSetupIntent(

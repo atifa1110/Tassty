@@ -20,29 +20,4 @@ class MenuNetworkDataSource @Inject constructor(
             service.getSuggestedMenus()
         }
     }
-
-    suspend fun getSearchMenus() : TasstyResponse<List<MenuDto>>{
-        return safeApiCall {
-            service.getSearchMenus()
-        }
-    }
-
-    suspend fun getDetailBestSellerMenu(id: String) : TasstyResponse<List<MenuDto>>{
-        return safeApiCall {
-            service.getDetailBestSellerMenu(id)
-        }
-    }
-
-    suspend fun getDetailRecommendedMenu(id: String) : TasstyResponse<List<MenuDto>>{
-        return safeApiCall {
-            service.getDetailRecommendedMenu(id)
-        }
-    }
-
-    suspend fun getDetailAllMenu(id: String) : TasstyResponse<List<MenuDto>>{
-        return safeApiCall {
-            service.getDetailAllMenu(id)
-        }
-    }
-
 }

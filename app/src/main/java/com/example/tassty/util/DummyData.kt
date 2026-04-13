@@ -2,7 +2,6 @@ package com.example.tassty.util
 
 import androidx.compose.runtime.Composable
 import com.example.core.domain.model.AddressType
-import com.example.core.domain.model.Collection
 import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.Menu
 import com.example.core.domain.model.MenuStatus
@@ -47,6 +46,9 @@ import com.example.core.ui.model.UserAddressUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
 import com.example.tassty.model.ChipFilterOption
+import com.google.android.gms.maps.model.LatLng
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import org.threeten.bp.LocalDate
 
 val restaurants = listOf(
@@ -89,6 +91,7 @@ val restaurants = listOf(
 )
 
 val restaurantUiModel = restaurants.map { it.toUiModel() }
+val rest = restaurantUiModel.toImmutableList()
 
 val menus = listOf(
     Menu(
@@ -124,7 +127,7 @@ val menus = listOf(
 )
 val menuItem = menus[0].toUiModel()
 val menusItem = menus.map { it.toUiModel() }
-
+val men = menusItem.toImmutableList()
 val restaurantMenuUiModel = listOf(
     RestaurantMenuUiModel(
         restaurant = restaurantUiModel[0],
@@ -148,7 +151,7 @@ val operationalHours = listOf(
 
 val restaurantDetailItem = DetailRestaurantUiModel(
     id = "1",
-    name = "Indah Cafe",
+    name = "Kopi Kenangan - Depok Town Square",
     imageUrl = "https://i.gojekapi.com/darkroom/.../restaurant-image_1756676534805.jpg?auto=format",
     fullAddress = "jalan kemang no 5",
     city = "",
@@ -158,10 +161,16 @@ val restaurantDetailItem = DetailRestaurantUiModel(
     rating = 4.9,
     totalReviews = 1250,
     deliveryTime = "10-20 min",
-    operationalDay = operationalHours.map { it.toUiModel("Friday") },
+    operationalDay = emptyList(),
     isVerified = true,
     deliveryCost = 10000,
-    statusResult = RestaurantStatusResult(RestaurantStatus.OPEN,"Open at 08.00 today"),
+    statusResult = RestaurantStatusResult(RestaurantStatus.CLOSED,"Open at 08.00 today"),
+    todayHour = "08.00 - 10.00",
+    formatDistance = "",
+    formatRating = "4.8",
+    formatReviewCount = "(+200)",
+    lat = 0.0,
+    lng = 0.0,
     isWishlist = false
 )
 
@@ -216,6 +225,8 @@ val categories = listOf(
     CategoryUiModel("CAT-002","Bakso & Soto","https://i.gojekapi.com/darkroom/butler-id/v2/images/images/6a7bbb72-962e-4dff-ba2e-caf3cdac39f7_cuisine-soto_bakso_sop-banner.png?auto=format",isSelected = false),
 )
 
+val cat: ImmutableList<CategoryUiModel> = categories.toImmutableList()
+
 val collectionUiModel = listOf(
     CollectionUiModel(
         id = "Collection-1",
@@ -225,13 +236,15 @@ val collectionUiModel = listOf(
         isSelected = false
     ),
     CollectionUiModel(
-        id = "Collection-1",
+        id = "Collection-2",
         title = "Daily Menus",
         imageUrl = "",
         menuCount = 1,
         isSelected = true
     )
 )
+
+val col: ImmutableList<CollectionUiModel> = collectionUiModel.toImmutableList()
 
 val voucherUiModel = listOf(
     VoucherUiModel(
@@ -342,6 +355,7 @@ val voucherUiModel = listOf(
     )
 )
 
+val voc : ImmutableList<VoucherUiModel> = voucherUiModel.toImmutableList()
 
 val collectionMenuUiModel = listOf(
     CollectionMenuUiModel(
@@ -442,6 +456,7 @@ val addresses = listOf(
         fullAddress = "Jl. Sudirman No. 12, Kebayoran Baru, Jakarta Selatan",
         latitude = -6.2235,
         longitude = 106.8119,
+        location = LatLng(-6.2235,106.8119,),
         addressName = "Apartment 12A",
         landmarkDetail = "Near the fountain, 3rd floor, unit 12A",
         addressType = AddressType.PERSONAL,
@@ -453,6 +468,7 @@ val addresses = listOf(
         fullAddress = "Komplek Perkantoran Mega Kuningan Blok E, Jakarta Selatan",
         latitude = -6.2274,
         longitude = 106.8378,
+        location = LatLng(-6.2274,106.8378),
         addressName = "Head Office - Sinar Raya",
         landmarkDetail = "Gedung Tower 3, lantai 15 (samping lift B)",
         addressType = AddressType.PERSONAL,

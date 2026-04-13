@@ -12,8 +12,8 @@ import org.threeten.bp.LocalDate
 
 fun ReviewDto.toDomain() = Review(
     id = this.id,
-    username = this.username,
-    profileImage = this.profileImage,
+    username = this.username?:"Guest",
+    profileImage = this.profileImage?:"Guest",
     rating = this.rating,
     comment = this.comment,
     date = this.createdAt.substring(0, 10).let { LocalDate.parse(it) },

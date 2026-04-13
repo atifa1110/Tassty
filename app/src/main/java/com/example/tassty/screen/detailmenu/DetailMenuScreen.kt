@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
@@ -183,15 +184,16 @@ fun DetailMenuContent(
         label = "iconBackground"
     )
 
+    val background  = LocalCustomColors.current.background
     val isLoading = uiState.detail.isLoading
     val errorMessage = uiState.detail.errorMessage
     val menu = uiState.detail.data
 
     Scaffold(
-        containerColor = LocalCustomColors.current.background,
+        containerColor = background,
         snackbarHost = { SnackbarHost(snackHostState) },
         bottomBar = {
-            if(uiState.canShowBottomBar) {
+            //if(uiState.canShowBottomBar) {
                 ProductAddToCartBottomBar(
                     buttonText = uiState.addToCartButtonText,
                     quantity = uiState.quantity,
@@ -200,7 +202,7 @@ fun DetailMenuContent(
                     onDecreaseQuantity = { onDecreaseQuantity(uiState.quantity) },
                     onAddToCartClick = onAddToCartClick
                 )
-            }
+            //}
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -250,19 +252,23 @@ fun DetailMenuContent(
 
                             RestaurantMenuInfoCard(
                                 rating = menu.restaurant.formatRating,
-                                review = menu.restaurant.formatReviewCount,
+                                review = "(200+)",
                                 deliveryCost = menu.formatDeliveryCost,
                                 deliveryTime = menu.restaurant.deliveryTime,
                                 onReviewsClick = {}
                             )
                         }
-                        Divider32()
                     }
 
-                    itemsIndexed(menu.optionGroups) { index, group ->
-                        ChoiceSection(group = group, onOptionToggle = onOptionToggle)
-                        if (index < menu.optionGroups.lastIndex) {
+                    if(menu.optionGroups.isNotEmpty()) {
+                        item {
                             Divider32()
+                        }
+                        itemsIndexed(menu.optionGroups) { index, group ->
+                            ChoiceSection(group = group, onOptionToggle = onOptionToggle)
+                            if (index < menu.optionGroups.lastIndex) {
+                                Divider32()
+                            }
                         }
                     }
 
@@ -281,9 +287,9 @@ fun DetailMenuContent(
                 DetailMenuTopAppBar(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .background(
-                            Neutral10.copy(alpha = appBarAlpha)
-                        ),
+                        .drawBehind {
+                            drawRect(color = background.copy(alpha = appBarAlpha))
+                        },
                     iconBackground = iconBackground,
                     isFavorite = menu.isWishlist,
                     onBackClick = onNavigateBack,
@@ -492,47 +498,47 @@ fun ProductAddToCartBottomBar(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun DetailMenuLightPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme {
-//        DetailMenuContent(
-//            uiState = DetailMenuUiState(
-//                isEditMode = true,
-//                addToCartButtonText = "Update Order",
-//                detail = Resource(data = menuDetailItem)
-//            ),
-//            snackHostState = snackHostState,
-//            onOptionToggle = { _, _ -> },
-//            onIncrementQuantity = {},
-//            onDecreaseQuantity = {},
-//            onNotesChange = {},
-//            onAddToCartClick = {},
-//            onShowCollectionSheet = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun DetailMenuLightPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme {
+        DetailMenuContent(
+            uiState = DetailMenuUiState(
+                isEditMode = true,
+                addToCartButtonText = "Update Order",
+                detail = Resource(data = menuDetailItem)
+            ),
+            snackHostState = snackHostState,
+            onOptionToggle = { _, _ -> },
+            onIncrementQuantity = {},
+            onDecreaseQuantity = {},
+            onNotesChange = {},
+            onAddToCartClick = {},
+            onShowCollectionSheet = {},
+            onNavigateBack = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun DetailMenuDarkPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme(darkTheme = true) {
-//        DetailMenuContent(
-//            uiState = DetailMenuUiState(
-//                isEditMode = true,
-//                addToCartButtonText = "Update Order",
-//                detail = Resource(data = menuDetailItem)
-//            ),
-//            snackHostState = snackHostState,
-//            onOptionToggle = { _, _ -> },
-//            onIncrementQuantity = {},
-//            onDecreaseQuantity = {},
-//            onNotesChange = {},
-//            onAddToCartClick = {},
-//            onShowCollectionSheet = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun DetailMenuDarkPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme(darkTheme = true) {
+        DetailMenuContent(
+            uiState = DetailMenuUiState(
+                isEditMode = true,
+                addToCartButtonText = "Update Order",
+                detail = Resource(data = menuDetailItem)
+            ),
+            snackHostState = snackHostState,
+            onOptionToggle = { _, _ -> },
+            onIncrementQuantity = {},
+            onDecreaseQuantity = {},
+            onNotesChange = {},
+            onAddToCartClick = {},
+            onShowCollectionSheet = {},
+            onNavigateBack = {}
+        )
+    }
+}

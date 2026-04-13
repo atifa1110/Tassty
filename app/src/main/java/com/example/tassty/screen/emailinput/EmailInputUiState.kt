@@ -1,8 +1,10 @@
 package com.example.tassty.screen.emailinput
 
+import com.example.tassty.util.UiText
+
 data class EmailInputUiState(
     val email: String = "",
-    val emailError: String? = null,
+    val emailError: UiText? = null,
     val isLoading: Boolean = false,
     val isButtonEnabled: Boolean = false,
     val isTextEditable: Boolean = true,
@@ -11,7 +13,7 @@ data class EmailInputUiState(
 
 data class EmailInputInternalState(
     val email: String = "",
-    val emailError: String? = null,
+    val emailError: UiText? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )

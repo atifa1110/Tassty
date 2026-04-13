@@ -2,6 +2,7 @@ package com.example.tassty.screen.orders
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,6 +26,7 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.OrderUiModel
+import com.example.tassty.R
 import com.example.tassty.component.CustomBorderChip
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.DatePickerContent
@@ -115,19 +118,21 @@ fun OrderContent(
     ) { padding ->
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(padding)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 32.dp)
         ) {
             item {
-                Column(modifier = Modifier.fillMaxWidth()
-                        .padding(start = 24.dp, end = 24.dp, top = 24.dp),
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, top = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    HeaderTitleScreen(title = "My orders.")
+                    HeaderTitleScreen(title = stringResource(R.string.my_orders_header))
                     SearchBar(
                         value = "",
                         onValueChange = {},
-                        placeholder = "Search for your order.."
+                        placeholder = stringResource(R.string.search_for_your_order)
                     )
                     ChipOrderFilterSection(
                         options = uiState.filter,
@@ -188,10 +193,6 @@ fun OrderContent(
                     }
                 }
             }
-
-            item{
-                Spacer(Modifier.height(32.dp))
-            }
         }
     }
 }
@@ -217,57 +218,57 @@ fun ChipOrderFilterSection(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun OrderLightPreview() {
-//    AndroidThreeTen.init(LocalContext.current)
-//    val activeFilter = OrderFilterCategory.ALL
-//    val mockFilters = orderFilters.map {
-//        it.copy(isSelected = it.category == activeFilter)
-//    }
-//
-//    val uiState = OrderUiState(
-//        orders = Resource(data = orderList),
-//        filter = mockFilters,
-//        selectedCategory = activeFilter,
-//        isCalendarVisible = false,
-//        startDateSelected = null,
-//        endDateSelected = null
-//    )
-//    TasstyTheme {
-//        OrderContent(
-//            uiState = uiState,
-//            onFilterClick = {},
-//            onCalendarClick = {},
-//            onCardClick = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun OrderLightPreview() {
+    AndroidThreeTen.init(LocalContext.current)
+    val activeFilter = OrderFilterCategory.ALL
+    val mockFilters = orderFilters.map {
+        it.copy(isSelected = it.category == activeFilter)
+    }
+
+    val uiState = OrderUiState(
+        orders = Resource(data = orderList),
+        filter = mockFilters,
+        selectedCategory = activeFilter,
+        isCalendarVisible = false,
+        startDateSelected = null,
+        endDateSelected = null
+    )
+    TasstyTheme {
+        OrderContent(
+            uiState = uiState,
+            onFilterClick = {},
+            onCalendarClick = {},
+            onCardClick = {},
+            onNavigateBack = {}
+        )
+    }
+}
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun OrderDarkPreview() {
-//    AndroidThreeTen.init(LocalContext.current)
-//    val activeFilter = OrderFilterCategory.ALL
-//    val mockFilters = orderFilters.map {
-//        it.copy(isSelected = it.category == activeFilter)
-//    }
-//
-//    val uiState = OrderUiState(
-//        orders = Resource(data = orderList),
-//        filter = mockFilters,
-//        selectedCategory = activeFilter,
-//        isCalendarVisible = false,
-//        startDateSelected = null,
-//        endDateSelected = null
-//    )
-//    TasstyTheme (darkTheme = true){
-//        OrderContent(
-//            uiState = uiState,
-//            onFilterClick = {},
-//            onCalendarClick = {},
-//            onCardClick = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun OrderDarkPreview() {
+    AndroidThreeTen.init(LocalContext.current)
+    val activeFilter = OrderFilterCategory.ALL
+    val mockFilters = orderFilters.map {
+        it.copy(isSelected = it.category == activeFilter)
+    }
+
+    val uiState = OrderUiState(
+        orders = Resource(data = orderList),
+        filter = mockFilters,
+        selectedCategory = activeFilter,
+        isCalendarVisible = false,
+        startDateSelected = null,
+        endDateSelected = null
+    )
+    TasstyTheme (darkTheme = true){
+        OrderContent(
+            uiState = uiState,
+            onFilterClick = {},
+            onCalendarClick = {},
+            onCardClick = {},
+            onNavigateBack = {}
+        )
+    }
+}

@@ -4,7 +4,8 @@ data class Collection(
     val id: String,
     val title: String,
     val imageUrl: String,
-    val menuCount: Int
+    val menuCount: Int,
+    val isSelected: Boolean
 )
 
 data class CollectionRestaurant(

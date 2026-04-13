@@ -1,9 +1,7 @@
 package com.example.tassty.screen.home
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,11 +15,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,8 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,10 +46,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
 import com.example.tassty.component.CategoryCard
@@ -69,9 +59,6 @@ import com.example.tassty.component.RestaurantGridCard
 import com.example.tassty.component.VoucherLargeCard
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Orange900
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -85,34 +72,33 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
-import com.example.tassty.util.categories
 import com.example.tassty.component.CollectionAddContent
-import com.example.tassty.component.CollectionContent
-import com.example.tassty.component.CommonImage
+import com.example.tassty.component.CollectionImmutableContent
 import com.example.tassty.component.CustomBottomSheet
 import com.example.tassty.component.HomeProfile
 import com.example.tassty.component.NearbyMapBox
-import com.example.tassty.component.ProfileImage
 import com.example.tassty.component.SearchBar
 import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerGridMenuListPlaceholder
 import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
 import com.example.tassty.component.ShimmerRestaurantGridCard
 import com.example.tassty.component.ShimmerVoucherLargeCard
+import com.example.tassty.component.SpecialCardOffer
 import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.menusItem
-import com.example.tassty.util.restaurantUiModel
-import com.example.tassty.util.voucherUiModel
+import com.example.tassty.util.cat
+import com.example.tassty.util.men
+import com.example.tassty.util.rest
+import com.example.tassty.util.voc
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun HomeScreen(
@@ -137,6 +123,10 @@ fun HomeScreen(
                         duration = SnackbarDuration.Short
                     )
                 }
+
+                is HomeEffect.NavigateToDetailMenu -> {
+                    onNavigateToDetailMenu(event.id)
+                }
             }
         }
     }
@@ -148,18 +138,18 @@ fun HomeScreen(
         onNavigateToDetail = onNavigateToDetailRest,
         onNavigateToCategory = onNavigateToCategory,
         onNavigateToRecommended = onNavigateToRecommended,
-        onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
-        onNavigateToDetailMenu = onNavigateToDetailMenu,
         onNavigateToVoucher = onNavigateToVoucher,
-        onRefresh = {viewModel.onPullToRefresh()},
-        onFavoriteClicked = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) }
+        onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
+        onCartClick = {viewModel.onEvent(HomeEvent.OnShowDetailMenu(it))},
+        onFavoriteClick = {viewModel.onEvent(HomeEvent.OnFavoriteClick(it))},
+        onRefresh = viewModel::onPullToRefresh
     )
 
     CustomBottomSheet(
         visible = uiState.isCollectionSheetVisible,
         onDismiss = { viewModel.onEvent(HomeEvent.OnDismissCollectionSheet) }
     ) {
-        CollectionContent(
+        CollectionImmutableContent(
             resource = uiState.collectionsResource,
             onCollectionSelected = { id, check ->
                 viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id,check))
@@ -194,9 +184,9 @@ fun HomeContent(
     onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,
     onNavigateToNearbyRestaurant:() -> Unit,
-    onNavigateToDetailMenu:(String) -> Unit,
     onNavigateToVoucher:() -> Unit,
-    onFavoriteClicked: (MenuUiModel) -> Unit
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onCartClick: (String) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
@@ -204,8 +194,7 @@ fun HomeContent(
     val scrollState = rememberLazyListState()
     val isScrolled by remember {
         derivedStateOf {
-            scrollState.firstVisibleItemIndex > 0 ||
-                    scrollState.firstVisibleItemScrollOffset > 100
+            scrollState.firstVisibleItemIndex > 0 || scrollState.firstVisibleItemScrollOffset > 100
         }
     }
 
@@ -236,36 +225,11 @@ fun HomeContent(
                 contentPadding = PaddingValues(bottom = 32.dp)
             ) {
                 item(key = "header_section"){
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .height(screenHeight * 0.5f)
-                            .drawBehind {
-                                drawRect(
-                                    brush = Brush.linearGradient(
-                                        colorStops = arrayOf(
-                                            0.0f to Color(0xFF737373),
-                                            0.57f to Color(0xFF3E3E3E),
-                                            1.0f to Color(0xFF343333)
-                                        ),
-                                        start = Offset(0f, 0f),
-                                        end = Offset(0f, size.height)
-                                    )
-                                )
-                            }
-                        )
-                        Column(modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Spacer(modifier = Modifier.height(80.dp))
-                            HeaderSection(
-                                userName = uiState.userName,
-                                onClick = onNavigateToSearch
-                            )
-                            Spacer(modifier = Modifier.height(24.dp))
-                            BannerSection()
-                        }
-                    }
+                    HeaderSection(
+                        fixedHeight = screenHeight,
+                        userName = uiState.userName,
+                        onClick = onNavigateToSearch
+                    )
                 }
                 item(key = "category_section") {
                     Spacer(Modifier.height(24.dp))
@@ -278,9 +242,8 @@ fun HomeContent(
                 item(key = "recommend_menu_section") {
                     RecommendationSection(
                         resource = uiState.recommendedMenus,
-                        onFavoriteClicked = onFavoriteClicked,
-                        onNavigateToDetailMenu = onNavigateToDetailMenu,
-                        onAddCart = {}
+                        onFavoriteClicked = onFavoriteClick,
+                        onCartClick = onCartClick
                     )
                     Divider32()
                 }
@@ -309,9 +272,8 @@ fun HomeContent(
                 item(key = "suggested_section"){
                     SuggestedMenu(
                         resource = uiState.suggestedMenus,
-                        onFavoriteClicked = onFavoriteClicked,
-                        onAddCart = {},
-                        onNavigateToDetailMenu = onNavigateToDetailMenu
+                        onFavoriteClick = onFavoriteClick,
+                        onCartClick = onCartClick,
                     )
                 }
             }
@@ -322,15 +284,17 @@ fun HomeContent(
                 addressName = uiState.addressName,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .background(
-                        Orange500.copy(alpha = appBarAlpha)
-                    )
+                    .drawBehind {
+                        drawRect(color = Orange500.copy(alpha = appBarAlpha))
+                    }
+
             )
 
             PullToRefreshDefaults.Indicator(
                 state = refreshState,
                 isRefreshing = uiState.isRefreshing,
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
                     .padding(top = 80.dp)
             )
         }
@@ -344,13 +308,10 @@ fun TopAppBarSection(
     addressName: String,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
+    Box(modifier = modifier.fillMaxWidth()
             .padding(vertical = 12.dp, horizontal = 24.dp),
         contentAlignment = Alignment.Center
     ) {
-
         Row(
             modifier = Modifier.align(Alignment.CenterStart),
             verticalAlignment = Alignment.CenterVertically
@@ -384,7 +345,7 @@ fun TopAppBarSection(
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = "Dropdown",
-                        tint = Color.White,
+                        tint = Neutral10,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -403,7 +364,7 @@ fun TopAppBarSection(
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = "Notifications",
-                    tint = Color.White,
+                    tint = Neutral10,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -413,135 +374,77 @@ fun TopAppBarSection(
 
 @Composable
 fun HeaderSection(
+    fixedHeight: Dp,
     userName: String,
     onClick: () -> Unit
 ) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 24.dp)) {
-        Text(
-            text = "Hi $userName,",
-            color = Color.White,
-            style = LocalCustomTypography.current.h2Regular
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(fixedHeight * 0.5f)
+            .drawBehind {
+                drawRect(
+                    brush = Brush.linearGradient(
+                        colorStops = arrayOf(
+                            0.0f to Color(0xFF737373),
+                            0.57f to Color(0xFF3E3E3E),
+                            1.0f to Color(0xFF343333)
+                        ),
+                        start = Offset(0f, 0f),
+                        end = Offset(0f, size.height)
+                    )
+                )
+            }
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = "Good Morning!",
-                color = Color.White,
-                style = LocalCustomTypography.current.h2Bold
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "👋",
-                fontSize = 28.sp
-            )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.height(80.dp))
+            Column(modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 24.dp)) {
+                Text(
+                    text = "Hi $userName,",
+                    color = Neutral10,
+                    style = LocalCustomTypography.current.h2Regular
+                )
+                Text(
+                    text = "Good Morning! 👋",
+                    color = Neutral10,
+                    style = LocalCustomTypography.current.h2Bold
+                )
+                SearchBar(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .clickable(onClick = onClick),
+                    onValueChange = {},
+                    placeholder = stringResource(R.string.search_delicacies),
+                    isTransparentMode = true,
+                    enabled = false
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            BannerSection()
         }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SearchBar(
-            modifier = Modifier.clickable(onClick = onClick),
-            onValueChange = {},
-            placeholder = stringResource(R.string.search_delicacies),
-            isTransparentMode = true,
-            enabled = false
-        )
     }
 }
 
 @Composable
 fun BannerSection() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         HeaderListTitleButton(
-            title= "Special Offers",
+            title = stringResource(R.string.special_offers),
             titleColor = Neutral10,
             onClick = {}
         )
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(174.dp),
-            shape = RoundedCornerShape(20.dp),
-        ) {
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colorStops = arrayOf(
-                            0.0f to Color(0xFFFFCF24),
-                            0.60f to Color(0xFFF07C2A),
-                            0.82f to Color(0xFFD76413)
-                        ),
-                        start = Offset(0f, 0f),
-                        end = Offset(0f, Float.POSITIVE_INFINITY)
-                    )
-                )
-            ) {
-                Column(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .align(Alignment.CenterStart),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            text = "Happy Sunday",
-                            color = Color.White,
-                            style = LocalCustomTypography.current.h2ExtraBold
-                        )
-                        Text(
-                            text = "Get 50%+ Discount!",
-                            color = Color.White,
-                            style = LocalCustomTypography.current.bodyMediumMedium
-                        )
-
-                    }
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(20.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Orange900
-                        )
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(text = "Get Now", color = Neutral10,
-                                style = LocalCustomTypography.current.bodySmallMedium)
-                            Icon(
-                                painter = painterResource(R.drawable.arrow_left_up),
-                                contentDescription = "arrow left up",
-                                tint = Neutral10
-                            )
-                        }
-                    }
-                }
-
-                Image(
-                    painter = painterResource(R.drawable.kiwi),
-                    contentDescription = "Banner Image",
-                    modifier = Modifier
-                        .size(185.dp)
-                        .offset(y = 8.dp)
-                        .zIndex(1f)
-                        .align(Alignment.BottomEnd)
-                )
-            }
-        }
+        SpecialCardOffer()
     }
 }
 
 @Composable
 fun CategorySection(
-    resource: Resource<List<CategoryUiModel>>,
+    resource: Resource<ImmutableList<CategoryUiModel>>,
     onNavigateToCategory:(String,String, String) -> Unit
 ){
     val items = resource.data.orEmpty()
@@ -553,7 +456,9 @@ fun CategorySection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(8){
-                    Spacer(modifier = Modifier.size(50.dp).clip(CircleShape)
+                    Spacer(modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
                         .shimmerLoadingAnimation()
                     )
                 }
@@ -586,10 +491,9 @@ fun CategorySection(
 
 @Composable
 fun RecommendationSection(
-    resource : Resource<List<MenuUiModel>>,
+    resource : Resource<ImmutableList<MenuUiModel>>,
     onFavoriteClicked: (MenuUiModel) -> Unit,
-    onAddCart:(MenuUiModel) -> Unit,
-    onNavigateToDetailMenu:(String) -> Unit,
+    onCartClick: (String) -> Unit
 ) {
     val items = resource.data.orEmpty()
     when {
@@ -603,14 +507,14 @@ fun RecommendationSection(
 
         resource.errorMessage != null || items.isEmpty() -> {
             ErrorListState(
-                title = "Recommended for you",
+                title = stringResource(R.string.recommended_for_you),
                 onRetry = {}
             )
         }
 
         else -> {
             HorizontalTitleButtonSection(
-                title = "Recommended for you",
+                title = stringResource(R.string.recommended_for_you),
                 onClick = {}
             ) {
                 itemsIndexed(
@@ -620,10 +524,7 @@ fun RecommendationSection(
                     FoodGridCard(
                         menu = menu,
                         onFavoriteClick = onFavoriteClicked,
-                        onAddToCart = {
-                            if (menu.customizable) onNavigateToDetailMenu(menu.id)
-                            else onAddCart(menu)
-                        }
+                        onAddToCart = { onCartClick(menu.id) }
                     )
                 }
             }
@@ -633,7 +534,7 @@ fun RecommendationSection(
 
 @Composable
 fun RestaurantNearby(
-    resource: Resource<List<RestaurantUiModel>>,
+    resource: Resource<ImmutableList<RestaurantUiModel>>,
     onNavigateToNearbyRestaurant:() -> Unit,
 ) {
     val items = resource.data.orEmpty()
@@ -642,20 +543,24 @@ fun RestaurantNearby(
         resource.isLoading ->{
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Spacer(
                         modifier = Modifier
-                            .fillMaxWidth(0.4f).clip(RoundedCornerShape(20.dp))
+                            .fillMaxWidth(0.4f)
+                            .clip(RoundedCornerShape(20.dp))
                             .height(14.dp)
                             .shimmerLoadingAnimation()
                     )
 
                     Spacer(
                         modifier = Modifier
-                            .fillMaxWidth(0.4f).clip(RoundedCornerShape(20.dp))
+                            .fillMaxWidth(0.4f)
+                            .clip(RoundedCornerShape(20.dp))
                             .height(14.dp)
                             .shimmerLoadingAnimation()
                     )
@@ -664,7 +569,7 @@ fun RestaurantNearby(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Neutral20
+                        containerColor = LocalCustomColors.current.cardBackground
                     ),
                 ) {
                     Spacer(
@@ -676,19 +581,26 @@ fun RestaurantNearby(
             }
         }
         resource.errorMessage!=null || items.isEmpty() -> {
-            ErrorListState("Resto Nearby you") { }
+            ErrorListState(title = stringResource(R.string.restos_nearby_you)) { }
         }
         else -> {
             Column(modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 HeaderListTitleButton(
-                    title = "Restos Nearby you",
+                    title = stringResource(R.string.restos_nearby_you),
                     titleColor = LocalCustomColors.current.headerText,
                     onClick = onNavigateToNearbyRestaurant,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
                 NearbyMapBox(restaurant = items)
+
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .background(LocalCustomColors.current.cardBackground)
+//                        .height(200.dp)
+//                )
             }
         }
     }
@@ -696,7 +608,7 @@ fun RestaurantNearby(
 
 @Composable
 fun RecommendationRestaurant(
-    resource : Resource<List<RestaurantUiModel>>,
+    resource : Resource<ImmutableList<RestaurantUiModel>>,
     onNavigateToRecommended:() -> Unit,
     onNavigateToDetail: (String) -> Unit,
 ) {
@@ -713,14 +625,14 @@ fun RecommendationRestaurant(
 
         resource.errorMessage!=null || items.isEmpty() -> {
             ErrorListState(
-                title = "Recommended Restaurant",
+                title = stringResource(R.string.recommended_restaurant),
                 onRetry = {}
             )
         }
 
         else ->{
             HorizontalTitleButtonSection(
-                title = "Recommended Restaurant",
+                title = stringResource(R.string.recommended_restaurant),
                 onClick = onNavigateToRecommended
             ) {
                 itemsIndexed(
@@ -741,7 +653,7 @@ fun RecommendationRestaurant(
 
 @Composable
 fun TodayDeal(
-    resource: Resource<List<VoucherUiModel>>,
+    resource: Resource<ImmutableList<VoucherUiModel>>,
     onNavigateToVoucher: () -> Unit
 ){
     val items = resource.data.orEmpty()
@@ -755,17 +667,16 @@ fun TodayDeal(
         }
 
         resource.errorMessage!=null || items.isEmpty() -> {
-            ErrorListState("Today's deals") { }
+            ErrorListState(stringResource(R.string.today_deals)) { }
         }
 
         else ->{
-            Column(modifier = Modifier
-                .fillMaxWidth()
+            Column(modifier = Modifier.fillMaxWidth()
                 .background(LocalCustomColors.current.cardBackground)
                 .padding(vertical = 24.dp)
             ) {
                 HorizontalTitleButtonSection(
-                    title= "Today's deals",
+                    title= stringResource(R.string.today_deals),
                     onClick = onNavigateToVoucher
                 ) {
                     items(items = items, key = {it.id}) {
@@ -779,13 +690,11 @@ fun TodayDeal(
 
 @Composable
 fun SuggestedMenu(
-    resource: Resource<List<MenuUiModel>>,
-    onFavoriteClicked: (MenuUiModel) -> Unit,
-    onAddCart:(MenuUiModel) -> Unit,
-    onNavigateToDetailMenu : (String) -> Unit
+    resource: Resource<ImmutableList<MenuUiModel>>,
+    onFavoriteClick: (MenuUiModel) -> Unit,
+    onCartClick :(String) -> Unit,
 ) {
     val items = resource.data.orEmpty()
-
     when {
         resource.isLoading -> {
             ShimmerGridMenuListPlaceholder()
@@ -793,79 +702,78 @@ fun SuggestedMenu(
 
         resource.errorMessage != null || items.isEmpty() -> {
             ErrorListState(
-                title = "Suggested menu for you!",
+                title = stringResource(R.string.suggested_menu_for_you),
                 onRetry = {}
             )
         }
 
         else -> {
             GridMenuListSection(
-                title = "Suggested menu for you!",
+                title = stringResource(R.string.suggested_menu_for_you),
                 menuItems = items,
-                onFavoriteClick = onFavoriteClicked,
-                onAddToCartClick = onAddCart,
-                onNavigateToDetailMenu = onNavigateToDetailMenu
+                onFavoriteClick = onFavoriteClick,
+                onAddToCartClick = onCartClick
             )
         }
     }
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun HomeLightPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme(darkTheme = false){
-//        HomeContent(
-//            snackHostState = snackHostState,
-//            uiState = HomeUiState(
-//                userName = "Atifa",
-//                addressName = "Guest",
-//                allCategories = Resource(data = categories, isLoading = false),
-//                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-//                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-//                todayVouchers = Resource(data = emptyList(), isLoading = false),
-//                recommendedMenus = Resource(data = menusItem, isLoading = false),
-//                suggestedMenus = Resource(data = menusItem, isLoading = false),
-//            ),
-//            onRefresh = {},
-//            onFavoriteClicked = {},
-//            onNavigateToDetail = {},
-//            onNavigateToSearch = {},
-//            onNavigateToRecommended = {},
-//            onNavigateToCategory = { _, _, _ -> },
-//            onNavigateToNearbyRestaurant = {},
-//            onNavigateToDetailMenu = {},
-//            onNavigateToVoucher = {}
-//        )
-//    }
-//}
+@Composable
+fun HomeLightPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme(darkTheme = false){
+        HomeContent(
+            snackHostState = snackHostState,
+            uiState = HomeUiState(
+                userName = "Atifa",
+                addressName = "Guest",
+                allCategories = Resource(data = cat, isLoading = false),
+                recommendedRestaurants = Resource(data = rest, isLoading = false),
+                nearbyRestaurants = Resource(data = rest, isLoading = false),
+                todayVouchers = Resource(data = voc, isLoading = false),
+                recommendedMenus = Resource(data = men, isLoading = false),
+                suggestedMenus = Resource(data = men, isLoading = true),
+            ),
+            onRefresh = {},
+            onNavigateToDetail = {},
+            onNavigateToCategory = {_,_,_ ->},
+            onNavigateToSearch = {},
+            onNavigateToVoucher = {},
+            onNavigateToNearbyRestaurant = {},
+            onNavigateToRecommended = {},
+            onFavoriteClick = {},
+            onCartClick = {}
+        )
+    }
+}
  
 //@Preview(showBackground = true, name = "DarkMode")
-//@Composable
-//fun HomeDarkPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme(darkTheme = true){
-//        HomeContent(
-//            snackHostState = snackHostState,
-//            uiState = HomeUiState(
-//                userName = "Guest",
-//                addressName = "Guest",
-//                allCategories = Resource(data = categories, isLoading = false),
-//                recommendedRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-//                nearbyRestaurants = Resource(data = restaurantUiModel, isLoading = false),
-//                todayVouchers = Resource(data = voucherUiModel, isLoading = false),
-//                recommendedMenus = Resource(data = menusItem, isLoading = false),
-//                suggestedMenus = Resource(data = menusItem, isLoading = false),
-//            ),
-//            onRefresh = {},
-//            onFavoriteClicked = {},
-//            onNavigateToDetail = {},
-//            onNavigateToSearch = {},
-//            onNavigateToRecommended = {},
-//            onNavigateToCategory = { _, _, _ -> },
-//            onNavigateToNearbyRestaurant = {},
-//            onNavigateToDetailMenu = {},
-//            onNavigateToVoucher = {}
-//        )
-//    }
-//}
+@Composable
+fun HomeDarkPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme(darkTheme = true){
+        HomeContent(
+            snackHostState = snackHostState,
+            uiState = HomeUiState(
+                userName = "Guest",
+                addressName = "Guest",
+                allCategories = Resource(data = cat, isLoading = false),
+                recommendedRestaurants = Resource(data = rest, isLoading = false),
+                nearbyRestaurants = Resource(data = rest, isLoading = false),
+                todayVouchers = Resource(data = voc, isLoading = false),
+                recommendedMenus = Resource(data = men, isLoading = false),
+                suggestedMenus = Resource(data = men, isLoading = true),
+            ),
+            onRefresh = {},
+            onNavigateToDetail = {},
+            onNavigateToCategory = {_,_,_ ->},
+            onNavigateToSearch = {},
+            onNavigateToVoucher = {},
+            onNavigateToNearbyRestaurant = {},
+            onNavigateToRecommended = {},
+            onFavoriteClick = {},
+            onCartClick = {}
+        )
+    }
+}

@@ -10,9 +10,9 @@ interface VoucherApiService{
     suspend fun getTodayVoucher()
     : BaseResponse<List<VoucherDto>>
 
-    @GET("vouchers/restaurant/{id}")
+    @GET("vouchers/restaurant/{restId}")
     suspend fun getRestaurantVoucher(
-        @Path("id") id: String
+        @Path("restId") restId: String
     ): BaseResponse<List<VoucherDto>>
 
     @GET("vouchers/user")

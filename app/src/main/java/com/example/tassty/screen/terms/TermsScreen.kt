@@ -27,6 +27,7 @@ import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.res.stringResource
 
 
 @Composable
@@ -69,19 +70,21 @@ fun TermsContent(
             Spacer(Modifier.height(24.dp))
             HeaderTitleScreen(
                 modifier = Modifier.padding(horizontal = 24.dp),
-                title = "Terms of Service,\nLicense & Warranty\nAgreement."
+                title = stringResource(R.string.terms_of_service_license_warranty_agreement)
             )
 
             Spacer(Modifier.height(12.dp))
 
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)) {
                 Text(
-                    text = "Last update : ",
+                    text = stringResource(R.string.last_update),
                     style = LocalCustomTypography.current.bodyMediumRegular,
                     color = LocalCustomColors.current.text
                 )
                 Text(
-                    text = "15 Mar 2026",
+                    text = stringResource(R.string.mar_2026),
                     style = LocalCustomTypography.current.bodyMediumBold,
                     color = Orange500
                 )
@@ -94,23 +97,23 @@ fun TermsContent(
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 TermsText(
-                    title = "1. Your Agreement",
-                    text = "By accessing or using the Tassty! app, you agree to be bound by these terms. We provide a platform that connects you with local restaurants and delivery partners. You are responsible for maintaining the confidentiality of your account and for all activities that occur under your password."
+                    title = stringResource(R.string.your_agreement),
+                    text = stringResource(R.string.your_agreement_detail)
                 )
 
                 TermsText(
-                    title = "2. Privacy & Data",
-                    text = "Your privacy is our priority. Tassty! collects location data to provide accurate delivery tracking and personalized restaurant recommendations. We use secure encryption to protect your payment information and will never share your personal data with third parties without your explicit consent, except as required to fulfill your orders."
+                    title = stringResource(R.string.privacy_data),
+                    text = stringResource(R.string.privacy_data_detail)
                 )
 
                 TermsText(
-                    title = "3. Orders & Payments",
-                    text = "All orders placed through the app are subject to restaurant availability. Once an order is confirmed, the payment will be processed via your selected method. Cancellations and refunds are handled according to our specific refund policy, which varies depending on whether the restaurant has started preparing your meal."
+                    title = stringResource(R.string.orders_payments),
+                    text = stringResource(R.string.order_payment_detail)
                 )
 
                 TermsText(
-                    title = "4. Delivery Services",
-                    text = "Delivery times provided are estimates. While we strive to deliver your food as quickly as possible, factors like traffic, weather, and restaurant preparation time may affect the final delivery window. You agree to provide a safe and accessible delivery location for our partners."
+                    title = stringResource(R.string.delivery_services),
+                    text = stringResource(R.string.delivery_services_detail)
                 )
             }
         }
@@ -138,17 +141,17 @@ fun TermsText(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun TermsLightPreview() {
-//    TasstyTheme{
-//        TermsContent {  }
-//    }
-//}
-//
+@Composable
+fun TermsLightPreview() {
+    TasstyTheme{
+        TermsContent {  }
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun TermsDarkPreview() {
-//    TasstyTheme(darkTheme = true){
-//        TermsContent {  }
-//    }
-//}
+@Composable
+fun TermsDarkPreview() {
+    TasstyTheme(darkTheme = true){
+        TermsContent {  }
+    }
+}

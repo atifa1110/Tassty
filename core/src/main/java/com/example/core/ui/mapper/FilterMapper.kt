@@ -30,4 +30,5 @@ object FilterIconKeys {
 }
 
 enum class FilterCategory { SORT, PRICE, RATING, PROMO, MODE, CUISINE }
+
 enum class OrderFilterCategory { ALL, ONGOING, COMPLETED }

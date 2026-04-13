@@ -114,6 +114,7 @@ class SetUpLocationViewModel @Inject constructor(
                     id = "",
                     latitude = state.selectedLatLng?.latitude ?: 0.0,
                     longitude = state.selectedLatLng?.longitude ?: 0.0,
+                    location = state.selectedLatLng?: LatLng(0.0,0.0),
                     addressName = state.tempAddressName,
                     landmarkDetail = state.tempLandmark,
                     fullAddress = state.tempFullAddress,

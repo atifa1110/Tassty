@@ -8,6 +8,7 @@ import com.example.core.domain.usecase.RegisterEmailPasswordUseCase
 import com.example.core.domain.usecase.UpdateAuthStatusUseCase
 import com.example.tassty.screen.login.LoginUiState
 import com.example.tassty.util.InputValidator
+import com.example.tassty.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,12 +81,18 @@ class RegisterViewModel @Inject constructor(
 
     fun onRegister() {
         val state = uiState.value
-        val emailError = InputValidator.validateEmail(state.email)
-        val passwordError = InputValidator.validatePassword(state.password)
-        val fullNameError = InputValidator.validateNotEmpty(state.fullName,"Name")
+        val emailErrorRes = InputValidator.validateEmail(state.email)
+        val passwordErrorRes = InputValidator.validatePassword(state.password)
+        val nameErrorRes = InputValidator.validateNotEmpty(state.fullName)
 
-        if (emailError != null || passwordError != null  || fullNameError != null) {
-            _internalState.update { it.copy(emailError = emailError, passwordError = passwordError, fullNameError = fullNameError) }
+        if (emailErrorRes != null || passwordErrorRes != null  || nameErrorRes != null) {
+            _internalState.update {
+                it.copy(
+                    emailError = emailErrorRes?.let { res -> UiText.StringResource(res) },
+                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res) },
+                    fullNameError = nameErrorRes?.let { res-> UiText.StringResource(resId = res,"Name") }
+                )
+            }
             return
         }
 
@@ -100,14 +107,14 @@ class RegisterViewModel @Inject constructor(
                             if (serverMessage.contains("email", ignoreCase = true)) {
                                 state.copy(
                                     isLoading = false,
-                                    emailError = serverMessage,
+                                    emailError = UiText.DynamicString(serverMessage),
                                     isBottomFailedVisible = false
                                 )
                             }
                             else if (serverMessage.contains("password", ignoreCase = true)) {
                                 state.copy(
                                     isLoading = false,
-                                    passwordError = serverMessage,
+                                    passwordError = UiText.DynamicString(serverMessage),
                                     isBottomFailedVisible = false
                                 )
                             }

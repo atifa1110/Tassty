@@ -9,9 +9,9 @@ lifecycleRuntimeKtx = "2.9.3"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 coil = "2.4.0"
-play-services-maps = "19.2.0"
+play-services-maps = "18.2.0"
 play-services-location = "21.3.0"
-maps-compose = "2.11.2"
+maps-compose = "4.3.3"
 compose = "1.9.2"
 lifecycle = "2.8.4"
 threetenabp = "1.4.9"
@@ -44,6 +44,10 @@ firebase-bom = "32.7.0"
 stream-push-firebase = "1.3.3"
 google-services = "4.4.4"
 canhub = "4.5.0"
+kotlinxImmutable = "0.3.7"
+maps-utils = "2.3.0"
+supabase = "3.0.3"
+ktor = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -123,6 +127,20 @@ stream-chat-push-firebase = { group = "io.getstream", name = "stream-android-pus
 stream-push-delegate = { group = "io.getstream", name = "stream-android-push-delegate", version.ref = "stream-push-firebase" }
 
 canhub-cropper = { group = "com.github.CanHub", name = "Android-Image-Cropper", version.ref = "canhub" }
+kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxImmutable" }
+
+maps-utils = { group = "com.google.maps.android", name = "android-maps-utils", version.ref = "maps-utils" }
+
+# Tambahkan ini di [libraries]
+supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
+supabase-bom = { group = "io.github.jan-tennert.supabase", name = "bom", version.ref = "supabase" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-plugins = { group = "io.ktor", name = "ktor-client-plugins", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

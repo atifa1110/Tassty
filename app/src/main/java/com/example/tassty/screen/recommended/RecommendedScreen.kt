@@ -87,7 +87,9 @@ fun RecommendedRestaurantContent(
         }
     ) { padding->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
         ) {
             item(key = "search_header") {
                 Spacer(Modifier.height(24.dp))
@@ -152,7 +154,9 @@ fun CategorySection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(8){
-                    Spacer(modifier = Modifier.size(50.dp).clip(CircleShape)
+                    Spacer(modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
                         .shimmerLoadingAnimation()
                     )
                 }
@@ -196,8 +200,8 @@ fun RecommendedCategoryContent(
         Column {
             Divider32()
             HorizontalTitleSubtitleSection(
-                title = "Recommended Restaurant",
-                subtitle = "Our recommended cafes to explore!",
+                title = stringResource(R.string.recommended_restaurant),
+                subtitle = stringResource(R.string.our_recommended_places_to_explore),
                 onSeeAllClick = {}
             ) {
                 when {
@@ -226,37 +230,37 @@ fun RecommendedCategoryContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun RecommendedLightPreview() {
-//    TasstyTheme {
-//        RecommendedRestaurantContent(
-//            uiState = RecommendedUiState(
-//                selectedCategoryId = "CAT-001",
-//                allCategories = Resource(data = categories),
-//                recommendedRestaurant = Resource(data = restaurantUiModel),
-//                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
-//            ),
-//            onCategoryClick = {},
-//            onNavigateBack = {},
-//            onNavigateToDetailRest = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun RecommendedLightPreview() {
+    TasstyTheme {
+        RecommendedRestaurantContent(
+            uiState = RecommendedUiState(
+                selectedCategoryId = "CAT-001",
+                allCategories = Resource(data = categories),
+                recommendedRestaurant = Resource(data = restaurantUiModel),
+                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
+            ),
+            onCategoryClick = {},
+            onNavigateBack = {},
+            onNavigateToDetailRest = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun RecommendedDArkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        RecommendedRestaurantContent(
-//            uiState = RecommendedUiState(
-//                selectedCategoryId = "CAT-001",
-//                allCategories = Resource(data = categories),
-//                recommendedRestaurant = Resource(data = restaurantUiModel),
-//                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
-//            ),
-//            onCategoryClick = {},
-//            onNavigateBack = {},
-//            onNavigateToDetailRest = {}
-//        )
-//    }
-//}
+@Composable
+fun RecommendedDArkPreview() {
+    TasstyTheme(darkTheme = true) {
+        RecommendedRestaurantContent(
+            uiState = RecommendedUiState(
+                selectedCategoryId = "CAT-001",
+                allCategories = Resource(data = categories),
+                recommendedRestaurant = Resource(data = restaurantUiModel),
+                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
+            ),
+            onCategoryClick = {},
+            onNavigateBack = {},
+            onNavigateToDetailRest = {}
+        )
+    }
+}

@@ -15,7 +15,8 @@ fun CollectionEntity.toDomain(): Collection{
         id = this.id,
         title = this.title,
         imageUrl = this.imageUrl?:"",
-        menuCount = 0
+        menuCount = 0,
+        isSelected = false
     )
 }
 
@@ -24,7 +25,8 @@ fun CollectionWithMenu.toDomain(): Collection{
         id = this.collection.id,
         title = this.collection.title,
         imageUrl = this.collection.imageUrl?:"",
-        menuCount = this.menuCount
+        menuCount = this.menuCount,
+        isSelected = false
     )
 }
 

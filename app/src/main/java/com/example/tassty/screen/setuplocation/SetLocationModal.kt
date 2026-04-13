@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -123,7 +124,7 @@ fun SetLocationModal(
                 }
 
                 Box(
-                    modifier = Modifier
+                    modifier = Modifier.imePadding()
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .align(Alignment.BottomCenter)
@@ -171,7 +172,7 @@ fun SetLocationModal(
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
-                                text = "Set location",
+                                text = stringResource(R.string.set_location),
                                 style = LocalCustomTypography.current.h3Bold,
                                 color = LocalCustomColors.current.headerText
                             )
@@ -202,9 +203,8 @@ fun SetLocationModal(
                         ) {
                             TextSection(
                                 label = stringResource(R.string.address_name),
-                                placeholder = "Enter name",
+                                placeholder = stringResource(R.string.enter_name),
                                 text = uiState.tempAddressName,
-                                textError = "",
                                 onTextChanged = onAddressNameChanged
                             )
 
@@ -212,7 +212,6 @@ fun SetLocationModal(
                                 label = stringResource(R.string.landmark_detail),
                                 placeholder = stringResource(R.string.enter_landmark),
                                 text = uiState.tempLandmark,
-                                textError = "",
                                 leadingIcon = R.drawable.flag,
                                 onTextChanged = onLandmarkDetailChanged
                             )
@@ -277,21 +276,18 @@ fun AddressTypeChip(
                 color = borderColor,
                 shape = RoundedCornerShape(30.dp)
             )
-            .clickable {
-                onClick()
-            } ,
+            .clickable(onClick = onClick) ,
         shape = RoundedCornerShape(30.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
         ),
     ) {
-        Row(modifier = Modifier
-            .padding(vertical = 11.dp, horizontal = 16.dp),
+        Row(modifier = Modifier.padding(vertical = 11.dp, horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 modifier = Modifier.size(20.dp),
-                painter = painterResource(icon),// or other icon
+                painter = painterResource(icon),
                 contentDescription = null,
                 tint = contentColor
             )
@@ -304,47 +300,47 @@ fun AddressTypeChip(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun LocationLightModalPreview(){
-//    TasstyTheme(darkTheme = false){
-//        SetLocationModal(
-//            isVisible = true,
-//            onDismiss = {},
-//            uiState = SetUpLocationUiState(
-//                tempFullAddress = "Margonda No.5",
-//                tempLandmark = "Deket Margo",
-//                tempAddressType = AddressType.PERSONAL,
-//                tempAddressName = "My Home",
-//                isButtonEnabled = true
-//            ),
-//            onAddressNameChanged = {},
-//            onTypeSelected = {},
-//            onLandmarkDetailChanged = {},
-//            onSelectLocation = {},
-//            onSaveAddress = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun LocationLightModalPreview(){
+    TasstyTheme{
+        SetLocationModal(
+            isVisible = true,
+            onDismiss = {},
+            uiState = SetUpLocationUiState(
+                tempFullAddress = "Margonda No.5",
+                tempLandmark = "Deket Margo",
+                tempAddressType = AddressType.PERSONAL,
+                tempAddressName = "My Home",
+                isButtonEnabled = true
+            ),
+            onAddressNameChanged = {},
+            onTypeSelected = {},
+            onLandmarkDetailChanged = {},
+            onSelectLocation = {},
+            onSaveAddress = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun LocationDarkModalPreview(){
-//    TasstyTheme(darkTheme = true){
-//        SetLocationModal(
-//            isVisible = true,
-//            onDismiss = {},
-//            uiState = SetUpLocationUiState(
-//                tempFullAddress = "Margonda No.5",
-//                tempLandmark = "",
-//                tempAddressType = AddressType.PERSONAL,
-//                tempAddressName = "",
-//                isButtonEnabled = true
-//            ),
-//            onAddressNameChanged = {},
-//            onTypeSelected = {},
-//            onLandmarkDetailChanged = {},
-//            onSelectLocation = {},
-//            onSaveAddress = {}
-//        )
-//    }
-//}
+@Composable
+fun LocationDarkModalPreview(){
+    TasstyTheme(darkTheme = true){
+        SetLocationModal(
+            isVisible = true,
+            onDismiss = {},
+            uiState = SetUpLocationUiState(
+                tempFullAddress = "Margonda No.5",
+                tempLandmark = "",
+                tempAddressType = AddressType.PERSONAL,
+                tempAddressName = "",
+                isButtonEnabled = true
+            ),
+            onAddressNameChanged = {},
+            onTypeSelected = {},
+            onLandmarkDetailChanged = {},
+            onSelectLocation = {},
+            onSaveAddress = {}
+        )
+    }
+}

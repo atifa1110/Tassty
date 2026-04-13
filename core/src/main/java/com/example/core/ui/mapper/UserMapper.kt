@@ -7,6 +7,7 @@ import com.example.core.domain.model.Driver
 import com.example.core.domain.model.User
 import com.example.core.ui.model.DriverUiModel
 import com.example.core.ui.model.UserUiModel
+import com.google.android.gms.maps.model.LatLng
 
 fun User.toUiModel(): UserUiModel {
     return UserUiModel(
@@ -22,8 +23,8 @@ fun UserAddress.toRequestDto(cuisines: List<String>): SetUpRequest{
     return SetUpRequest(
         addressName = this.addressName,
         fullAddress = this.fullAddress,
-        latitude = this.latitude,
-        longitude = this.longitude,
+        lat = this.latitude,
+        lng = this.longitude,
         landmarkDetail = this.landmarkDetail,
         addressType = this.addressType.name,
         categoryIds = cuisines
@@ -35,11 +36,12 @@ fun UserAddress.toUiModel() = UserAddressUiModel(
     fullAddress = this.fullAddress,
     addressName = this.addressName,
     landmarkDetail =  this.landmarkDetail,
+    location = LatLng(this.latitude, this.longitude),
     latitude = this.latitude,
     longitude = this.longitude,
     addressType = this.addressType,
     isPrimary = this.isPrimary,
-    isSelected = false
+    isSelected = false,
 )
 
 fun UserAddressUiModel.toDomain(): UserAddress{

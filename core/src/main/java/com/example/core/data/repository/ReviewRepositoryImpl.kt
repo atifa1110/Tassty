@@ -26,8 +26,8 @@ class ReviewRepositoryImpl @Inject constructor(
     ): Flow<TasstyResponse<String>> = flow {
         emit(TasstyResponse.Loading())
 
-        val request = ReviewRestaurantRequest(restaurantId,rating,comment)
-        val response = dataSource.createReviewRestaurant(orderId,request)
+        val request = ReviewRestaurantRequest(restaurantId = restaurantId, rating = rating, comment = comment)
+        val response = dataSource.createReviewRestaurant(orderId = orderId, request = request)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
@@ -38,7 +38,6 @@ class ReviewRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override fun createReviewMenu(
-        orderId: String,
         orderItemId: String,
         rating: Int,
         tags: String,
@@ -46,8 +45,8 @@ class ReviewRepositoryImpl @Inject constructor(
     ): Flow<TasstyResponse<String>> = flow {
         emit(TasstyResponse.Loading())
 
-        val request = ReviewMenuRequest(orderItemId,rating,tags,comment)
-        val response = dataSource.createReviewMenu(orderId,request)
+        val request = ReviewMenuRequest(rating = rating, tags = tags,comment = comment)
+        val response = dataSource.createReviewMenu(orderItemId = orderItemId ,request = request)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
@@ -57,10 +56,10 @@ class ReviewRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getReview(restaurantId: String): Flow<TasstyResponse<List<Review>>> = flow {
+    override fun getReview(restId: String): Flow<TasstyResponse<List<Review>>> = flow {
         emit(TasstyResponse.Loading())
 
-        val response = dataSource.getReview(restaurantId)
+        val response = dataSource.getReview(restId)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
@@ -70,10 +69,10 @@ class ReviewRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getReviewDetail(restaurantId: String): Flow<TasstyResponse<RestaurantReview>> = flow {
+    override fun getReviewDetail(restId: String): Flow<TasstyResponse<RestaurantReview>> = flow {
         emit(TasstyResponse.Loading())
 
-        val response = dataSource.getReviewDetail(restaurantId)
+        val response = dataSource.getReviewDetail(restId)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {

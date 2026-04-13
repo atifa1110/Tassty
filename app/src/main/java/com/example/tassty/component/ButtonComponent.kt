@@ -83,6 +83,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun LoadingButtonComponent(
+    modifier: Modifier = Modifier,
     enabled : Boolean,
     @StringRes labelResId: Int,
     isLoading: Boolean = false,
@@ -91,7 +92,7 @@ fun LoadingButtonComponent(
     Button(
         enabled = enabled,
         onClick = onClick,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(60.dp),
         colors = ButtonDefaults.buttonColors(
@@ -304,7 +305,6 @@ fun QuantityTextButton(
             modifier = Modifier.weight(1f)
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Decrease Button
             QuantityButton(
                 onClick = onDecreaseQuantity,
                 enabled = quantity >= 1,
@@ -319,7 +319,6 @@ fun QuantityTextButton(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            // Increase Button
             QuantityButton(
                 onClick = onIncreaseQuantity,
                 enabled = true,
@@ -338,7 +337,7 @@ fun QuantityCartContent(
     onDecrement:() -> Unit
 ){
     Row(verticalAlignment = Alignment.CenterVertically) {
-        // Decrease Button
+
         QuantitySmallButton(
             onClick = onDecrement,
             enabled = enabled,
@@ -346,7 +345,6 @@ fun QuantityCartContent(
             contentDescription = "Decrease Quantity"
         )
 
-        // Quantity Text
         Text(
             text = itemCount.toString(),
             style = LocalCustomTypography.current.h6Regular,
@@ -354,7 +352,6 @@ fun QuantityCartContent(
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
-        // Increase Button
         QuantitySmallButton(
             onClick = onIncrement,
             enabled = true,
@@ -631,7 +628,6 @@ fun PaymentSwipeButton(
         val paddingPx = with(LocalDensity.current) { internalPadding.toPx() }
         val maxRange = maxWidthPx - thumbSizePx - (paddingPx * 2)
 
-        // 1. Background Fill (Warna Oranye yang mengikuti slide)
         if (isEnabled && offsetX > 0f) {
             Box(
                 modifier = Modifier
@@ -644,7 +640,6 @@ fun PaymentSwipeButton(
             )
         }
 
-        // 2. Teks Instruksi
         Text(
             text = if (isEnabled) enabledText else disabledText,
             modifier = Modifier

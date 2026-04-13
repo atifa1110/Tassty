@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.LoginEmailPasswordUseCase
 import com.example.tassty.util.InputValidator
+import com.example.tassty.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,11 +63,17 @@ class LoginViewModel @Inject constructor(
 
     fun onLogin() {
         val currentState = _internalState.value
-        val emailError = InputValidator.validateEmail(currentState.email)
-        val passwordError = InputValidator.validatePassword(currentState.password)
 
-        if (emailError != null || passwordError != null) {
-            _internalState.update { it.copy(emailError = emailError, passwordError = passwordError) }
+        val emailErrorRes = InputValidator.validateEmail(currentState.email)
+        val passwordErrorRes = InputValidator.validatePassword(currentState.password)
+
+        if (emailErrorRes != null || passwordErrorRes != null) {
+            _internalState.update {
+                it.copy(
+                    emailError = emailErrorRes?.let { res -> UiText.StringResource(res) },
+                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res) }
+                )
+            }
             return
         }
 

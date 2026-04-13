@@ -38,6 +38,7 @@ import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.UiText
 
 @Composable
 fun EmailInputScreen(
@@ -121,7 +122,7 @@ fun EmailInputContent(
             Column (modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)){
                 EmailSection(
                     email = uiState.email,
-                    emailError = uiState.emailError?:"",
+                    emailError = uiState.emailError,
                     onEmailChanged = onEmailChange,
                     enabled = uiState.isTextEditable
                 )

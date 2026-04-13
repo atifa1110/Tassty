@@ -3,6 +3,7 @@ package com.example.tassty.screen.rating
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -44,6 +45,7 @@ import com.example.tassty.component.CustomTwoColorText
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.FeedbackSection
 import com.example.tassty.component.HeaderListBlackTitle
+import com.example.tassty.component.LoadingOverlay
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
@@ -72,14 +74,21 @@ fun RatingScreen(
             }
         }
     }
-    RatingContent(
-        uiState = uiState,
-        onNavigateBack = onNavigateBack,
-        onRatingChanged = viewModel::onRatingChanged,
-        onSelectedChanged = viewModel::onSelectedChanged,
-        onFeedbackChanged = viewModel::onFeedbackChanged,
-        onSubmitRating = viewModel::onSubmitRating
-    )
+
+    Box(Modifier.fillMaxSize()) {
+        RatingContent(
+            uiState = uiState,
+            onNavigateBack = onNavigateBack,
+            onRatingChanged = viewModel::onRatingChanged,
+            onSelectedChanged = viewModel::onSelectedChanged,
+            onFeedbackChanged = viewModel::onFeedbackChanged,
+            onSubmitRating = viewModel::onSubmitRating
+        )
+        LoadingOverlay(
+            isLoading = uiState.isLoading,
+            text = stringResource(R.string.load)
+        )
+    }
 }
 
 @Composable
@@ -98,7 +107,8 @@ fun RatingContent(
         },
         bottomBar = {
             Column(Modifier
-                .fillMaxWidth().background(LocalCustomColors.current.modalBackgroundFrame)
+                .fillMaxWidth()
+                .background(LocalCustomColors.current.modalBackgroundFrame)
                 .padding(
                     start = 24.dp, end = 24.dp,
                     top = 24.dp, bottom = 32.dp
@@ -114,8 +124,8 @@ fun RatingContent(
 
                 CustomTwoColorText(
                     modifier = Modifier.fillMaxWidth(),
-                    fullText = "By submitting, you agree to our Terms and conditions",
-                    highlightText = "Terms and conditions",
+                    fullText = stringResource(R.string.by_submitting_you_agree_to_our_terms_and_conditions),
+                    highlightText = stringResource(R.string.terms_and_conditions)
                 )
             }
         }
@@ -217,11 +227,15 @@ fun HeaderRating(
     createdAt: String
 ){
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp),
             text = title,
             style = LocalCustomTypography.current.h2Bold,
             color = LocalCustomColors.current.headerText
@@ -264,7 +278,8 @@ fun HeaderIconText(
         Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier
+                .size(16.dp)
                 .align(Alignment.CenterVertically),
             tint = iconColor,
         )
@@ -286,7 +301,7 @@ fun TagsSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeaderListBlackTitle(title = "What did you love about the food?")
+        HeaderListBlackTitle(title = stringResource(R.string.what_did_you_love_about_the_food))
 
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
@@ -319,10 +334,10 @@ fun BasicRatingBar(
             val isSelected = i <= rating
             Icon(
                 painter = painterResource(R.drawable.star),
-                contentDescription = "Star $i",
+                contentDescription = stringResource(R.string.star, i),
                 modifier = Modifier
                     .size(48.dp)
-                    .clickable(onClick =  { onRatingChanged(i) }),
+                    .clickable(onClick = { onRatingChanged(i) }),
                 tint = if (isSelected) Orange500 else Neutral30
             )
         }

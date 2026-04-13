@@ -15,8 +15,6 @@ import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.tassty.navigation.BestSellerDestination
-import com.example.tassty.screen.addcard.AddCardUiEffect
-import com.example.tassty.screen.home.HomeUiEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -91,7 +89,7 @@ class BestSellerViewModel @Inject constructor(
             val savedIds = getCollectionsByIdUseCase(menu.id)
             _internalState.update {
                 it.copy(
-                    selectedCollectionIds = savedIds.toSet(),
+                    //selectedCollectionIds = savedIds.toSet(),
                     isCollectionSheetVisible = true,
                     selectedMenu = menu
                 )

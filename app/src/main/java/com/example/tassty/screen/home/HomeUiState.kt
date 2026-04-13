@@ -3,64 +3,80 @@ package com.example.tassty.screen.home
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.CollectionUiModel
+import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.VoucherUiModel
+import com.example.tassty.screen.detailrestaurant.DetailRestaurantEvent
+import kotlinx.collections.immutable.ImmutableList
 
 data class HomeUiState(
     val userName: String ="",
     val profileImage: String="",
     val addressName: String="",
 
-    val allCategories: Resource<List<CategoryUiModel>> = Resource(),
-    val recommendedRestaurants: Resource<List<RestaurantUiModel>> = Resource(),
-    val nearbyRestaurants: Resource<List<RestaurantUiModel>> = Resource(),
-    val todayVouchers: Resource<List<VoucherUiModel>> = Resource(),
-    val recommendedMenus: Resource<List<MenuUiModel>> = Resource(),
-    val suggestedMenus: Resource<List<MenuUiModel>> = Resource(),
-    val collectionsResource: Resource<List<CollectionUiModel>> = Resource(),
+    val allCategories: Resource<ImmutableList<CategoryUiModel>> = Resource(),
+    val recommendedRestaurants: Resource<ImmutableList<RestaurantUiModel>> = Resource(),
+    val nearbyRestaurants: Resource<ImmutableList<RestaurantUiModel>> = Resource(),
+    val todayVouchers: Resource<ImmutableList<VoucherUiModel>> = Resource(),
+    val recommendedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
+    val suggestedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
+    val collectionsResource: Resource<ImmutableList<CollectionUiModel>> = Resource(),
 
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
     val isCollectionSheetVisible: Boolean = false,
+    val isDetailMenuModalVisible: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
-    val newCollectionName: String = ""
+    val newCollectionName: String = "",
+    val quantity: Int = 0
 )
 
 data class HomeContent(
-    val categories: Resource<List<CategoryUiModel>> = Resource(),
-    val nearby: Resource<List<RestaurantUiModel>> = Resource(),
-    val recommended: Resource<List<RestaurantUiModel>> = Resource(),
-    val vouchers: Resource<List<VoucherUiModel>> = Resource()
+    val categories: Resource<ImmutableList<CategoryUiModel>> = Resource(),
+    val nearby: Resource<ImmutableList<RestaurantUiModel>> = Resource(),
+    val recommended: Resource<ImmutableList<RestaurantUiModel>> = Resource(),
+    val vouchers: Resource<ImmutableList<VoucherUiModel>> = Resource()
 )
 
 data class HomeMenuSection(
-    val recommendedMenus: Resource<List<MenuUiModel>>,
-    val suggestedMenus: Resource<List<MenuUiModel>>
+    val recommendedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
+    val suggestedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
+)
+
+data class MenuInteractionData(
+    val sections: HomeMenuSection,
+    val collections: Resource<ImmutableList<CollectionUiModel>>
 )
 
 data class HomeUiFlags(
     val isRefreshing: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
+    val isDetailMenuModalVisible: Boolean = false,
     val isCollectionSheetVisible: Boolean = false,
     val newCollectionName: String = "",
     val errorMessage: String? = null,
+    val quantity: Int,
 )
 
 data class HomeInternalState(
     val isRefreshing: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
+    val isDetailMenuModalVisible: Boolean = false,
     val isCollectionSheetVisible: Boolean = false,
     val newCollectionName: String = "",
-    val selectedMenu: MenuUiModel? = null,
+    val menuForDetail: MenuUiModel? = null,
+    val menuForCollection: MenuUiModel? = null,
     val selectedCollectionIds: Set<String> = emptySet(),
     val errorMessage: String? = null,
+    val quantity: Int = 1,
+    val isEdit: Boolean = false
 )
 
 sealed class HomeEvent{
+    data class OnFavoriteClick(val menu: MenuUiModel) : HomeEvent()
     object OnShowCollectionSheet : HomeEvent()
     object OnDismissCollectionSheet: HomeEvent()
-    data class OnFavoriteClick(val menu: MenuUiModel) : HomeEvent()
     data class OnCollectionCheckChange(val collectionId: String, val isChecked: Boolean) : HomeEvent()
     object OnSaveToCollection : HomeEvent()
 
@@ -68,8 +84,11 @@ sealed class HomeEvent{
     object OnDismissAddCollectionSheet : HomeEvent()
     data class OnNewCollectionNameChange(val name: String) : HomeEvent()
     object OnCreateCollection : HomeEvent()
+
+    data class OnShowDetailMenu(val id: String) : HomeEvent()
 }
 
 sealed class HomeEffect {
     data class ShowSnackbar(val message: String) : HomeEffect()
+    data class NavigateToDetailMenu(val id: String): HomeEffect()
 }

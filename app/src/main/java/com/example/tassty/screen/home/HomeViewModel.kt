@@ -3,6 +3,8 @@ package com.example.tassty.screen.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.data.source.remote.network.Resource
+import com.example.core.domain.usecase.AddCartMenuUseCase
 import com.example.core.domain.usecase.CreateNewCollectionUseCase
 import com.example.core.domain.usecase.GetAllCategoriesUseCase
 import com.example.core.domain.usecase.GetAuthStatusUseCase
@@ -13,25 +15,43 @@ import com.example.core.domain.usecase.GetSuggestedMenusUseCase
 import com.example.core.domain.usecase.GetTodayVouchersUseCase
 import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
+import com.example.core.domain.usecase.GetDetailMenuUseCase
 import com.example.core.domain.usecase.InitializeSystemCollectionsUseCase
+import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
 import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
+import com.example.core.ui.model.CollectionUiModel
+import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.ui.utils.mapToResource
+import com.example.core.ui.utils.toImmutableListState
+import com.example.tassty.screen.detailrestaurant.DetailUiEvent
+import com.google.common.collect.ImmutableList
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -67,10 +87,10 @@ class HomeViewModel @Inject constructor(
             getTodayVouchersUseCase()
         ) { categories, nearby, recommended, vouchers ->
             HomeContent(
-                categories = categories.toListState { it.toUiModel() },
-                nearby = nearby.toListState { it.toUiModel() },
-                recommended = recommended.toListState { it.toUiModel() },
-                vouchers = vouchers.toListState { it.toUiModel() }
+                categories = categories.toImmutableListState { it.toUiModel() },
+                nearby = nearby.toImmutableListState { it.toUiModel() },
+                recommended = recommended.toImmutableListState { it.toUiModel() },
+                vouchers = vouchers.toImmutableListState { it.toUiModel() }
             )
         }
     }
@@ -82,28 +102,50 @@ class HomeViewModel @Inject constructor(
             getSuggestedMenusUseCase(),
         ) { recommended, suggested ->
             HomeMenuSection(
-                recommendedMenus = recommended.toListState { it.toUiModel() },
-                suggestedMenus = suggested.toListState { it.toUiModel() }
+                recommendedMenus = recommended.toImmutableListState { it.toUiModel() },
+                suggestedMenus = suggested.toImmutableListState { it.toUiModel() }
             )
         }
     }
 
-    private val collectionFlows = combine(
-        getCollectionsListUseCase().map { it.toListState { c -> c.toUiModel() } },
-        _internalState.map { it.selectedCollectionIds }.distinctUntilChanged()
-    ) { res, selectedIds ->
-        res.copy(
-            data = res.data?.map { it.copy(isSelected = selectedIds.contains(it.id)) }
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    private val collectionFlows = _internalState
+        .map { it.menuForCollection?.id }
+        .distinctUntilChanged()
+        .flatMapLatest { menuId ->
+            getCollectionsListUseCase().flatMapLatest { response ->
+                val resource = response.toImmutableListState { it.toUiModel() }
+                _internalState.map { it.selectedCollectionIds }.map { selectedIds ->
+                    resource.copy(
+                        data = resource.data?.map { collection ->
+                            collection.copy(isSelected = selectedIds.contains(collection.id))
+                        }?.toImmutableList()
+                    )
+                }
+            }
+        }
+        .debounce(50)
+        .distinctUntilChanged()
+
+    private val interactionFlow = combine(
+        menuFlow,
+        collectionFlows,
+    ) { menuContent, collectionRes->
+        MenuInteractionData(
+            sections = menuContent,
+            collections = collectionRes,
         )
-    }.distinctUntilChanged()
+    }
 
     private val uiFlagsFlow = _internalState.map {
         HomeUiFlags(
             isRefreshing = it.isRefreshing,
             isCollectionSheetVisible = it.isCollectionSheetVisible,
             isAddCollectionSheet = it.isAddCollectionSheet,
+            isDetailMenuModalVisible = it.isDetailMenuModalVisible,
             newCollectionName = it.newCollectionName,
-            errorMessage = it.errorMessage
+            errorMessage = it.errorMessage,
+            quantity = it.quantity
         )
     }.distinctUntilChanged()
 
@@ -112,8 +154,8 @@ class HomeViewModel @Inject constructor(
         getAuthStatusUseCase(),
         contentFlow,
         menuFlow,
-        collectionFlows
-    ) { internal, auth, content, menuContent, collectionRes ->
+        collectionFlows,
+    ) { internal, auth, content, menu, collections ->
         HomeUiState(
             userName = auth.name ?: "Guest",
             profileImage = auth.profileImage ?: "",
@@ -122,13 +164,15 @@ class HomeViewModel @Inject constructor(
             nearbyRestaurants = content.nearby,
             recommendedRestaurants = content.recommended,
             todayVouchers = content.vouchers,
-            recommendedMenus = menuContent.recommendedMenus,
-            suggestedMenus = menuContent.suggestedMenus,
-            collectionsResource = collectionRes,
+            recommendedMenus = menu.recommendedMenus,
+            suggestedMenus = menu.suggestedMenus,
+            collectionsResource = collections,
             isRefreshing = internal.isRefreshing,
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
             isAddCollectionSheet = internal.isAddCollectionSheet,
-            newCollectionName = internal.newCollectionName
+            isDetailMenuModalVisible = internal.isDetailMenuModalVisible,
+            newCollectionName = internal.newCollectionName,
+            quantity = internal.quantity
         )
     }.stateIn(
         scope = viewModelScope,
@@ -142,15 +186,18 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-            is HomeEvent.OnDismissCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = false) }
-            is HomeEvent.OnShowCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = true) }
-            is HomeEvent.OnDismissAddCollectionSheet -> { _internalState.update { it.copy(isAddCollectionSheet = false, isCollectionSheetVisible = true) } }
-            is HomeEvent.OnShowAddCollectionSheet -> _internalState.update { it.copy(isAddCollectionSheet = true, isCollectionSheetVisible = false) }
             is HomeEvent.OnFavoriteClick -> handleFavoriteClick(menu = event.menu)
-            is HomeEvent.OnCreateCollection -> handleCreateNewCollection()
-            is HomeEvent.OnNewCollectionNameChange -> _internalState.update { it.copy(newCollectionName = event.name) }
+            is HomeEvent.OnShowCollectionSheet -> _internalState.update { it.copy(isCollectionSheetVisible = true) }
+            is HomeEvent.OnDismissCollectionSheet -> _internalState.update {
+                it.copy(isCollectionSheetVisible = false, menuForCollection = null, selectedCollectionIds = emptySet())
+            }
             is HomeEvent.OnCollectionCheckChange -> handleCollectionCheckChange(event.collectionId)
             is HomeEvent.OnSaveToCollection -> handleSaveToCollection()
+            is HomeEvent.OnShowAddCollectionSheet -> _internalState.update { it.copy(isAddCollectionSheet = true, isCollectionSheetVisible = false) }
+            is HomeEvent.OnDismissAddCollectionSheet -> { _internalState.update { it.copy(isAddCollectionSheet = false, isCollectionSheetVisible = true) } }
+            is HomeEvent.OnNewCollectionNameChange -> _internalState.update { it.copy(newCollectionName = event.name) }
+            is HomeEvent.OnCreateCollection -> handleCreateNewCollection()
+            is HomeEvent.OnShowDetailMenu -> onCartClick(event.id)
         }
     }
 
@@ -164,13 +211,17 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun onCartClick(id: String) = viewModelScope.launch {
+        _uiEffect.send(HomeEffect.NavigateToDetailMenu(id))
+    }
+
     private fun handleFavoriteClick(menu: MenuUiModel) {
         viewModelScope.launch {
             val selectedIds = getCollectionsByIdUseCase(menu.id)
             _internalState.update { state ->
                 state.copy(
                     isCollectionSheetVisible = true,
-                    selectedMenu = menu,
+                    menuForCollection = menu,
                     selectedCollectionIds = selectedIds.toSet()
                 )
             }
@@ -179,7 +230,7 @@ class HomeViewModel @Inject constructor(
 
     private fun handleSaveToCollection() {
         val currentState = _internalState.value
-        val menu = currentState.selectedMenu ?: return
+        val menu = currentState.menuForCollection ?: return
         val selectedIds = currentState.selectedCollectionIds.toList()
 
         viewModelScope.launch {

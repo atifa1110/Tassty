@@ -12,19 +12,18 @@ import javax.inject.Inject
 class ReviewNetworkDataSource @Inject constructor(
     private val service: ReviewApiService
 ){
-    suspend fun getReview(restaurantId: String): TasstyResponse<List<ReviewDto>> {
-        return safeApiCall { service.getReview(restaurantId) }
-    }
-
-    suspend fun getReviewDetail(restaurantId: String): TasstyResponse<RestaurantReviewDto> {
-        return safeApiCall { service.getReviewDetail(restaurantId) }
-    }
-
     suspend fun createReviewRestaurant(orderId: String, request: ReviewRestaurantRequest): TasstyResponse<Unit> {
-        return safeApiCall { service.createRestaurantReview(orderId,request) }
+        return safeApiCall { service.createRestaurantReview(orderId = orderId, request = request) }
     }
 
-    suspend fun createReviewMenu(orderId: String, request: ReviewMenuRequest): TasstyResponse<Unit> {
-        return safeApiCall { service.createMenuReview(orderId,request) }
+    suspend fun createReviewMenu(orderItemId: String, request: ReviewMenuRequest): TasstyResponse<Unit> {
+        return safeApiCall { service.createMenuReview(orderItemId = orderItemId, request = request) }
+    }
+    suspend fun getReview(restId: String): TasstyResponse<List<ReviewDto>> {
+        return safeApiCall { service.getReview(restId = restId) }
+    }
+
+    suspend fun getReviewDetail(restId: String): TasstyResponse<RestaurantReviewDto> {
+        return safeApiCall { service.getReviewDetail(restId = restId) }
     }
 }

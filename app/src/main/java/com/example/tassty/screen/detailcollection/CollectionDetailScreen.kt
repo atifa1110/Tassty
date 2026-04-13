@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpRect
@@ -143,9 +144,11 @@ fun CollectionDetailContent(
         label = "alpha"
     )
 
+    val background = LocalCustomColors.current.background
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackHostState) },
-        containerColor = LocalCustomColors.current.background
+        containerColor = background
     ) { padding ->
         BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxSize()) {
             val screenHeight = maxHeight
@@ -173,9 +176,9 @@ fun CollectionDetailContent(
                 iconBackground = iconBackground,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .background(
-                        LocalCustomColors.current.background.copy(alpha = appBarAlpha)
-                    ),
+                    .drawBehind {
+                        drawRect(color = background.copy(alpha = appBarAlpha))
+                    },
                 onBackClick = onNavigateBack,
                 onEditClick = onEditClick,
                 onRemoveClick = onDeleteClick
@@ -223,37 +226,37 @@ fun HeaderContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun CollectionDetailLightPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme {
-//        CollectionDetailContent(
-//            name = "Favorite Salad",
-//            image = "",
-//            collections = collectionRestaurantMenuUiModel,
-//            onEditClick = {},
-//            onDeleteClick = {},
-//            onNavigateBack = {},
-//            onNavigateToDetailRest = {},
-//            snackHostState = snackHostState
-//        )
-//    }
-//}
-//
+@Composable
+fun CollectionDetailLightPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme {
+        CollectionDetailContent(
+            name = "Favorite Salad",
+            image = "",
+            collections = collectionRestaurantMenuUiModel,
+            onEditClick = {},
+            onDeleteClick = {},
+            onNavigateBack = {},
+            onNavigateToDetailRest = {},
+            snackHostState = snackHostState
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun CollectionDetailDarkPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme(darkTheme = true) {
-//        CollectionDetailContent(
-//            name = "Favorite Salad",
-//            image = "",
-//            collections = collectionRestaurantMenuUiModel,
-//            onEditClick = {},
-//            onDeleteClick = {},
-//            onNavigateBack = {},
-//            onNavigateToDetailRest = {},
-//            snackHostState = snackHostState
-//        )
-//    }
-//}
+@Composable
+fun CollectionDetailDarkPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme(darkTheme = true) {
+        CollectionDetailContent(
+            name = "Favorite Salad",
+            image = "",
+            collections = collectionRestaurantMenuUiModel,
+            onEditClick = {},
+            onDeleteClick = {},
+            onNavigateBack = {},
+            onNavigateToDetailRest = {},
+            snackHostState = snackHostState
+        )
+    }
+}

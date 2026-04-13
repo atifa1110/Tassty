@@ -1,5 +1,8 @@
 package com.example.core.domain.model
 
+import androidx.compose.ui.res.stringResource
+import com.example.core.R
+
 data class UserAddress(
     val id: String,
     val fullAddress: String,

@@ -1,13 +1,15 @@
 package com.example.tassty.screen.login
 
+import com.example.tassty.util.UiText
+
 /** * UI State that is consumed by the Composable.
  * Represents the final data shown on the screen.
  */
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
-    val emailError: String? = null,
-    val passwordError: String? = null,
+    val emailError: UiText? = null,
+    val passwordError: UiText? = null,
     val isLoading: Boolean = false,
     val isTextEditable: Boolean = true,
     val isButtonEnabled: Boolean = false,
@@ -24,8 +26,8 @@ data class LoginInternalState(
     val isLoading: Boolean = false,
     val isBottomSheetVisible: Boolean = false,
     val bottomSheetMessage: String? = null,
-    val emailError: String? = null,
-    val passwordError: String? = null
+    val emailError: UiText? = null,
+    val passwordError: UiText? = null
 )
 
 /** * One-time events sent from the ViewModel to the UI (e.g., navigation, showing dialogs).
