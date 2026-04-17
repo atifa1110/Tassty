@@ -156,4 +156,14 @@ dependencies {
     androidTestImplementation(libs.mockk.android)
 
     implementation(project(":core"))
+
 }
+
+koverReport {
+    defaults {
+        xml {
+            onCheck = true
+        }
+    }
+}
+
