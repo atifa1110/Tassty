@@ -161,9 +161,12 @@ dependencies {
 
 koverReport {
     defaults {
-        xml {
-            onCheck = true
+        xml { onCheck = true }
+        html { onCheck = true }
+        filters {
+            includes {
+                packages("com.example.tassty")
+            }
         }
     }
 }
-
