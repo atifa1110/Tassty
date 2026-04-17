@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "534497224296",
+    "project_id": "tassty-69e3b",
+    "storage_bucket": "tassty-69e3b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:534497224296:android:c31555b61621349347fddd",
+        "android_client_info": {
+          "package_name": "com.example.tassty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7IF56x8S2qkqMfhD9spKudSEIIlaf5r8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
