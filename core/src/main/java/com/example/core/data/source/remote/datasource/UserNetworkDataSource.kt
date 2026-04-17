@@ -43,6 +43,10 @@ class UserNetworkDataSource@Inject constructor(
         return safeApiCall { userApiService.createUserAddress(request)}
     }
 
+    suspend fun deleteUserAddress(addressId: String): TasstyResponse<Unit>{
+        return safeApiCall { userApiService.deleteUserAddress(addressId)}
+    }
+
     suspend fun createSetupIntent(): TasstyResponse<SetupDto> {
         return safeApiCall { userApiService.createSetupIntent() }
     }
@@ -55,6 +59,10 @@ class UserNetworkDataSource@Inject constructor(
 
     suspend fun getUserCard(): TasstyResponse<List<CardUserDto>>{
         return safeApiCall { userApiService.getUserCard()}
+    }
+
+    suspend fun deleteUserCard(cardId: String): TasstyResponse<Unit>{
+        return safeApiCall { userApiService.deleteUserCard(cardId)}
     }
 }
 

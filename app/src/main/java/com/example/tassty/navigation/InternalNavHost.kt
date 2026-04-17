@@ -58,7 +58,8 @@ fun InternalNavHost(
                 onNavigateToRecommended = onNavigateToRecommended,
                 onNavigateToDetailRest = onNavigateToDetailRest,
                 onNavigateToPayment = onNavigateToPayment,
-                onNavigateToDetailMenu = onNavigateToDetailMenu
+                onNavigateToDetailMenu = onNavigateToDetailMenu,
+                onNavigateToAddress = onNavigateToAddress
             )
         }
         composable(ChatDestination.route){

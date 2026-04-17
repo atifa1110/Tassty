@@ -240,21 +240,21 @@ fun MessageContent(
                 ),
                 reverseLayout = true
             ) {
-                if (uiState.groupedMessages.isEmpty()) {
-                    item {
-                        Text(
-                            text = stringResource(R.string.belum_ada_percakapan),
-                            style = LocalCustomTypography.current.bodyXtraSmallRegular,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            color = Neutral60
-                        )
-                        Spacer(Modifier.height(16.dp))
-                    }
-                }
-
                 uiState.groupedMessages.forEach { (date,messagesInDate) ->
+                    if(messagesInDate.isEmpty()){
+                        item {
+                            Text(
+                                text = stringResource(R.string.belum_ada_percakapan),
+                                style = LocalCustomTypography.current.bodyXtraSmallRegular,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                color = Neutral60
+                            )
+                            Spacer(Modifier.height(16.dp))
+                        }
+                    }
                     items(messagesInDate) { message ->
+
                         ChatBubble(
                             message = message,
                             onImageClick= { onImageClick(message)}

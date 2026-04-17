@@ -11,6 +11,6 @@ class GetMenuYouSearchUseCase @Inject constructor(
     private val menuRepository: MenuRepository
 ){
     operator fun invoke() : Flow<TasstyResponse<List<Menu>>> {
-        return menuRepository.getRecommendedMenus()
+        return menuRepository.getRecommendedMenus(false)
     }
 }

@@ -17,7 +17,7 @@ interface AuthRepository {
     fun resendEmailOtp(email: String): Flow<TasstyResponse<String>>
     fun setupAccount(address: UserAddress, cuisines: List<String>): Flow<TasstyResponse<String>>
     fun login(email: String, password: String): Flow<TasstyResponse<String>>
-    fun refreshToken(refreshToken: String): Flow<TasstyResponse<String>>
+    fun refreshToken(): Flow<TasstyResponse<String>>
     fun forgotPassword(email: String): Flow<TasstyResponse<OtpTimer>>
     fun verifyResetOtp(email: String,code: String): Flow<TasstyResponse<String>>
     fun resetPassword(newPassword: String): Flow<TasstyResponse<String>>

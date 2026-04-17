@@ -35,24 +35,10 @@ class FavoriteRepositoryImpl @Inject constructor(
         dataSource.deleteFavorite(id)
     }
 
-    override fun getFavorites(): Flow<TasstyResponse<List<Favorite>>> =
-        dataSource.getFavorites()
-            .map<List<FavoriteRestaurantEntity>, TasstyResponse<List<Favorite>>> { entities ->
-                TasstyResponse.Success(
-                    data = entities.map { it.toDomain() },
-                    meta = Meta(0, "", "")
-                )
+    override fun getFavorites(): Flow<List<Favorite>> {
+        return dataSource.getFavorites()
+            .map { entities ->
+                entities.map { it.toDomain() }
             }
-            .onStart {
-                emit(TasstyResponse.Loading())
-            }
-            .catch { e ->
-                Log.d("CollectionRepository", e.message.orEmpty())
-                emit(
-                    TasstyResponse.Error(
-                        Meta(0, "", "Get favorite failed")
-                    )
-                )
-            }
-
+    }
 }

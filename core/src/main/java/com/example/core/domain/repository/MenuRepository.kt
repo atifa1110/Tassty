@@ -5,11 +5,9 @@ import com.example.core.domain.model.Menu
 import kotlinx.coroutines.flow.Flow
 
 interface MenuRepository {
-    fun getRecommendedMenus(): Flow<TasstyResponse<List<Menu>>>
+    fun getRecommendedMenus(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Menu>>>
 
-    fun getSuggestedMenus(): Flow<TasstyResponse<List<Menu>>>
-
-    //fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>>
+    fun getSuggestedMenus(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Menu>>>
 
     suspend fun runDatabaseMaintenance()
 }

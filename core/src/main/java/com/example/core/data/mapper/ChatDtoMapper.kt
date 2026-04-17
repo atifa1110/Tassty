@@ -2,7 +2,7 @@ package com.example.core.data.mapper
 
 import com.example.core.domain.model.Chat
 import com.example.core.ui.model.SenderType
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 import io.getstream.chat.android.client.extensions.currentUserUnreadCount
 import io.getstream.chat.android.models.Channel
 

@@ -1,5 +1,6 @@
 package com.example.tassty.screen.address
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun AddressScreen(
@@ -49,22 +52,29 @@ fun AddressScreen(
     onNavigateToAddAddress: () -> Unit,
     viewModel: AddressViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AddressContent(
+        context = context,
         uiState = uiState,
         onTabSelected = {viewModel.onTabSelected(it)},
         onNavigateBack = onNavigateBack,
-        onNavigateToAddAddress = onNavigateToAddAddress
+        onNavigateToAddAddress = onNavigateToAddAddress,
+        onRevealChange = {_,_ ->},
+        onRemoveAddress = {}
     )
 }
 
 @Composable
 fun AddressContent(
+    context: Context,
     uiState: AddressUiState,
     onTabSelected: (AddressTab) -> Unit,
     onNavigateBack:() -> Unit,
-    onNavigateToAddAddress: () -> Unit
+    onNavigateToAddAddress: () -> Unit,
+    onRevealChange: (String, Boolean) -> Unit,
+    onRemoveAddress: (String) -> Unit
 ) {
     Scaffold(
         containerColor = LocalCustomColors.current.background,
@@ -123,8 +133,10 @@ fun AddressContent(
 
                 else ->{
                     addressVerticalListBlock(
-                        headerText = "addresses",
-                        addressItems = address
+                        headerText = context.getString(R.string.addresses),
+                        addressItems = address,
+                        onRemoveAddress = onRemoveAddress,
+                        onRevealChange = onRevealChange
                     )
                 }
             }
@@ -181,13 +193,16 @@ fun AddressTabContent(
 fun AddressLightPreview() {
     TasstyTheme {
         AddressContent(
+            context = LocalContext.current,
             uiState = AddressUiState(
                 selectedTab = AddressTab.ALL,
-                addressResource = Resource(data = addresses)
+                addressResource = Resource(data = addresses.toImmutableList())
             ),
             onTabSelected = {},
             onNavigateBack = {},
-            onNavigateToAddAddress = {}
+            onNavigateToAddAddress = {},
+            onRevealChange = {_,_->},
+            onRemoveAddress = {}
         )
     }
 }
@@ -197,13 +212,16 @@ fun AddressLightPreview() {
 fun AddressDarkPreview() {
     TasstyTheme(darkTheme = true) {
         AddressContent(
+            context = LocalContext.current,
             uiState = AddressUiState(
                 selectedTab = AddressTab.ALL,
-                addressResource = Resource(data = addresses)
+                addressResource = Resource(data = addresses.toImmutableList())
             ),
             onTabSelected = {},
             onNavigateBack = {},
-            onNavigateToAddAddress = {}
+            onNavigateToAddAddress = {},
+            onRevealChange = {_,_->},
+            onRemoveAddress = {}
         )
     }
 }

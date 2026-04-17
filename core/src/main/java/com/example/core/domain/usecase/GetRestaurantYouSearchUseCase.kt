@@ -12,6 +12,6 @@ class GetRestaurantYouSearchUseCase @Inject constructor(
     private val restaurantRepository: RestaurantRepository
 ) {
     operator fun invoke() : Flow<TasstyResponse<List<Restaurant>>> {
-        return restaurantRepository.getNearbyRestaurants()
+        return restaurantRepository.getNearbyRestaurants(false)
     }
 }

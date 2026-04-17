@@ -7,7 +7,7 @@ import com.example.core.domain.utils.RestaurantSearchFilter
 import kotlinx.coroutines.flow.Flow
 
 interface RestaurantRepository {
-    fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>>
+    fun getRecommendedRestaurants(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Restaurant>>>
     fun getRecommendedCategoryRestaurants(categoryId:String): Flow<TasstyResponse<List<Restaurant>>>
-    fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>>
+    fun getNearbyRestaurants(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Restaurant>>>
 }

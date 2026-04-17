@@ -2,7 +2,7 @@ package com.example.core.data.source.local.mapper
 
 import com.example.core.data.source.local.database.entity.NotificationEntity
 import com.example.core.domain.model.Notification
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 
 fun NotificationEntity.toDomain() : Notification{
     return Notification(

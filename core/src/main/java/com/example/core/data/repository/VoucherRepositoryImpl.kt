@@ -23,7 +23,7 @@ class VoucherRepositoryImpl @Inject constructor(
         private const val META_KEY_TODAY = "today_vouchers"
     }
 
-    override fun getTodayVouchers(): Flow<TasstyResponse<List<Voucher>>> = flow {
+    override fun getTodayVouchers(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Voucher>>> = flow {
         emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_TODAY)

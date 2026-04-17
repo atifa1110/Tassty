@@ -50,34 +50,35 @@ import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.util.restaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.TasstyTheme
-import kotlin.collections.orEmpty
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun FavoriteScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToRecommended: () -> Unit,
     viewModel: FavoriteViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackHostState = remember { SnackbarHostState() }
 
     FavoriteContent(
-        resource = uiState.resource,
+        items = uiState.resource,
         snackHostState = snackHostState,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onNavigateToRecommended = onNavigateToRecommended
     )
 }
 
 @Composable
 fun FavoriteContent(
-    resource: Resource<List<RestaurantUiModel>>,
+    items: ImmutableList<RestaurantUiModel>?,
     snackHostState: SnackbarHostState,
-    onNavigateBack:() -> Unit
+    onNavigateBack:() -> Unit,
+    onNavigateToRecommended: () -> Unit,
 ) {
-
     val scrollState = rememberLazyListState()
     val isScrolled by remember {
         derivedStateOf {
@@ -123,7 +124,8 @@ fun FavoriteContent(
                 }
 
                 favoriteRestaurantSection(
-                    resource = resource
+                    items = items,
+                    onNavigateToRecommended = onNavigateToRecommended
                 )
             }
 
@@ -191,32 +193,24 @@ fun HeaderContent(
 }
 
 fun LazyListScope.favoriteRestaurantSection(
-    resource: Resource<List<RestaurantUiModel>>
+    items: ImmutableList<RestaurantUiModel>?,
+    onNavigateToRecommended: () -> Unit,
 ){
-    val items = resource.data.orEmpty()
-    when{
-        resource.isLoading ->{
-            item{
-                LoadingRowState()
-            }
-        }
-        resource.errorMessage!=null || items.isEmpty()->{
-            item {
-                HeaderListItemCountTitle(
-                    itemCount = items.size,
-                    title = stringResource(R.string.favorite_restaurants),
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                EmptyFavoriteContent()
-            }
-        }
-        else -> {
-            restaurantVerticalListBlock(
-                restaurantItems = items,
-                onNavigateToDetail = {}
+    if (items == null) {
+        return
+    }
+
+    if(items.isEmpty()) {
+        item(key = "empty_content") {
+            EmptyFavoriteContent(
+                onClick = onNavigateToRecommended
             )
         }
+    }else {
+        restaurantVerticalListBlock(
+            restaurantItems = items,
+            onNavigateToDetail = {}
+        )
     }
 }
 
@@ -226,9 +220,10 @@ fun FavoriteLightReview() {
     val snackHostState = remember { SnackbarHostState() }
     TasstyTheme {
         FavoriteContent(
-            resource = Resource(data = restaurantUiModel),
+            items = restaurantUiModel.toImmutableList(),
             snackHostState = snackHostState,
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onNavigateToRecommended = {}
         )
     }
 }
@@ -239,9 +234,10 @@ fun FavoriteDarkReview() {
     val snackHostState = remember { SnackbarHostState() }
     TasstyTheme (darkTheme = true){
         FavoriteContent(
-            resource = Resource(data = restaurantUiModel),
+            items = restaurantUiModel.toImmutableList(),
             snackHostState = snackHostState,
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onNavigateToRecommended = {}
         )
     }
 }

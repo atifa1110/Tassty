@@ -54,6 +54,8 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlin.collections.orEmpty
 
 @Composable
@@ -77,8 +79,10 @@ fun NearbyRestaurantContent(
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
     ) {
-        MapArea(modifier = Modifier.fillMaxSize(),
-            resource = uiState.resource)
+        MapArea(
+            modifier = Modifier.fillMaxSize(),
+            resource = uiState.resource
+        )
 
         CategoryTopAppBar(
             modifier = Modifier.statusBarsPadding(),
@@ -235,7 +239,7 @@ fun RestaurantContent(
 
 @Composable
 fun RestaurantHorizontalList(
-    resource: Resource<List<RestaurantUiModel>>
+    resource: Resource<ImmutableList<RestaurantUiModel>>
 ) {
     val items = resource.data.orEmpty()
     LazyRow(
@@ -268,7 +272,7 @@ fun RestaurantHorizontalList(
 
 @Composable
 fun RestaurantVerticalList(
-    resource: Resource<List<RestaurantUiModel>>,
+    resource: Resource<ImmutableList<RestaurantUiModel>>,
 ) {
     val items = resource.data.orEmpty()
     LazyColumn(
@@ -302,7 +306,7 @@ fun RestaurantVerticalList(
 @Composable
 fun MapArea(
     modifier: Modifier = Modifier,
-    resource: Resource<List<RestaurantUiModel>>
+    resource: Resource<ImmutableList<RestaurantUiModel>>
 ) {
     val items = resource.data.orEmpty()
     val cameraPositionState = rememberCameraPositionState()
@@ -354,13 +358,13 @@ fun MapArea(
     }
 }
 
-@Preview(showBackground = true, name= "Light Mode")
+//@Preview(showBackground = true, name= "Light Mode")
 @Composable
 fun NearbyLightPreview() {
     TasstyTheme {
         NearbyRestaurantContent(
             uiState = NearbyUiState(
-                resource = Resource(restaurantUiModel)
+                resource = Resource(restaurantUiModel.toImmutableList())
             ),
             onNavigateBack = {}
         )
@@ -373,7 +377,7 @@ fun NearbyDarkPreview() {
     TasstyTheme(darkTheme = true){
         NearbyRestaurantContent(
             uiState = NearbyUiState(
-                resource = Resource(restaurantUiModel)
+                resource = Resource(restaurantUiModel.toImmutableList())
             ),
             onNavigateBack = {}
         )

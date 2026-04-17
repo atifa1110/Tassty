@@ -2,6 +2,7 @@ package com.example.core.data.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.source.remote.datasource.ChatStreamDataSource
 import com.example.core.data.source.remote.network.Meta
@@ -9,16 +10,14 @@ import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.Chat
 import com.example.core.domain.model.Message
 import com.example.core.domain.repository.ChatRepository
-import com.example.core.ui.utils.toFile
+import com.example.core.utils.toFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.getstream.chat.android.models.Attachment
 import io.getstream.chat.android.models.Channel
 import io.getstream.result.Result
-import io.getstream.chat.android.models.Message as StreamMessage
 import io.getstream.chat.android.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
@@ -32,6 +31,11 @@ class ChatRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val dataSource: ChatStreamDataSource
 ) : ChatRepository {
+
+    override fun isChatReady(): Flow<Boolean> {
+        return dataSource.observeConnectionState()
+            .flowOn(Dispatchers.IO)
+    }
 
     override fun getCurrentUserId(): String {
         return dataSource.getCurrentUserId()
@@ -118,7 +122,7 @@ class ChatRepositoryImpl @Inject constructor(
                 emit(TasstyResponse.Error(
                     meta = Meta(code = 500, status = "error", message = e.message ?: "Fetch Error")
                 ))
-            }
+            }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun deleteChannel(channelId: String): Flow<TasstyResponse<String>> = flow {
@@ -143,51 +147,90 @@ class ChatRepositoryImpl @Inject constructor(
     override fun getChatMessages(channelId: String): Flow<TasstyResponse<List<Message>>> {
         val currentUserId = dataSource.getCurrentUserId()
 
-        val combinedFlow: Flow<TasstyResponse<List<Message>>> = combine(
-            dataSource.watchMessages(channelId),
-            dataSource.watchChannel(channelId)
-        ) { messages, channel ->
+        val TAG = "ChatFlowLog"
+        return dataSource.watchMessages(channelId)
+            .map<List<io.getstream.chat.android.models.Message>, TasstyResponse<List<Message>>> { messages ->
+                val filteredMessages = messages.filterNot { streamMsg ->
+                    val isSystem = streamMsg.id.contains("stream-system-user")
+                    val text = streamMsg.text.lowercase()
 
-            val lastReadDate = channel.read
-                .find { it.user.id != currentUserId }
-                ?.lastRead
+                    isSystem && (text.contains("pesanan #") || text.contains("total: rp"))
+                }
 
-            val filteredMessages = messages.filterNot { streamMsg ->
-                val isSystem = streamMsg.user.id.contains("stream-system-user")
-                val text = streamMsg.text.lowercase()
+                val domainData = filteredMessages.map { streamMsg ->
+                    streamMsg.toDomain(currentUserId)
+                }
 
-                isSystem && (text.contains("pesanan #") || text.contains("total: rp"))
-            }
+                Log.d(TAG, "Berhasil mapping ke Domain. Total: ${domainData.size} pesan")
 
-            val domainData = filteredMessages.map { streamMsg ->
-                val isMyMessage = streamMsg.user.id == currentUserId
-                val isReadByOther = lastReadDate != null
-                val sentBeforeLastRead =
-                    !(streamMsg.createdAt?.after(lastReadDate) ?: true)
-
-                streamMsg.toDomain(currentUserId).copy(
-                    isSeen = isMyMessage && isReadByOther && sentBeforeLastRead
+                TasstyResponse.Success(
+                    domainData,
+                    Meta(200, "Success", "Message Success Retrieve")
                 )
             }
-
-            TasstyResponse.Success(
-                domainData,
-                Meta(200, "Success", "Message Success Retrieve")
-            )
-        }
-
-        return combinedFlow
             .onStart {
+                Log.d(TAG, "0. Memulai Flow getChatMessages untuk channel: $channelId")
                 emit(TasstyResponse.Loading())
             }
             .catch { e ->
+                Log.e(TAG, "X. Terjadi Error: ${e.message}")
                 emit(TasstyResponse.Error(
-                    Meta(400, "Error", e.message ?: "Unknown Error")
+                    meta = Meta(code = 500, status = "error", message = e.message ?: "Fetch Error")
                 ))
-            }.flowOn(Dispatchers.Default)
+            }.flowOn(Dispatchers.IO)
     }
 
+//    override fun getChatMessages(channelId: String): Flow<TasstyResponse<List<Message>>> {
+//        val currentUserId = dataSource.getCurrentUserId()
+//
+//        val combinedFlow: Flow<TasstyResponse<List<Message>>> = combine(
+//            dataSource.watchMessages(channelId),
+//
+//            // 🔥 FIX DI SINI
+//            dataSource.watchChannel(channelId)
+//                .onStart { emit(Channel()) }
+//
+//        ) { messages, channel ->
+//
+//            val lastReadDate = channel.read
+//                .find { it.user.id != currentUserId }
+//                ?.lastRead
+//
+//            val filteredMessages = messages.filterNot { streamMsg ->
+//                val isSystem = streamMsg.user.id.contains("stream-system-user")
+//                val text = streamMsg.text.lowercase()
+//
+//                isSystem && (text.contains("pesanan #") || text.contains("total: rp"))
+//            }
+//
+//            val domainData = filteredMessages.map { streamMsg ->
+//                val isMyMessage = streamMsg.user.id == currentUserId
+//                val isReadByOther = lastReadDate != null
+//                val sentBeforeLastRead =
+//                    !(streamMsg.createdAt?.after(lastReadDate) ?: true)
+//
+//                streamMsg.toDomain(currentUserId).copy(
+//                    isSeen = isMyMessage && isReadByOther && sentBeforeLastRead
+//                )
+//            }
+//
+//            TasstyResponse.Success(
+//                domainData,
+//                Meta(200, "Success", "Message Success Retrieve")
+//            )
+//        }
+//
+//        return combinedFlow
+//            .onStart { emit(TasstyResponse.Loading()) }
+//            .catch { e ->
+//                emit(TasstyResponse.Error(
+//                    Meta(400, "Error", e.message ?: "Unknown Error")
+//                ))
+//            }
+//            .flowOn(Dispatchers.Default)
+//    }
+
     override fun getOtherUser(channelId: String): Flow<User>{
-        return dataSource.watchOtherUser(channelId)
+        return dataSource.watchOtherUser(channelId).flowOn(Dispatchers.IO)
     }
 }

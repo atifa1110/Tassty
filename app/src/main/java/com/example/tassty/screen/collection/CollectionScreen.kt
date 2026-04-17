@@ -16,9 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CollectionUiModel
-import com.example.tassty.util.collectionUiModel
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionTopAppBar
 import com.example.tassty.component.CollectionVerticalCard
@@ -27,11 +25,11 @@ import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmptyCollectionContent
 import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.HorizontalTitleItemCountSection
-import com.example.tassty.component.ShimmerFoodGridCard
-import com.example.tassty.component.ShimmerHorizontalTitleButtonSection
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.collectionUiModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun CollectionScreen (
@@ -40,23 +38,24 @@ fun CollectionScreen (
     onNavigateToDetailCollection: (String,String, String) -> Unit,
     viewModel: CollectionViewModel = hiltViewModel()
 ){
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val collections by viewModel.collectionsState.collectAsStateWithLifecycle()
+    val sheetState by viewModel.sheetState.collectAsStateWithLifecycle()
 
     CollectionContent(
-        uiState = uiState,
+        uiState = collections,
         onNavigateBack = onNavigateBack,
-        onNavigateToDetailCollection=onNavigateToDetailCollection,
+        onNavigateToDetailCollection = onNavigateToDetailCollection,
         onAddClick = {viewModel.onEvent(CollectionEvent.OnShowAddCollectionSheet)},
         snackHostState = snackHostState
     )
 
     CustomBottomSheet(
-        visible = uiState.isAddCollectionSheet,
+        visible = sheetState.isAddCollectionSheet,
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
         CollectionAddContent (
-            collectionName = uiState.newCollectionName,
+            collectionName = sheetState.newCollectionName,
             onValueName = {viewModel.onEvent(CollectionEvent.OnNewCollectionNameChange(it))},
             onDismissClick = { viewModel.onEvent(CollectionEvent.OnDismissAddCollectionSheet) },
             onAddCollection = {viewModel.onEvent(CollectionEvent.OnCreateCollection)}
@@ -95,7 +94,7 @@ fun CollectionContent (
 
             item {
                 CollectionListSection(
-                    resource = uiState.collections,
+                    items = uiState.collections,
                     onNavigateToDetailCollection = onNavigateToDetailCollection
                 )
             }
@@ -106,75 +105,62 @@ fun CollectionContent (
 
 @Composable
 fun CollectionListSection(
-    resource: Resource<List<CollectionUiModel>>,
+    items: ImmutableList<CollectionUiModel>?,
     onNavigateToDetailCollection: (String,String, String) -> Unit
 ){
-    val items = resource.data.orEmpty()
-    when {
-        resource.isLoading -> {
-            ShimmerHorizontalTitleButtonSection {
-                items(4) {
-                    ShimmerFoodGridCard()
-                }
-            }
-        }
+    if (items == null) {
+        return
+    }
 
-        resource.errorMessage != null || items.isEmpty() -> {
-            EmptyCollectionContent()
-        }
-
-        else -> {
-            HorizontalTitleItemCountSection(
-                itemCount = items.size,
-                headerText = "Collections",
-            ) {
-                items(items = items) { data ->
-                    CollectionVerticalCard(
-                        collection = data,
-                        onClick = {
-                            onNavigateToDetailCollection(data.id,data.title,data.imageUrl)
-                        }
-                    )
-                }
+    if (items.isEmpty()) {
+        EmptyCollectionContent()
+    } else {
+        HorizontalTitleItemCountSection(
+            itemCount = items.size,
+            headerText = "Collections",
+        ) {
+            items(items = items) { data ->
+                CollectionVerticalCard(
+                    collection = data,
+                    onClick = {
+                        onNavigateToDetailCollection(data.id, data.title, data.imageUrl)
+                    }
+                )
             }
         }
     }
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun CollectionLightPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme {
-//        CollectionContent(
-//            uiState = CollectionUiState(
-//                isAddCollectionSheet = false,
-//                newCollectionName = "",
-//                collections = Resource(isLoading = false, data = collectionUiModel)
-//            ),
-//            onNavigateToDetailCollection = { _, _, _ -> },
-//            onAddClick = {},
-//            onNavigateBack = {},
-//            snackHostState = snackHostState
-//        )
-//    }
-//}
-//
+@Composable
+fun CollectionLightPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme {
+        CollectionContent(
+            uiState = CollectionUiState(
+                collections = collectionUiModel.toImmutableList()
+            ),
+            onNavigateToDetailCollection = { _, _, _ -> },
+            onAddClick = {},
+            onNavigateBack = {},
+            snackHostState = snackHostState
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun CollectionDarkPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme(darkTheme = true){
-//        CollectionContent(
-//            uiState = CollectionUiState(
-//                isAddCollectionSheet = false,
-//                newCollectionName = "",
-//                collections = Resource(isLoading = false, data = collectionUiModel)
-//            ),
-//            onNavigateToDetailCollection = { _, _, _ -> },
-//            onAddClick = {},
-//            onNavigateBack = {},
-//            snackHostState = snackHostState
-//        )
-//    }
-//}
+@Composable
+fun CollectionDarkPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme(darkTheme = true){
+        CollectionContent(
+            uiState = CollectionUiState(
+                collections = collectionUiModel.toImmutableList()
+            ),
+            onNavigateToDetailCollection = { _, _, _ -> },
+            onAddClick = {},
+            onNavigateBack = {},
+            snackHostState = snackHostState
+        )
+    }
+}

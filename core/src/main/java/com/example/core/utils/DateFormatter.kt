@@ -1,4 +1,4 @@
-package com.example.core.ui.utils
+package com.example.core.utils
 
 import com.example.core.domain.utils.DateTimeDisplay
 import org.threeten.bp.Instant

@@ -385,7 +385,7 @@ private fun RestaurantContent(
     }
 }
 
-@Preview(showBackground = true, name="Light Mode")
+//@Preview(showBackground = true, name="Light Mode")
 @Composable
 fun DetailLocationLightPreview() {
     val cameraPositionState = rememberCameraPositionState()

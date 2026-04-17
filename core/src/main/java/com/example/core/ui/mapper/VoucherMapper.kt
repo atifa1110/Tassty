@@ -6,7 +6,7 @@ import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
 import com.example.core.domain.model.VoucherType
 import com.example.core.ui.model.VoucherUiModel
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 import org.threeten.bp.LocalDate
 import kotlin.String
 

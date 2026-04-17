@@ -5,6 +5,32 @@ import com.example.core.ui.model.CartGroupUiModel
 import com.example.core.ui.model.CartItemUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.core.ui.model.UserAddressUiModel
+import kotlinx.collections.immutable.ImmutableList
+
+data class CartUiState(
+    val carts: CartGroupUiModel? = null,
+    val selectedCart: CartItemUiModel? = null,
+    val isSelectAll: Boolean = false,
+
+    val selectedAddress: UserAddressUiModel? = null,
+    val selectedVoucher: VoucherUiModel? = null,
+
+    val subtotal: Int = 0,
+    val deliveryFee: Int = 0,
+    val voucherDiscount: Int = 0,
+    val totalOrder: Int = 0,
+
+    val isLocationSheetVisible: Boolean = false,
+    val isVoucherSheetVisible: Boolean = false,
+    val isRemoveItemSheetVisible: Boolean = false,
+    val isDoubleCheckSheetVisible: Boolean = false,
+    val isNoteSheetVisible: Boolean = false,
+    val isDeleteAllSheetVisible: Boolean = false,
+
+    val isCheckoutButtonEnabled: Boolean = false,
+    val note: String = "",
+)
+
 data class UiFlags(
     val isLocationSheetVisible: Boolean,
     val isVoucherSheetVisible: Boolean,
@@ -16,37 +42,6 @@ data class UiFlags(
     val note: String
 )
 
-
-data class CartUiState(
-    // Data Keranjang & Restoran
-    val carts: Resource<CartGroupUiModel> = Resource(),
-    val selectedCart: CartItemUiModel? = null,
-    val isSelectAll: Boolean = false,
-
-    // Informasi Pengiriman & Promo
-    val selectedAddress: UserAddressUiModel? = null,
-    val availableAddresses:  Resource<List<UserAddressUiModel>> = Resource(),
-
-    val selectedVoucher: VoucherUiModel? = null,
-    val availableVouchers: Resource<List<VoucherUiModel>> = Resource(),
-
-    // Perhitungan Total
-    val subtotal: Int = 0,
-    val deliveryFee: Int = 0,
-    val voucherDiscount: Int = 0,
-    val totalOrder: Int = 0,
-
-    // Status
-    val isLocationSheetVisible: Boolean = false,
-    val isVoucherSheetVisible: Boolean = false,
-    val isRemoveItemSheetVisible: Boolean = false,
-    val isDoubleCheckSheetVisible: Boolean = false,
-    val isNoteSheetVisible: Boolean = false,
-    val isDeleteAllSheetVisible: Boolean = false,
-
-    val isCheckoutButtonEnabled: Boolean = false,
-    val note: String = "",
-)
 
 data class CartInternalState(
     val selectedCartIds: Set<String> = emptySet(),

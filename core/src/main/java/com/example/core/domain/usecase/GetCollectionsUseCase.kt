@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetCollectionsUseCase @Inject constructor(
     private val collectionRepository: CollectionRepository
 ) {
-    operator fun invoke(): Flow<TasstyResponse<List<Collection>>> {
+    operator fun invoke(): Flow<List<Collection>> {
         return collectionRepository.getCollections()
     }
 }

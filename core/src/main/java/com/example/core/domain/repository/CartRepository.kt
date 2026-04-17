@@ -18,6 +18,6 @@ interface CartRepository{
     suspend fun updateCartIsHidden(cartId: List<String>, isHidden:Boolean)
     suspend fun updateCartNotes(cartId: String, notes: String)
     fun observeCartByMenuId(menuId: String): Flow<Cart?>
-    fun getAllCartWithDetails(): Flow<TasstyResponse<CartGroup>>
+    fun getAllCartWithDetails(): Flow<CartGroup>
     fun getCartsByRestaurantId(restaurantId: String): Flow<CartGroup>
 }

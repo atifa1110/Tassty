@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,18 +43,20 @@ import com.example.tassty.util.menusItem
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Pink500
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun DetailSearchScreen(
     query : String,
-    resource : Resource<List<MenuUiModel>>,
+    resource : Resource<ImmutableList<MenuUiModel>>,
     onQueryChange: (String) -> Unit,
     onClose: () -> Unit
 ) {
     val showFullPage = query.isNotEmpty()
 
     val animatedHeight by animateDpAsState(
-        targetValue = if (showFullPage) 1000.dp else 110.dp,
+        targetValue = if (showFullPage) 1000.dp else 150.dp,
         label = "searchHeight"
     )
 
@@ -68,6 +71,8 @@ fun DetailSearchScreen(
                 .fillMaxWidth()
                 .height(animatedHeight)
                 .background(LocalCustomColors.current.background)
+                .statusBarsPadding()
+
         ) {
             SearchAppBarActive(
                 searchQuery = query,
@@ -76,7 +81,7 @@ fun DetailSearchScreen(
             )
 
             AnimatedVisibility(visible = showFullPage) {
-                Column {
+                Column(Modifier.fillMaxWidth()) {
                     HorizontalDivider(Modifier.padding(vertical = 32.dp))
                     SearchResultList(
                         resource = resource
@@ -131,7 +136,7 @@ fun SearchAppBarActive(
 
 @Composable
 fun SearchResultList(
-    resource: Resource<List<MenuUiModel>>
+    resource: Resource<ImmutableList<MenuUiModel>>
 ) {
     val menuItems = resource.data.orEmpty()
 
@@ -175,7 +180,7 @@ fun PreviewSearch(){
     DetailSearchScreen(
         query = "burger",
         resource = Resource(
-            data = menusItem
+            data = menusItem.toImmutableList()
         ),
         onQueryChange = {},
         onClose = {}

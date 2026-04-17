@@ -2,7 +2,7 @@ package com.example.core.data.mapper
 
 import com.example.core.data.model.OrderDto
 import com.example.core.data.model.OrderItemDto
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 import com.example.core.domain.model.Order
 import com.example.core.domain.model.OrderItem
 import com.example.core.ui.model.OrderStatus

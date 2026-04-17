@@ -1,6 +1,7 @@
 package com.example.tassty.activity
 
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -35,13 +36,17 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.core.ui.service.ChatService
+import com.example.tassty.navigation.MainDestination
+import com.example.tassty.navigation.MessageDestination
 import com.example.tassty.navigation.TasstyNavHost
 import com.example.tassty.screen.splash.SplashScreen
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlin.getValue
 
 @AndroidEntryPoint
@@ -81,32 +86,82 @@ class MainActivity : ComponentActivity() {
         permissionManager.checkNotificationPermission()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
     private fun startLocationDependentLogic() {
         setContent {
             val viewModel: MainViewModel by  viewModels()
             val snackHostState = remember { SnackbarHostState() }
             val isAuthLoaded by viewModel.isAuthLoaded.collectAsState()
             val authStatus by viewModel.authState.collectAsStateWithLifecycle()
+            val chatReady by viewModel.isChatConnected.collectAsState()
 
-            LaunchedEffect(authStatus.isLoggedIn) {
-                Log.d("TASSTY_DEBUG", "MainActivity: Status login berubah jadi -> ${authStatus.isLoggedIn}")
-                if (authStatus.isLoggedIn) {
-                    Log.d("TASSTY_DEBUG", "MainActivity: Menyalakan ChatService...")
+            val navController = rememberNavController()
+
+            LaunchedEffect(authStatus.isLoggedIn, authStatus.streamToken) {
+                if (authStatus.isLoggedIn && authStatus.streamToken != null) {
+                    Log.d("NAV_DEBUG", "Data Auth dapet! Nyalain Chat Service tanpa nunggu Splash...")
                     triggerChatService(Action.START)
-                } else {
-                    Log.d("TASSTY_DEBUG", "MainActivity: Mematikan ChatService...")
+                } else if (!authStatus.isLoggedIn && isAuthLoaded) {
                     triggerChatService(Action.STOP)
                 }
             }
 
-            TasstyTheme(authStatus.isDarkMode) {
-                LaunchedEffect(isAuthLoaded) {
-                    if (isAuthLoaded) {
-                        viewModel.snackbarMessage.collect { message ->
-                            snackHostState.showSnackbar(message)
-                        }
-                    }
+            Log.d("NAV_DEBUG", "ChatReady $chatReady")
+
+            val target = intent.getStringExtra("target_screen")
+            val cid = intent.getStringExtra("channel_id")
+
+            LaunchedEffect(isAuthLoaded, chatReady, target, cid) {
+                // 1. Pagar pertama: Tunggu sampai NavHost siap
+                if (!isAuthLoaded) return@LaunchedEffect
+
+                // 2. Pagar kedua: Cek apakah ini memang niatnya mau navigasi ke chat?
+                // Jika target bukan 'message' atau cid-nya bolong, JANGAN JALAN.
+                if (target != MessageDestination.route || cid.isNullOrBlank()) {
+                    return@LaunchedEffect
                 }
+
+                // 3. Pagar ketiga: Tunggu Chat Service konek biar gak crash pas loading data
+                if (!chatReady) {
+                    Log.d("NAV_DEBUG", "Target ada, tapi nunggu Chat Service ready...")
+                    return@LaunchedEffect
+                }
+
+                try {
+                    Log.d("NAV_DEBUG", "Semua syarat terpenuhi. Gas navigasi ke: $cid")
+
+                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+                    notificationManager.cancel(cid.hashCode())
+
+                    // Pondasi Home
+                    navController.navigate(MainDestination.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+
+                    // Tumpuk Chat (cid di sini dijamin gak null/blank karena pagar di atas)
+                    navController.navigate(MessageDestination.createRoute(cid))
+
+                    // Bersihkan biar gak ke-trigger lagi pas recompose/rotasi
+                    intent.removeExtra("target_screen")
+                    intent.removeExtra("channel_id")
+
+                } catch (e: Exception) {
+                    Log.e("NAV_ERROR", "Gagal navigasi: ${e.message}")
+                }
+            }
+
+//            val navBackStackEntry by navController.currentBackStackEntryAsState()
+//            val currentRoute = navBackStackEntry?.destination?.route
+//
+//            // Contoh penggunaan:
+//            LaunchedEffect(currentRoute) {
+//                Log.d("NAV_DEBUG", "Luna lagi ada di halaman: $currentRoute")
+//            }
+
+            TasstyTheme(authStatus.isDarkMode) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     // SplashScreen muncul saat belum load
                     AnimatedVisibility(
@@ -123,17 +178,11 @@ class MainActivity : ComponentActivity() {
                         enter = fadeIn() + slideInVertically { 80 },
                         exit = fadeOut()
                     ) {
-//                        Scaffold(
-//                            snackbarHost = {
-//                                SnackbarHost(hostState = snackHostState)
-//                            }
-//                        ) { _ ->
-                            TasstyNavHost(
-                                authStatus = authStatus,
-                                modifier = Modifier.fillMaxSize(),
-                                navController = rememberNavController()
-                            )
-                        //}
+                        TasstyNavHost(
+                            authStatus = authStatus,
+                            modifier = Modifier.fillMaxSize(),
+                            navController = navController
+                        )
                     }
                 }
             }

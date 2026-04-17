@@ -9,14 +9,16 @@ import com.example.core.domain.usecase.GetMenuYouSearchUseCase
 import com.example.core.domain.usecase.GetRestaurantYouSearchUseCase
 import com.example.core.domain.usecase.GetSearchRestaurantUseCase
 import com.example.core.domain.utils.RestaurantSearchFilter
-import com.example.core.ui.utils.mapToResource
-import com.example.core.ui.utils.toListState
-import com.example.core.ui.utils.FilterManager
+import com.example.core.utils.mapToResource
+import com.example.core.utils.toListState
+import com.example.core.utils.FilterManager
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.toUiModel
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.model.mapToActiveFilters
 import com.example.tassty.screen.category.FilterState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -28,6 +30,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -77,22 +80,34 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    private val categoriesFlow = getAllCategoriesUseCase()
+        .map { it.toImmutableListState { category -> category.toUiModel() } }
+        .distinctUntilChanged().flowOn(Dispatchers.Default)
+
+    private val restaurantsFlow = getRestaurantUseCase()
+        .map { it.toImmutableListState { resto -> resto.toUiModel() } }
+        .distinctUntilChanged().flowOn(Dispatchers.Default)
+
+    private val menusFlow = getMenuSearchUseCase()
+        .map { it.toImmutableListState { menu -> menu.toUiModel() } }
+        .distinctUntilChanged().flowOn(Dispatchers.Default)
+
+
     /**
      * Combines multiple data sources (Categories, Featured Restaurants, and Menus).
      * Provides the default "Discovery" content shown before the user starts searching.
      */
     private val contentFlow = combine(
-        getAllCategoriesUseCase(),
-        getRestaurantUseCase(),
-        getMenuSearchUseCase()
+        categoriesFlow,
+        restaurantsFlow,
+        menusFlow
     ) { categories, restaurants, menus ->
         SearchContent(
-            categories = categories.toListState { it.toUiModel() },
-            restaurants = restaurants.toListState { it.toUiModel() },
-            menus = menus.toListState { it.toUiModel() }
+            categories = categories,
+            restaurants = restaurants,
+            menus = menus
         )
     }
-
     /**
      * Automatically manages search results based on user input and selected filters.
      * * Logic Flow:

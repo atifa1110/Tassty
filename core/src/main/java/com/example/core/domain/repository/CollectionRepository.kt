@@ -12,7 +12,7 @@ interface CollectionRepository {
     suspend fun addCollection(title: String)
     suspend fun updateCollectionName(collectionId: String,name: String)
     suspend fun initializeSystemCollections()
-    fun getCollections(): Flow<TasstyResponse<List<Collection>>>
+    fun getCollections() : Flow<List<Collection>>
     suspend fun getCollectionIdsByMenu(menuId: String): List<String>
 
     fun getMenuCollectionById(collectionId: String) : Flow<List<CollectionRestaurantWithMenu>>

@@ -1,13 +1,11 @@
 package com.example.tassty.screen.collection
 
-import com.example.core.data.source.remote.network.Resource
+
 import com.example.core.ui.model.CollectionUiModel
-import com.example.core.ui.model.MenuUiModel
+import kotlinx.collections.immutable.ImmutableList
 
 data class CollectionUiState (
-    val isAddCollectionSheet: Boolean = false,
-    val newCollectionName: String ="",
-    val collections: Resource<List<CollectionUiModel>> = Resource(isLoading = false)
+    val collections: ImmutableList<CollectionUiModel>? = null
 )
 
 data class CollectionInternalState (
@@ -16,10 +14,8 @@ data class CollectionInternalState (
 )
 
 sealed class CollectionEvent{
-
     object OnShowAddCollectionSheet : CollectionEvent()
     object OnDismissAddCollectionSheet : CollectionEvent()
     data class OnNewCollectionNameChange(val name: String) : CollectionEvent()
     object OnCreateCollection : CollectionEvent()
-
 }

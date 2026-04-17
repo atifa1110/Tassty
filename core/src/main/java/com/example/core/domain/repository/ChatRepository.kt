@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChatRepository {
 
+    fun isChatReady(): Flow<Boolean>
     fun getCurrentUserId(): String
     suspend fun connectStreamUser(
         userId: String,

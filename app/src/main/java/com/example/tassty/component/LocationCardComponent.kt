@@ -271,14 +271,15 @@ fun LocationCard(
 @Composable
 fun LocationSelectorCard(
     address: UserAddressUiModel,
+    isSelected: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable{onCheckedChange(address.isSelected)},
+        modifier = Modifier.fillMaxWidth().clickable(onClick = { onCheckedChange(isSelected) }),
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(width= 1.dp, color = if(address.isSelected) Orange500 else Neutral40),
+        border = BorderStroke(width= 1.dp, color = if(isSelected) Orange500 else Neutral40),
         colors = CardDefaults.cardColors(
-            containerColor = if(address.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.background
+            containerColor = if(isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.background
         )
     ) {
         Row(
@@ -318,7 +319,7 @@ fun LocationSelectorCard(
             }
             Spacer(Modifier.width(8.dp))
             Checkbox(
-                checked = address.isSelected,
+                checked = isSelected,
                 onCheckedChange = onCheckedChange,
                 modifier = Modifier.padding(0.dp).size(24.dp),
                 colors = CheckboxDefaults.colors(
@@ -326,7 +327,6 @@ fun LocationSelectorCard(
                     uncheckedColor = Neutral40
                 )
             )
-
         }
     }
 }
@@ -424,8 +424,9 @@ fun PreviewLocationCard() {
         LocationCard(address = addresses[0])
         LocationSelectorCard(
             address = addresses[0],
-            onCheckedChange = {}
+            onCheckedChange = {},
+            isSelected = false
         )
-        //LocationLardCard(addresses[0])
+        LocationLardCard(addresses[0])
     }
 }

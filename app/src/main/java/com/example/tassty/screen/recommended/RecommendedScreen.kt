@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
@@ -40,18 +38,17 @@ import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HorizontalTitleSubtitleSection
-import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.RestaurantLargeGridCard
 import com.example.tassty.component.SearchBar
-import com.example.tassty.component.ShimmerFoodGridCard
 import com.example.tassty.component.ShimmerRestaurantGridCard
 import com.example.tassty.component.TitleTopAppBar
 import com.example.tassty.component.restaurantRecommendedSection
 import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.util.restaurantUiModel
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.TasstyTheme
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun RecommendedRestaurantScreen(
@@ -120,7 +117,7 @@ fun RecommendedRestaurantContent(
 
 @Composable
 fun SearchHeader(
-    resource: Resource<List<CategoryUiModel>>,
+    resource: Resource<ImmutableList<CategoryUiModel>>,
     onClick: (String) -> Unit
 ){
     Column(
@@ -141,7 +138,7 @@ fun SearchHeader(
 
 @Composable
 fun CategorySection(
-    resource: Resource<List<CategoryUiModel>>,
+    resource: Resource<ImmutableList<CategoryUiModel>>,
     onClick: (String) -> Unit,
 ){
     val items = resource.data.orEmpty()
@@ -186,7 +183,7 @@ fun CategorySection(
 
 @Composable
 fun RecommendedCategoryContent(
-    resource: Resource<List<RestaurantUiModel>>,
+    resource: Resource<ImmutableList<RestaurantUiModel>>,
     onNavigateToDetail: (String) -> Unit
 ) {
     val items = resource.data.orEmpty()
@@ -236,9 +233,9 @@ fun RecommendedLightPreview() {
         RecommendedRestaurantContent(
             uiState = RecommendedUiState(
                 selectedCategoryId = "CAT-001",
-                allCategories = Resource(data = categories),
-                recommendedRestaurant = Resource(data = restaurantUiModel),
-                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
+                allCategories = Resource(data = categories.toImmutableList()),
+                recommendedRestaurant = Resource(data = restaurantUiModel.toImmutableList()),
+                recommendedRestaurantCategories = Resource(data = restaurantUiModel.toImmutableList())
             ),
             onCategoryClick = {},
             onNavigateBack = {},
@@ -249,14 +246,14 @@ fun RecommendedLightPreview() {
 
 //@Preview(showBackground = true, name = "Dark Mode")
 @Composable
-fun RecommendedDArkPreview() {
+fun RecommendedDarkPreview() {
     TasstyTheme(darkTheme = true) {
         RecommendedRestaurantContent(
             uiState = RecommendedUiState(
                 selectedCategoryId = "CAT-001",
-                allCategories = Resource(data = categories),
-                recommendedRestaurant = Resource(data = restaurantUiModel),
-                recommendedRestaurantCategories = Resource(data = restaurantUiModel)
+                allCategories = Resource(data = categories.toImmutableList()),
+                recommendedRestaurant = Resource(data = restaurantUiModel.toImmutableList()),
+                recommendedRestaurantCategories = Resource(data = restaurantUiModel.toImmutableList())
             ),
             onCategoryClick = {},
             onNavigateBack = {},

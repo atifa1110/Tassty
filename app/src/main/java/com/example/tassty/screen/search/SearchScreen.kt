@@ -60,6 +60,8 @@ import com.example.tassty.util.menusItem
 import com.example.tassty.util.popularOptions
 import com.example.tassty.util.restaurantMenuUiModel
 import com.example.tassty.util.restaurantUiModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun SearchScreen(
@@ -271,7 +273,7 @@ fun ChipExpandListSection(
 
 @Composable
 fun CategoryListSection(
-    resource: Resource<List<CategoryUiModel>>,
+    resource: Resource<ImmutableList<CategoryUiModel>>,
     onRetry: () -> Unit
 ){
     val items = resource.data.orEmpty()
@@ -295,7 +297,7 @@ fun CategoryListSection(
 
 @Composable
 fun RestaurantSection(
-    resource: Resource<List<RestaurantUiModel>>,
+    resource: Resource<ImmutableList<RestaurantUiModel>>,
     onRetry: () -> Unit,
 ) {
     val items = resource.data.orEmpty()
@@ -331,7 +333,7 @@ fun RestaurantSection(
 
 @Composable
 fun MenuSection(
-    resource: Resource<List<MenuUiModel>>,
+    resource: Resource<ImmutableList<MenuUiModel>>,
     onRetry: () -> Unit,
 ) {
     val items = resource.data.orEmpty()
@@ -377,9 +379,9 @@ fun SearchLightPreview() {
             uiState = SearchUiState(
                 history = Resource(data = historyOptions),
                 popular = Resource(data = popularOptions),
-                categories = Resource(data = categories),
-                restaurants = Resource(data = restaurantUiModel),
-                menus = Resource(data = menusItem),
+                categories = Resource(data = categories.toImmutableList()),
+                restaurants = Resource(data = restaurantUiModel.toImmutableList()),
+                menus = Resource(data = menusItem.toImmutableList()),
                 activeFilters = defaultFilter,
                 isSearching = true,
                 query = "cafe",
@@ -403,9 +405,9 @@ fun SearchDarkPreview() {
             uiState = SearchUiState(
                 history = Resource(data = historyOptions),
                 popular = Resource(data = popularOptions),
-                categories = Resource(data = categories),
-                restaurants = Resource(data = restaurantUiModel),
-                menus = Resource(data = menusItem),
+                categories = Resource(data = categories.toImmutableList()),
+                restaurants = Resource(data = restaurantUiModel.toImmutableList()),
+                menus = Resource(data = menusItem.toImmutableList()),
                 activeFilters = defaultFilter,
                 isSearching = true,
                 query = "cafe",

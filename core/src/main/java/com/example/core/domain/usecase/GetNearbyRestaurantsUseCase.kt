@@ -10,7 +10,7 @@ import javax.inject.Inject
 class GetNearbyRestaurantsUseCase @Inject constructor(
     private val repository: RestaurantRepository
 ) {
-    operator fun invoke(): Flow<TasstyResponse<List<Restaurant>>> {
-        return repository.getNearbyRestaurants()
+    operator fun invoke(fetchFromRemote: Boolean = false): Flow<TasstyResponse<List<Restaurant>>> {
+        return repository.getNearbyRestaurants(fetchFromRemote)
     }
 }

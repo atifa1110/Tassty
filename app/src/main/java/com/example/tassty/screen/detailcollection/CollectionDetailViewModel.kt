@@ -10,6 +10,9 @@ import com.example.core.domain.usecase.UpdateCollectionNameUseCase
 import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.navigation.CollectionDetailDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,12 +37,22 @@ class CollectionDetailViewModel @Inject constructor(
     val name = CollectionDetailDestination.getName(savedStateHandle)
     val image = CollectionDetailDestination.getImage(savedStateHandle)
 
-    private val _uiState = MutableStateFlow(CollectionDetailUiState(
-        collectionName = name, nameInput = name, collectionImage = image)
+    private val _uiState = MutableStateFlow(
+        CollectionDetailUiState(
+            collectionName = name, collectionImage = image
+        )
     )
     val uiState: StateFlow<CollectionDetailUiState> = _uiState.asStateFlow()
 
-    private val _uiEvent = Channel<UiEvent>()
+    val collectionMenusUi = getCollectionMenuByIdUseCase(id)
+        .map { list -> list.map { it.toUiModel() }.toImmutableList() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+    private val _uiEvent = Channel<UiEvent>(Channel.BUFFERED)
     val uiEvent = _uiEvent.receiveAsFlow()
 
     fun onEvent(event: CollectionDetailEvent) {
@@ -75,14 +88,6 @@ class CollectionDetailViewModel @Inject constructor(
         }
     }
 
-    val collectionMenusUi = getCollectionMenuByIdUseCase(id)
-        .map { list -> list.map { it.toUiModel() } }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
-
     private fun updateCollectionToDatabase() = viewModelScope.launch {
         val newName = uiState.value.nameInput
         updateCollectionNameUseCase(id,newName)
@@ -98,9 +103,7 @@ class CollectionDetailViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 removeCollectionByIdUseCase(id)
-                // tutup bottom sheet
                 _uiState.update { it.copy(isDeleteCollection = false) }
-                // Kirim event dengan pesan sukses
                 _uiEvent.send(UiEvent.NavigateBackWithResult("Collection $name berhasil dihapus"))
             } catch (e: Exception) {
                 _uiEvent.send(UiEvent.ShowError("Gagal menghapus collection"))

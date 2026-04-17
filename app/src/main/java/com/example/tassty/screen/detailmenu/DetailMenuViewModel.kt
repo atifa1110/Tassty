@@ -12,26 +12,31 @@ import com.example.core.domain.usecase.GetDetailMenuUseCase
 import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
 import com.example.core.domain.usecase.ObserveIsMenuFavoriteUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.ui.utils.mapToResource
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.mapToResource
+import com.example.core.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.DetailMenuUiModel
 import com.example.tassty.navigation.DetailMenuDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.map
 
 @HiltViewModel
 class DetailMenuViewModel @Inject constructor(
@@ -50,41 +55,45 @@ class DetailMenuViewModel @Inject constructor(
 
     private val _internalState = MutableStateFlow(DetailMenuInternalState())
 
-    val uiState: StateFlow<DetailMenuUiState> = combine(
-        _internalState,
+    private val collectionsFlow = combine(
+        getCollectionsUseCase().map { list -> list.map { it.toUiModel() }.toImmutableList() },
+        _internalState.map { it.selectedCollectionIds }.distinctUntilChanged()
+    ) { collections, selectedIds ->
+        collections.map { it.copy(isSelected = selectedIds.contains(it.id)) }.toImmutableList()
+    }.flowOn(Dispatchers.Default)
+
+    private val detailFlow = combine(
         getDetailMenuUseCase(id),
         observeIsMenuFavoriteUseCase(id),
-        getCollectionsUseCase()
-    ) { internal, detailRes, isFav, collRes ->
-
-        val detailUi = detailRes.mapToResource { menu ->
-            val detailUiModel = menu.toUiModel(isFav)
-
-            val updatedGroups = detailUiModel.optionGroups.map { group ->
-                group.copy(
-                    options = group.options.map { option ->
-                        option.copy(isSelected = internal.selectedOptionIds.contains(option.id))
-                    }
-                )
-            }
-
-            detailUiModel.copy(optionGroups = updatedGroups)
-        }
-
-        val collectionsUi = collRes.toListState { collection ->
-            collection.toUiModel().copy(
-                isSelected = internal.selectedCollectionIds.contains(collection.id)
+        _internalState.map { it.selectedOptionIds }.distinctUntilChanged()
+    ) { detailRes, isFavorite, selectedIds ->
+        detailRes.mapToResource { menu ->
+            val uiModel = menu.toUiModel(isFavorite)
+            uiModel.copy(
+                optionGroups = uiModel.optionGroups.map { group ->
+                    group.copy(
+                        options = group.options.map { option ->
+                            option.copy(isSelected = selectedIds.contains(option.id))
+                        }
+                    )
+                }
             )
         }
+    }.flowOn(Dispatchers.Default)
 
+    val uiState: StateFlow<DetailMenuUiState> = combine(
+        _internalState,
+        detailFlow,
+        collectionsFlow
+    ) { internal, detail, collection ->
         DetailMenuUiState(
-            detail = detailUi,
-            collections = collectionsUi,
+            detail = detail,
+            collections = collection,
             quantity = internal.quantity,
             notesValue = internal.notesValue,
             isEditMode = internal.isEditMode,
             addToCartButtonText = if (internal.isEditMode) "Update Cart" else "Add to Cart",
-            cartTotalPrice = calculatePrices(detailUi.data, internal.quantity),
+            cartTotalPrice = calculatePrices(detail.data, internal.quantity),
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
             isSuccessSheetVisible = internal.isSuccessSheetVisible,
             isAddCollectionSheet = internal.isAddCollectionSheet,
@@ -203,7 +212,7 @@ class DetailMenuViewModel @Inject constructor(
         val menu = state.detail.data ?: return
 
         val selectedCollectionIds = internal.selectedCollectionIds.toList()
-        val firstSelectedName = state.collections.data
+        val firstSelectedName = state.collections
             ?.find { internal.selectedCollectionIds.contains(it.id) }
             ?.title ?: ""
 

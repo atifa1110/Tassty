@@ -1,9 +1,7 @@
 package com.example.core.data.repository
 
-import android.util.Log
 import com.example.core.data.mapper.toDomain
 import com.example.core.data.source.local.cache.MenuCache
-import com.example.core.data.source.local.database.dao.CleanupDao
 import com.example.core.data.source.local.datasource.CleanDataSource
 import com.example.core.data.source.remote.datasource.MenuNetworkDataSource
 import com.example.core.data.source.remote.network.Meta
@@ -28,11 +26,11 @@ class MenuRepositoryImpl @Inject constructor(
         private const val META_KEY_MENU_SUGGESTED = "suggested_menus"
     }
 
-    override fun getRecommendedMenus(): Flow<TasstyResponse<List<Menu>>> = flow {
+    override fun getRecommendedMenus(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Menu>>> = flow {
         emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_RECOMMENDED)
-        if (cachedData.isNotEmpty()) {
+        if (!fetchFromRemote && cachedData.isNotEmpty()) {
             val menus = cachedData.map { menuDto ->
                 menuDto.toDomain()
             }
@@ -63,11 +61,11 @@ class MenuRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getSuggestedMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
+    override fun getSuggestedMenus(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Menu>>> = flow{
         emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_SUGGESTED)
-        if (cachedData.isNotEmpty()) {
+        if (!fetchFromRemote && cachedData.isNotEmpty()) {
             val menus = cachedData.map { menuDto ->
                 menuDto.toDomain()
             }
@@ -97,19 +95,6 @@ class MenuRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-//    override fun getSearchMenus(): Flow<TasstyResponse<List<Menu>>> = flow{
-//        emit(TasstyResponse.Loading())
-//
-//        val result = remoteDataSource.getSearchMenus()
-//        when (result) {
-//            is TasstyResponse.Success -> {
-//                val menus = result.data?.map { menuDto -> menuDto.toDomain() }
-//                emit(TasstyResponse.Success(menus, result.meta))
-//            }
-//            is TasstyResponse.Error -> emit(result)
-//            is TasstyResponse.Loading -> emit(result)
-//        }
-//    }.flowOn(Dispatchers.IO)
 
     override suspend fun runDatabaseMaintenance() {
         withContext(Dispatchers.IO){

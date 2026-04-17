@@ -16,6 +16,7 @@ fun LocationDetail?.toUiModel(): UserAddressUiModel{
         landmarkDetail = "",
         addressType = AddressType.NONE,
         isPrimary = false,
-        isSelected = false
+        isSelected = false,
+        isSwipeActionVisible = true
     )
 }

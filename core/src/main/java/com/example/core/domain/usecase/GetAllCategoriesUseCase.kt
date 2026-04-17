@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetAllCategoriesUseCase @Inject constructor(
     private val repository: CategoryRepository
 ) {
-    operator fun invoke(): Flow<TasstyResponse<List<Category>>> {
-        return repository.getAllCategories()
+    operator fun invoke(fetchFromRemote: Boolean = false): Flow<TasstyResponse<List<Category>>> {
+        return repository.getAllCategories(fetchFromRemote)
     }
 }

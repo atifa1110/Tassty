@@ -16,22 +16,40 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import net.sqlcipher.database.SupportFactory
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
+//    @Singleton
+//    @Provides
+//    fun provideDatabase(
+//        @ApplicationContext context: Context
+//    ): AppDatabase {
+//        return Room.databaseBuilder(
+//            context,
+//            AppDatabase::class.java,
+//            "tassty_db"
+//        ).build()
+//    }
+
     @Singleton
     @Provides
     fun provideDatabase(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        @DatabasePassphrase passphrase: ByteArray
     ): AppDatabase {
+        val factory = SupportFactory(passphrase)
+
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             "tassty_db"
-        ).build()
+        ).openHelperFactory(factory)
+            .fallbackToDestructiveMigration(false)
+            .build()
     }
 
     @Singleton

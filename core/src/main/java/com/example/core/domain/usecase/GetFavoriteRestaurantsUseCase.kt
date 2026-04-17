@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetFavoriteRestaurantsUseCase @Inject constructor(
     private val repository: FavoriteRepository
 ) {
-    operator fun invoke(): Flow<TasstyResponse<List<Favorite>>> {
+    operator fun invoke(): Flow<List<Favorite>> {
         return repository.getFavorites()
     }
 }

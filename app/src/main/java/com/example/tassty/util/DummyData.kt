@@ -8,12 +8,15 @@ import com.example.core.domain.model.MenuStatus
 import com.example.core.domain.model.OperationalDay
 import com.example.core.domain.model.Restaurant
 import com.example.core.domain.model.RestaurantStatus
+import com.example.core.domain.model.UserAddress
+import com.example.core.domain.model.Voucher
 import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
 import com.example.core.domain.model.VoucherType
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.FilterIconKeys
 import com.example.core.ui.mapper.OrderFilterCategory
+import com.example.core.ui.mapper.empty
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.CardUserUiModel
 import com.example.core.ui.model.CartGroupUiModel
@@ -246,8 +249,8 @@ val collectionUiModel = listOf(
 
 val col: ImmutableList<CollectionUiModel> = collectionUiModel.toImmutableList()
 
-val voucherUiModel = listOf(
-    VoucherUiModel(
+val voucherDomain = listOf(
+    Voucher(
         id = "VOU-001",
         code = "Voucher1",
         imageUrl = "https://assets.example.com/icons/paypal.png",
@@ -262,14 +265,9 @@ val voucherUiModel = listOf(
         minOrderLabel = "Min. order Rp75.000",
         startDate = LocalDate.of(2025,6,10),
         expiryDate = LocalDate.of(2025,10,10),
-        expireLabel = "12 Jan 2025",
         status = VoucherStatus.AVAILABLE,
-        isUsable = true,
-        isSelected = true,
-        header = "Available"
     ),
-
-    VoucherUiModel(
+    Voucher(
         id = "VOU-002",
         code = "Vocuher1",
         imageUrl = "https://assets.example.com/icons/restaurant_exclusive.png",
@@ -284,13 +282,9 @@ val voucherUiModel = listOf(
         minOrderLabel = "Min. order Rp40.000",
         startDate = LocalDate.of(2025,6,10),
         expiryDate = LocalDate.of(2025,10,10),
-        expireLabel = "12 Jan 2025",
         status = VoucherStatus.AVAILABLE,
-        isUsable = false,
-        isSelected = false,
-        header = "Upcoming"
     ),
-    VoucherUiModel(
+    Voucher(
         id = "VOU-003",
         code = "Voucher1",
         imageUrl = "https://assets.example.com/icons/paypal.png",
@@ -305,56 +299,11 @@ val voucherUiModel = listOf(
         minOrderLabel = "Min. order Rp75.000",
         startDate = LocalDate.of(2025,6,10),
         expiryDate = LocalDate.of(2025,10,10),
-        expireLabel = "12 Jan 2025",
-        status = VoucherStatus.AVAILABLE,
-        isUsable = true,
-        isSelected = false,
-        header = "Available"
+        status = VoucherStatus.AVAILABLE
     ),
-    VoucherUiModel(
-        id = "VOU-004",
-        code = "Voucher1",
-        imageUrl = "https://assets.example.com/icons/paypal.png",
-        title = "Diskon 20% Semua Restoran",
-        description = "Use with GoPay or 7 other options, \nmax Rp15K discount.",
-        type = VoucherType.DISCOUNT,
-        discountType = DiscountType.PERCENTAGE,
-        scope = VoucherScope.GLOBAL,
-        discountValue = 20,
-        maxDiscount = 30000,
-        minOrderValue = 75000,
-        minOrderLabel = "Min. order Rp75.000",
-        startDate = LocalDate.of(2025,6,10),
-        expiryDate = LocalDate.of(2025,10,10),
-        expireLabel = "12 Jan 2025",
-        status = VoucherStatus.AVAILABLE,
-        isUsable = true,
-        isSelected = false,
-        header = "Available"
-    ),
-    VoucherUiModel(
-        id = "VOU-005",
-        code = "Voucher1",
-        imageUrl = "https://assets.example.com/icons/paypal.png",
-        title = "Diskon 20% Semua Restoran",
-        description = "Use with GoPay or 7 other options, \nmax Rp15K discount.",
-        type = VoucherType.DISCOUNT,
-        discountType = DiscountType.PERCENTAGE,
-        scope = VoucherScope.GLOBAL,
-        discountValue = 20,
-        maxDiscount = 30000,
-        minOrderValue = 75000,
-        minOrderLabel = "Min. order Rp75.000",
-        startDate = LocalDate.of(2025,6,10),
-        expiryDate = LocalDate.of(2025,10,10),
-        expireLabel = "12 Jan 2025",
-        status = VoucherStatus.AVAILABLE,
-        isUsable = true,
-        isSelected = false,
-        header = "Available"
-    )
 )
 
+val voucherUiModel = voucherDomain.map { it.toUiModel() }
 val voc : ImmutableList<VoucherUiModel> = voucherUiModel.toImmutableList()
 
 val collectionMenuUiModel = listOf(
@@ -394,6 +343,8 @@ val collectionRestaurantMenuUiModel = listOf(
         menus = collectionMenuUiModel
     )
 )
+
+val collection = collectionRestaurantMenuUiModel.toImmutableList()
 
 val reviews = listOf(
     ReviewUiModel(
@@ -450,32 +401,29 @@ val cartUiModel =
         )
 )
 
-val addresses = listOf(
-    UserAddressUiModel(
+val addressesDomain = listOf(
+    UserAddress(
         id = "address_1",
         fullAddress = "Jl. Sudirman No. 12, Kebayoran Baru, Jakarta Selatan",
         latitude = -6.2235,
         longitude = 106.8119,
-        location = LatLng(-6.2235,106.8119,),
         addressName = "Apartment 12A",
         landmarkDetail = "Near the fountain, 3rd floor, unit 12A",
         addressType = AddressType.PERSONAL,
         isPrimary = true,
-        isSelected = false
     ),
-    UserAddressUiModel(
+    UserAddress(
         id = "address_2",
         fullAddress = "Komplek Perkantoran Mega Kuningan Blok E, Jakarta Selatan",
         latitude = -6.2274,
         longitude = 106.8378,
-        location = LatLng(-6.2274,106.8378),
         addressName = "Head Office - Sinar Raya",
         landmarkDetail = "Gedung Tower 3, lantai 15 (samping lift B)",
         addressType = AddressType.PERSONAL,
         isPrimary = false,
-        isSelected = false
     )
 )
+val addresses = addressesDomain.map { it.toUiModel() }
 
 val historyOptions = listOf(
     ChipFilterOption("Chicken", R.drawable.history),
@@ -535,7 +483,8 @@ val cardList = listOf(
         themeColor = "pink",
         themeBackground = "pattern_1",
         isActive = true,
-        isSelected = true
+        isSelected = true,
+        isSwipeActionVisible = true
     ),
     CardUserUiModel(
         id = "CARD-002",
@@ -547,7 +496,8 @@ val cardList = listOf(
         themeColor = "orange",
         themeBackground = "pattern_3",
         isActive = true,
-        isSelected = false
+        isSelected = false,
+        isSwipeActionVisible = false
     )
 )
 
@@ -792,5 +742,23 @@ val dummyMessages = listOf(
         isMine = true,
         imageAttachment = ""
     ),
-
 )
+
+val emptyRestaurant = Restaurant(
+        id = "",
+        name = "",
+        imageUrl = "",
+        fullAddress = "",
+        latitude = 0.0,
+        longitude = 0.0,
+        city = "",
+        categories = emptyList(),
+        rank = 0,
+        distance = 0,
+        rating = 0.0,
+        totalReviews = 0,
+        deliveryCost = 0,
+        deliveryTime = "",
+        isOpenFromApi = false,
+        closingTimeServerFromApi = ""
+    )

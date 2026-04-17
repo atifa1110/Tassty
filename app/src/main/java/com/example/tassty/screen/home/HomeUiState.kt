@@ -21,7 +21,7 @@ data class HomeUiState(
     val todayVouchers: Resource<ImmutableList<VoucherUiModel>> = Resource(),
     val recommendedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
     val suggestedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
-    val collectionsResource: Resource<ImmutableList<CollectionUiModel>> = Resource(),
+    val collections: ImmutableList<CollectionUiModel>? = null,
 
     val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
@@ -29,7 +29,8 @@ data class HomeUiState(
     val isDetailMenuModalVisible: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
     val newCollectionName: String = "",
-    val quantity: Int = 0
+    val quantity: Int = 0,
+    val isTokenExpired: Boolean = false
 )
 
 data class HomeContent(
@@ -50,6 +51,7 @@ data class MenuInteractionData(
 )
 
 data class HomeUiFlags(
+    val isRefreshingToken: Boolean = false,
     val isRefreshing: Boolean = false,
     val isAddCollectionSheet: Boolean = false,
     val isDetailMenuModalVisible: Boolean = false,
@@ -86,6 +88,7 @@ sealed class HomeEvent{
     object OnCreateCollection : HomeEvent()
 
     data class OnShowDetailMenu(val id: String) : HomeEvent()
+    data object OnRefreshToken: HomeEvent()
 }
 
 sealed class HomeEffect {

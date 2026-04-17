@@ -71,7 +71,7 @@ class LoginViewModel @Inject constructor(
             _internalState.update {
                 it.copy(
                     emailError = emailErrorRes?.let { res -> UiText.StringResource(res) },
-                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res) }
+                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res,8) }
                 )
             }
             return

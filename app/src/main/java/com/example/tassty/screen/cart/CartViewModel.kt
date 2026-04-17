@@ -1,9 +1,7 @@
 package com.example.tassty.screen.cart
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.CreateOrderUseCase
@@ -15,25 +13,25 @@ import com.example.core.domain.usecase.RemoveCartMenuUseCase
 import com.example.core.domain.usecase.UpdateCartHiddenUseCase
 import com.example.core.domain.usecase.UpdateCartNotesUseCase
 import com.example.core.domain.usecase.UpdateCartQuantityUseCase
-import com.example.core.ui.utils.mapToResource
 import com.example.core.domain.utils.toCleanRupiahFormat
-import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toRequest
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.CartItemUiModel
+import com.example.core.ui.model.UserAddressUiModel
+import com.example.core.ui.model.VoucherUiModel
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.CartSummary
 import com.example.tassty.calculateCartSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -56,85 +54,60 @@ class CartViewModel @Inject  constructor(
 
     private val _internalState = MutableStateFlow(CartInternalState())
 
+    private val _voucherState = MutableStateFlow<Resource<ImmutableList<VoucherUiModel>>>(Resource())
+    val voucherState: StateFlow<Resource<ImmutableList<VoucherUiModel>>> = _voucherState
+
+    private val _addressState = MutableStateFlow<Resource<ImmutableList<UserAddressUiModel>>>(Resource())
+    val addressState: StateFlow<Resource<ImmutableList<UserAddressUiModel>>> = _addressState
+
     private val _uiEffect = Channel<CartUiEffect>(Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
-    private val cartFlow = getCartsUseCase().map {
-        it.mapToResource { cart -> cart.toUiModel() } }
-            .distinctUntilChanged()
-
-    private val addressFlow = getUserAddressUseCase().map {
-        it.toListState { address -> address.toUiModel() } }
-            .distinctUntilChanged()
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val vouchersFlow = cartFlow
-        .mapNotNull { it.data?.restaurant?.id }
-        .distinctUntilChanged()
-        .flatMapLatest {
-            restaurantId -> getRestaurantVouchersUseCase(restaurantId)
-                .map { it.toListState { v -> v.toUiModel() } }
-        }
+    private val cartFlow = getCartsUseCase().map { cart -> cart.toUiModel() }
 
     private val selectedMenusFlow = combine(
         cartFlow,
         _internalState.map { it.selectedCartIds }.distinctUntilChanged(),
         _internalState.map { it.revealedCartIds }.distinctUntilChanged()
     ) { cartRes, selectedIds, revealedIds ->
-        cartRes.data?.menus?.map { item ->
-            item.copy(
-                isSelected = selectedIds.contains(item.cartId),
-                isSwipeActionVisible = revealedIds.contains(item.cartId)
-            )
-        } ?: emptyList()
+        cartRes.menus.withUiState(selectedIds,revealedIds)
     }
 
     private val selectedVoucherFlow = combine(
-        vouchersFlow,
+        voucherState,
         _internalState.map { it.selectedVoucherId }.distinctUntilChanged()
-    ) { voucherRes, id ->
-        voucherRes.data?.applySingleSelection(
-            selectedId = id,
-            getId = { it.id },
-            setSelected = { item, isSelected -> item.copy(isSelected = isSelected) }
-        ) ?: emptyList()
+    ) { voucherRes, selectedId ->
+        voucherRes.data?.find { it.id == selectedId }
     }
 
     private val selectedAddressFlow = combine(
-        addressFlow,
+        addressState,
         _internalState.map { it.selectedAddressId }.distinctUntilChanged()
-    ) { addressRes, id ->
-        addressRes.data?.applySingleSelection(
-            selectedId = id,
-            getId = { it.id },
-            setSelected = { item, isSelected -> item.copy(isSelected = isSelected) }
-        ) ?: emptyList()
+    ) { addressRes, selectedId ->
+        addressRes.data?.find { it.id == selectedId }
     }
 
-    private val summaryInputFlow = combine(
-        cartFlow.map { it.data?.menus ?: emptyList() }.distinctUntilChanged(),
-        _internalState.map { it.selectedCartIds }.distinctUntilChanged()
-    ) { allMenus, selectedIds ->
-        allMenus.filter { selectedIds.contains(it.cartId) }
-    }.distinctUntilChanged { old, new ->
-        old.map { it.cartId to it.quantity } == new.map { it.cartId to it.quantity }
-    }
+    private val summaryInputFlow = selectedMenusFlow.map { menus ->
+            menus.filter { it.isSelected }
+        }
+        .distinctUntilChanged { old, new ->
+            old.map { it.cartId to it.quantity } == new.map { it.cartId to it.quantity }
+        }
 
     private val summaryFlow = combine(
         summaryInputFlow,
-        cartFlow.map { it.data?.restaurant?.deliveryCost ?: 0 }.distinctUntilChanged(),
-        selectedVoucherFlow.map { it.find { v -> v.isSelected } }.distinctUntilChanged()
+        cartFlow.map { it.restaurant.deliveryCost }.distinctUntilChanged(),
+        selectedVoucherFlow
     ) { selectedMenus, deliveryCost, selectedVoucher ->
-
-        Log.d("BENCHMARK", "summaryFlow recomputed")
-
         calculateCartSummary(
             selectedMenus = selectedMenus,
             deliveryCost = deliveryCost,
             voucher = selectedVoucher
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),
-        CartSummary()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = CartSummary()
     )
 
     private val uiFlagsFlow = _internalState
@@ -152,14 +125,6 @@ class CartViewModel @Inject  constructor(
         }
         .distinctUntilChanged()
 
-    private val baseUiFlow = combine(
-        cartFlow,
-        vouchersFlow,
-        addressFlow
-    ) { cartRes, voucherRes, addressRes ->
-        Triple(cartRes, voucherRes, addressRes)
-    }
-
     val selectionFlow = combine(
         selectedMenusFlow,
         selectedVoucherFlow,
@@ -168,36 +133,23 @@ class CartViewModel @Inject  constructor(
         Triple(menus, vouchers, addresses)
     }
 
-    val uiState: StateFlow<CartUiState> =
-        combine(
-            baseUiFlow,
+    val uiState: StateFlow<CartUiState> = combine(
+            cartFlow,
             selectionFlow,
             summaryFlow,
             uiFlagsFlow
-        ) { base, selection, summary, internal ->
-
-            val (cartRes, voucherRes, addressRes) = base
-            val (menus, vouchers, addresses) = selection
-
-            val cart = cartRes.data
-            val updatedCart = cart?.copy(menus = menus)
-
-            val currentAddress = addresses.find { it.isSelected }
-            val currentVoucher = vouchers.find { it.isSelected }
+        ) { carts, selection, summary, internal ->
+            val (menus, selectedVoucher, selectedAddress) = selection
 
             CartUiState(
-                carts = cartRes.copy(data = updatedCart),
-                availableVouchers = voucherRes.copy(data = vouchers),
-                availableAddresses = addressRes.copy(data = addresses),
-
+                carts = carts.copy(menus = menus),
                 subtotal = summary.subtotal,
                 deliveryFee = summary.deliveryFee,
                 voucherDiscount = summary.discount,
                 totalOrder = summary.totalOrder,
-
                 isSelectAll = menus.isNotEmpty() && menus.all { it.isSelected },
-                selectedAddress = currentAddress,
-                selectedVoucher = currentVoucher,
+                selectedAddress = selectedAddress,
+                selectedVoucher = selectedVoucher,
                 isLocationSheetVisible = internal.isLocationSheetVisible,
                 isVoucherSheetVisible = internal.isVoucherSheetVisible,
                 isRemoveItemSheetVisible = internal.isRemoveItemSheetVisible,
@@ -206,7 +158,7 @@ class CartViewModel @Inject  constructor(
                 selectedCart = internal.selectedCart,
                 isNoteSheetVisible = internal.isNoteSheetVisible,
                 note = internal.note,
-                isCheckoutButtonEnabled = summary.subtotal > 0 && currentAddress != null
+                isCheckoutButtonEnabled = summary.subtotal > 0 && selectedAddress != null
             )
         }.stateIn(
             viewModelScope,
@@ -239,13 +191,21 @@ class CartViewModel @Inject  constructor(
             is CartUiEvent.OnRemoveCartItem -> handleRemoveItem(event.cartId)
 
             // Location (Open/Close/Set from sheet)
-            is CartUiEvent.OnShowLocationSheet-> _internalState.update { it.copy(isLocationSheetVisible = true) }
+            is CartUiEvent.OnShowLocationSheet-> {
+                _internalState.update { it.copy(isLocationSheetVisible = true) }
+                loadAddresses()
+            }
+
             is CartUiEvent.OnDismissLocationSheet -> _internalState.update { it.copy(isLocationSheetVisible = false, selectedAddressId = null) }
             is CartUiEvent.OnAddressSelectionChanged -> handleAddressSelectionChanged(event.addressId)
             is CartUiEvent.OnSetLocationClicked -> handleSetLocationClicked()
 
             // Voucher (Open/Close/Set from sheet)
-            is CartUiEvent.OnShowVoucherSheet -> _internalState.update { it.copy(isVoucherSheetVisible = true) }
+            is CartUiEvent.OnShowVoucherSheet -> {
+                _internalState.update { it.copy(isVoucherSheetVisible = true) }
+                loadVouchers()
+            }
+
             is CartUiEvent.OnDismissVoucherSheet -> _internalState.update { it.copy(isVoucherSheetVisible = false, selectedVoucherId = null) }
             is CartUiEvent.OnApplyVoucherClicked -> handleApplyVoucherClicked()
             is CartUiEvent.OnVoucherSelectionChanged -> handleVoucherSelectionChanged(event.voucherId)
@@ -264,6 +224,43 @@ class CartViewModel @Inject  constructor(
         }
     }
 
+    private fun loadVouchers() {
+        val restaurantId = uiState.value.carts?.restaurant?.id ?: ""
+        viewModelScope.launch {
+            if(restaurantId.isEmpty()){
+                _uiEffect.send(CartUiEffect.ShowError("Restaurant Id is not exist"))
+            }else{
+                getRestaurantVouchersUseCase(id = restaurantId).collect { result ->
+                    _voucherState.update { currentState ->
+                        val newUiModels = result.toImmutableListState { it.toUiModel() }
+
+                        if(result is TasstyResponse.Loading && currentState.data!=null){
+                            newUiModels.copy(data = currentState.data)
+                        }else{
+                            newUiModels
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadAddresses() {
+        viewModelScope.launch {
+            getUserAddressUseCase().collect { result ->
+                _addressState.update { currentState ->
+                    val newUiModels = result.toImmutableListState { it.toUiModel() }
+
+                    if (result is TasstyResponse.Loading && currentState.data != null) {
+                        newUiModels.copy(data = currentState.data)
+                    } else {
+                        newUiModels
+                    }
+                }
+            }
+        }
+    }
+
     // Toggles the 'isChecked' status of a single cart item.
     private fun handleCartSelection(cartId: String) {
         _internalState.update { current ->
@@ -278,7 +275,7 @@ class CartViewModel @Inject  constructor(
 
     // Toggles the global 'Select All' status for all items in the cart.
     private fun handleSelectAll() {
-        val allIds = uiState.value.carts.data?.menus?.map { it.cartId }?.toSet() ?: emptySet()
+        val allIds = uiState.value.carts?.menus?.map { it.cartId }?.toSet() ?: emptySet()
         _internalState.update { current ->
             val shouldSelectAll = !uiState.value.isSelectAll
             current.copy(
@@ -289,7 +286,7 @@ class CartViewModel @Inject  constructor(
 
     // Stores the specific Cart item into state and sets the flag to display the removal confirmation sheet.
     private fun handleShowRemoveSheet(cartId: String) {
-        val cartItem = uiState.value.carts.data?.menus?.find { it.cartId == cartId }
+        val cartItem = uiState.value.carts?.menus?.find { it.cartId == cartId }
         _internalState.update { it.copy(isRemoveItemSheetVisible = true, selectedCart = cartItem) }
     }
 
@@ -302,7 +299,7 @@ class CartViewModel @Inject  constructor(
     }
 
     private fun handleShowDeleteAllSheet() {
-        val carts = uiState.value.carts.data?: return
+        val carts = uiState.value.carts?: return
         viewModelScope.launch {
             if(carts.menus.isEmpty()){
                 _uiEffect.send(CartUiEffect.ShowError("There is no menu to delete"))
@@ -313,7 +310,7 @@ class CartViewModel @Inject  constructor(
     }
 
     private fun handleDeleteAll() {
-        val id = uiState.value.carts.data?.restaurant?.id?:""
+        val id = uiState.value.carts?.restaurant?.id?:""
         viewModelScope.launch {
             removeAllCartMenuUseCase(id)
             _internalState.update { it.copy(selectedCartIds = emptySet(), isDeleteAllSheetVisible = false) }
@@ -367,28 +364,32 @@ class CartViewModel @Inject  constructor(
     }
 
     private fun handleCheckOutClicked() {
-        val currentState = uiState.value
-        val cartData = currentState.carts.data ?: return
-        val selectedMenus = cartData.menus.filter { it.isSelected }
-        val selectedAddressId = currentState.selectedAddress?.id ?: return
-        val selectedVoucherId = currentState.selectedVoucher?.id
-
-        if (selectedMenus.isEmpty()) {
-            viewModelScope.launch {
-                _uiEffect.send(CartUiEffect.ShowError("Please select the menu first"))
-            }
-            return
-        }
-
         viewModelScope.launch {
+            val selectedMenus = selectedMenusFlow.first().filter { it.isSelected }
+            val selectedAddress = selectedAddressFlow.first()
+            val selectedVoucher = selectedVoucherFlow.first()
+            val cart = cartFlow.first()
+            val summary = summaryFlow.first()
+
+            if (selectedMenus.isEmpty()) {
+                _uiEffect.send(CartUiEffect.ShowError("Please select the menu first"))
+                return@launch
+            }
+
+            if (selectedAddress == null) {
+                _uiEffect.send(CartUiEffect.ShowError("Please select an address"))
+                return@launch
+            }
+
+
             createOrderUseCase(
-                restaurantId = cartData.restaurant.id,
-                voucherId = selectedVoucherId?:"",
-                addressId = selectedAddressId,
-                totalPrice = currentState.subtotal,
-                deliveryFee = currentState.deliveryFee,
-                discount = currentState.voucherDiscount,
-                totalOrder = currentState.totalOrder,
+                restaurantId = cart.restaurant.id,
+                voucherId = selectedVoucher?.id ?:"",
+                addressId = selectedAddress.id,
+                totalPrice = summary.subtotal,
+                deliveryFee = summary.deliveryFee,
+                discount = summary.discount,
+                totalOrder = summary.totalOrder,
                 items = selectedMenus.map { it.toRequest() }
             ).collect { result->
                 when(result){
@@ -411,7 +412,7 @@ class CartViewModel @Inject  constructor(
                             )
                         }
                         _uiEffect.send(CartUiEffect.CheckoutSuccess(id = result.data.toString(),
-                            total = currentState.totalOrder.toCleanRupiahFormat())
+                            total = summary.totalOrder.toCleanRupiahFormat())
                         )
                     }
                 }
@@ -433,7 +434,7 @@ class CartViewModel @Inject  constructor(
 
 
     private fun handleClickEditNote(cartId: String) = viewModelScope.launch {
-        val currentCartItem = uiState.value.carts.data?.menus?.find { it.cartId == cartId }?: return@launch
+        val currentCartItem = uiState.value.carts?.menus?.find { it.cartId == cartId }?: return@launch
         if(currentCartItem.customizable){
             _uiEffect.send(CartUiEffect.NavigateDetailMenu(currentCartItem.menuId))
         }else {
@@ -463,12 +464,15 @@ class CartViewModel @Inject  constructor(
     }
 }
 
-fun <T> List<T>.applySingleSelection(
-    selectedId: String?,
-    getId: (T) -> String,
-    setSelected: (T, Boolean) -> T
-): List<T> {
+
+fun List<CartItemUiModel>.withUiState(
+    selectedIds: Set<String>,
+    revealedIds: Set<String>
+): List<CartItemUiModel> {
     return map { item ->
-        setSelected(item, getId(item) == selectedId)
+        item.copy(
+            isSelected = item.cartId in selectedIds,
+            isSwipeActionVisible = item.cartId in revealedIds
+        )
     }
 }

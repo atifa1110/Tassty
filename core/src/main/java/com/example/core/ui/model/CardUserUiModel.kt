@@ -10,5 +10,6 @@ data class CardUserUiModel(
     val themeColor: String,
     val themeBackground: String,
     val isActive: Boolean,
-    val isSelected : Boolean
+    val isSelected : Boolean,
+    val isSwipeActionVisible: Boolean
 )

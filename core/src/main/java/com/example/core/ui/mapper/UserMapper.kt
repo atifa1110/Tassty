@@ -42,6 +42,7 @@ fun UserAddress.toUiModel() = UserAddressUiModel(
     addressType = this.addressType,
     isPrimary = this.isPrimary,
     isSelected = false,
+    isSwipeActionVisible = true
 )
 
 fun UserAddressUiModel.toDomain(): UserAddress{

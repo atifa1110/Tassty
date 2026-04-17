@@ -2,6 +2,8 @@ package com.example.tassty.screen.rating
 
 import com.example.tassty.RatingType
 import com.example.tassty.navigation.RatingNavArg
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.collections.listOf
 
 data class RatingUiState(
@@ -13,7 +15,7 @@ data class RatingUiState(
     val name: String = "",
     val imageUrl: String = "",
     val type : RatingType = RatingType.MENU,
-    val tagList : List<String> = listOf("Taste", "Portion", "Price", "Freshness", "Hygiene", "Packaging"),
+    val tagList : ImmutableList<String> = persistentListOf("Taste", "Portion", "Price", "Freshness", "Hygiene", "Packaging"),
     val feedback: String = "",
     val selectedTags: Set<String> = setOf(),
     val rating: Int = 0,

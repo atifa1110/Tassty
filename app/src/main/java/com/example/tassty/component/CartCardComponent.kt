@@ -35,6 +35,7 @@ import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
+import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
@@ -98,6 +99,7 @@ fun CartListCard(
                         enabled = true,
                         colors = CheckboxDefaults.colors(
                             checkedColor = Orange500,
+                            checkmarkColor = Neutral10,
                             uncheckedColor = Neutral40
                         ),
                         modifier = Modifier

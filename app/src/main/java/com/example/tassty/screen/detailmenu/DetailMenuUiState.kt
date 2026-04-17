@@ -4,6 +4,7 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.MenuStatus
 import com.example.core.ui.model.CollectionUiModel
 import com.example.core.ui.model.DetailMenuUiModel
+import kotlinx.collections.immutable.ImmutableList
 
 data class DetailMenuInternalState(
     val quantity: Int = 1,
@@ -20,7 +21,7 @@ data class DetailMenuInternalState(
 
 data class DetailMenuUiState(
     val detail: Resource<DetailMenuUiModel> = Resource(isLoading = false),
-    val collections: Resource<List<CollectionUiModel>> = Resource(isLoading = false),
+    val collections: ImmutableList<CollectionUiModel>? = null,
     val quantity: Int = 1,
     val notesValue: String = "",
     val cartTotalPrice: Int = 0,

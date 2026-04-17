@@ -1,10 +1,9 @@
 package com.example.tassty.screen.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.Resource
-import com.example.core.domain.usecase.AddCartMenuUseCase
+import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.CreateNewCollectionUseCase
 import com.example.core.domain.usecase.GetAllCategoriesUseCase
 import com.example.core.domain.usecase.GetAuthStatusUseCase
@@ -15,27 +14,19 @@ import com.example.core.domain.usecase.GetSuggestedMenusUseCase
 import com.example.core.domain.usecase.GetTodayVouchersUseCase
 import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
-import com.example.core.domain.usecase.GetDetailMenuUseCase
+import com.example.core.domain.usecase.GetRefreshTokenUseCase
 import com.example.core.domain.usecase.InitializeSystemCollectionsUseCase
-import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
-import com.example.core.ui.model.CollectionUiModel
-import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
-import com.example.core.ui.utils.mapToResource
-import com.example.core.ui.utils.toImmutableListState
-import com.example.tassty.screen.detailrestaurant.DetailUiEvent
-import com.google.common.collect.ImmutableList
+import com.example.core.utils.toImmutableListState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -43,18 +34,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.toSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.map
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -65,26 +53,28 @@ class HomeViewModel @Inject constructor(
     private val getRecommendedMenusUseCase: GetRecommendedMenusUseCase,
     private val getSuggestedMenusUseCase: GetSuggestedMenusUseCase,
     private val getTodayVouchersUseCase: GetTodayVouchersUseCase,
-    private val getCollectionsListUseCase: GetCollectionsUseCase,
+    private val getCollectionsUseCase: GetCollectionsUseCase,
     private val getCollectionsByIdUseCase: GetCollectionsByIdUseCase,
     private val createNewCollectionUseCase: CreateNewCollectionUseCase,
     private val initializeSystemCollectionsUseCase: InitializeSystemCollectionsUseCase,
-    private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase
+    private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase,
+    private val getRefreshTokenUseCase: GetRefreshTokenUseCase
 ) : ViewModel() {
 
     private val _internalState = MutableStateFlow(HomeInternalState())
-    private val _refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
+
+    private val _refreshTrigger = MutableSharedFlow<Boolean>(replay = 1).apply { tryEmit(false) }
 
     private val _uiEffect = Channel<HomeEffect>(Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val contentFlow = _refreshTrigger.flatMapLatest {
-        combine(
-            getAllCategoriesUseCase(),
-            getNearbyRestaurantsUseCase(),
-            getRecommendedRestaurantsUseCase(),
-            getTodayVouchersUseCase()
+    private val contentFlow = _refreshTrigger.flatMapLatest { isRefreshed ->
+    combine(
+            getAllCategoriesUseCase(isRefreshed),
+            getNearbyRestaurantsUseCase(isRefreshed),
+            getRecommendedRestaurantsUseCase(isRefreshed),
+            getTodayVouchersUseCase(isRefreshed)
         ) { categories, nearby, recommended, vouchers ->
             HomeContent(
                 categories = categories.toImmutableListState { it.toUiModel() },
@@ -96,10 +86,10 @@ class HomeViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val menuFlow = _refreshTrigger.flatMapLatest {
+    private val menuFlow = _refreshTrigger.flatMapLatest { isRefreshed ->
         combine(
-            getRecommendedMenusUseCase(),
-            getSuggestedMenusUseCase(),
+            getRecommendedMenusUseCase(isRefreshed),
+            getSuggestedMenusUseCase(isRefreshed),
         ) { recommended, suggested ->
             HomeMenuSection(
                 recommendedMenus = recommended.toImmutableListState { it.toUiModel() },
@@ -108,34 +98,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-    private val collectionFlows = _internalState
-        .map { it.menuForCollection?.id }
-        .distinctUntilChanged()
-        .flatMapLatest { menuId ->
-            getCollectionsListUseCase().flatMapLatest { response ->
-                val resource = response.toImmutableListState { it.toUiModel() }
-                _internalState.map { it.selectedCollectionIds }.map { selectedIds ->
-                    resource.copy(
-                        data = resource.data?.map { collection ->
-                            collection.copy(isSelected = selectedIds.contains(collection.id))
-                        }?.toImmutableList()
-                    )
-                }
-            }
-        }
-        .debounce(50)
-        .distinctUntilChanged()
-
-    private val interactionFlow = combine(
-        menuFlow,
-        collectionFlows,
-    ) { menuContent, collectionRes->
-        MenuInteractionData(
-            sections = menuContent,
-            collections = collectionRes,
-        )
-    }
+    private val collectionsFlow = combine(
+        getCollectionsUseCase().map { list -> list.map { it.toUiModel() }.toImmutableList() },
+        _internalState.map { it.selectedCollectionIds }.distinctUntilChanged()
+    ) { collections, selectedIds ->
+        collections.map { it.copy(isSelected = selectedIds.contains(it.id)) }.toImmutableList()
+    }.flowOn(Dispatchers.Default)
 
     private val uiFlagsFlow = _internalState.map {
         HomeUiFlags(
@@ -154,25 +122,42 @@ class HomeViewModel @Inject constructor(
         getAuthStatusUseCase(),
         contentFlow,
         menuFlow,
-        collectionFlows,
+        collectionsFlow,
     ) { internal, auth, content, menu, collections ->
+
+        val errorList = listOf(
+            content.categories.errorMessage,
+            content.nearby.errorMessage,
+            content.recommended.errorMessage,
+            menu.recommendedMenus.errorMessage,
+            menu.suggestedMenus.errorMessage
+        )
+
+        val criticalError = errorList.firstOrNull { message ->
+            message?.contains("expired", ignoreCase = true) == true ||
+                    message?.contains("401") == true ||
+                    message?.contains("Token is missing", ignoreCase = true) == true
+        }
+
+
         HomeUiState(
             userName = auth.name ?: "Guest",
             profileImage = auth.profileImage ?: "",
             addressName = auth.addressName ?: "Guest Address",
-            allCategories = content.categories,
-            nearbyRestaurants = content.nearby,
-            recommendedRestaurants = content.recommended,
-            todayVouchers = content.vouchers,
-            recommendedMenus = menu.recommendedMenus,
-            suggestedMenus = menu.suggestedMenus,
-            collectionsResource = collections,
+            allCategories = content.categories.applyLoadingIf(internal.isRefreshingToken),
+            nearbyRestaurants = content.nearby.applyLoadingIf(internal.isRefreshingToken),
+            recommendedRestaurants = content.recommended.applyLoadingIf(internal.isRefreshingToken),
+            todayVouchers = content.vouchers.applyLoadingIf(internal.isRefreshingToken),
+            recommendedMenus = menu.recommendedMenus.applyLoadingIf(internal.isRefreshingToken),
+            suggestedMenus = menu.suggestedMenus.applyLoadingIf(internal.isRefreshingToken),
+            collections = collections,
             isRefreshing = internal.isRefreshing,
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
             isAddCollectionSheet = internal.isAddCollectionSheet,
             isDetailMenuModalVisible = internal.isDetailMenuModalVisible,
             newCollectionName = internal.newCollectionName,
-            quantity = internal.quantity
+            quantity = internal.quantity,
+            isTokenExpired = criticalError != null
         )
     }.stateIn(
         scope = viewModelScope,
@@ -198,6 +183,7 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.OnNewCollectionNameChange -> _internalState.update { it.copy(newCollectionName = event.name) }
             is HomeEvent.OnCreateCollection -> handleCreateNewCollection()
             is HomeEvent.OnShowDetailMenu -> onCartClick(event.id)
+            is HomeEvent.OnRefreshToken -> refreshToken()
         }
     }
 
@@ -205,9 +191,40 @@ class HomeViewModel @Inject constructor(
         initializeSystemCollectionsUseCase()
     }
 
+    private fun refreshToken() = viewModelScope.launch {
+        getRefreshTokenUseCase().collect { response ->
+            when(response){
+                is TasstyResponse.Error -> {
+                    _internalState.update { it.copy(isRefreshing = true) }
+                }
+                is TasstyResponse.Loading -> {
+                    _internalState.update { it.copy(isRefreshing = true) }
+                }
+                is TasstyResponse.Success  -> {
+                    _internalState.update { it.copy(isRefreshing = true) }
+                    _refreshTrigger.emit(true)
+                }
+            }
+        }
+    }
+
     fun onPullToRefresh() {
         viewModelScope.launch {
-            _refreshTrigger.emit(Unit)
+            // 1. Nyalakan indikator loading di UI
+            _internalState.update { it.copy(isRefreshing = true) }
+
+            // 2. Trigger Flow untuk ambil data dari API (fetchFromRemote = true)
+            _refreshTrigger.emit(true)
+
+            // 3. (Opsional) Beri jeda sedikit atau tunggu collect selesai
+            // Agar animasi swipe tidak langsung balik ke atas terlalu cepat
+            kotlinx.coroutines.delay(1000)
+
+            // 4. Matikan loading
+            _internalState.update { it.copy(isRefreshing = false) }
+
+            // 5. Reset trigger ke false agar navigasi berikutnya balik ke mode cache
+            _refreshTrigger.emit(false)
         }
     }
 
@@ -267,6 +284,10 @@ class HomeViewModel @Inject constructor(
         }catch (e: Exception){
             _uiEffect.send(HomeEffect.ShowSnackbar(e.message?:""))
         }
+    }
+
+    fun <T> Resource<T>.applyLoadingIf(condition: Boolean): Resource<T> {
+        return if (condition) this.copy(isLoading = true) else this
     }
 }
 

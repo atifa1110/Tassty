@@ -3,7 +3,7 @@ package com.example.core.ui.mapper
 import com.example.core.domain.model.Notification
 import com.example.core.ui.model.NotificationType
 import com.example.core.ui.model.NotificationUiModel
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 
 fun Notification.toUiModel() : NotificationUiModel{
     return NotificationUiModel(

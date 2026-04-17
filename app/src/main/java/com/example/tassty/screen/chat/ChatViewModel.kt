@@ -1,16 +1,14 @@
 package com.example.tassty.screen.chat
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.DeleteAllNotificationsUseCase
 import com.example.core.domain.usecase.DeleteChatChannelUseCase
-import com.example.core.domain.usecase.GetChatCurrentUserIdUseCase
 import com.example.core.domain.usecase.GetChatListChannelUseCase
 import com.example.core.domain.usecase.GetNotificationsUseCase
 import com.example.core.domain.usecase.MarkNotificationReadUseCase
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.toListState
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.ChatUiModel
 import com.example.tassty.ChatTab

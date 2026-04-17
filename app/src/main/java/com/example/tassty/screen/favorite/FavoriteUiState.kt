@@ -1,8 +1,8 @@
 package com.example.tassty.screen.favorite
 
-import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.RestaurantUiModel
+import kotlinx.collections.immutable.ImmutableList
 
 data class FavoriteUiState (
-    val resource : Resource<List<RestaurantUiModel>> = Resource()
+    val resource : ImmutableList<RestaurantUiModel>? = null
 )

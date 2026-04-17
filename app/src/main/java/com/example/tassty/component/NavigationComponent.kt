@@ -97,7 +97,6 @@ fun NavigationBottomBar(
                 selected = currentDestination?.hierarchy?.any {
                     it.route == item.route
                 } == true,
-                //item.route == HomeDestination.route,
                 onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) {

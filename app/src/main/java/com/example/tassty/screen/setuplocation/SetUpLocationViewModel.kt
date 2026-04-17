@@ -120,7 +120,8 @@ class SetUpLocationViewModel @Inject constructor(
                     fullAddress = state.tempFullAddress,
                     addressType = state.tempAddressType,
                     isSelected = false,
-                    isPrimary = true
+                    isPrimary = true,
+                    isSwipeActionVisible = false
                 ),
                 isModalVisible = false
             )

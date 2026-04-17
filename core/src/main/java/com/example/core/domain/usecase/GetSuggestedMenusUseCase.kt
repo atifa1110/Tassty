@@ -14,9 +14,9 @@ class GetSuggestedMenusUseCase @Inject constructor(
     private val menuRepository: MenuRepository,
     private val collectionRepository: CollectionRepository
 ) {
-    operator fun invoke(): Flow<TasstyResponse<List<Menu>>> {
+    operator fun invoke(fetchFromRemote: Boolean = false): Flow<TasstyResponse<List<Menu>>> {
         return combine(
-            menuRepository.getSuggestedMenus(),
+            menuRepository.getSuggestedMenus(fetchFromRemote),
             collectionRepository.observeFavoriteMenuIds()
         ) { menuResponse, favoriteIds ->
             when (menuResponse) {

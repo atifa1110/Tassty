@@ -13,14 +13,6 @@ data class UserAddressUiModel (
     val location: LatLng,
     val addressType: AddressType = AddressType.NONE,
     val isPrimary: Boolean,
-    val isSelected: Boolean
-){
-    val formatAddressType: String
-        get() = if (addressType == AddressType.NONE) "Type" else addressType.displayName
-
-    val formatAddressName : String
-        get() = addressName.ifEmpty { "Address title" }
-
-    val formatFullAddress: String
-        get() = fullAddress.ifEmpty { "-" }
-}
+    val isSelected: Boolean,
+    val isSwipeActionVisible: Boolean
+)

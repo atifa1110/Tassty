@@ -1,6 +1,5 @@
 package com.example.tassty.screen.bestseller
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,17 +9,22 @@ import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
 import com.example.core.domain.usecase.GetDetailBestSellerMenuUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.MenuUiModel
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.navigation.BestSellerDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -45,29 +49,29 @@ class BestSellerViewModel @Inject constructor(
     private val _uiEffect = Channel<BestSellerUiEffect>(Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
-    private val collectionsFlow = getCollectionsUseCase().map {
-        it.toListState { collection -> collection.toUiModel() }
-    }
+    private val collectionsFlow = combine(
+        getCollectionsUseCase().map { list -> list.map { it.toUiModel() }.toImmutableList() },
+        _internalState.map { it.selectedCollectionIds }.distinctUntilChanged()
+    ) { collections, selectedIds ->
+        collections.map { it.copy(isSelected = selectedIds.contains(it.id)) }.toImmutableList()
+    }.flowOn(Dispatchers.Default)
+
+    private val menusFlow = getDetailBestSellerMenuUseCase(id).map { menus->
+        menus.toImmutableListState { it.toUiModel() }
+    }.flowOn(Dispatchers.Default)
 
     val uiState: StateFlow<BestSellerUiState> = combine(
-        getDetailBestSellerMenuUseCase(id),
+        menusFlow,
         getCartsByRestaurantIdUseCase(id),
         _internalState,
         collectionsFlow
     ) { menuList, cart, internal, collections ->
-        val items = cart.menus.sumOf { it.quantity }
-        val price = cart.menus.sumOf { it.quantity * it.price }
-
         BestSellerUiState(
-            menus = menuList.toListState { it.toUiModel() },
-            totalItems = items,
-            totalPrice = price,
+            menus = menuList,
+            totalItems = cart.totalQuantity,
+            totalPrice = cart.totalPrice,
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
-            collections = collections.copy(
-                data = collections.data?.map { model ->
-                    model.copy(isSelected = internal.selectedCollectionIds.contains(model.id))
-                }
-            ),
+            collections = collections,
             isAddCollectionSheet = internal.isAddCollectionSheet,
             newCollectionName = internal.newCollectionName,
             selectedMenu = internal.selectedMenu
@@ -89,7 +93,7 @@ class BestSellerViewModel @Inject constructor(
             val savedIds = getCollectionsByIdUseCase(menu.id)
             _internalState.update {
                 it.copy(
-                    //selectedCollectionIds = savedIds.toSet(),
+                    selectedCollectionIds = savedIds.toSet(),
                     isCollectionSheetVisible = true,
                     selectedMenu = menu
                 )

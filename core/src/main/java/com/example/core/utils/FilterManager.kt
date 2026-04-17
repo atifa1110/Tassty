@@ -1,4 +1,4 @@
-package com.example.core.ui.utils
+package com.example.core.utils
 
 import com.example.core.ui.mapper.FilterCategory
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -178,9 +178,9 @@ fun EmptyCartContent(
 @Composable
 fun EmptyAddressContent(){
     EmptyContent(
-        title = "Where should we deliver?",
+        title = stringResource(R.string.where_should_we_deliver),
         highlight = "?",
-        subtitle = "You don't have any saved addresses right now. \nAdd one to get started!",
+        subtitle = stringResource(R.string.no_have_any_saved_addresses),
         icon = R.drawable.empty_cart
     )
 }
@@ -188,9 +188,9 @@ fun EmptyAddressContent(){
 @Composable
 fun EmptyCollectionContent(){
     EmptyContent(
-        title = "Your collection \nis empty!",
-        subtitle = "You can add your favorite menus by clicking the love button on the menu details page.",
-        buttonText = "Find menus",
+        title = stringResource(R.string.your_collection_is_empty),
+        subtitle = stringResource(R.string.add_your_favorite_menus_by_clicking),
+        buttonText = stringResource(R.string.find_menus),
         icon = R.drawable.phone_boarding,
         onClick = {}
     )
@@ -199,29 +199,31 @@ fun EmptyCollectionContent(){
 @Composable
 fun EmptyCollectionSmallContent(){
     EmptyContent(
-        title = "Your collection \nis empty!",
-        subtitle = "You can add your favorite menus by clicking the love button on the menu details page.",
+        title = stringResource(R.string.your_collection_is_empty),
+        subtitle = stringResource(R.string.add_your_favorite_menus_by_clicking),
         icon = R.drawable.phone_boarding,
     )
 }
 
 
 @Composable
-fun EmptyFavoriteContent(){
+fun EmptyFavoriteContent(
+    onClick: () -> Unit
+){
     EmptyContent(
-        title = "Your list is empty!",
-        subtitle = "You can add your favorite restaurants by clicking the love button on the restaurant details page.",
-        buttonText = "Find restaurants",
+        title = stringResource(R.string.your_list_is_empty),
+        subtitle = stringResource(R.string.add_your_favorite_restaurants),
+        buttonText = stringResource(R.string.find_restaurants),
         icon = R.drawable.phone_boarding,
-        onClick = {}
+        onClick = onClick
     )
 }
 
 @Composable
 fun EmptyVoucherContent(){
     EmptyContent(
-        title = "Your list is empty!",
-        subtitle = "You don't have any available voucher right now, please stay tune",
+        title = stringResource(R.string.your_list_is_empty),
+        subtitle = stringResource(R.string.dont_have_any_available_voucher),
         icon = R.drawable.phone_boarding
     )
 }
@@ -229,8 +231,8 @@ fun EmptyVoucherContent(){
 @Composable
 fun EmptyChatContent(){
     EmptyContent(
-        title = "Your message is empty!",
-        subtitle = "The message from your order & Driver \nwill be displayed here.",
+        title = stringResource(R.string.your_message_is_empty),
+        subtitle = stringResource(R.string.the_message_from_your_order),
         icon = R.drawable.phone_boarding
     )
 }
@@ -238,8 +240,8 @@ fun EmptyChatContent(){
 @Composable
 fun EmptyNotificationContent(){
     EmptyContent(
-        title = "Your notification \nis empty!",
-        subtitle = "You haven't received any notifications yet. \nWe'll let you know when something arrives!",
+        title = stringResource(R.string.your_notification_is_empty),
+        subtitle = stringResource(R.string.not_received_any_notifications_yet),
         contentImage = {
             NotificationIcon()
         },
@@ -249,8 +251,8 @@ fun EmptyNotificationContent(){
 @Composable
 fun EmptyCardContent(){
     EmptyContent(
-        title = "No cards added yet!",
-        subtitle = "You haven't added any debit or credit cards. \nAdd one now to enjoy a faster and easier \ncheckout experience!",
+        title = stringResource(R.string.no_cards_added_yet),
+        subtitle = stringResource(R.string.not_added_any_debit),
         icon = R.drawable.phone_boarding
     )
 }
@@ -258,9 +260,9 @@ fun EmptyCardContent(){
 @Composable
 fun EmptyOrderContent(){
     EmptyContent(
-        title = "No order yet?",
+        title = stringResource(R.string.no_order_yet),
         highlight = "?",
-        subtitle = "It looks like you haven't ordered anything. \nLet’s find something delicious for you!",
+        subtitle = stringResource(R.string.no_ordered_anything),
         icon = R.drawable.phone_boarding
     )
 }
@@ -333,7 +335,9 @@ fun LoadingOverlay(
 }
 
 @Composable
-fun ErrorScreen(){
+fun ErrorScreen(
+    onClick: () -> Unit = {}
+){
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -370,7 +374,7 @@ fun ErrorScreen(){
         ButtonComponent(
             enabled = true,
             labelResId = R.string.refresh,
-            onClick = {}
+            onClick = onClick
         )
     }
 }

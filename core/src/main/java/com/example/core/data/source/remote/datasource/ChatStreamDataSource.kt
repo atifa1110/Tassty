@@ -1,23 +1,20 @@
 package com.example.core.data.source.remote.datasource
 
-import android.content.Context
-import android.net.Uri
 import android.util.Log
-import androidx.core.net.toFile
 import com.example.core.data.source.local.datastore.AuthDataStore
-import com.example.core.ui.utils.toFile
 import com.google.firebase.messaging.FirebaseMessaging
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.api.models.QueryChannelRequest
 import io.getstream.chat.android.client.api.models.QueryChannelsRequest
-import io.getstream.chat.android.client.errors.ChatError
 import io.getstream.chat.android.client.events.ChannelDeletedEvent
+import io.getstream.chat.android.client.events.MessageDeletedEvent
 import io.getstream.chat.android.client.events.MessageReadEvent
+import io.getstream.chat.android.client.events.MessageUpdatedEvent
 import io.getstream.chat.android.client.events.NewMessageEvent
 import io.getstream.chat.android.client.events.NotificationAddedToChannelEvent
 import io.getstream.chat.android.client.events.NotificationChannelDeletedEvent
 import io.getstream.chat.android.client.events.NotificationMarkReadEvent
+import io.getstream.chat.android.client.events.NotificationMessageNewEvent
 import io.getstream.chat.android.client.events.UserPresenceChangedEvent
 import io.getstream.chat.android.client.events.UserUpdatedEvent
 import io.getstream.chat.android.client.utils.ProgressCallback
@@ -40,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import io.getstream.result.Result
 import io.getstream.result.Error
+import kotlinx.coroutines.flow.map
 import java.io.File
 import javax.inject.Inject
 
@@ -53,6 +51,27 @@ class ChatStreamDataSource @Inject constructor(
 
     fun getCurrentUserId(): String {
         return chatClient.getCurrentUser()?.id ?: ""
+    }
+
+    fun reconnectStream() {
+        chatClient.reconnectSocket().enqueue()
+    }
+
+    fun observeConnectionState(): Flow<Boolean> {
+        return chatClient.clientState.connectionState.map {
+            it is io.getstream.chat.android.models.ConnectionState.Connected
+        }
+    }
+
+    private suspend fun waitUntilConnected() {
+        if (chatClient.clientState.connectionState.value is io.getstream.chat.android.models.ConnectionState.Connected) return
+
+        // Tunggu maksimal 5 detik sampai statusnya Connected
+        kotlinx.coroutines.withTimeoutOrNull(5000) {
+            chatClient.clientState.connectionState.first {
+                it is io.getstream.chat.android.models.ConnectionState.Connected
+            }
+        }
     }
 
     suspend fun connectStreamUser(
@@ -69,7 +88,6 @@ class ChatStreamDataSource @Inject constructor(
                 fetchTokenSync()
             }
         }
-
         return result
     }
 
@@ -182,6 +200,7 @@ class ChatStreamDataSource @Inject constructor(
     }
 
     fun watchChannels(): Flow<List<Channel>> = callbackFlow {
+        waitUntilConnected()
         val userId = chatClient.getCurrentUser()?.id
         if (userId == null) {
             trySend(emptyList())
@@ -202,21 +221,26 @@ class ChatStreamDataSource @Inject constructor(
             memberLimit = 2
         }
 
-        val result = chatClient.queryChannels(request).execute()
-        trySend(result.getOrNull() ?: emptyList())
+        chatClient.queryChannels(request).enqueue { result ->
+            if (result.isSuccess) {
+                trySend(result.getOrNull() ?: emptyList())
+            }
+        }
 
         val subscription = chatClient.subscribeFor(
             NewMessageEvent::class.java,
+            MessageReadEvent::class.java,
             NotificationChannelDeletedEvent::class.java,
             ChannelDeletedEvent::class.java,
             NotificationAddedToChannelEvent::class.java
-        ) {
-            val updated = chatClient
-                .queryChannels(request)
-                .execute()
-                .getOrNull() ?: emptyList()
+        ) { event ->
+            Log.d("STREAM_DEBUG", "Channel List refresh karena event: ${event::class.simpleName}")
 
-            trySend(updated)
+            chatClient.queryChannels(request).enqueue { result ->
+                if (result.isSuccess) {
+                    trySend(result.getOrNull() ?: emptyList())
+                }
+            }
         }
 
         awaitClose {
@@ -254,43 +278,41 @@ class ChatStreamDataSource @Inject constructor(
     }
 
     fun watchMessages(channelId: String): Flow<List<Message>> = callbackFlow {
+        waitUntilConnected()
+
         val channelClient = chatClient.channel(channelId)
-        channelClient.markRead().execute()
+        val request = QueryChannelRequest().withMessages(30)
 
         // Get Messages
-        val initialResult = channelClient.query(QueryChannelRequest().withMessages(30)).execute()
+        channelClient.query(request).enqueue { result ->
+            if (result.isSuccess) {
+                trySend(result.getOrNull()?.messages ?: emptyList())
+            }
+        }
 
-        if (initialResult.isSuccess) {
-            val messageList = initialResult.getOrNull()?.messages?.toMutableList() ?: mutableListOf()
-            trySend(messageList.toList())
+        channelClient.markRead().enqueue()
+        val subscription = channelClient.subscribe { event ->
+            val isUpdateEvent = event is NewMessageEvent ||
+                    event is NotificationMessageNewEvent ||
+                    event is MessageUpdatedEvent ||
+                    event is MessageDeletedEvent ||
+                    event is MessageReadEvent ||
+                    event is NotificationMarkReadEvent
 
-            // Subscribe new message
-            val subscription = channelClient.subscribe { event ->
-                when(event){
-                    is NewMessageEvent -> {
-                        val newMessage = event.message
-                        messageList.add(newMessage)
-                        trySend(messageList.toList())
-                        channelClient.markRead().enqueue()
+            if (isUpdateEvent) {
+                channelClient.query(request).enqueue { result ->
+                    if (result.isSuccess) {
+                        trySend(result.getOrNull()?.messages ?: emptyList())
                     }
+                }
 
-                    is MessageReadEvent -> {
-                        trySend(messageList.toList())
-                    }
-
-                    is NotificationMarkReadEvent -> {
-                        trySend(messageList.toList())
-                    }
-
-                    else -> Unit
+                // Kalau ada pesan baru, tandai sudah dibaca
+                if (event is NewMessageEvent || event is NotificationMessageNewEvent) {
+                    channelClient.markRead().enqueue()
                 }
             }
-
-            awaitClose { subscription.dispose() }
-        } else {
-            val errorMsg = initialResult.errorOrNull()?.message ?: "Gagal memuat pesan"
-            close(Exception(errorMsg))
         }
+        awaitClose { subscription.dispose() }
     }
 
     fun watchOtherUser(channelId: String): Flow<User> = callbackFlow {

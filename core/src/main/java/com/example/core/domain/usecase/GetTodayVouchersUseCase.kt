@@ -10,7 +10,7 @@ import javax.inject.Inject
 class GetTodayVouchersUseCase @Inject constructor(
     private val repository: VoucherRepository
 ) {
-    operator fun invoke(): Flow<TasstyResponse<List<Voucher>>> {
-        return repository.getTodayVouchers()
+    operator fun invoke(fetchFromRemote: Boolean = false): Flow<TasstyResponse<List<Voucher>>> {
+        return repository.getTodayVouchers(fetchFromRemote)
     }
 }

@@ -13,7 +13,6 @@ import com.example.core.domain.usecase.GetCollectionsByIdUseCase
 import com.example.core.domain.usecase.GetCollectionsUseCase
 import com.example.core.domain.usecase.GetDetailAllMenuUseCase
 import com.example.core.domain.usecase.GetDetailBestSellerMenuUseCase
-import com.example.core.domain.usecase.GetDetailMenuUseCase
 import com.example.core.domain.usecase.GetDetailRecommendedMenuUseCase
 import com.example.core.domain.usecase.GetDetailRestaurantUseCase
 import com.example.core.domain.usecase.GetRestaurantVouchersUseCase
@@ -21,17 +20,20 @@ import com.example.core.domain.usecase.GetReviewsByIdUseCase
 import com.example.core.domain.usecase.ObserveCartByMenuIdUseCase
 import com.example.core.domain.usecase.RemoveFavoriteRestaurantUseCase
 import com.example.core.domain.usecase.SaveMenuCollectionsUseCase
-import com.example.core.ui.utils.mapToResource
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.mapToResource
+import com.example.core.utils.toListState
 import com.example.core.ui.mapper.toDomain
 import com.example.core.ui.mapper.toDomainDetail
 import com.example.core.ui.mapper.toNavArg
 import com.example.core.ui.mapper.toUiModel
-import com.example.core.ui.model.DetailMenuUiModel
 import com.example.core.ui.model.MenuUiModel
-import com.example.core.ui.model.RestaurantLocationArgs
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.navigation.DetailRestaurantDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
@@ -41,9 +43,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -84,27 +84,44 @@ class DetailRestaurantViewModel @Inject constructor(
         it.mapToResource { detail -> detail.toUiModel() }
     }
 
-    private val collectionsFlow = getCollectionsUseCase().map {
-        it.toListState { collection -> collection.toUiModel() }
-    }
+    private val allMenusFlow = getDetailAllMenuUseCase(id)
+        .map { it.toImmutableListState { menu -> menu.toUiModel() } }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
 
-    private val cartFlow = getCartsByRestaurantIdUseCase(id).map {
-        it.toUiModel()
-    }
+    private val recommendedFlow = getDetailRecommendedMenuUseCase(id)
+        .map { it.toImmutableListState { menu -> menu.toUiModel() } }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+
+    private val bestSellerFlow = getDetailBestSellerMenuUseCase(id)
+        .map { it.toImmutableListState { menu -> menu.toUiModel() } }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+
+    private val reviewsFlow = getReviewsByIdUseCase(id)
+        .map { it.toImmutableListState { rev -> rev.toUiModel() } }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+
+    private val vouchersFlow = getRestaurantVouchersUseCase(id)
+        .map { it.toImmutableListState { v -> v.toUiModel() } }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
 
     private val contentSectionFlow = combine(
-        getDetailAllMenuUseCase(id),
-        getDetailRecommendedMenuUseCase(id),
-        getDetailBestSellerMenuUseCase(id),
-        getReviewsByIdUseCase(id),
-        getRestaurantVouchersUseCase(id),
-    ){ all, recommended, best, review, voucher ->
+        allMenusFlow,
+        recommendedFlow,
+        bestSellerFlow,
+        reviewsFlow,
+        vouchersFlow
+    ) { all, recommended, best, reviews, vouchers ->
         DetailListContent(
-            allMenus = all.toListState { it.toUiModel() },
-            recommendedMenus = recommended.toListState { it.toUiModel() },
-            bestSellerMenus = best.toListState { it.toUiModel() },
-            reviews = review.toListState { it.toUiModel() },
-            vouchers = voucher.toListState { it.toUiModel() }
+            allMenus = all,
+            recommendedMenus = recommended,
+            bestSellerMenus = best,
+            reviews = reviews,
+            vouchers = vouchers
         )
     }.stateIn(
         viewModelScope,
@@ -112,16 +129,21 @@ class DetailRestaurantViewModel @Inject constructor(
         DetailListContent()
     )
 
+    private val collectionsFlow = combine(
+        getCollectionsUseCase().map { list -> list.map { it.toUiModel() }.toImmutableList() },
+        _internalState.map { it.selectedCollectionIds }.distinctUntilChanged()
+    ) { collections, selectedIds ->
+        collections.map { it.copy(isSelected = selectedIds.contains(it.id)) }.toImmutableList()
+    }.flowOn(Dispatchers.Default)
+
+
     val uiState: StateFlow<DetailRestaurantUiState> = combine(
         _internalState,
         restaurantFlow,
         contentSectionFlow,
         collectionsFlow,
-        cartFlow
+        getCartsByRestaurantIdUseCase(id)
     ) { internal, detail, content, collections, cart ->
-
-        val items = cart.menus.sumOf { it.quantity }
-        val price = cart.menus.sumOf { it.quantity * it.price }
 
         DetailRestaurantUiState(
             restaurantResource = detail,
@@ -130,11 +152,7 @@ class DetailRestaurantViewModel @Inject constructor(
             allMenusResource = content.allMenus,
             recommendedMenusResource = content.recommendedMenus,
             bestSellerMenusResource = content.bestSellerMenus,
-            collectionsResource = collections.copy(
-                data = collections.data?.map { model ->
-                    model.copy(isSelected = internal.selectedCollectionIds.contains(model.id))
-                }
-            ),
+            collectionsResource = collections,
             isScheduleModalVisible = internal.isScheduleModalVisible,
             isFavoriteModalVisible = internal.isFavoriteModalVisible,
             isCollectionSheetVisible = internal.isCollectionSheetVisible,
@@ -143,8 +161,8 @@ class DetailRestaurantViewModel @Inject constructor(
             isSearchModalVisible = internal.isSearchModalVisible,
             menu = internal.selectedMenu,
             searchQuery = internal.searchQuery,
-            totalItems = items,
-            totalPrice = price,
+            totalItems = cart.totalQuantity,
+            totalPrice = cart.totalPrice,
             newCollectionName = internal.newCollectionName
         )
     }.stateIn(
@@ -152,6 +170,31 @@ class DetailRestaurantViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = DetailRestaurantUiState()
     )
+
+    @OptIn(FlowPreview::class)
+    val searchResultsUiState: StateFlow<Resource<ImmutableList<MenuUiModel>>> = combine(
+        allMenusFlow,
+        _internalState.map { it.searchQuery }.debounce(500).distinctUntilChanged()
+    ) { menuResource, query ->
+        when {
+            menuResource.isLoading -> Resource(isLoading = true)
+            menuResource.errorMessage != null -> Resource(errorMessage = menuResource.errorMessage)
+            query.isBlank() -> menuResource
+
+            else -> {
+                val filtered = menuResource.data?.filter {
+                    it.name.contains(query, ignoreCase = true)
+                }?.toImmutableList()
+
+                Resource(data = filtered ?: persistentListOf(), isLoading = false)
+            }
+        }
+    }.flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = Resource(isLoading = true)
+        )
 
     fun onEvent(event: DetailRestaurantEvent) {
         when (event) {
@@ -258,34 +301,4 @@ class DetailRestaurantViewModel @Inject constructor(
             it.copy(searchQuery = newQuery)
         }
     }
-
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val searchResultsUiState: StateFlow<Resource<List<MenuUiModel>>> = combine(
-        uiState.map { it.allMenusResource },
-        uiState.map { it.searchQuery }
-            .debounce(500)
-            .distinctUntilChanged()
-    ) { menuResource, query ->
-        when {
-            menuResource.isLoading ->
-                Resource(isLoading = true)
-
-            menuResource.errorMessage != null ->
-                Resource(errorMessage = menuResource.errorMessage)
-
-            query.isBlank() ->
-                menuResource
-
-            else -> {
-                val filteredData = menuResource.data?.filter {
-                    it.name.contains(query, ignoreCase = true)
-                }
-                Resource(data = filteredData, isLoading = false)
-            }
-        }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5_000),
-        Resource(isLoading = true)
-    )
 }

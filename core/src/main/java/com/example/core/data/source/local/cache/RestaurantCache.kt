@@ -16,14 +16,10 @@ class RestaurantCache @Inject constructor() : BaseCache<RestaurantDto>() {
         super.saveAll(key, restaurant) { it.id }
         // update globalMap juga di dalam mutex BaseCache
         mutex.withLock {
-            restaurant.forEach { menu ->
-                globalMap[menu.id] = menu
+            restaurant.forEach { rest ->
+                globalMap[rest.id] = rest
             }
         }
-        //Log.d("Diana", globalMap.toString())
-    }
-
-    suspend fun getById(id: String): RestaurantDto? = mutex.withLock {
-        globalMap[id]
+        //Log.d("DianaBaseCache", globalMap.toString())
     }
 }

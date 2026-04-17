@@ -3,13 +3,19 @@ package com.example.tassty.screen.orders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetUserOrderUseCase
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.toListState
 import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.OrderUiModel
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.util.orderFilters
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,42 +37,52 @@ class OrderViewModel @Inject constructor(
     val navigation = _navigation.asSharedFlow()
 
     private val _internalState = MutableStateFlow(OrderInternalState())
-    private val orderContent = getUserOrderUseCase().map { it.toListState { it.toUiModel() } }
+
+    private val filteredOrderContent = combine(
+        getUserOrderUseCase(),
+        _internalState
+    ) { resource, internal ->
+        resource.toImmutableListState { orderDomain -> orderDomain.toUiModel() }.let { uiResource ->
+            uiResource.copy(
+                data = uiResource.data?.filter { order ->
+                    val categoryMatch = when (internal.activeCategory) {
+                        OrderFilterCategory.ALL -> true
+                        OrderFilterCategory.ONGOING -> order.status in listOf(
+                            OrderStatus.PLACED, OrderStatus.PREPARING, OrderStatus.ON_DELIVERY
+                        )
+                        OrderFilterCategory.COMPLETED -> order.status == OrderStatus.COMPLETED
+                    }
+
+                    val dateMatch = if (internal.startDateSelected != null && internal.endDateSelected != null) {
+                        !order.orderDate.isBefore(internal.startDateSelected) &&
+                                !order.orderDate.isAfter(internal.endDateSelected)
+                    } else true
+
+                    categoryMatch && dateMatch
+                }?.toImmutableList()
+            )
+        }
+    }
 
     val uiState = combine(
-        orderContent,
+        filteredOrderContent,
         _internalState
     ) { orders, internal ->
-        val filteredData = orders.copy(
-            data = orders.data?.filter { order ->
-                val categoryMatch = when (internal.activeCategory) {
-                    OrderFilterCategory.ALL -> true
-                    OrderFilterCategory.ONGOING ->
-                        order.status in listOf(OrderStatus.PLACED, OrderStatus.PREPARING,
-                            OrderStatus.ON_DELIVERY)
-                    OrderFilterCategory.COMPLETED ->
-                        order.status == OrderStatus.COMPLETED
-                }
-                val dateMatch = if (
-                    internal.startDateSelected != null &&
-                    internal.endDateSelected != null
-                ) {
-                    order.orderDate in internal.startDateSelected..internal.endDateSelected
-                } else {
-                    true
-                }
 
-                categoryMatch && dateMatch
-            }
-        )
+        val groupedOrders: ImmutableMap<String, ImmutableList<OrderUiModel>> =
+            orders.data?.groupBy { it.displayHeader }
+                ?.mapValues { it.value.toImmutableList() }
+                ?.toImmutableMap()
+                ?: persistentMapOf()
 
         val updatedFilters = orderFilters.map {
             it.copy(isSelected = it.category == internal.activeCategory)
         }
 
         OrderUiState(
-            orders = filteredData,
+            orders = orders,
             filter = updatedFilters,
+            groupedOrders = groupedOrders,
             selectedCategory = internal.activeCategory,
             isCalendarVisible = internal.isCalendarVisible,
             startDateSelected = internal.startDateSelected,

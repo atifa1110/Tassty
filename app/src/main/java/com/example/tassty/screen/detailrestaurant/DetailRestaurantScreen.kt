@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -52,7 +51,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.RestaurantStatus
-import com.example.core.ui.mapper.empty
 import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantLocationArgs
@@ -73,7 +71,6 @@ import com.example.tassty.component.GridMenuListSection
 import com.example.tassty.component.HorizontalTitleButtonSection
 import com.example.tassty.component.HorizontalTitleItemCountButtonSection
 import com.example.tassty.component.LoadingRowState
-import com.example.tassty.component.MenuAddToCartContent
 import com.example.tassty.component.ModalStatusContent
 import com.example.tassty.component.RankBadgeIcon
 import com.example.tassty.component.RestaurantCloseModal
@@ -92,9 +89,10 @@ import com.example.tassty.util.menusItem
 import com.example.tassty.util.restaurantDetailItem
 import com.example.tassty.util.reviews
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.voucherUiModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlin.collections.orEmpty
 
 @Composable
@@ -153,7 +151,7 @@ fun DetailRestaurantScreen(
         onDismiss = { viewModel.onEvent(DetailRestaurantEvent.OnDismissCollectionSheet) }
     ) {
         CollectionContent(
-            resource = uiState.collectionsResource,
+           items = uiState.collectionsResource,
             onCollectionSelected = {id, check -> viewModel.onEvent(DetailRestaurantEvent.OnCollectionCheckChange(id,check))},
             onSaveCollectionClick = {viewModel.onEvent(DetailRestaurantEvent.OnSaveToCollection)},
             onAddCollectionClick = { viewModel.onEvent(DetailRestaurantEvent.OnShowAddCollectionSheet) }
@@ -422,7 +420,7 @@ fun LazyListScope.loadingSection() {
 fun HeaderSection(
     fixedHeight: Dp,
     restaurant: DetailRestaurantUiModel,
-    voucherResource: Resource<List<VoucherUiModel>>,
+    voucherResource: Resource<ImmutableList<VoucherUiModel>>,
     onShowSchedule: () -> Unit,
     onLocationClick:() -> Unit,
     onNavigateToReview:(String) -> Unit,
@@ -575,7 +573,7 @@ fun RestaurantInfoDetails(
 
 @Composable
 fun VoucherSection(
-    resource: Resource<List<VoucherUiModel>>,
+    resource: Resource<ImmutableList<VoucherUiModel>>,
     status: RestaurantStatus,
     onClick: () -> Unit
 ){
@@ -625,7 +623,7 @@ fun ShoppingCartBottomBar(
 
 @Composable
 fun ReviewSection(
-    resource : Resource<List<ReviewUiModel>>,
+    resource : Resource<ImmutableList<ReviewUiModel>>,
     onReviewClick:() -> Unit,
 ){
     val reviewItems = resource.data.orEmpty()
@@ -658,7 +656,7 @@ fun ReviewSection(
 
 
 fun LazyListScope.allMenuSection(
-    resource: Resource<List<MenuUiModel>>,
+    resource: Resource<ImmutableList<MenuUiModel>>,
     onFavoriteClick: (MenuUiModel) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit
 ) {
@@ -697,7 +695,7 @@ fun LazyListScope.allMenuSection(
 
 @Composable
 fun BestSellerSection(
-    resource: Resource<List<MenuUiModel>>,
+    resource: Resource<ImmutableList<MenuUiModel>>,
     onFavoriteClick: (MenuUiModel) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
     onSeeAllClick:() -> Unit = {}
@@ -734,7 +732,7 @@ fun BestSellerSection(
 
 @Composable
 fun RecommendedMenuSection(
-    resource: Resource<List<MenuUiModel>>,
+    resource: Resource<ImmutableList<MenuUiModel>>,
     onFavoriteClick: (MenuUiModel) -> Unit,
     onNavigateToDetailMenu:(String) -> Unit,
 ) {
@@ -773,11 +771,11 @@ fun DetailRestLightPreview() {
             snackHostState = snackHostState,
             uiState = DetailRestaurantUiState(
                 restaurantResource = Resource(data = restaurantDetailItem),
-                reviewsResource = Resource(data = reviews, isLoading = false),
-                vouchersResource = Resource(data = voucherUiModel, isLoading = false),
-                bestSellerMenusResource = Resource(data = menusItem, isLoading = false),
-                recommendedMenusResource = Resource(data = menusItem, isLoading = false),
-                allMenusResource = Resource(data = menusItem, isLoading = false),
+                reviewsResource = Resource(data = reviews.toImmutableList(), isLoading = false),
+                vouchersResource = Resource(data = voucherUiModel.toImmutableList(), isLoading = false),
+                bestSellerMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
+                recommendedMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
+                allMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
                 totalItems = 0,
                 totalPrice = 0,
             ),
@@ -804,11 +802,11 @@ fun DetailRestDarkPreview() {
             snackHostState = snackHostState,
             uiState = DetailRestaurantUiState(
                 restaurantResource = Resource(data = restaurantDetailItem),
-                reviewsResource = Resource(data = reviews, isLoading = false),
-                vouchersResource = Resource(data = voucherUiModel, isLoading = false),
-                bestSellerMenusResource = Resource(data = menusItem, isLoading = false),
-                recommendedMenusResource = Resource(data = menusItem, isLoading = false),
-                allMenusResource = Resource(data = menusItem, isLoading = false),
+                reviewsResource = Resource(data = reviews.toImmutableList(), isLoading = false),
+                vouchersResource = Resource(data = voucherUiModel.toImmutableList(), isLoading = false),
+                bestSellerMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
+                recommendedMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
+                allMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
                 totalItems = 0,
                 totalPrice = 0,
             ),

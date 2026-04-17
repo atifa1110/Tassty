@@ -43,9 +43,9 @@ import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.util.getFilterIconRes
 import com.example.tassty.util.orderFilters
 import com.example.tassty.util.orderList
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.TasstyTheme
 import com.jakewharton.threetenabp.AndroidThreeTen
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun OrderScreen(
@@ -227,7 +227,7 @@ fun OrderLightPreview() {
     }
 
     val uiState = OrderUiState(
-        orders = Resource(data = orderList),
+        orders = Resource(data = orderList.toImmutableList()),
         filter = mockFilters,
         selectedCategory = activeFilter,
         isCalendarVisible = false,
@@ -255,7 +255,7 @@ fun OrderDarkPreview() {
     }
 
     val uiState = OrderUiState(
-        orders = Resource(data = orderList),
+        orders = Resource(data = orderList.toImmutableList()),
         filter = mockFilters,
         selectedCategory = activeFilter,
         isCalendarVisible = false,

@@ -4,9 +4,10 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CardUserUiModel
 import com.example.core.ui.model.PaymentChannelUiModel
 import com.example.tassty.screen.orders.OrderEvent
+import kotlinx.collections.immutable.ImmutableList
 
 data class PaymentUiState(
-    val cardPayment: Resource<List<CardUserUiModel>> = Resource(),
+    val cardPayment: Resource<ImmutableList<CardUserUiModel>> = Resource(),
     val paymentChannel: Resource<List<PaymentChannelUiModel>> = Resource(),
     val selectedCardId: String? = null,
     val selectedChannelId: String? = null,

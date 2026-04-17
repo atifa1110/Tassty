@@ -8,16 +8,20 @@ import com.example.core.domain.usecase.GetPaymentChannelUseCase
 import com.example.core.domain.usecase.GetUserCardUseCase
 import com.example.core.domain.usecase.ProcessOrderPaymentStripeUseCase
 import com.example.core.domain.usecase.RemoveHiddenCardUseCase
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.toListState
 import com.example.core.ui.mapper.toUiModel
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.navigation.PaymentDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -38,30 +42,34 @@ class PaymentViewModel @Inject constructor(
     private val _navigation = MutableSharedFlow<PaymentEvent>()
     val navigation = _navigation.asSharedFlow()
     private val _internalState = MutableStateFlow(PaymentInternalState())
-    val cardContent = getUserCardUseCase().map { it.toListState { it.toUiModel() } }
+    val cardFlow = combine(
+        getUserCardUseCase(),
+        _internalState.map { it.selectedCardId }.distinctUntilChanged()
+    ) { resource, selectedId ->
+        resource.toImmutableListState { card ->
+            card.toUiModel(isSwipeActionVisible = false).copy(
+                isSelected = card.id == selectedId
+            )
+        }
+    }.flowOn(Dispatchers.Default)
+
     val paymentContent = getPaymentChannelUseCase().map { it.toListState { it.toUiModel() } }
 
+
     val uiState: StateFlow<PaymentUiState> = combine(
-        cardContent,
+        cardFlow,
         paymentContent,
         _internalState
     ){card, payment, internal->
-
         val canProceed = internal.selectedCardId != null || internal.selectedChannelId != null
-
-        val updatedCards = card.copy(
-            data = card.data?.map {
-                it.copy(isSelected = it.id == internal.selectedCardId)
-            }
-        )
-
         val updatedChannels = payment.copy(
             data = payment.data?.map {
                 it.copy(isSelected = it.channelCode == internal.selectedChannelId)
             }
         )
+
         PaymentUiState(
-            cardPayment = updatedCards,
+            cardPayment = card,
             paymentChannel = updatedChannels,
             selectedCardId = internal.selectedCardId,
             selectedChannelId = internal.selectedChannelId,

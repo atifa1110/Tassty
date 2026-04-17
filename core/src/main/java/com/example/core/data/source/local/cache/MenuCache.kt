@@ -20,8 +20,4 @@ class MenuCache @Inject constructor() : BaseCache<MenuDto>() {
             }
         }
     }
-
-    suspend fun getById(id: String): MenuDto? = mutex.withLock {
-        globalMap[id]
-    }
 }

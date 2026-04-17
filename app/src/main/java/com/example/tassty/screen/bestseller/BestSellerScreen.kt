@@ -94,7 +94,7 @@ fun BestSellerScreen(
         onDismiss = { viewModel.onShowCollectionSheet() }
     ) {
         CollectionContent(
-            resource = uiState.collections,
+            items = uiState.collections,
             onCollectionSelected = {id, check -> viewModel.onCollectionCheckChange(id)},
             onSaveCollectionClick = {viewModel.onSaveToCollection()},
             onAddCollectionClick = { viewModel.onShowAddCollectionSheet() }
@@ -170,7 +170,7 @@ fun BestSellerContent(
                 if(isLoading){
                     loadingSection()
                 } else{
-                    item {
+                    item(key = "header_content") {
                         HeaderContent(
                             fixedHeight = maxHeight,
                             imageUrl = uiState.imageUrl,
@@ -178,16 +178,18 @@ fun BestSellerContent(
                         )
                     }
                     if(resource.errorMessage!=null){
-                        item {
+                        item(key = "error_content"){
                             ErrorScreen()
                         }
                     }else if(menus.isEmpty()){
-                        item {
+                        item(key = "empty_content") {
                             Spacer(Modifier.height(24.dp))
-                            EmptyFavoriteContent()
+                            EmptyFavoriteContent(
+                                onClick = {}
+                            )
                         }
                     } else {
-                        item { Spacer(Modifier.height(24.dp)) }
+                        item(key = "spacer") { Spacer(Modifier.height(24.dp)) }
                         items(items = menus, key = { it.id }) { item ->
                             Column(Modifier.padding(horizontal = 24.dp)) {
                                 FoodWideListCard(

@@ -134,12 +134,15 @@ fun CustomBottomSheet(
 
 @Composable
 fun CollectionContent(
-    resource: Resource<List<CollectionUiModel>>,
+    items: ImmutableList<CollectionUiModel>?,
     onCollectionSelected: (String, Boolean) -> Unit,
     onSaveCollectionClick:() -> Unit,
     onAddCollectionClick: () -> Unit
 ){
-    val items = resource.data.orEmpty()
+    if (items == null) {
+        return
+    }
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .clip(
@@ -177,102 +180,19 @@ fun CollectionContent(
                 )
             }
 
-            when {
-                resource.isLoading -> {
-                    item { LoadingRowState() }
+            if(items.isEmpty()){
+                item {
+                    EmptyCollectionSmallContent()
                 }
-                resource.errorMessage != null || items.isEmpty() -> {
-                    item { EmptyCollectionSmallContent() }
-                }
-                else -> {
-                    items(
-                        items = items,
-                        key = { it.id }
-                    ) { collection ->
-                        CollectionCard(
-                            collection = collection,
-                            onCheckedChange = { onCollectionSelected(collection.id, it) }
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-        ButtonComponent(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            enabled = items.isNotEmpty(),
-            labelResId = R.string.save,
-            onClick = onSaveCollectionClick
-        )
-    }
-}
-
-@Composable
-fun CollectionImmutableContent(
-    resource: Resource<ImmutableList<CollectionUiModel>>,
-    onCollectionSelected: (String, Boolean) -> Unit,
-    onSaveCollectionClick:() -> Unit,
-    onAddCollectionClick: () -> Unit
-){
-    val items = resource.data.orEmpty()
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .clip(
-            RoundedCornerShape(
-                topStart = 24.dp,
-                topEnd = 24.dp
-            )
-        )
-        .background(LocalCustomColors.current.cardBackground)
-        .padding(top = 24.dp, bottom = 24.dp)
-    ) {
-        HeaderModalTitleSubtitle(
-            modifier = Modifier,
-            title = R.string.save_to_collection,
-            subtitle = R.string.save_your_favorite
-        ){
-            TopBarButton(
-                icon = Icons.Default.Add,
-                boxColor = Orange500,
-                iconColor = Neutral10,
-                onClick = onAddCollectionClick
-            )
-        }
-        Divider32()
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f, fill = false)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                HeaderListItemCountTitle(
-                    itemCount = items.size,
-                    title = "Collection",
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-            }
-
-            when {
-                resource.isLoading -> {
-                    item { LoadingRowState() }
-                }
-                resource.errorMessage != null || items.isEmpty() -> {
-                    item { EmptyCollectionSmallContent() }
-                }
-                else -> {
-                    items(
-                        items = items,
-                        key = { it.id }
-                    ) { collection ->
-                        CollectionCard(
-                            collection = collection,
-                            onCheckedChange = { onCollectionSelected(collection.id, it) }
-                        )
-                    }
+            } else {
+                items(
+                    items = items,
+                    key = { it.id }
+                ) { collection ->
+                    CollectionCard(
+                        collection = collection,
+                        onCheckedChange = { onCollectionSelected(collection.id, it) }
+                    )
                 }
             }
         }
@@ -298,11 +218,9 @@ fun CollectionAddContent(
 ){
     Column(modifier = Modifier
         .fillMaxWidth()
-        .clip(
-            RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-        )
+        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
         .background(LocalCustomColors.current.cardBackground)
-        .padding(top = 24.dp, bottom = 24.dp)
+        .padding(top = 24.dp, bottom = 24.dp).imePadding()
     ) {
         HeaderModalTitle(
             title = R.string.create_collection
@@ -351,7 +269,7 @@ fun CollectionEditContent(
             )
         )
         .background(LocalCustomColors.current.cardBackground)
-        .padding(top = 24.dp, bottom = 24.dp)
+        .padding(top = 24.dp, bottom = 24.dp).imePadding()
     ) {
         HeaderModalTitle(
             title = R.string.edit_collection
@@ -760,7 +678,8 @@ fun CartEditContent(
 
 @Composable
 fun CartDeliveryLocationContent(
-    resource: Resource<List<UserAddressUiModel>>,
+    selectedId: String?,
+    resource: Resource<ImmutableList<UserAddressUiModel>>,
     onAddressChange: (String) -> Unit,
     onSetLocationClicked:() -> Unit,
     onDismiss: () -> Unit,
@@ -840,7 +759,8 @@ fun CartDeliveryLocationContent(
                 items(items, key = { it.id }) { address ->
                     LocationSelectorCard(
                         address = address,
-                        onCheckedChange = { onAddressChange(address.id) }
+                        onCheckedChange = { onAddressChange(address.id) },
+                        isSelected = address.id == selectedId
                     )
                 }
             }
@@ -860,7 +780,8 @@ fun CartDeliveryLocationContent(
 
 @Composable
 fun CartPromoContent(
-    resource: Resource<List<VoucherUiModel>>,
+    selectedId: String?,
+    resource: Resource<ImmutableList<VoucherUiModel>>,
     onVoucherSelectionChanged: (String) -> Unit,
     onApplyVoucherClicked: () -> Unit,
     onDismiss: () -> Unit
@@ -902,7 +823,8 @@ fun CartPromoContent(
                     items(items = items, key = { it.id }) { item ->
                         VoucherSelectorCard(
                             voucher = item,
-                            onCheckedChange = { onVoucherSelectionChanged(item.id) }
+                            onCheckedChange = { onVoucherSelectionChanged(item.id) },
+                            isSelected = item.id == selectedId
                         )
                     }
                 }
@@ -972,97 +894,6 @@ fun RestaurantCloseModal(
             textColor = Orange500,
             onClick = onDismiss
         )
-    }
-}
-
-@Composable
-fun MenuAddToCartContent(
-    isEditMode: Boolean,
-    quantity : Int,
-    resource: Resource<DetailMenuUiModel>,
-    onIncreaseQuantity:() -> Unit,
-    onDecreaseQuantity:() -> Unit,
-    onAddToCart:(DetailMenuUiModel)-> Unit
-){
-    val menu = resource.data?:return
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-            .background(LocalCustomColors.current.cardBackground)
-            .padding(bottom = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .padding(16.dp)
-        ) {
-            StatusItemImage(
-                imageUrl = menu.imageUrl,
-                name = menu.name,
-                status = menu.menuStatus,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = menu.name,
-                        style = LocalCustomTypography.current.h3Bold,
-                        color = LocalCustomColors.current.headerText
-                    )
-                    Text(
-                        text = menu.description,
-                        style = LocalCustomTypography.current.bodyMediumRegular,
-                        color = LocalCustomColors.current.text
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    FoodPriceBigText(
-                        price = menu.formatPriceDiscount,
-                        color = Orange500
-                    )
-
-                    if (menu.promo) {
-                        FoodPriceLineText(
-                            price = menu.formatPrice,
-                            color = Neutral60
-                        )
-                    }
-                }
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)){
-                QuantityTextButton(
-                    quantity = quantity,
-                    onIncreaseQuantity = onIncreaseQuantity,
-                    onDecreaseQuantity = onDecreaseQuantity
-                )
-                ButtonComponent(
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = menu.menuStatus == MenuStatus.AVAILABLE,
-                    labelResId = if(isEditMode) R.string.update_cart else R.string.add_to_cart,
-                    onClick = { onAddToCart(menu) }
-                )
-            }
-        }
     }
 }
 

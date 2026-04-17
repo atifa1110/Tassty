@@ -12,5 +12,5 @@ interface FavoriteRepository {
     suspend fun addFavorite(restaurant: DetailRestaurant)
     suspend fun removeFavorite(id: String)
 
-    fun getFavorites() : Flow<TasstyResponse<List<Favorite>>>
+    fun getFavorites() : Flow<List<Favorite>>
 }

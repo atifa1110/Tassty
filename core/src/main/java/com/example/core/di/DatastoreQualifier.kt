@@ -9,3 +9,7 @@ annotation class AuthDataStore
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class LocationDataStore
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class DatabasePassphrase

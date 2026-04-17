@@ -1,0 +1,38 @@
+name: Tassty CI with Codecov
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests & Coverage
+        # Perintah ini akan menjalankan test sekaligus membuat laporan XML
+        run: ./gradlew testDebugUnitTest koverXmlReport
+
+      - name: Upload Report to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          # Token ini didapat dari dashboard Codecov (Langkah 3)
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # Path ke file XML hasil coverage (biasanya di sini kalau pake Kover)
+          files: ./app/build/reports/kover/report.xml
+          fail_ci_if_error: true

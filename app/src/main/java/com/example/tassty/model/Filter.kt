@@ -2,7 +2,7 @@ package com.example.tassty.model
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
-import com.example.core.ui.utils.FilterDataState
+import com.example.core.utils.FilterDataState
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.FilterIconKeys
 import com.example.core.ui.model.FilterOptionUi

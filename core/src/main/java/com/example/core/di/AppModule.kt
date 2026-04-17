@@ -1,7 +1,7 @@
 package com.example.core.di
 
-import com.example.core.ui.utils.FilterManager
-import com.example.core.ui.utils.FilterManagerImpl
+import com.example.core.utils.FilterManager
+import com.example.core.utils.FilterManagerImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

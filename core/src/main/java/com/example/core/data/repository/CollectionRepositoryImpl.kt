@@ -31,7 +31,7 @@ class CollectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateCollectionName(collectionId: String, name: String) {
-        return dataSource.updateName(collectionId,name)
+        return dataSource.updateName(collectionId, name)
     }
 
     override suspend fun initializeSystemCollections() {
@@ -45,18 +45,12 @@ class CollectionRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getCollections(): Flow<TasstyResponse<List<Collection>>> =
-        dataSource.getCollections()
+    override fun getCollections(): Flow<List<Collection>> {
+        return dataSource.getCollections()
             .map { entities ->
                 entities.map { it.toDomain() }
             }
-            .map<List<Collection>, TasstyResponse<List<Collection>>> { domainList ->
-                TasstyResponse.Success(domainList, Meta(200, "success", "Get Collections Success"))
-            }
-            .onStart { emit(TasstyResponse.Loading()) }
-            .catch { e ->
-                emit(TasstyResponse.Error(Meta(400, "error", e.message ?: "Failed")))
-            }
+    }
 
 
     override suspend fun getCollectionIdsByMenu(menuId: String): List<String> {
@@ -67,8 +61,8 @@ class CollectionRepositoryImpl @Inject constructor(
         collectionId: String
     ): Flow<List<CollectionRestaurantWithMenu>> {
         return dataSource.getMenuCollectionById(collectionId)
-            .map { list ->
-                list.toGroupedDomain()
+            .map { entities ->
+                entities.toGroupedDomain()
             }
     }
 
@@ -100,5 +94,4 @@ class CollectionRepositoryImpl @Inject constructor(
     override suspend fun deleteCollectionById(collectionId: String) {
         return dataSource.deleteCollectionById(collectionId)
     }
-
 }

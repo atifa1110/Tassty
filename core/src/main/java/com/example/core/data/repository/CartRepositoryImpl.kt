@@ -72,23 +72,9 @@ class CartRepositoryImpl @Inject constructor(
         return dataSource.observeCartByMenuId(menuId).map { it?.toDomain() }
     }
 
-    override fun getAllCartWithDetails(): Flow<TasstyResponse<CartGroup>> = flow {
-        emit(TasstyResponse.Loading())
-
-        try{
-            dataSource.getAllCartWithDetails()
-                .map { entities -> entities.toSingleCartDomain() }
-                .collect { collections ->
-                    emit(
-                        TasstyResponse.Success(
-                            data = collections,
-                            meta = Meta(0, "", "Get Cart Success")
-                        )
-                    )
-                }
-        }catch (e: Exception){
-            emit(TasstyResponse.Error(meta = Meta(0,"","Get Cart Failed")))
-        }
+    override fun getAllCartWithDetails(): Flow<CartGroup>  {
+        return dataSource.getAllCartWithDetails()
+            .map { entities -> entities.toSingleCartDomain() }
     }
 
     override fun getCartsByRestaurantId(restaurantId: String): Flow<CartGroup> {

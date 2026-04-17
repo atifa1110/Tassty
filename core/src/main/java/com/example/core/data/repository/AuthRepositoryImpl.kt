@@ -6,6 +6,7 @@ import com.example.core.data.model.RegistrationStep
 import com.example.core.data.source.local.datastore.AuthDataStore
 import com.example.core.data.source.remote.datasource.AuthNetworkDataSource
 import com.example.core.data.source.remote.datasource.ChatStreamDataSource
+import com.example.core.data.source.remote.network.Meta
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.OtpTimer
 import com.example.core.domain.model.UserAddress
@@ -13,6 +14,7 @@ import com.example.core.domain.repository.AuthRepository
 import com.example.core.ui.mapper.toRequestDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
@@ -106,10 +108,12 @@ class AuthRepositoryImpl @Inject constructor(
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             is TasstyResponse.Success -> {
+                val data = response.data
                 authDataStore.updateAuthStatus { current ->
                     current.copy(
                         hasCompletedSetup = true,
-                        addressName = request.addressName
+                        streamToken = data?.streamToken,
+                        addressName = data?.addressName
                     )
                 }
                 emit(TasstyResponse.Success(response.meta.message,response.meta))
@@ -149,8 +153,17 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun refreshToken(refreshToken: String): Flow<TasstyResponse<String>> = flow {
+    override fun refreshToken(): Flow<TasstyResponse<String>> = flow {
         emit(TasstyResponse.Loading())
+
+        val currentStatus = authDataStore.authStatus.first()
+        val refreshToken = currentStatus.refreshToken
+
+        if (refreshToken.isNullOrBlank()) {
+            emit(TasstyResponse.Error(Meta(code = 400, status = "error", message = "Refresh token tidak ditemukan")))
+            return@flow
+        }
+
         val response = authNetworkDataSource.refreshToken(refreshToken)
         when(response){
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))

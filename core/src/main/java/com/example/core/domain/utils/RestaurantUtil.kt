@@ -64,13 +64,6 @@ data class RestaurantSearchFilter(
     val sorting: String? = null
 )
 
-
-fun Date.toLocalDateTime(): LocalDateTime {
-    return Instant.ofEpochMilli(this.time)
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
-}
-
 fun calculateDistance(
     lat1: Double, lon1: Double,
     lat2: Double, lon2: Double

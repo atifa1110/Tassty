@@ -12,9 +12,8 @@ import com.example.core.domain.usecase.TrackDriverLocationUseCase
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.mapper.toUiOrderModel
 import com.example.core.ui.model.OrderStatus
-import com.example.core.ui.utils.mapToResource
+import com.example.core.utils.mapToResource
 import com.example.tassty.navigation.OrderProcessDestination
-import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow

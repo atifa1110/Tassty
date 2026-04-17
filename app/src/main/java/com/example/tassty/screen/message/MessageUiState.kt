@@ -3,14 +3,14 @@ package com.example.tassty.screen.message
 import android.net.Uri
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.MessageUiModel
-import com.example.core.ui.model.NotificationUiModel
 import com.example.core.ui.model.OrderUiModel
-import com.example.tassty.screen.login.LoginEvent
-import io.getstream.chat.android.models.Message
 import io.getstream.chat.android.models.User
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 
 data class MessageUiState(
-    val groupedMessages: Map<String, List<MessageUiModel>> = emptyMap(),
+    val groupedMessages: ImmutableMap<String, ImmutableList<MessageUiModel>> = persistentMapOf(),
     val order: Resource<OrderUiModel> = Resource(),
     val user : User = User(),
     val placeholder : String = "",

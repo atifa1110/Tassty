@@ -3,6 +3,7 @@ package com.example.tassty.screen.dashboard
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -35,6 +36,7 @@ object ProfileDestination : TasstyNavigationDestination {
 
 @Composable
 fun DashboardScreen(
+    initialCid: String? = null,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
     onNavigateToRecommended:() -> Unit,

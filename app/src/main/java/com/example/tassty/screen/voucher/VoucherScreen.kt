@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -25,17 +24,14 @@ import com.example.tassty.R
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmptyVoucherContent
 import com.example.tassty.component.FavoriteTopAppBar
-import com.example.tassty.component.Header
 import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.voucherVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.voucherUiModel
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun VoucherScreen(
@@ -62,6 +58,7 @@ fun VoucherContent(
         containerColor = LocalCustomColors.current.background,
         topBar = {
             FavoriteTopAppBar(
+                modifier = Modifier.statusBarsPadding(),
                 onBackClick = onNavigateBack,
                 onSearchClick = {},
                 iconBackground = LocalCustomColors.current.topBarBackgroundColor
@@ -76,9 +73,7 @@ fun VoucherContent(
         ) {
             item(key="header"){
                 HeaderTitleScreen(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     title = stringResource(R.string.promo_vouchers)
                 )
                 Divider32()
@@ -86,13 +81,13 @@ fun VoucherContent(
 
             when {
                 uiState.vouchers.isLoading -> {
-                    item(key="loading_content") {
+                    item(key = "loading_content") {
                         LoadingRowState()
                     }
                 }
 
                 uiState.vouchers.errorMessage != null -> {
-                    item {
+                    item(key = "error_content") {
                         HeaderListItemCountTitle(
                             itemCount = 0,
                             title = stringResource(R.string.available),
@@ -102,21 +97,23 @@ fun VoucherContent(
                         EmptyVoucherContent()
                     }
                 }
-            }
 
-            val groups = uiState.groupedVouchers.entries.toList()
-            groups.forEachIndexed { index, entry ->
-                val (headerName, voucherList) = entry
+                uiState.vouchers.data != null -> {
+                    val groups = uiState.groupedVouchers
+                    groups.entries.forEachIndexed { index, entry ->
+                        val (headerName, voucherList) = entry
 
-                voucherVerticalListBlock(
-                    headerText = context.getString(R.string.header_vouchers, headerName),
-                    voucherItems = voucherList,
-                    onNavigateToDetailVoucher = {}
-                )
+                        voucherVerticalListBlock(
+                            headerText = context.getString(R.string.header_vouchers, headerName),
+                            voucherItems = voucherList,
+                            onNavigateToDetailVoucher = {}
+                        )
 
-                if (index < groups.size - 1) {
-                    item {
-                        Divider32()
+                        if (index < groups.size - 1) {
+                            item(key = "divider_$headerName") {
+                                Divider32()
+                            }
+                        }
                     }
                 }
             }
@@ -133,7 +130,7 @@ fun VoucherLightPreview(){
             uiState = VoucherUiState(
                 vouchers = Resource(
                     isLoading = false,
-                    data = voucherUiModel,
+                    data = voucherUiModel.toImmutableList(),
                     errorMessage = null
                 )
             ),
@@ -151,7 +148,7 @@ fun VoucherDarkPreview(){
             uiState = VoucherUiState(
                 vouchers = Resource(
                     isLoading = false,
-                    data = voucherUiModel,
+                    data = voucherUiModel.toImmutableList(),
                     errorMessage = null
                 )
             ),

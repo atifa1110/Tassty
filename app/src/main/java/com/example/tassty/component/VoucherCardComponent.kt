@@ -181,16 +181,19 @@ fun VoucherCard(
 @Composable
 fun VoucherSelectorCard(
     voucher : VoucherUiModel,
+    isSelected: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onCheckedChange(voucher.isSelected) },
+            .clickable (
+                onClick = { onCheckedChange(isSelected) }
+            ),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(width= 1.dp, color = if(voucher.isSelected) Orange500 else Neutral40),
+        border = BorderStroke(width= 1.dp, color = if(isSelected) Orange500 else Neutral40),
         colors = CardDefaults.cardColors(
-            containerColor =  if(voucher.isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.background
+            containerColor =  if(isSelected) LocalCustomColors.current.selectedOrangeBackground else LocalCustomColors.current.background
         )
     ) {
         Row(
@@ -209,7 +212,7 @@ fun VoucherSelectorCard(
                     title = voucher.title,
                     description = voucher.description
                 )
-                HorizontalDivider(color =  if(voucher.isSelected) Neutral40 else Neutral30)
+                HorizontalDivider(color =  if(isSelected) Neutral40 else Neutral30)
                 DateAndMinTransactionContent(
                     date = voucher.expireLabel,
                     minTransaction = voucher.formatMinOrder
@@ -220,7 +223,7 @@ fun VoucherSelectorCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 Checkbox(
-                    checked = voucher.isSelected,
+                    checked = isSelected,
                     onCheckedChange = onCheckedChange,
                     modifier = Modifier
                         .padding(0.dp)
@@ -434,7 +437,7 @@ fun VoucherDiscount(
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun PreviewVoucherScreen() {
     Column (
@@ -448,6 +451,8 @@ fun PreviewVoucherScreen() {
         VoucherExtraLargeCard(voucher = voucherUiModel[0])
         VoucherSelectorCard(
             voucher = voucherUiModel[0] ,
-            onCheckedChange = {})
+            onCheckedChange = {},
+            isSelected = true
+        )
     }
 }

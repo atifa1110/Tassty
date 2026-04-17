@@ -25,7 +25,7 @@ class CategoryRepositoryImpl @Inject constructor(
         private const val META_KEY_CATEGORY = "all_categories"
     }
 
-    override fun getAllCategories(): Flow<TasstyResponse<List<Category>>> = flow {
+    override fun getAllCategories(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Category>>> = flow {
         emit(TasstyResponse.Loading())
         // Cek cache
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_CATEGORY)

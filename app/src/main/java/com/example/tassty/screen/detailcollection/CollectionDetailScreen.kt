@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -32,30 +31,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.ui.model.CollectionRestaurantWithMenuUiModel
-import com.example.tassty.util.collectionRestaurantMenuUiModel
 import com.example.tassty.component.CollectionDeleteContent
 import com.example.tassty.component.CollectionDetailTopAppBar
 import com.example.tassty.component.CollectionEditContent
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.CustomBottomSheet
-import com.example.tassty.component.StatusItemImage
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.component.collectionList
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.collection
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun CollectionDetailScreen(
     onNavigateBack:()-> Unit,
     onNavigateToDetailRest: (String) -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit,
     onDeleteSuccess: (String) -> Unit,
     viewModel: CollectionDetailViewModel = hiltViewModel()
 ) {
@@ -85,6 +81,7 @@ fun CollectionDetailScreen(
         onDeleteClick = {viewModel.onEvent(CollectionDetailEvent.OnDeleteSheetClick)},
         onNavigateBack = onNavigateBack,
         onNavigateToDetailRest = onNavigateToDetailRest,
+        onNavigateToDetailMenu = onNavigateToDetailMenu,
         snackHostState = snackHostState
     )
 
@@ -117,11 +114,12 @@ fun CollectionDetailScreen(
 fun CollectionDetailContent(
     name: String,
     image: String,
-    collections: List<CollectionRestaurantWithMenuUiModel>,
+    collections: ImmutableList<CollectionRestaurantWithMenuUiModel>?,
     onEditClick: () -> Unit,
     onDeleteClick:() -> Unit,
     onNavigateBack:()-> Unit,
     onNavigateToDetailRest: (String) -> Unit,
+    onNavigateToDetailMenu:(String) -> Unit,
     snackHostState: SnackbarHostState
 ){
     val scrollState = rememberLazyListState()
@@ -150,7 +148,10 @@ fun CollectionDetailContent(
         snackbarHost = { SnackbarHost(snackHostState) },
         containerColor = background
     ) { padding ->
-        BoxWithConstraints(modifier = Modifier.padding(padding).fillMaxSize()) {
+        BoxWithConstraints(
+            modifier = Modifier.padding(padding)
+                .fillMaxSize()
+        ) {
             val screenHeight = maxHeight
             LazyColumn(
                 state = scrollState,
@@ -168,7 +169,8 @@ fun CollectionDetailContent(
 
                 collectionList(
                     items = collections,
-                    onNavigateToDetailRest = onNavigateToDetailRest
+                    onNavigateToDetailRest = onNavigateToDetailRest,
+                    onNavigateToDetailMenu = onNavigateToDetailMenu
                 )
             }
 
@@ -233,11 +235,12 @@ fun CollectionDetailLightPreview() {
         CollectionDetailContent(
             name = "Favorite Salad",
             image = "",
-            collections = collectionRestaurantMenuUiModel,
+            collections = collection,
             onEditClick = {},
             onDeleteClick = {},
             onNavigateBack = {},
             onNavigateToDetailRest = {},
+            onNavigateToDetailMenu = {},
             snackHostState = snackHostState
         )
     }
@@ -251,11 +254,12 @@ fun CollectionDetailDarkPreview() {
         CollectionDetailContent(
             name = "Favorite Salad",
             image = "",
-            collections = collectionRestaurantMenuUiModel,
+            collections = collection,
             onEditClick = {},
             onDeleteClick = {},
             onNavigateBack = {},
             onNavigateToDetailRest = {},
+            onNavigateToDetailMenu = {},
             snackHostState = snackHostState
         )
     }

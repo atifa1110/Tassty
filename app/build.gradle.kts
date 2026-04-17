@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.google)
+    alias(libs.plugins.kover)
 }
 
 val localProps = Properties()
@@ -143,5 +144,16 @@ dependencies {
     implementation(libs.kotlinx.collections.immutable)
 
     implementation(libs.maps.utils)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk.agent)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.threeten.bp) {
+        exclude(group = "com.jakewharton.threetenabp", module = "threetenabp")
+    }
+
+    androidTestImplementation(libs.mockk.android)
+
     implementation(project(":core"))
 }

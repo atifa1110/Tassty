@@ -3,7 +3,7 @@ package com.example.core.ui.mapper
 import com.example.core.domain.model.DetailOrder
 import com.example.core.ui.model.DetailOrderUiModel
 import com.example.core.ui.model.OrderStatus
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 import java.util.Locale
 
 fun DetailOrder.toUiModel(): DetailOrderUiModel {
@@ -33,6 +33,6 @@ fun DetailOrder.toUiModel(): DetailOrderUiModel {
         userAddress = this.userAddress.toUiModel(),
         orderItems = this.orderItems.map { it.toUiModel() },
         queueNumber = String.format(Locale.US,"#%03d", this.queueNumber),
-        cardPayment = this.cardPayment.toUiModel()
+        cardPayment = this.cardPayment.toUiModel(false)
     )
 }

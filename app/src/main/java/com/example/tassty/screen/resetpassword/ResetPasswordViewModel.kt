@@ -65,7 +65,7 @@ class ResetPasswordViewModel @Inject constructor(
         if(passwordErrorRes!= null || confirmErrorRes!= null) {
             _internalState.update {
                 it.copy(
-                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res) },
+                    passwordError = passwordErrorRes?.let { res -> UiText.StringResource(res, 8) },
                     confirmPasswordError =  confirmErrorRes?.let { res -> UiText.StringResource(res) }
                 )
             }

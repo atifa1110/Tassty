@@ -371,6 +371,7 @@ object AddAddressDestination : TasstyNavigationDestination {
 }
 
 fun NavGraphBuilder.mainGraph(
+    initialCid: String? = null,
     onNavigateBack:() -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToCategory:(String,String, String) -> Unit,
@@ -408,6 +409,7 @@ fun NavGraphBuilder.mainGraph(
     ) {
         composable(route = MainDestination.route) {
             DashboardScreen(
+                initialCid = initialCid,
                 onNavigateToDetailRest = onNavigateToDetailRest,
                 onNavigateToSearch = onNavigateToSearch,
                 onNavigateToCategory = onNavigateToCategory,
@@ -578,7 +580,8 @@ fun NavGraphBuilder.mainGraph(
             CollectionDetailScreen(
                 onNavigateBack = onNavigateBack,
                 onDeleteSuccess = onDeleteSuccess,
-                onNavigateToDetailRest = onNavigateToDetailRest
+                onNavigateToDetailRest = onNavigateToDetailRest,
+                onNavigateToDetailMenu = onNavigateToDetailMenu
             )
         }
 
@@ -586,7 +589,8 @@ fun NavGraphBuilder.mainGraph(
             route = FavoriteDestination.route,
         ) {
             FavoriteScreen(
-                onNavigateBack = onNavigateBack
+                onNavigateBack = onNavigateBack,
+                onNavigateToRecommended = onNavigateToRecommended
             )
         }
 
@@ -694,7 +698,11 @@ fun NavGraphBuilder.mainGraph(
             route = MessageDestination.routeWithArgs,
         ) {
             MessageScreen(
-                onNavigateBack = onNavigateBack
+                onNavigateBack = {
+                    val hasBackstack = onNavigateBack()
+
+
+                }
             )
         }
 

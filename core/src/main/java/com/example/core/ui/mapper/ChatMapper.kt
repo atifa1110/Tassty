@@ -1,6 +1,6 @@
 package com.example.core.ui.mapper
 
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 import com.example.core.domain.model.Chat
 import com.example.core.ui.model.ChatUiModel
 

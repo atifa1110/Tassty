@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetFilterOptionsUseCase
 import com.example.core.domain.usecase.GetSearchRestaurantsByCategoryUseCase
 import com.example.core.domain.utils.RestaurantSearchFilter
-import com.example.core.ui.utils.mapToResource
-import com.example.core.ui.utils.FilterManager
+import com.example.core.utils.mapToResource
+import com.example.core.utils.FilterManager
 import com.example.core.ui.mapper.FilterCategory
 import com.example.core.ui.mapper.toUiModel
 import com.example.tassty.model.mapToActiveFilters

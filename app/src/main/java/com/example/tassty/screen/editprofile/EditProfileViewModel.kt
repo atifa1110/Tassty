@@ -8,7 +8,7 @@ import com.example.core.ui.mapper.toUiModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.UpdateUserProfileUseCase
-import com.example.core.ui.utils.mapToResource
+import com.example.core.utils.mapToResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow

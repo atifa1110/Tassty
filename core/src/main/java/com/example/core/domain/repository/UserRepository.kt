@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.Flow
 interface UserRepository {
     fun getUserAddress(): Flow<TasstyResponse<List<UserAddress>>>
 
+    fun deleteUserAddress(addressId: String): Flow<TasstyResponse<String>>
+
     fun createUserAddress(request: AddressRequest): Flow<TasstyResponse<String>>
 
     fun getUserProfile(): Flow<TasstyResponse<User>>
@@ -23,4 +25,6 @@ interface UserRepository {
     fun saveCardInfo(paymentMethodId: String, color: String, background: String): Flow<TasstyResponse<String>>
 
     fun getUserCard(): Flow<TasstyResponse<List<CardUser>>>
+
+    fun deleteUserCard(cardId: String): Flow<TasstyResponse<String>>
 }

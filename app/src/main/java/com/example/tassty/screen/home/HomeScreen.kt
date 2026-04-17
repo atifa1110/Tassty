@@ -79,8 +79,9 @@ import androidx.compose.ui.unit.Dp
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.component.CollectionAddContent
-import com.example.tassty.component.CollectionImmutableContent
+import com.example.tassty.component.CollectionContent
 import com.example.tassty.component.CustomBottomSheet
+import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HomeProfile
 import com.example.tassty.component.NearbyMapBox
 import com.example.tassty.component.SearchBar
@@ -131,45 +132,56 @@ fun HomeScreen(
         }
     }
 
-    HomeContent(
-        snackHostState = snackHostState,
-        uiState = uiState,
-        onNavigateToSearch = onNavigateToSearch,
-        onNavigateToDetail = onNavigateToDetailRest,
-        onNavigateToCategory = onNavigateToCategory,
-        onNavigateToRecommended = onNavigateToRecommended,
-        onNavigateToVoucher = onNavigateToVoucher,
-        onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
-        onCartClick = {viewModel.onEvent(HomeEvent.OnShowDetailMenu(it))},
-        onFavoriteClick = {viewModel.onEvent(HomeEvent.OnFavoriteClick(it))},
-        onRefresh = viewModel::onPullToRefresh
-    )
-
-    CustomBottomSheet(
-        visible = uiState.isCollectionSheetVisible,
-        onDismiss = { viewModel.onEvent(HomeEvent.OnDismissCollectionSheet) }
-    ) {
-        CollectionImmutableContent(
-            resource = uiState.collectionsResource,
-            onCollectionSelected = { id, check ->
-                viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id,check))
-            },
-            onSaveCollectionClick = {viewModel.onEvent(HomeEvent.OnSaveToCollection)},
-            onAddCollectionClick = { viewModel.onEvent(HomeEvent.OnShowAddCollectionSheet) }
+    if (uiState.isTokenExpired) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            ErrorScreen(
+                onClick = { viewModel.onEvent(HomeEvent.OnRefreshToken) },
+            )
+        }
+    }else {
+        HomeContent(
+            snackHostState = snackHostState,
+            uiState = uiState,
+            onNavigateToSearch = onNavigateToSearch,
+            onNavigateToDetail = onNavigateToDetailRest,
+            onNavigateToCategory = onNavigateToCategory,
+            onNavigateToRecommended = onNavigateToRecommended,
+            onNavigateToVoucher = onNavigateToVoucher,
+            onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
+            onCartClick = { viewModel.onEvent(HomeEvent.OnShowDetailMenu(it)) },
+            onFavoriteClick = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) },
+            onRefresh = viewModel::onPullToRefresh
         )
-    }
 
-    CustomBottomSheet(
-        visible = uiState.isAddCollectionSheet,
-        dismissOnClickOutside = false,
-        onDismiss = {}
-    ) {
-        CollectionAddContent (
-            collectionName = uiState.newCollectionName,
-            onValueName = {viewModel.onEvent(HomeEvent.OnNewCollectionNameChange(it))},
-            onDismissClick = { viewModel.onEvent(HomeEvent.OnDismissAddCollectionSheet) },
-            onAddCollection = {viewModel.onEvent(HomeEvent.OnCreateCollection)}
-        )
+        CustomBottomSheet(
+            visible = uiState.isCollectionSheetVisible,
+            onDismiss = { viewModel.onEvent(HomeEvent.OnDismissCollectionSheet) }
+        ) {
+            CollectionContent (
+                items = uiState.collections,
+                onCollectionSelected = { id, check ->
+                    viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id, check))
+                },
+                onSaveCollectionClick = { viewModel.onEvent(HomeEvent.OnSaveToCollection) },
+                onAddCollectionClick = { viewModel.onEvent(HomeEvent.OnShowAddCollectionSheet) }
+            )
+        }
+
+        CustomBottomSheet(
+            visible = uiState.isAddCollectionSheet,
+            dismissOnClickOutside = false,
+            onDismiss = {}
+        ) {
+            CollectionAddContent(
+                collectionName = uiState.newCollectionName,
+                onValueName = { viewModel.onEvent(HomeEvent.OnNewCollectionNameChange(it)) },
+                onDismissClick = { viewModel.onEvent(HomeEvent.OnDismissAddCollectionSheet) },
+                onAddCollection = { viewModel.onEvent(HomeEvent.OnCreateCollection) }
+            )
+        }
     }
 }
 

@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetNearbyRestaurantsUseCase
 import com.example.core.ui.mapper.toUiModel
-import com.example.core.ui.utils.toListState
+import com.example.core.utils.toImmutableListState
+import com.example.core.utils.toListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +19,7 @@ class NearbyViewModel @Inject constructor(
 ) : ViewModel(){
 
     val uiState: StateFlow<NearbyUiState> = nearbyRestaurantsUseCase().map { response ->
-         val data = response.toListState { it.toUiModel() }
+         val data = response.toImmutableListState { it.toUiModel() }
         NearbyUiState(
             resource = data
         )

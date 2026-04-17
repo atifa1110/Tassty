@@ -7,7 +7,7 @@ import com.example.core.domain.utils.RestaurantSearchFilter
 import kotlinx.coroutines.flow.Flow
 
 interface CategoryRepository {
-    fun getAllCategories(): Flow<TasstyResponse<List<Category>>>
+    fun getAllCategories(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Category>>>
 
     fun getSearchRestaurantsByCategory(id: String,filter: RestaurantSearchFilter): Flow<TasstyResponse<List<RestaurantWithMenu>>>
 }

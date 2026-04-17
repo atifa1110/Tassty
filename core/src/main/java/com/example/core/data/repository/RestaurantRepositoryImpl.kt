@@ -26,11 +26,11 @@ class RestaurantRepositoryImpl @Inject constructor(
         private const val META_KEY_NEARBY = "nearby_restaurants"
     }
 
-    override fun getRecommendedRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+    override fun getRecommendedRestaurants(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Restaurant>>> = flow {
             emit(TasstyResponse.Loading())
 
             val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_RECOMMENDED)
-            if (cachedData.isNotEmpty()) {
+            if (!fetchFromRemote && cachedData.isNotEmpty()) {
                 emit(
                     TasstyResponse.Success(
                         data = cachedData.map { it.toDomain() },
@@ -76,11 +76,11 @@ class RestaurantRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getNearbyRestaurants(): Flow<TasstyResponse<List<Restaurant>>> = flow {
+    override fun getNearbyRestaurants(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Restaurant>>> = flow {
         emit(TasstyResponse.Loading())
 
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_NEARBY)
-        if (cachedData.isNotEmpty()) {
+        if (!fetchFromRemote && cachedData.isNotEmpty()) {
             emit(
                 TasstyResponse.Success(
                     data = cachedData.map { it.toDomain() },

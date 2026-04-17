@@ -1,5 +1,6 @@
 package com.example.tassty.screen.cart
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -66,10 +68,13 @@ fun CartScreen(
     onNavigateToPayment: (String, String) -> Unit,
     onNavigateToDetailRest:(String) -> Unit,
     onNavigateToDetailMenu: (String) -> Unit,
+    onNavigateToAddress: () -> Unit,
     viewModel: CartViewModel = hiltViewModel()
 ){
     val context = LocalContext.current
-    val state = viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val voucherState by viewModel.voucherState.collectAsStateWithLifecycle()
+    val addressState by viewModel.addressState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { event->
@@ -90,7 +95,8 @@ fun CartScreen(
     }
 
     CartContent(
-        uiState = state.value,
+        context =  context,
+        uiState = uiState,
         onNavigateToRecommended = onNavigateToRecommended,
         onNavigateToDetailRest = onNavigateToDetailRest,
         onSelectLocationClicked = { viewModel.onEvent(CartUiEvent.OnShowLocationSheet) },
@@ -107,7 +113,7 @@ fun CartScreen(
     )
 
     CustomBottomSheet(
-        visible = state.value.isDeleteAllSheetVisible,
+        visible = uiState.isDeleteAllSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
@@ -118,26 +124,28 @@ fun CartScreen(
     }
 
     CustomBottomSheet(
-        visible = state.value.isLocationSheetVisible,
+        visible = uiState.isLocationSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissLocationSheet) }
     ) {
         CartDeliveryLocationContent(
-            resource = state.value.availableAddresses,
+            selectedId = uiState.selectedAddress?.id,
+            resource = addressState,
             onAddressChange = { it -> viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(it)) },
             onSetLocationClicked = { viewModel.onEvent(CartUiEvent.OnSetLocationClicked)},
             onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissLocationSheet) },
-            onNavigateToAddress = {}
+            onNavigateToAddress = onNavigateToAddress
         )
     }
 
     CustomBottomSheet(
-        visible = state.value.isVoucherSheetVisible,
+        visible = uiState.isVoucherSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissVoucherSheet) }
     ) {
         CartPromoContent(
-            resource = state.value.availableVouchers,
+            resource = voucherState,
+            selectedId = uiState.selectedVoucher?.id,
             onVoucherSelectionChanged = { viewModel.onEvent(CartUiEvent.OnVoucherSelectionChanged(it))},
             onApplyVoucherClicked = { viewModel.onEvent(CartUiEvent.OnApplyVoucherClicked)},
             onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissVoucherSheet) }
@@ -145,19 +153,19 @@ fun CartScreen(
     }
 
     CustomBottomSheet(
-        visible = state.value.isRemoveItemSheetVisible,
+        visible = uiState.isRemoveItemSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissRemoveItemSheet) }
     ) {
         CartRemoveMenuContent(
-            cart = state.value.selectedCart,
+            cart = uiState.selectedCart,
             onRemoveCartItem = { viewModel.onEvent(CartUiEvent.OnRemoveCartItem(it))},
             onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissRemoveItemSheet) }
         )
     }
 
     CustomBottomSheet(
-        visible = state.value.isDoubleCheckSheetVisible,
+        visible = uiState.isDoubleCheckSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissDoubleCheckSheet) }
     ) {
@@ -168,13 +176,13 @@ fun CartScreen(
     }
 
     CustomBottomSheet(
-        visible = state.value.isNoteSheetVisible,
+        visible = uiState.isNoteSheetVisible,
         dismissOnClickOutside = false,
         onDismiss = {}
     ) {
         CartEditContent(
-            cartId = state.value.selectedCart?.cartId?:"",
-            text = state.value.note,
+            cartId = uiState.selectedCart?.cartId?:"",
+            text = uiState.note,
             onTextChange = { viewModel.onEvent(CartUiEvent.OnNoteTextChange(it))},
             onUpdateCart = { id, notes-> viewModel.onEvent(CartUiEvent.OnUpdateNoteItem(id,notes))},
             onDismiss = { viewModel.onEvent(CartUiEvent.OnDismissNoteSheet) }
@@ -184,6 +192,7 @@ fun CartScreen(
 
 @Composable
 fun CartContent(
+    context: Context,
     uiState: CartUiState,
     onNavigateToRecommended: () -> Unit,
     onNavigateToDetailRest: (String) -> Unit,
@@ -199,7 +208,7 @@ fun CartContent(
     onContinuePayment: () -> Unit,
     onEditNoteMenuClick : (String) -> Unit
 ) {
-    val cart = uiState.carts.data
+    val cart = uiState.carts
     val menus = cart?.menus
 
     Scaffold(
@@ -244,13 +253,6 @@ fun CartContent(
                 }
             }
 
-            uiState.carts.isLoading ->{
-                LoadingOverlay(
-                    isLoading = uiState.carts.isLoading,
-                    text = stringResource(R.string.load)
-                )
-            }
-
             else -> {
                 LazyColumn(
                     modifier = Modifier
@@ -287,7 +289,7 @@ fun CartContent(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Text(
-                                        text = "Add more",
+                                        text = stringResource(R.string.add_more),
                                         style = LocalCustomTypography.current.bodyMediumMedium,
                                         color = Orange500
                                     )
@@ -311,7 +313,7 @@ fun CartContent(
 
                     cartVerticalListBlock(
                         cart = menus,
-                        headerText = "Menus",
+                        headerText = context.getString(R.string.menus),
                         selectAll = uiState.isSelectAll,
                         onSelectAllClicked = onSelectAllClicked,
                         onCartSelectionChange = onCartSelectionChange,
@@ -380,66 +382,56 @@ fun CartContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun CartLightPreview() {
-//    TasstyTheme {
-//        CartContent(
-//            uiState = CartUiState(
-//                carts = Resource(data = cartUiModel)
-//            ),
-//            onSelectLocationClicked = {},
-//            onSelectPromoClicked = {},
-//            onCartSelectionChange = {},
-//            onSelectAllClicked = {},
-//            onIncrementQuantity = {},
-//            onDecrementQuantity = {},
-//            onDeleteAllClicked = {},
-//            onRemoveItemClicked = {},
-//            onNavigateToDetailRest = {},
-//            onRevealChange = { _, _ -> },
-//            onEditNoteMenuClick = {},
-//            onNavigateToRecommended = {},
-//            onContinuePayment = {}
-//        )
-//    }
-//}
+@Composable
+fun CartLightPreview() {
+    TasstyTheme {
+        CartContent(
+            uiState = CartUiState(
+                carts = cartUiModel
+            ),
+            onSelectLocationClicked = {},
+            onSelectPromoClicked = {},
+            onCartSelectionChange = {},
+            onSelectAllClicked = {},
+            onIncrementQuantity = {},
+            onDecrementQuantity = {},
+            onDeleteAllClicked = {},
+            onRemoveItemClicked = {},
+            onNavigateToDetailRest = {},
+            onRevealChange = { _, _ -> },
+            onEditNoteMenuClick = {},
+            onNavigateToRecommended = {},
+            onContinuePayment = {},
+            context = LocalContext.current
+        )
+    }
+}
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun CartDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        CartContent(
-//            uiState = CartUiState(
-//                carts = Resource(data = CartGroupUiModel(
-//                    restaurantUiModel[0],
-//                    emptyList()
-//                ))
-//            ),
-//            onSelectLocationClicked = {},
-//            onSelectPromoClicked = {},
-//            onCartSelectionChange = {},
-//            onSelectAllClicked = {},
-//            onIncrementQuantity = {},
-//            onDecrementQuantity = {},
-//            onDeleteAllClicked = {},
-//            onRemoveItemClicked = {},
-//            onNavigateToDetailRest = {},
-//            onRevealChange = { _, _ -> },
-//            onEditNoteMenuClick = {},
-//            onNavigateToRecommended = {},
-//            onContinuePayment = {}
-//        )
-//
-//        CustomBottomSheet(
-//            visible = false,
-//            dismissOnClickOutside = false,
-//            onDismiss = {}
-//        ) {
-//            CartRemoveMenuContent(
-//                cart = cartUiModel.menus[0],
-//                onRemoveCartItem = {},
-//                onDismiss = {}
-//            )
-//        }
-//    }
-//}
+@Composable
+fun CartDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        CartContent(
+            uiState = CartUiState(
+                carts =CartGroupUiModel(
+                    restaurantUiModel[0],
+                    emptyList()
+                )
+            ),
+            onSelectLocationClicked = {},
+            onSelectPromoClicked = {},
+            onCartSelectionChange = {},
+            onSelectAllClicked = {},
+            onIncrementQuantity = {},
+            onDecrementQuantity = {},
+            onDeleteAllClicked = {},
+            onRemoveItemClicked = {},
+            onNavigateToDetailRest = {},
+            onRevealChange = { _, _ -> },
+            onEditNoteMenuClick = {},
+            onNavigateToRecommended = {},
+            onContinuePayment = {},
+            context = LocalContext.current
+        )
+    }
+}

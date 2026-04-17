@@ -13,6 +13,7 @@ import com.example.core.domain.model.Notification
 import com.example.core.domain.repository.NotificationRepository
 import com.example.core.domain.repository.OrderRepository
 import com.example.tassty.activity.MainActivity
+import com.example.tassty.navigation.MessageDestination
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,49 +66,65 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         } else {
             val senderName = data["sender_name"] ?: "Pesan Baru"
             val text = data["notif_message"] ?: ""
+            val cid = data["cid"]?:""
 
+            chatStreamDataSource.reconnectStream()
             if(!isAppInForeground(this)) {
                 showChatNotification(
                     senderName = senderName,
-                    message = text
+                    message = text,
+                    cid = cid
                 )
             }
         }
     }
 
-    private fun showChatNotification(senderName: String, message: String) {
+    private fun showChatNotification(senderName: String, message: String, cid: String) {
         val channelId = "chat_channel"
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val groupKey = "com.example.tassty.GROUP_$cid"
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationId = System.currentTimeMillis().toInt()
 
         val intent = Intent(this, MainActivity::class.java).apply {
-            Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("target_screen", MessageDestination.route)
+            putExtra("channel_id", cid)
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this,
+            notificationId,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val bitmapLogo = BitmapFactory.decodeResource(resources, R.drawable.logo)
-
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.logo)
-            .setLargeIcon(bitmapLogo)
             .setContentTitle(senderName)
             .setContentText(message)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setGroup(groupKey)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .build()
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
+        val summaryId = cid.hashCode()
+
+        val summaryNotification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.logo)
+            .setGroup(groupKey)
+            .setGroupSummary(true)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        notificationManager.notify(notificationId, notificationBuilder)
+        notificationManager.notify(summaryId, summaryNotification)
     }
 
     private fun showOrderNotification(title: String, message: String) {
         val channelId = "order_channel"
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val intent = Intent(this, MainActivity::class.java).apply {
            Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         }

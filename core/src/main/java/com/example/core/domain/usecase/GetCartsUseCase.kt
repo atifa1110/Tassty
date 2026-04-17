@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetCartsUseCase @Inject constructor(
     private val cartRepository: CartRepository
 ) {
-    operator fun invoke() : Flow<TasstyResponse<CartGroup>>{
+    operator fun invoke() : Flow<CartGroup>{
         return cartRepository.getAllCartWithDetails()
     }
 }

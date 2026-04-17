@@ -512,7 +512,7 @@ fun FeedbackInputField(
     )
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun EditTextReview(){
     Column(

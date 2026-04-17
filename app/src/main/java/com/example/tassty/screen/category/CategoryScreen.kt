@@ -37,6 +37,7 @@ import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
 import com.example.tassty.util.restaurantMenuUiModel
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun CategoryScreen(
@@ -269,7 +270,7 @@ fun CategoryLightPreview() {
             categoryName = "Ramen",
             imageUrl = "",
             uiState = CategoryUiState(
-                restaurants = Resource(data = restaurantMenuUiModel),
+                restaurants = Resource(data = restaurantMenuUiModel.toImmutableList()),
                 activeFilters = defaultFilter
             ),
             onFilterClick = {},
@@ -289,7 +290,7 @@ fun CategoryDarkPreview() {
             categoryName = "Ramen",
             imageUrl = "",
             uiState = CategoryUiState(
-                restaurants = Resource(data = restaurantMenuUiModel),
+                restaurants = Resource(data = restaurantMenuUiModel.toImmutableList()),
                 activeFilters = defaultFilter
             ),
             onFilterClick = {},

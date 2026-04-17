@@ -220,10 +220,11 @@ fun FoodWideListCard(
 
 @Composable
 fun FoodCollectionCard(
-    collection: CollectionMenuUiModel
+    collection: CollectionMenuUiModel,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = LocalCustomColors.current.cardBackground)
     ) {
@@ -383,6 +384,6 @@ fun FoodListCardPreview() {
     ) {
         FoodListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
         FoodWideListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
-        FoodCollectionCard(collection = collectionMenuUiModel[0])
+        FoodCollectionCard(collection = collectionMenuUiModel[0], onClick = {})
     }
 }

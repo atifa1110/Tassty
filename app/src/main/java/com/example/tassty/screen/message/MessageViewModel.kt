@@ -1,6 +1,7 @@
 package com.example.tassty.screen.message
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,15 +10,17 @@ import com.example.core.domain.usecase.GetChatMessagesUseCase
 import com.example.core.domain.usecase.GetChatOtherUserUseCase
 import com.example.core.domain.usecase.GetOrderSummaryUseCase
 import com.example.core.domain.usecase.SendChatMessageUseCase
-import com.example.core.ui.utils.toListState
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.MessageUiModel
 import com.example.core.ui.model.OrderStatus
-import com.example.core.ui.utils.mapToResource
-import com.example.tassty.component.OrderStatusCard
+import com.example.core.utils.mapToResource
+import com.example.core.utils.toImmutableListState
 import com.example.tassty.navigation.MessageDestination
-import com.example.tassty.screen.login.LoginEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -25,6 +28,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,30 +50,38 @@ class MessageViewModel @Inject constructor(
         .substringAfter("order-")
     private val _internalState = MutableStateFlow(MessageInternalState())
 
+    val groupedMessagesFlow = getChatMessagesUseCase(channelId)
+        .map { response ->
+            response.toImmutableListState { it.toUiModel() }.let { listState ->
+                val grouped = listState.data?.groupBy { it.date }?.mapValues { (_, items) ->
+                    items.reversed().toImmutableList()
+                }?.toImmutableMap() ?: persistentMapOf()
+                Pair(listState.isLoading, grouped)
+            }
+        }
+        .distinctUntilChanged()
+        .flowOn(Dispatchers.Default)
+
     val uiState: StateFlow<MessageUiState> = combine(
         _internalState,
-        getChatOtherUserUseCase(channelId),
-        getChatMessagesUseCase(channelId),
-        getOrderSummaryUseCase(orderId),
-    ) { internal, otherUser,messages, order->
-
-        val rawMessages = messages.toListState { it.toUiModel() }
-        val grouped = rawMessages.data?.groupBy { it.date }
-            ?.mapValues { it.value.reversed() }
-            ?.toList()?.reversed()?.toMap()?:emptyMap()
+        getChatOtherUserUseCase(channelId).distinctUntilChanged(),
+        groupedMessagesFlow,
+        getOrderSummaryUseCase(orderId).distinctUntilChanged()
+    ) { internal, otherUser, (msgLoading, grouped), order ->
 
         val orderRes = order.mapToResource { it.toUiModel() }
+
         MessageUiState(
             user = otherUser,
             groupedMessages = grouped,
             order = orderRes,
-            placeholder = if(internal.isImagePreviewVisible) "Add a caption..." else "Write a message...",
+            placeholder = if (internal.isImagePreviewVisible) "Add a caption..." else "Write a message...",
             sendMessage = internal.sendMessage,
             selectedImageUri = internal.selectedImageUri,
             selectedMessage = internal.selectedMessage,
             isImagePreviewVisible = internal.isImagePreviewVisible,
             isImageSheetVisible = internal.isImageSheetVisible,
-            isLoading = rawMessages.isLoading || internal.isLoading || orderRes.isLoading,
+            isLoading = msgLoading || internal.isLoading || orderRes.isLoading,
             uploadProgress = internal.progress
         )
     }.stateIn(
@@ -102,11 +116,11 @@ class MessageViewModel @Inject constructor(
     }
 
     fun onSendMessage(){
-        val state = uiState.value
-        val currentText = state.sendMessage
-        val imageUri = state.selectedImageUri
+        val order = uiState.value.order
+        val currentText = _internalState.value.sendMessage
+        val imageUri = _internalState.value.selectedImageUri
 
-        if (state.order.data?.status == OrderStatus.COMPLETED) {
+        if (order.data?.status == OrderStatus.COMPLETED) {
             viewModelScope.launch {
                 _events.emit(MessageEvent.ShowMessage("Order is completed. You can't send messages anymore."))
             }

@@ -319,5 +319,25 @@
     <string name="my_addressess">My addresses.</string>
     <string name="restaurants_nearby">Restaurants nearby</string>
     <string name="my_payment_methods">My payment methods.</string>
+    <string name="dont_have_any_available_voucher">You don\'t have any available voucher \nright now, please stay tune</string>
+    <string name="the_message_from_your_order"><![CDATA[The message from your order & Driver \nwill be displayed here.]]></string>
+    <string name="not_received_any_notifications_yet">You haven\'t received any notifications yet. \nWe\'ll let you know when something arrives!</string>
+    <string name="no_cards_added_yet">No cards added yet!</string>
+    <string name="no_order_yet">No order yet?</string>
+    <string name="not_added_any_debit">You haven\'t added any debit or credit cards. \nAdd one now to enjoy a faster and easier \ncheckout experience!</string>
+    <string name="no_ordered_anything">It looks like you haven\'t ordered anything. \nLet’s find something delicious for you!</string>
+    <string name="your_list_is_empty">Your list is empty!</string>
+    <string name="your_message_is_empty">Your message is empty!</string>
+    <string name="your_collection_is_empty">Your collection \nis empty!</string>
+    <string name="where_should_we_deliver">Where should we deliver?</string>
+    <string name="no_have_any_saved_addresses">You don\'t have any saved addresses right now. \nAdd one to get started!</string>
+    <string name="find_menus">Find menus</string>
+    <string name="add_your_favorite_menus_by_clicking">You can add your favorite menus by \nclicking the love button on the menu details page.</string>
+    <string name="add_your_favorite_restaurants">You can add your favorite restaurants by \nclicking the love button on the restaurant details page.</string>
+    <string name="find_restaurants">Find restaurants</string>
+    <string name="your_notification_is_empty">Your notification \nis empty!</string>
+    <string name="card_payment">Card Payment</string>
+    <string name="add_more">Add more</string>
+    <string name="menus">Menus</string>
 
 </resources>

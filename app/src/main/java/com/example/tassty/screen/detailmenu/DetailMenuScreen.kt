@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,6 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.MenuStatus
 import com.example.core.ui.model.OptionGroupUiModel
+import com.example.tassty.component.BackTopAppBar
 import com.example.tassty.component.CartAddButton
 import com.example.tassty.component.CollectionAddContent
 import com.example.tassty.component.CollectionContent
@@ -118,7 +120,7 @@ fun DetailMenuScreen(
         onDismiss = { viewModel.onEvent(DetailMenuEvent.OnDismissCollectionSheet)}
     ) {
         CollectionContent(
-            resource = uiState.collections,
+            items = uiState.collections,
             onCollectionSelected = { id, isCheck -> viewModel.onEvent(DetailMenuEvent.OnCollectionCheckChange(id,isCheck))},
             onSaveCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnSaveCollectionClick)},
             onAddCollectionClick = { viewModel.onEvent(DetailMenuEvent.OnShowAddCollectionSheet)}
@@ -205,7 +207,7 @@ fun DetailMenuContent(
             //}
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Box(modifier = Modifier.padding(padding).fillMaxSize().imePadding()) {
             LazyColumn(
                 state = scrollState,
                 modifier = Modifier.fillMaxSize(),
@@ -214,7 +216,7 @@ fun DetailMenuContent(
                 if (isLoading) {
                     loadingMenuSection()
                 } else if(errorMessage!=null) {
-                    errorSection()
+                    errorSection(onNavigateBack = onNavigateBack)
                 }else if(menu != null){
                     item {
                         Box(Modifier.height(370.dp).fillMaxWidth()) {
@@ -357,7 +359,12 @@ fun LazyListScope.loadingMenuSection() {
     }
 }
 
-fun LazyListScope.errorSection(){
+fun LazyListScope.errorSection(
+    onNavigateBack: () -> Unit
+){
+    item {
+        BackTopAppBar(onNavigateBack)
+    }
     item {
         Box(
             modifier = Modifier.fillParentMaxHeight(),

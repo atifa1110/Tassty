@@ -3,10 +3,11 @@ package com.example.tassty.screen.address
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.domain.model.AddressType
 import com.example.core.ui.model.UserAddressUiModel
+import kotlinx.collections.immutable.ImmutableList
 
 data class AddressUiState(
     val selectedTab: AddressTab = AddressTab.ALL,
-    val addressResource: Resource<List<UserAddressUiModel>> = Resource(isLoading = true)
+    val addressResource: Resource<ImmutableList<UserAddressUiModel>> = Resource()
 )
 
 enum class AddressTab(

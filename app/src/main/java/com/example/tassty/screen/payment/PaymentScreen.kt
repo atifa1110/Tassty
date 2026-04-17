@@ -73,6 +73,8 @@ import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.TasstyTheme
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 
 @Composable
@@ -261,7 +263,7 @@ fun PaymentContent(
 
 fun LazyListScope.cardUserSection(
     context: Context,
-    resource: Resource<List<CardUserUiModel>>,
+    resource: Resource<ImmutableList<CardUserUiModel>>,
     onCardSelected: (String) -> Unit
 ) {
     val cardItems = resource.data.orEmpty()
@@ -364,7 +366,7 @@ fun PaymentLightPreview() {
         PaymentContent(
             total = "Rp150.0000",
             uiState = PaymentUiState(
-                cardPayment = Resource(data = cardList),
+                cardPayment = Resource(data = cardList.toImmutableList()),
                 paymentChannel = Resource(data = paymentChannel),
                 selectedCardId = "",
                 isButtonEnabled = true,
@@ -386,7 +388,7 @@ fun PaymentDarkPreview() {
         PaymentContent(
             total = "Rp150.0000",
             uiState = PaymentUiState(
-                cardPayment = Resource(data = cardList),
+                cardPayment = Resource(data = cardList.toImmutableList()),
                 paymentChannel = Resource(data = paymentChannel),
                 selectedCardId = "",
                 isButtonEnabled = true,

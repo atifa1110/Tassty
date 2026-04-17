@@ -13,9 +13,10 @@ import com.example.tassty.screen.dashboard.CartDestination
 
 @Composable
 fun TasstyNavHost(
+    modifier: Modifier = Modifier,
+    initialCid: String? = null,
     authStatus: AuthStatus,
     navController: NavHostController,
-    modifier: Modifier = Modifier,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val startDestination = when{
@@ -99,6 +100,7 @@ fun TasstyNavHost(
             }
         )
         mainGraph(
+            initialCid = initialCid,
             onNavigateBack = {
                 navController.popBackStack()
             },

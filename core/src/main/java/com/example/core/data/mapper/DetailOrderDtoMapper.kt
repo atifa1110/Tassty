@@ -2,7 +2,7 @@ package com.example.core.data.mapper
 
 import com.example.core.data.model.DetailOrderDto
 import com.example.core.domain.model.DetailOrder
-import com.example.core.ui.utils.DateFormatter
+import com.example.core.utils.DateFormatter
 
 fun DetailOrderDto.toDomain(): DetailOrder {
     return DetailOrder(

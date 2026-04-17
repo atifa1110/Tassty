@@ -15,8 +15,10 @@ import com.example.core.domain.model.User
 import com.example.core.domain.model.UserAddress
 import com.example.core.domain.repository.UserRepository
 import com.stripe.android.Stripe
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -33,7 +35,18 @@ class UserRepositoryImpl @Inject constructor(
             is TasstyResponse.Success -> emit(TasstyResponse.Success(response.data?.map { it.toDomain() },response.meta))
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
+
+    override fun deleteUserAddress(addressId: String): Flow<TasstyResponse<String>> = flow {
+        emit(TasstyResponse.Loading())
+
+        val response = userNetworkDataSource.deleteUserAddress(addressId)
+        when(response){
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
+            is TasstyResponse.Success -> emit(TasstyResponse.Success(response.meta.message,response.meta))
+            else -> {}
+        }
+    }.flowOn(Dispatchers.IO)
 
     override fun createUserAddress(request: AddressRequest): Flow<TasstyResponse<String>> = flow {
         emit(TasstyResponse.Loading())
@@ -44,7 +57,7 @@ class UserRepositoryImpl @Inject constructor(
             is TasstyResponse.Success -> emit(TasstyResponse.Success(response.meta.message,response.meta))
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getUserProfile(): Flow<TasstyResponse<User>> = flow {
         emit(TasstyResponse.Loading())
@@ -55,7 +68,7 @@ class UserRepositoryImpl @Inject constructor(
             is TasstyResponse.Success -> emit(TasstyResponse.Success(response.data?.toDomain(),response.meta))
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun updateUserProfile(
         name: String,
@@ -79,7 +92,7 @@ class UserRepositoryImpl @Inject constructor(
             }
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getSetupIntentSecret(): Flow<TasstyResponse<String>> = flow {
         emit(TasstyResponse.Loading())
@@ -89,7 +102,7 @@ class UserRepositoryImpl @Inject constructor(
             is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
 
     override fun saveCardInfo(paymentMethodId: String, color: String, background: String): Flow<TasstyResponse<String>> = flow {
@@ -99,7 +112,7 @@ class UserRepositoryImpl @Inject constructor(
             is TasstyResponse.Success -> emit(TasstyResponse.Success(response.meta.message,response.meta))
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getUserCard(): Flow<TasstyResponse<List<CardUser>>> = flow {
         val response = userNetworkDataSource.getUserCard()
@@ -108,5 +121,16 @@ class UserRepositoryImpl @Inject constructor(
             is TasstyResponse.Success -> emit(TasstyResponse.Success(response.data?.map { it.toDomain() },response.meta))
             else -> {}
         }
-    }
+    }.flowOn(Dispatchers.IO)
+
+    override fun deleteUserCard(cardId: String): Flow<TasstyResponse<String>> = flow {
+        emit(TasstyResponse.Loading())
+
+        val response = userNetworkDataSource.deleteUserCard(cardId)
+        when(response){
+            is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
+            is TasstyResponse.Success -> emit(TasstyResponse.Success(response.meta.message,response.meta))
+            else -> {}
+        }
+    }.flowOn(Dispatchers.IO)
 }

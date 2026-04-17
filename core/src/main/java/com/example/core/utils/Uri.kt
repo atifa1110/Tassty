@@ -1,4 +1,4 @@
-package com.example.core.ui.utils
+package com.example.core.utils
 
 import android.content.Context
 import android.net.Uri

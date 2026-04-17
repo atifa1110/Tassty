@@ -11,10 +11,12 @@ import com.example.core.data.source.remote.request.SaveCardRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 
 interface UserApiService {
 
@@ -33,6 +35,11 @@ interface UserApiService {
     suspend fun getUserAddress(
     ): BaseResponse<List<UserAddressDto>>
 
+    @DELETE("users/addresses/{addressId}")
+    suspend fun deleteUserAddress(
+        @Path("addressId") addressId: String
+    ): BaseResponse<Unit>
+
     @POST("users/addresses")
     suspend fun createUserAddress(
         @Body request: AddressRequest
@@ -50,5 +57,10 @@ interface UserApiService {
     @GET("users/stripe-cards")
     suspend fun getUserCard(
     ): BaseResponse<List<CardUserDto>>
+
+    @DELETE("users/stripe-cards/{cardId}")
+    suspend fun deleteUserCard(
+        @Path("cardId") cardId: String
+    ): BaseResponse<Unit>
 
 }
