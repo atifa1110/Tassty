@@ -15,6 +15,7 @@ data class CartItemUiModel(
     val price: Int,
     val quantity: Int,
     val options: String,
+    val optionIds: List<String>,
     val notes: String,
     val formatOptions: String,
     val isSelected: Boolean,

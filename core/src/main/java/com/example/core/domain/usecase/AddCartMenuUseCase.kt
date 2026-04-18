@@ -12,9 +12,16 @@ class AddCartMenuUseCase @Inject constructor(
     suspend operator fun invoke(
         menu: Menu, restaurant: Restaurant,
         quantity: Int, totalPrice:Int = 0,
-        summary: String, notes: String
+        options: String,
+        optionIds: List<String>,
+        notes: String
     ){
         val finalPrice = if (totalPrice == 0) menu.price else totalPrice
-        return cartRepository.addToCart(menu,restaurant,quantity,finalPrice,summary,notes)
+        return cartRepository.addToCart(
+            menu = menu,
+            restaurant = restaurant,quantity = quantity,
+            price = finalPrice, options = options,
+            optionIds = optionIds,notes = notes
+        )
     }
 }

@@ -94,23 +94,36 @@ fun CartScreen(
         }
     }
 
-    CartContent(
-        context =  context,
-        uiState = uiState,
-        onNavigateToRecommended = onNavigateToRecommended,
-        onNavigateToDetailRest = onNavigateToDetailRest,
-        onSelectLocationClicked = { viewModel.onEvent(CartUiEvent.OnShowLocationSheet) },
-        onSelectPromoClicked = { viewModel.onEvent(CartUiEvent.OnShowVoucherSheet) },
-        onCartSelectionChange = { id -> viewModel.onEvent(CartUiEvent.OnCartSelectionChange(id))},
-        onSelectAllClicked = { viewModel.onEvent(CartUiEvent.OnSelectAllClicked) },
-        onIncrementQuantity = {id ->  viewModel.onEvent(CartUiEvent.OnIncrementQuantity(id)) },
-        onDecrementQuantity = { id -> viewModel.onEvent(CartUiEvent.OnDecrementQuantity(id)) },
-        onDeleteAllClicked = { viewModel.onEvent(CartUiEvent.OnShowDeleteAllSheet)},
-        onRemoveItemClicked = { viewModel.onEvent(CartUiEvent.OnShowRemoveItemSheet(it))},
-        onContinuePayment = {viewModel.onEvent(CartUiEvent.OnShowDoubleCheckSheet)},
-        onRevealChange = {id, reveal->viewModel.onEvent(CartUiEvent.OnRevealChange(id,reveal))},
-        onEditNoteMenuClick = { viewModel.onEvent(CartUiEvent.OnNoteClicked(it))}
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        CartContent(
+            context = context,
+            uiState = uiState,
+            onNavigateToRecommended = onNavigateToRecommended,
+            onNavigateToDetailRest = onNavigateToDetailRest,
+            onSelectLocationClicked = { viewModel.onEvent(CartUiEvent.OnShowLocationSheet) },
+            onSelectPromoClicked = { viewModel.onEvent(CartUiEvent.OnShowVoucherSheet) },
+            onCartSelectionChange = { id -> viewModel.onEvent(CartUiEvent.OnCartSelectionChange(id)) },
+            onSelectAllClicked = { viewModel.onEvent(CartUiEvent.OnSelectAllClicked) },
+            onIncrementQuantity = { id -> viewModel.onEvent(CartUiEvent.OnIncrementQuantity(id)) },
+            onDecrementQuantity = { id -> viewModel.onEvent(CartUiEvent.OnDecrementQuantity(id)) },
+            onDeleteAllClicked = { viewModel.onEvent(CartUiEvent.OnShowDeleteAllSheet) },
+            onRemoveItemClicked = { viewModel.onEvent(CartUiEvent.OnShowRemoveItemSheet(it)) },
+            onContinuePayment = { viewModel.onEvent(CartUiEvent.OnShowDoubleCheckSheet) },
+            onRevealChange = { id, reveal ->
+                viewModel.onEvent(
+                    CartUiEvent.OnRevealChange(
+                        id,
+                        reveal
+                    )
+                )
+            },
+            onEditNoteMenuClick = { viewModel.onEvent(CartUiEvent.OnNoteClicked(it)) }
+        )
+        LoadingOverlay(
+            text = stringResource(R.string.load),
+            isLoading = uiState.isLoading
+        )
+    }
 
     CustomBottomSheet(
         visible = uiState.isDeleteAllSheetVisible,

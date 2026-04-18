@@ -3,6 +3,7 @@
 **Tassty** adalah aplikasi pengiriman makanan *full-stack* yang dibangun dengan **Jetpack Compose**. Aplikasi ini mengusung konsep *High-Performance State Management* dengan menggabungkan **MVVM** dan **MVI**, serta sistem *Hybrid Data* antara **Supabase** (Cloud) dan **Room Database** (Local).
 
 ---
+[![codecov](https://codecov.io/gh/atifa1110/Tassty/graph/badge.svg?token=xs56mR4pN5)](https://codecov.io/gh/atifa1110/Tassty)
 
 ## 🚀 Fitur Utama (Technical Highlights)
 

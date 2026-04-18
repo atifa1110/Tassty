@@ -25,7 +25,8 @@ fun List<CartWithMenuAndRestaurant>.toSingleCartDomain(): CartGroup {
             customizable = it.menu.customizable,
             price = it.cart.price,
             quantity = it.cart.quantity,
-            options = it.cart.finalSummary?:"",
+            options = it.cart.options?:"",
+            optionIds = it.cart.optionIds,
             notes = it.cart.notes?:"",
         )
     }
@@ -41,6 +42,6 @@ fun CartEntity.toDomain() = Cart(
     menuId = this.menuId,
     restaurantId = this.restaurantId,
     quantity = this.quantity,
-    finalSummary = this.finalSummary?:"",
+    options = this.options?:"",
     notes = this.notes?:""
 )

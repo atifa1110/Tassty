@@ -2,7 +2,6 @@ package com.example.tassty.screen.cart
 
 import com.example.core.domain.usecase.CreateOrderUseCase
 import com.example.core.domain.usecase.GetCartsUseCase
-import com.example.core.domain.usecase.GetRestaurantVouchersUseCase
 import com.example.core.domain.usecase.GetUserAddressUseCase
 import com.example.core.domain.usecase.RemoveAllCartMenuUseCase
 import com.example.core.domain.usecase.RemoveCartMenuUseCase
@@ -19,8 +18,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import app.cash.turbine.test
+import app.cash.turbine.turbineScope
 import com.example.core.data.source.remote.network.Meta
 import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.usecase.GetUserAvailableVoucherUseCase
 import com.example.tassty.util.emptyRestaurant
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -38,7 +39,7 @@ class CartViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val getCartsUseCase: GetCartsUseCase = mockk()
-    private val getRestaurantVouchersUseCase: GetRestaurantVouchersUseCase = mockk()
+    private val getUserAvailableVoucherUseCase: GetUserAvailableVoucherUseCase = mockk()
     private val getUserAddressUseCase: GetUserAddressUseCase = mockk()
     private val removeCartMenuUseCase: RemoveCartMenuUseCase = mockk()
     private val removeAllCartMenuUseCase: RemoveAllCartMenuUseCase = mockk()
@@ -67,11 +68,11 @@ class CartViewModelTest {
 
         every { getCartsUseCase() } returns cartFlow
         every { getUserAddressUseCase() } returns flowOf(DataDummy.addressResponseSuccess)
-        every { getRestaurantVouchersUseCase(any()) } returns flowOf(DataDummy.voucherResponseSuccess)
+        every { getUserAvailableVoucherUseCase() } returns flowOf(DataDummy.voucherResponseSuccess)
 
         viewModel = CartViewModel(
             getCartsUseCase = getCartsUseCase,
-            getRestaurantVouchersUseCase = getRestaurantVouchersUseCase,
+            getUserAvailableVoucherUseCase = getUserAvailableVoucherUseCase,
             getUserAddressUseCase = getUserAddressUseCase,
             removeCartMenuUseCase = removeCartMenuUseCase,
             removeAllCartMenuUseCase = removeAllCartMenuUseCase,
@@ -82,13 +83,14 @@ class CartViewModelTest {
         )
     }
 
+
     @Test
-    fun cartViewModel_init_cartsDisplayedCorrectly () = runTest {
+    fun `initial state should display carts correctly when data is available`() = runTest {
         viewModel.uiState.test {
-            val state = awaitItem()
+            val state = expectMostRecentItem()
 
             assertEquals("Indah Cafe", state.carts?.restaurant?.name)
-            assertEquals(1, state.carts?.menus?.size)
+            assertEquals(2, state.carts?.menus?.size)
             assertEquals("Shabu Premium Set", state.carts?.menus[0]?.name)
             assertFalse(state.carts?.menus[0]?.isSelected == true)
             cancelAndIgnoreRemainingEvents()
@@ -96,7 +98,7 @@ class CartViewModelTest {
     }
 
     @Test
-    fun cartViewModel_init_emptyCartsDisplay () = runTest {
+    fun `initial state should display empty view when no carts are available`() = runTest {
         val emptyCart = DataDummy.cartDomain.copy(
             menus = emptyList(),
             restaurant = emptyRestaurant
@@ -106,7 +108,7 @@ class CartViewModelTest {
 
         val viewModelEmpty = CartViewModel(
             getCartsUseCase = getCartsUseCase,
-            getRestaurantVouchersUseCase = getRestaurantVouchersUseCase,
+            getUserAvailableVoucherUseCase = getUserAvailableVoucherUseCase,
             getUserAddressUseCase = getUserAddressUseCase,
             removeCartMenuUseCase = removeCartMenuUseCase,
             removeAllCartMenuUseCase = removeAllCartMenuUseCase,
@@ -125,7 +127,7 @@ class CartViewModelTest {
     }
 
     @Test
-    fun cartViewModel_onMenuSelected_updatesTotalAndSubtotal() = runTest {
+    fun `onCartSelectionChange should update subtotal and total order correctly`() = runTest {
         viewModel.uiState.test {
             val initialState = awaitItem()
             assertEquals(0, initialState.subtotal)
@@ -149,7 +151,64 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun cartViewModel_onIncrementQuantity_whenMenuIsSelected_updatesTotalAndSubtotal() = runTest {
+    fun `onNoteClicked then update note should work correctly and update the UI state`() = runTest {
+        val targetCartId = DataDummy.cartDomain.menus[0].cartId
+        val newNote = "Tolong sambalnya dipisah dan banyakin bawang goreng ya"
+
+        coEvery { updateCartNotesUseCase(targetCartId, newNote) } coAnswers {
+            val currentCart = cartFlow.value
+            val updatedMenus = currentCart.menus.map {
+                if (it.cartId == targetCartId) it.copy(notes = newNote) else it
+            }
+            cartFlow.value = currentCart.copy(menus = updatedMenus)
+        }
+
+        viewModel.uiState.test {
+            expectMostRecentItem()
+
+            viewModel.onEvent(CartUiEvent.OnNoteClicked(targetCartId))
+
+            val stateWithSheet = awaitItem()
+            assertTrue(stateWithSheet.isNoteSheetVisible)
+            assertEquals(targetCartId, stateWithSheet.selectedCart?.cartId)
+
+            viewModel.onEvent(CartUiEvent.OnUpdateNoteItem(targetCartId, newNote))
+            advanceUntilIdle()
+            viewModel.onEvent(CartUiEvent.OnDismissNoteSheet)
+
+            val finalState = expectMostRecentItem()
+            val updatedMenu = finalState.carts?.menus?.find { it.cartId == targetCartId }
+
+            assertNotNull(updatedMenu)
+            assertEquals(newNote, updatedMenu?.notes)
+            assertFalse(finalState.isNoteSheetVisible)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `onNoteClicked should emit NavigateToDetail effect when menu is customizable`() = runTest {
+        val targetCartId = DataDummy.cartDomain.menus[1].cartId
+        val expectedMenuId = DataDummy.cartDomain.menus[1].menuId
+
+        viewModel.uiEffect.test {
+            viewModel.onEvent(CartUiEvent.OnNoteClicked(targetCartId))
+
+            advanceUntilIdle()
+
+            val effect = awaitItem()
+            assertTrue(effect is CartUiEffect.NavigateDetailMenu)
+            assertEquals(expectedMenuId, (effect as CartUiEffect.NavigateDetailMenu).id)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `onIncrementQuantity should update total and subtotal when menu is selected`() = runTest {
         val targetCartId = cartFlow.value.menus[0].cartId
 
         coEvery { updateCartQuantityUseCase(targetCartId, true) } coAnswers {
@@ -181,7 +240,7 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun  cartViewModel_onIncrementQuantity_whenMenuIsNotSelected_totalRemainsZero() = runTest {
+    fun `onIncrementQuantity should not update subtotal when menu is not selected`() = runTest {
         val targetCartId = cartFlow.value.menus[0].cartId
 
         coEvery { updateCartQuantityUseCase(targetCartId, true) } coAnswers {
@@ -212,7 +271,7 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun cartViewModel_onIncrementQuantity_withWrongId_doesNothing() = runTest {
+    fun `onIncrementQuantity with wrong ID should not change subtotal`() = runTest {
         val wrongId = "NOT-ID"
 
         coEvery { updateCartQuantityUseCase(any(), any()) } returns Unit
@@ -226,8 +285,41 @@ class CartViewModelTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun cartViewModel_onShowLocationSheet_locationSheetVisibleAndAddressesLoaded() = runTest {
+    fun `onSelectAllClicked should select all menus and update subtotal correctly`() = runTest {
+        viewModel.uiState.test {
+            val initialState = awaitItem()
+            assertEquals(0, initialState.subtotal)
+
+            viewModel.onEvent(CartUiEvent.OnSelectAllClicked)
+            advanceUntilIdle()
+
+            val stateAfterSelect = expectMostRecentItem()
+            val allMenus = stateAfterSelect.carts?.menus ?: emptyList()
+
+            assertTrue("Semua menu harusnya terpilih", allMenus.all { it.isSelected })
+
+            val expectedSubtotal = allMenus.sumOf { it.price * it.quantity }
+            assertEquals(expectedSubtotal, stateAfterSelect.subtotal)
+            assertTrue(stateAfterSelect.totalOrder > 0)
+
+            viewModel.onEvent(CartUiEvent.OnSelectAllClicked)
+            advanceUntilIdle()
+
+            val stateAfterUnselect = expectMostRecentItem()
+            val menusAfterUnselect = stateAfterUnselect.carts?.menus ?: emptyList()
+
+            assertTrue("Semua menu harusnya batal terpilih", menusAfterUnselect.all { !it.isSelected })
+            assertEquals(0, stateAfterUnselect.subtotal)
+            assertEquals(0, stateAfterUnselect.totalOrder)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `onShowLocationSheet should make sheet visible and load address data`() = runTest {
         viewModel.onEvent(CartUiEvent.OnShowLocationSheet)
 
         viewModel.uiState.test {
@@ -246,7 +338,7 @@ class CartViewModelTest {
     }
 
     @Test
-    fun cartViewModel_onAddressSelected_updatesSelectedAddressAndClosesSheet() = runTest {
+    fun `onAddressSelected should update the selected address and close the sheet`() = runTest {
         val targetAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val addressId = targetAddress?.id?:""
         assertNotNull(addressId)
@@ -259,6 +351,7 @@ class CartViewModelTest {
 
             viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(addressId))
             viewModel.onEvent(CartUiEvent.OnSetLocationClicked)
+            viewModel.onEvent(CartUiEvent.OnDismissVoucherSheet)
 
             val finalState = expectMostRecentItem()
 
@@ -270,7 +363,7 @@ class CartViewModelTest {
     }
 
     @Test
-    fun cartViewModel_onDismissLocationSheet_previousAddressPersists() = runTest {
+    fun `onDismissLocationSheet should persist previous address if available`() = runTest {
         val initialAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val initialAddressId = initialAddress?.id?:""
 
@@ -301,7 +394,7 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun cartViewModel_onShowVoucherSheet_promoVoucherVisibleAndVoucherLoaded() = runTest {
+    fun `onShowVoucherSheet should make voucher sheet visible and load vouchers`() = runTest {
         viewModel.uiState.test {
             val stateWithCarts = awaitItem()
             assertNotNull(stateWithCarts.carts?.restaurant?.id)
@@ -322,46 +415,9 @@ class CartViewModelTest {
         }
     }
 
-    @Test
-    fun cartViewModel_onShowVoucherSheet_whenRestaurantIdEmpty_showsErrorMessage() = runTest {
-        val emptyRestaurantCart = DataDummy.cartDomain.copy(
-            restaurant = DataDummy.cartDomain.restaurant.copy(id = "")
-        )
-        every { getCartsUseCase() } returns flowOf(emptyRestaurantCart)
-
-        viewModel = CartViewModel(
-            getCartsUseCase = getCartsUseCase,
-            getRestaurantVouchersUseCase = getRestaurantVouchersUseCase,
-            getUserAddressUseCase = getUserAddressUseCase,
-            removeCartMenuUseCase = removeCartMenuUseCase,
-            removeAllCartMenuUseCase = removeAllCartMenuUseCase,
-            updateCartNotesUseCase = updateCartNotesUseCase,
-            updateCartHiddenUseCase = updateCartHiddenUseCase,
-            updateCartQuantityUseCase = updateCartQuantityUseCase,
-            createOrderUseCase = createOrderUseCase
-        )
-
-        viewModel.uiEffect.test {
-            viewModel.onEvent(CartUiEvent.OnShowVoucherSheet)
-
-            val effect = awaitItem()
-
-            assertTrue(effect is CartUiEffect.ShowError)
-            assertEquals("Restaurant Id is not exist", (effect as CartUiEffect.ShowError).message)
-
-            cancelAndIgnoreRemainingEvents()
-        }
-
-        viewModel.voucherState.test {
-            val state = awaitItem()
-            assertEquals(null,state.data)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun cartViewModel_onVoucherSelected_updatesSelectedVoucherAndClosesSheet() = runTest {
+    fun `onVoucherSelected should update the selected voucher and close the sheet`() = runTest {
         val targetVoucher = DataDummy.voucherResponseSuccess.data?.get(0)
         val voucherId = targetVoucher?.id ?: ""
 
@@ -379,7 +435,7 @@ class CartViewModelTest {
             val finalState = expectMostRecentItem()
 
             assertEquals(voucherId, finalState.selectedVoucher?.id)
-            assertFalse("Sheet voucher harusnya tertutup setelah Apply", finalState.isVoucherSheetVisible)
+            assertFalse(finalState.isVoucherSheetVisible)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -394,7 +450,7 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun totalOrder_remainsZero_whenAddressAndVoucherSelectedButNoMenuChecked() = runTest {
+    fun `totalOrder should remain zero when address and voucher are selected but no menu is checked`() = runTest {
         val targetAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val targetVoucher = DataDummy.voucherResponseSuccess.data?.get(0)
 
@@ -424,7 +480,7 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun totalOrder_updatesCorrectly_whenAddressAndVoucherSelectedMenuChecked() = runTest {
+    fun `totalOrder should update correctly when address, voucher, and menu are all selected`() = runTest {
         val targetAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val targetVoucher = DataDummy.voucherResponseSuccess.data?.get(0)
         val targetCard = DataDummy.cartDomain.menus[0].cartId
@@ -464,22 +520,22 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun checkoutButton_enabled_onlyWhenMenuSelectedAndAddressExists() = runTest {
+    fun `checkout button should only be enabled when menu is selected and address exists`() = runTest {
         val targetAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val targetCartId = DataDummy.cartDomain.menus[0].cartId
 
         viewModel.uiState.test {
             val state1 = expectMostRecentItem()
-            assertFalse("Harusnya mati karena belum ada apa-apa", state1.isCheckoutButtonEnabled)
+            assertFalse(state1.isCheckoutButtonEnabled)
 
             viewModel.onEvent(CartUiEvent.OnShowLocationSheet)
             advanceUntilIdle()
             viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(targetAddress?.id ?: ""))
             viewModel.onEvent(CartUiEvent.OnSetLocationClicked)
-            assertFalse("Harusnya masih mati karena menu belum dipilih", expectMostRecentItem().isCheckoutButtonEnabled)
+            assertFalse(expectMostRecentItem().isCheckoutButtonEnabled)
 
             viewModel.onEvent(CartUiEvent.OnCartSelectionChange(targetCartId))
-            assertTrue("Harusnya nyala karena alamat ada dan menu dipilih", expectMostRecentItem().isCheckoutButtonEnabled)
+            assertTrue(expectMostRecentItem().isCheckoutButtonEnabled)
 
             cancelAndIgnoreRemainingEvents()
         }
@@ -487,7 +543,7 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun updateNote_persistsInSpecificMenuInCarts() = runTest {
+    fun `updating a note should persist in the specific menu in the carts state`() = runTest {
         val targetCartId = DataDummy.cartDomain.menus[0].cartId
         val newNote = "Jangan pakai pedas ya, tolong dipisah sambalnya"
 
@@ -510,9 +566,9 @@ class CartViewModelTest {
 
             val updatedMenu = finalState.carts?.menus?.find { it.cartId == targetCartId }
 
-            assertNotNull("Menu harusnya ada", updatedMenu)
-            assertEquals("Catatan di menu spesifik harus sesuai", newNote, updatedMenu?.notes)
-            assertFalse("Sheet note harusnya sudah tertutup", finalState.isNoteSheetVisible)
+            assertNotNull(updatedMenu)
+            assertEquals(newNote, updatedMenu?.notes)
+            assertFalse(finalState.isNoteSheetVisible)
 
             coVerify(exactly = 1) { updateCartNotesUseCase(targetCartId, newNote) }
 
@@ -522,7 +578,42 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun removeAllCart_clearsAllMenusInState() = runTest {
+    fun `onRemoveCartItem should remove specific menu item and then dismiss sheet`() = runTest {
+        val targetCartId = DataDummy.cartDomain.menus[0].cartId
+        val remainingMenuCount = DataDummy.cartDomain.menus.size - 1
+
+        coEvery { removeCartMenuUseCase(targetCartId) } coAnswers {
+            val currentCart = cartFlow.value
+            val updatedMenus = currentCart.menus.filterNot { it.cartId == targetCartId }
+            cartFlow.value = currentCart.copy(menus = updatedMenus)
+        }
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(CartUiEvent.OnShowRemoveItemSheet(targetCartId))
+
+            val sheetState = awaitItem()
+            assertTrue( sheetState.isRemoveItemSheetVisible)
+
+            viewModel.onEvent(CartUiEvent.OnRemoveCartItem(targetCartId))
+            advanceUntilIdle()
+            viewModel.onEvent(CartUiEvent.OnDismissRemoveItemSheet)
+
+            val finalState = expectMostRecentItem()
+            val currentMenus = finalState.carts?.menus ?: emptyList()
+
+            assertEquals(remainingMenuCount, currentMenus.size)
+            assertFalse(currentMenus.any { it.cartId == targetCartId })
+            assertFalse(finalState.isRemoveItemSheetVisible)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `removeAllCart should clear all menu items in the current UI state`() = runTest {
         coEvery { removeAllCartMenuUseCase(any()) } coAnswers {
             cartFlow.value = DataDummy.cartDomain.copy(menus = emptyList())
         }
@@ -530,15 +621,20 @@ class CartViewModelTest {
         viewModel.uiState.test {
             expectMostRecentItem()
 
+            viewModel.onEvent(CartUiEvent.OnShowDeleteAllSheet)
+
+            val stateWithSheet = awaitItem()
+            assertTrue(stateWithSheet.isDeleteAllSheetVisible)
+
             viewModel.onEvent(CartUiEvent.OnDeleteAll)
 
             advanceUntilIdle()
 
+            viewModel.onEvent(CartUiEvent.OnDismissDeleteAllSheet)
             val finalState = expectMostRecentItem()
 
             val menuCount = finalState.carts?.menus?.size ?: 0
-            assertEquals("Harusnya sudah tidak ada menu", 0, menuCount)
-
+            assertEquals(0, menuCount)
             assertFalse(finalState.isDeleteAllSheetVisible)
 
             cancelAndIgnoreRemainingEvents()
@@ -547,49 +643,65 @@ class CartViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun checkout_success_emitsEffectAndUpdatesState() = runTest {
+    fun `checkout success should emit success effect and update sheet visibility`() = runTest {
         val targetAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val targetMenu = DataDummy.cartDomain.menus[0]
+        val targetAddressId = targetAddress?.id ?: "addr-123"
 
-        coEvery { createOrderUseCase(any(), any(), any(), any(), any(), any(), any(), any()) } returns
-                flowOf(DataDummy.orderResponseSuccess)
+        coEvery {
+            createOrderUseCase(any(), any(), any(), any(), any())
+        } returns flowOf(DataDummy.orderResponseSuccess)
+
         coEvery { updateCartHiddenUseCase(any(), any()) } returns Unit
 
-        viewModel.onEvent(CartUiEvent.OnShowLocationSheet)
-        viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(targetAddress?.id ?: ""))
-        viewModel.onEvent(CartUiEvent.OnSetLocationClicked)
-        viewModel.onEvent(CartUiEvent.OnCartSelectionChange(targetMenu.cartId))
+        turbineScope {
+            val stateTurbine = viewModel.uiState.testIn(backgroundScope)
+            val effectTurbine = viewModel.uiEffect.testIn(backgroundScope)
 
-        viewModel.uiEffect.test {
+            stateTurbine.awaitItem()
+
+            viewModel.onEvent(CartUiEvent.OnShowLocationSheet)
+            viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(targetAddressId))
+            viewModel.onEvent(CartUiEvent.OnSetLocationClicked)
+
+            viewModel.onEvent(CartUiEvent.OnCartSelectionChange(targetMenu.cartId))
+            stateTurbine.expectMostRecentItem()
+
+            viewModel.onEvent(CartUiEvent.OnShowDoubleCheckSheet)
+
+            val stateWithDoubleCheck = stateTurbine.awaitItem()
+            assertTrue(stateWithDoubleCheck.isDoubleCheckSheetVisible)
+
             viewModel.onEvent(CartUiEvent.OnCheckoutClicked)
+            viewModel.onEvent(CartUiEvent.OnDismissDoubleCheckSheet)
 
-            val effect = awaitItem()
-            assertTrue("Effect harusnya CheckoutSuccess", effect is CartUiEffect.CheckoutSuccess)
+            val effect = effectTurbine.awaitItem()
+            assertTrue(effect is CartUiEffect.CheckoutSuccess)
             assertEquals("ORDER-123", (effect as CartUiEffect.CheckoutSuccess).id)
-        }
 
-        viewModel.uiState.test {
-            val finalState = expectMostRecentItem()
-            assertFalse("Sheet double check harusnya sudah tutup", finalState.isDoubleCheckSheetVisible)
-            cancelAndIgnoreRemainingEvents()
+            val finalState = stateTurbine.expectMostRecentItem()
+            assertFalse(finalState.isDoubleCheckSheetVisible)
+            assertFalse(finalState.isLoading)
+
+            stateTurbine.cancelAndIgnoreRemainingEvents()
+            effectTurbine.cancelAndIgnoreRemainingEvents()
         }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun checkout_failed_emitsErrorEffectAndStopsLoading() = runTest {
+    fun `checkout failed should emit error effect and stop loading state`() = runTest {
         val targetAddress = DataDummy.addressResponseSuccess.data?.get(0)
         val targetMenu = DataDummy.cartDomain.menus[0]
-        val errorMessage = "Koneksi internet bermasalah atau stok habis"
+        val errorMessage = "Connection Error"
 
-        // 2. Mocking: Pakai TasstyResponse.Error
-        coEvery { createOrderUseCase(any(), any(), any(), any(), any(), any(), any(), any()) } returns
+        coEvery { createOrderUseCase(any(), any(), any(), any(), any()) } returns
                 flowOf(TasstyResponse.Error(meta = Meta(
                     message = errorMessage,
                     status = "error",
                     code = 400
                 ))
-        )
+                )
 
         viewModel.onEvent(CartUiEvent.OnShowLocationSheet)
         viewModel.onEvent(CartUiEvent.OnAddressSelectionChanged(targetAddress?.id ?: ""))
@@ -601,7 +713,7 @@ class CartViewModelTest {
 
             val effect = awaitItem()
 
-            assertTrue("Effect harusnya ShowError saat gagal", effect is CartUiEffect.ShowError)
+            assertTrue(effect is CartUiEffect.ShowError)
             assertEquals(errorMessage, (effect as CartUiEffect.ShowError).message)
 
             cancelAndIgnoreRemainingEvents()
@@ -609,7 +721,7 @@ class CartViewModelTest {
 
         viewModel.uiState.test {
             val state = expectMostRecentItem()
-            assertFalse("Sheet double check tetap terbuka atau sesuai logic UI", state.isDoubleCheckSheetVisible)
+            assertFalse(state.isDoubleCheckSheetVisible)
 
             cancelAndIgnoreRemainingEvents()
         }

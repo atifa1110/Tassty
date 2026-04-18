@@ -8,11 +8,13 @@ data class ProfileUiState(
     val imageUrl: String = "",
     val email: String = "",
     val isDarkMode: Boolean = false,
-    val isLogoutSheetVisible: Boolean = false
+    val isLogoutSheetVisible: Boolean = false,
+    val isLoading : Boolean = false
 )
 
 data class ProfileInternalState(
-    val isLogoutSheetVisible: Boolean = false
+    val isLogoutSheetVisible: Boolean = false,
+    val isLoading : Boolean = false
 )
 
 sealed class ProfileEffect {

@@ -12,14 +12,6 @@ data class OrderRequest(
     @SerializedName("address_id")
     val addressId: String,
 
-    @SerializedName("total_price")
-    val totalPrice: Int,
-
-    @SerializedName("delivery_fee")
-    val deliveryFee: Int,
-
-    val discount: Int,
-
     @SerializedName("total_order")
     val totalOrder: Int,
 
@@ -32,6 +24,7 @@ data class OrderItemRequest(
     val menuId: String,
     val quantity: Int,
     val price: Int,
-    val options: String,
-    val notes: String
+    val notes: String,
+    @SerializedName("option_ids")
+    val optionIds: List<String>
 )

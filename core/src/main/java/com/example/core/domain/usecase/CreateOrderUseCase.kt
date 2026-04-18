@@ -14,13 +14,16 @@ class CreateOrderUseCase @Inject constructor(
         restaurantId: String,
         voucherId: String,
         addressId: String,
-        totalPrice: Int,
-        deliveryFee: Int,
-        discount: Int,
         totalOrder: Int,
         items: List<OrderItemRequest>
     ): Flow<TasstyResponse<String>>{
-        val request = OrderRequest(restaurantId,voucherId,addressId,totalPrice,deliveryFee,discount,totalOrder,items)
+        val request = OrderRequest(
+            restaurantId = restaurantId,
+            voucherId = voucherId,
+            addressId = addressId,
+            totalOrder = totalOrder,
+            items = items
+        )
         return repository.createOrder(request)
     }
 }

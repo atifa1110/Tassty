@@ -40,13 +40,13 @@ import kotlin.collections.map
 
 @HiltViewModel
 class DetailMenuViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val getDetailMenuUseCase: GetDetailMenuUseCase,
-    private val getCollectionsUseCase: GetCollectionsUseCase,
+    val savedStateHandle: SavedStateHandle,
+    val getDetailMenuUseCase: GetDetailMenuUseCase,
+    val getCollectionsUseCase: GetCollectionsUseCase,
+    val observeIsMenuFavoriteUseCase: ObserveIsMenuFavoriteUseCase,
     private val saveMenuCollectionsUseCase: SaveMenuCollectionsUseCase,
     private val createNewCollectionUseCase: CreateNewCollectionUseCase,
     private val addCartMenuUseCase: AddCartMenuUseCase,
-    private val observeIsMenuFavoriteUseCase: ObserveIsMenuFavoriteUseCase,
     private val getCollectionsByIdUseCase: GetCollectionsByIdUseCase,
     private val observeCartByMenuIdUseCase: ObserveCartByMenuIdUseCase
 ) : ViewModel() {
@@ -127,7 +127,7 @@ class DetailMenuViewModel @Inject constructor(
                         isEditMode = true
                     )}
                     if (_internalState.value.selectedOptionIds.isEmpty()) {
-                        syncOptionsFromSummary(item.finalSummary)
+                        syncOptionsFromSummary(item.options)
                     }
                 }
             }
@@ -231,7 +231,6 @@ class DetailMenuViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                Log.e("DetailMenuViewModel", e.message.toString())
                 _uiEffect.send(UiEvent.ShowSnackbar("Gagal menyimpan ke koleksi"))
             }
         }
@@ -249,7 +248,12 @@ class DetailMenuViewModel @Inject constructor(
             return@launch
         }
 
-        val ids = missingGroups.map { it.id }
+        val selectedOptionIds = detail.optionGroups
+            .flatMap { it.options }
+            .filter { it.isSelected }
+            .map { it.id }
+
+        Log.e("DetailMenuViewModel",selectedOptionIds.toString())
         val selectedOptionsSummary = detail.optionGroups
             .filter { g -> g.options.any { it.isSelected } }
             .joinToString("\n") { g ->
@@ -261,7 +265,8 @@ class DetailMenuViewModel @Inject constructor(
             menu = detail.toDomain(),
             restaurant = detail.restaurant.toDomain(),
             quantity = state.quantity,
-            summary = selectedOptionsSummary,
+            options = selectedOptionsSummary,
+            optionIds = selectedOptionIds,
             notes = state.notesValue,
             totalPrice = totalPrice
         )

@@ -30,6 +30,7 @@ fun CartItem.toUiModel(): CartItemUiModel{
         price = this.price,
         quantity = this.quantity,
         options = this.options,
+        optionIds = this.optionIds,
         notes = this.notes,
         formatOptions = finalFormat,
         isSelected = false,
@@ -42,7 +43,7 @@ fun CartItemUiModel.toRequest() : OrderItemRequest{
         menuId = this.menuId,
         quantity = this.quantity,
         price = this.price,
-        options = this.options,
+        optionIds = this.optionIds,
         notes = this.notes
     )
 }

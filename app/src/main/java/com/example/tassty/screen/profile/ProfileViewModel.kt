@@ -1,5 +1,6 @@
 package com.example.tassty.screen.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.data.source.remote.network.TasstyResponse
@@ -38,13 +39,14 @@ class ProfileViewModel @Inject constructor(
             imageUrl = profile.profileImage?:"",
             email = profile.email?:"Guest",
             isDarkMode = profile.isDarkMode,
-            isLogoutSheetVisible = internal.isLogoutSheetVisible
+            isLogoutSheetVisible = internal.isLogoutSheetVisible,
+            isLoading = internal.isLoading
         )
     }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ProfileUiState()
-        )
+    )
 
 
     fun handleShowLogoutSheet(visible: Boolean){
@@ -55,11 +57,19 @@ class ProfileViewModel @Inject constructor(
         logoutUseCase().collect { result->
             when(result){
                 is TasstyResponse.Error -> {
-                    _uiEffect.send(ProfileEffect.ShowMessage(result.meta.message))
+                    _internalState.update { it.copy(isLoading = false) }
                     _uiEffect.send(ProfileEffect.NavigateToLogin)
                 }
-                is TasstyResponse.Loading -> {}
+                is TasstyResponse.Loading -> {
+                    _internalState.update {
+                        it.copy(
+                            isLogoutSheetVisible = false,
+                            isLoading = true
+                        )
+                    }
+                }
                 is TasstyResponse.Success-> {
+                    _internalState.update { it.copy(isLoading = false) }
                    _uiEffect.send(ProfileEffect.NavigateToLogin)
                 }
             }

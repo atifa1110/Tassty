@@ -247,7 +247,11 @@ class AuthRepositoryImpl @Inject constructor(
         val response = authNetworkDataSource.logout()
 
         when(response) {
-            is TasstyResponse.Error -> emit(TasstyResponse.Error(response.meta))
+            is TasstyResponse.Error -> {
+                chatStream.disconnect()
+                authDataStore.logout()
+                emit(TasstyResponse.Error(response.meta))
+            }
             is TasstyResponse.Success -> {
                 chatStream.disconnect()
                 authDataStore.logout()

@@ -29,6 +29,7 @@ data class CartUiState(
 
     val isCheckoutButtonEnabled: Boolean = false,
     val note: String = "",
+    val isLoading: Boolean = false
 )
 
 data class UiFlags(
@@ -39,7 +40,8 @@ data class UiFlags(
     val isDeleteAllSheetVisible: Boolean,
     val isNoteSheetVisible: Boolean,
     val selectedCart: CartItemUiModel?,
-    val note: String
+    val note: String,
+    val isLoading: Boolean = false,
 )
 
 
@@ -55,9 +57,9 @@ data class CartInternalState(
     val isNoteSheetVisible: Boolean = false,
     val isDeleteAllSheetVisible: Boolean = false,
     val selectedCart: CartItemUiModel? = null,
-    val checkout: Resource<String> = Resource(),
     val revealedCartIds: Set<String> = emptySet(),
-    val note: String = ""
+    val note: String = "",
+    val isLoading: Boolean = false,
 )
 
 sealed class CartUiEvent {

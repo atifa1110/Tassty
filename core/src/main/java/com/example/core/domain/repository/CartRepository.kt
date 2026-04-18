@@ -9,7 +9,15 @@ import kotlinx.coroutines.flow.Flow
 
 interface CartRepository{
 
-    suspend fun addToCart(menu: Menu,restaurant: Restaurant, quantity: Int, price:Int,summary: String, notes: String)
+    suspend fun addToCart(
+        menu: Menu,
+        restaurant: Restaurant,
+        quantity: Int,
+        price: Int,
+        options: String,
+        optionIds: List<String>,
+        notes: String
+    )
     suspend fun removeCartById(cartId: String)
     suspend fun removeCartsByIds(cartIds: List<String>)
     suspend fun removeCartByRestaurantId(restaurantId: String)

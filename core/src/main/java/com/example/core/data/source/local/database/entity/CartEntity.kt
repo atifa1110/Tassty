@@ -3,6 +3,7 @@ package com.example.core.data.source.local.database.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import io.ktor.http.content.MultiPartData
 import java.util.UUID
 
 // 3. Cart Entity (Merujuk ke Menu & Restaurant)
@@ -32,7 +33,8 @@ data class CartEntity(
     val restaurantId: String,
     val quantity: Int,
     val price: Int,
-    val finalSummary: String?,
+    val optionIds: List<String> = emptyList(),
+    val options: String?,
     val notes: String?,
     val isHidden: Boolean
 )

@@ -1,5 +1,6 @@
 package com.example.core.data.source.local.datasource
 
+import android.R
 import androidx.room.Transaction
 import com.example.core.data.source.local.database.dao.CartDao
 import com.example.core.data.source.local.database.dao.CleanupDao
@@ -24,7 +25,8 @@ class CartDataSource @Inject constructor(
         restaurant: RestaurantEntity,
         quantity: Int,
         price: Int,
-        summary: String,
+        options: String,
+        optionIds: List<String>,
         notes: String,
     ) {
         val currentCartItem = cartDao.getAnyCartItem()
@@ -40,7 +42,7 @@ class CartDataSource @Inject constructor(
         val existingItem = cartDao.getCartItemByMenuIdSingle(menu.id)
         if (existingItem != null) {
             val updatedItem = existingItem.copy(
-                finalSummary = summary,
+                options = options,
                 notes = notes,
                 quantity = quantity,
                 price = price
@@ -53,8 +55,9 @@ class CartDataSource @Inject constructor(
                     restaurantId = restaurant.id,
                     quantity = quantity,
                     price = price,
-                    finalSummary = summary,
                     notes = notes,
+                    options = options,
+                    optionIds = optionIds,
                     isHidden = false
                 )
             )

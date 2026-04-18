@@ -396,7 +396,8 @@ val cartUiModel =
                         "Notes: es nya dikurangi",
                 isSelected = true,
                 isSwipeActionVisible = false,
-                customizable = false
+                customizable = false,
+                optionIds = listOf("OPT-001")
             )
         )
 )

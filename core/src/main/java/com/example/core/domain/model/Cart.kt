@@ -5,6 +5,6 @@ data class Cart (
     val menuId: String,
     val restaurantId: String,
     val quantity: Int,
-    val finalSummary: String,
+    val options: String,
     val notes: String
 )

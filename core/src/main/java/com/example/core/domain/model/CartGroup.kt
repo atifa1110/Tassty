@@ -17,5 +17,6 @@ data class CartItem(
     val price: Int,
     val quantity: Int,
     val options: String,
+    val optionIds: List<String>,
     val notes: String
 )

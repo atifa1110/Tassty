@@ -27,13 +27,16 @@ class CartRepositoryImpl @Inject constructor(
         restaurant: Restaurant,
         quantity: Int,
         price: Int,
-        summary: String,
+        options: String,
+        optionIds: List<String>,
         notes: String
     ) {
         val menuEntity = menu.toDatabase(restaurant.id)
         val restaurantEntity = restaurant.toDatabase()
-        return dataSource.addToCart(menuEntity,restaurantEntity,
-            quantity,price,summary,notes
+        return dataSource.addToCart(
+            menu = menuEntity, restaurant = restaurantEntity,
+            quantity = quantity, price = price, options = options,
+            optionIds = optionIds, notes = notes
         )
     }
 

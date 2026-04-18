@@ -6,8 +6,8 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.CreateOrderUseCase
 import com.example.core.domain.usecase.GetCartsUseCase
-import com.example.core.domain.usecase.GetRestaurantVouchersUseCase
 import com.example.core.domain.usecase.GetUserAddressUseCase
+import com.example.core.domain.usecase.GetUserAvailableVoucherUseCase
 import com.example.core.domain.usecase.RemoveAllCartMenuUseCase
 import com.example.core.domain.usecase.RemoveCartMenuUseCase
 import com.example.core.domain.usecase.UpdateCartHiddenUseCase
@@ -41,10 +41,10 @@ import kotlin.collections.map
 
 @HiltViewModel
 class CartViewModel @Inject  constructor(
-    private val getCartsUseCase: GetCartsUseCase,
+    val getCartsUseCase: GetCartsUseCase,
     private val removeCartMenuUseCase: RemoveCartMenuUseCase,
     private val removeAllCartMenuUseCase: RemoveAllCartMenuUseCase,
-    private val getRestaurantVouchersUseCase: GetRestaurantVouchersUseCase,
+    private val getUserAvailableVoucherUseCase: GetUserAvailableVoucherUseCase,
     private val getUserAddressUseCase: GetUserAddressUseCase,
     private val updateCartQuantityUseCase: UpdateCartQuantityUseCase,
     private val createOrderUseCase: CreateOrderUseCase,
@@ -120,7 +120,8 @@ class CartViewModel @Inject  constructor(
                 isNoteSheetVisible = it.isNoteSheetVisible,
                 isDeleteAllSheetVisible = it.isDeleteAllSheetVisible,
                 selectedCart = it.selectedCart,
-                note = it.note
+                note = it.note,
+                isLoading = it.isLoading
             )
         }
         .distinctUntilChanged()
@@ -158,6 +159,7 @@ class CartViewModel @Inject  constructor(
                 selectedCart = internal.selectedCart,
                 isNoteSheetVisible = internal.isNoteSheetVisible,
                 note = internal.note,
+                isLoading = internal.isLoading,
                 isCheckoutButtonEnabled = summary.subtotal > 0 && selectedAddress != null
             )
         }.stateIn(
@@ -225,20 +227,15 @@ class CartViewModel @Inject  constructor(
     }
 
     private fun loadVouchers() {
-        val restaurantId = uiState.value.carts?.restaurant?.id ?: ""
         viewModelScope.launch {
-            if(restaurantId.isEmpty()){
-                _uiEffect.send(CartUiEffect.ShowError("Restaurant Id is not exist"))
-            }else{
-                getRestaurantVouchersUseCase(id = restaurantId).collect { result ->
-                    _voucherState.update { currentState ->
-                        val newUiModels = result.toImmutableListState { it.toUiModel() }
+            getUserAvailableVoucherUseCase().collect { result ->
+                _voucherState.update { currentState ->
+                    val newUiModels = result.toImmutableListState { it.toUiModel() }
 
-                        if(result is TasstyResponse.Loading && currentState.data!=null){
-                            newUiModels.copy(data = currentState.data)
-                        }else{
-                            newUiModels
-                        }
+                    if(result is TasstyResponse.Loading && currentState.data!=null){
+                        newUiModels.copy(data = currentState.data)
+                    }else{
+                        newUiModels
                     }
                 }
             }
@@ -274,12 +271,15 @@ class CartViewModel @Inject  constructor(
     }
 
     // Toggles the global 'Select All' status for all items in the cart.
-    private fun handleSelectAll() {
-        val allIds = uiState.value.carts?.menus?.map { it.cartId }?.toSet() ?: emptySet()
+    private fun handleSelectAll() = viewModelScope.launch {
+        val menus = cartFlow.first().menus
+        val allIds = menus.map { it.cartId }.toSet()
+
         _internalState.update { current ->
-            val shouldSelectAll = !uiState.value.isSelectAll
+            val isAlreadyAllSelected = current.selectedCartIds.size == menus.size
+
             current.copy(
-                selectedCartIds = if (shouldSelectAll) allIds else emptySet()
+                selectedCartIds = if (isAlreadyAllSelected) emptySet() else allIds
             )
         }
     }
@@ -299,9 +299,9 @@ class CartViewModel @Inject  constructor(
     }
 
     private fun handleShowDeleteAllSheet() {
-        val carts = uiState.value.carts?: return
         viewModelScope.launch {
-            if(carts.menus.isEmpty()){
+            val currentCart = cartFlow.first()
+            if(currentCart.menus.isEmpty()){
                 _uiEffect.send(CartUiEffect.ShowError("There is no menu to delete"))
             }else {
                 _internalState.update { it.copy(isDeleteAllSheetVisible = true) }
@@ -310,8 +310,9 @@ class CartViewModel @Inject  constructor(
     }
 
     private fun handleDeleteAll() {
-        val id = uiState.value.carts?.restaurant?.id?:""
         viewModelScope.launch {
+            val currentCart = cartFlow.first()
+            val id = currentCart.restaurant.id
             removeAllCartMenuUseCase(id)
             _internalState.update { it.copy(selectedCartIds = emptySet(), isDeleteAllSheetVisible = false) }
         }
@@ -381,24 +382,20 @@ class CartViewModel @Inject  constructor(
                 return@launch
             }
 
-
             createOrderUseCase(
                 restaurantId = cart.restaurant.id,
                 voucherId = selectedVoucher?.id ?:"",
                 addressId = selectedAddress.id,
-                totalPrice = summary.subtotal,
-                deliveryFee = summary.deliveryFee,
-                discount = summary.discount,
                 totalOrder = summary.totalOrder,
                 items = selectedMenus.map { it.toRequest() }
             ).collect { result->
                 when(result){
                     is TasstyResponse.Error -> {
-                        _internalState.update { it.copy(checkout = Resource(isLoading = false)) }
+                        _internalState.update { it.copy(isLoading = false) }
                         _uiEffect.send(CartUiEffect.ShowError(result.meta.message))
                     }
                     is TasstyResponse.Loading -> {
-                        _internalState.update { it.copy(checkout = Resource(isLoading = true)) }
+                        _internalState.update { it.copy(isLoading = true, isDoubleCheckSheetVisible = false) }
                     }
                     is TasstyResponse.Success -> {
                         val selectedIds = selectedMenus.map { it.cartId }
@@ -406,7 +403,7 @@ class CartViewModel @Inject  constructor(
 
                         _internalState.update {
                             it.copy(
-                                checkout = Resource(isLoading = false),
+                                isLoading = false,
                                 isDoubleCheckSheetVisible = false,
                                 selectedCartIds = it.selectedCartIds - selectedIds.toSet()
                             )
@@ -434,7 +431,8 @@ class CartViewModel @Inject  constructor(
 
 
     private fun handleClickEditNote(cartId: String) = viewModelScope.launch {
-        val currentCartItem = uiState.value.carts?.menus?.find { it.cartId == cartId }?: return@launch
+        val currentCart = cartFlow.first()
+        val currentCartItem = currentCart.menus.find { it.cartId == cartId } ?: return@launch
         if(currentCartItem.customizable){
             _uiEffect.send(CartUiEffect.NavigateDetailMenu(currentCartItem.menuId))
         }else {

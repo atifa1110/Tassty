@@ -67,44 +67,44 @@ class OrderNetworkDataSource @Inject constructor(
     }
 
     fun getDriverLocationStream(orderId: String): Flow<RouteUpdatePayload> = callbackFlow {
-        Log.d(TAG, "🚀 Start tracking orderId=$orderId")
+        Log.d(TAG, "Start tracking orderId=$orderId")
 
         val channel = supabase.realtime.channel("tracking:$orderId")
 
         val job = channel
             .broadcastFlow<RouteUpdatePayload>("location_update")
             .onEach { payload ->
-                Log.d(TAG, "📡 Received: $payload")
+                Log.d(TAG, "Received: $payload")
 
                 val result = trySend(payload)
                 if (result.isFailure) {
-                    Log.e(TAG, "❌ Failed to emit payload")
+                    Log.e(TAG, "Failed to emit payload")
                 }
             }
             .catch { e ->
-                Log.e(TAG, "❌ Flow error", e)
+                Log.e(TAG, "Flow error", e)
                 close(e)
             }
             .launchIn(this)
 
         try {
             channel.subscribe()
-            Log.i(TAG, "✅ Subscribed to tracking:$orderId")
+            Log.i(TAG, "Subscribed to tracking:$orderId")
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Subscribe failed", e)
+            Log.e(TAG, "Subscribe failed", e)
             close(e)
         }
 
         awaitClose {
-            Log.d(TAG, "🛑 Stop tracking orderId=$orderId")
+            Log.d(TAG, "Stop tracking orderId=$orderId")
 
             try {
                 launch {
                     channel.unsubscribe()
                 }
-                Log.i(TAG, "👋 Unsubscribed")
+                Log.i(TAG, "Unsubscribed")
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Unsubscribe error", e)
+                Log.e(TAG, "Unsubscribe error", e)
             }
 
             job.cancel()

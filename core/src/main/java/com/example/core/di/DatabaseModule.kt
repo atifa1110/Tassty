@@ -23,34 +23,34 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-//    @Singleton
-//    @Provides
-//    fun provideDatabase(
-//        @ApplicationContext context: Context
-//    ): AppDatabase {
-//        return Room.databaseBuilder(
-//            context,
-//            AppDatabase::class.java,
-//            "tassty_db"
-//        ).build()
-//    }
-
     @Singleton
     @Provides
     fun provideDatabase(
-        @ApplicationContext context: Context,
-        @DatabasePassphrase passphrase: ByteArray
+        @ApplicationContext context: Context
     ): AppDatabase {
-        val factory = SupportFactory(passphrase)
-
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             "tassty_db"
-        ).openHelperFactory(factory)
-            .fallbackToDestructiveMigration(false)
-            .build()
+        ).build()
     }
+
+//    @Singleton
+//    @Provides
+//    fun provideDatabase(
+//        @ApplicationContext context: Context,
+//        @DatabasePassphrase passphrase: ByteArray
+//    ): AppDatabase {
+//        val factory = SupportFactory(passphrase)
+//
+//        return Room.databaseBuilder(
+//            context,
+//            AppDatabase::class.java,
+//            "tassty_db"
+//        ).openHelperFactory(factory)
+//            .fallbackToDestructiveMigration(false)
+//            .build()
+//    }
 
     @Singleton
     @Provides

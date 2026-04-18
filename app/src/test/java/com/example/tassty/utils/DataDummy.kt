@@ -1,5 +1,6 @@
 package com.example.tassty.utils
 
+import com.example.core.data.model.AuthStatus
 import com.example.core.data.source.remote.network.Meta
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.model.CartGroup
@@ -29,7 +30,26 @@ object DataDummy {
                             "Syrup: Vanilla Syrup\n"+
                             "Topping: Whipped Cream Chocolate, Gula Aren",
                     notes = "es nya dikurangi",
-                    customizable = false
+                    customizable = false,
+                    optionIds = listOf("OPT-001","OPT-002")
+                ),
+                CartItem(
+                    cartId = "CART-002",
+                    menuId = "MEN-005",
+                    name = "Menu 2",
+                    imageUrl = "https://cdn.example.com/menu/shabu_premium.jpg",
+                    price =  150000,
+                    quantity = 1,
+                    options = "Pilih Varian Kopi: Kenangan Blend\n" +
+                            "Sugar Level: No Sugar\n" +
+                            "Size: Hot Regular\n" +
+                            "Milk Option: Fresh Milk\n" +
+                            "Ice level: Less Ice\n" +
+                            "Syrup: Vanilla Syrup\n"+
+                            "Topping: Whipped Cream Chocolate, Gula Aren",
+                    notes = "es nya dikurangi",
+                    customizable = true,
+                    optionIds = listOf("OPT-001","OPT-002")
                 )
             )
         )
@@ -49,4 +69,22 @@ object DataDummy {
         data = "ORDER-123",
         meta = Meta(code = 200, status = "success", message = "Order Success")
     )
+
+    val dummyAuthStatus = AuthStatus(
+        name = "Atifa Fiorenza",
+        email = "atifa@example.com",
+        profileImage = "https://photo.url",
+        isDarkMode = true,
+        isLoggedIn = true
+    )
+
+    val logoutResponseSuccess = TasstyResponse.Success(
+        data = "Logout Success",
+        meta = Meta(code = 200, status = "success", message = "")
+    )
+
+    val logoutResponseFailed = TasstyResponse.Error(
+        meta = Meta(code = 400, status = "error", message = "Logout Failed")
+    )
+
 }

@@ -10,6 +10,7 @@ import com.example.core.data.model.RegistrationStep
 import com.example.tassty.VerificationType
 import com.example.tassty.activity.MainViewModel
 import com.example.tassty.screen.dashboard.CartDestination
+import com.example.tassty.screen.payment.PaymentScreen
 
 @Composable
 fun TasstyNavHost(
@@ -164,8 +165,7 @@ fun TasstyNavHost(
             },
             onNavigateToOrderProcess = {id->
                 navController.navigate(OrderProcessDestination.createRoute(id)){
-                    // Hapus dari Payment sampai ke Cart
-                    popUpTo(CartDestination.route) {
+                    popUpTo(PaymentDestination.routeWithArgs) {
                         inclusive = true
                     }
                     launchSingleTop = true

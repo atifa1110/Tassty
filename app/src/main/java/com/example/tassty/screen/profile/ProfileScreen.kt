@@ -74,6 +74,7 @@ import com.example.tassty.ui.theme.Pink50
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.tassty.component.LoadingOverlay
 import com.example.tassty.ui.theme.TasstyTheme
 
 @Composable
@@ -94,8 +95,11 @@ fun ProfileScreen(
 
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { event ->
-            when(event){
-                is ProfileEffect.NavigateToLogin -> { onNavigateToLogin() }
+            when (event) {
+                is ProfileEffect.NavigateToLogin -> {
+                    onNavigateToLogin()
+                }
+
                 is ProfileEffect.ShowMessage -> {
                     snackHostState.showSnackbar(event.message)
                 }
@@ -103,20 +107,27 @@ fun ProfileScreen(
         }
     }
 
-    ProfileContent (
-        uiState = uiState,
-        snackHostState = snackHostState,
-        onShowLogoutSheet = {viewModel.handleShowLogoutSheet(true)},
-        onDarkMode = viewModel::onDarkMode,
-        onNavigateToCollection = onNavigateToCollection,
-        onNavigateToFavorite = onNavigateToFavorite,
-        onNavigateToVoucher = onNavigateToVoucher,
-        onNavigateToAddress = onNavigateToAddress,
-        onNavigateToCard = onNavigateToCard,
-        onNavigateToOrder = onNavigateToOrder,
-        onNavigateToEditProfile = onNavigateToEditProfile,
-        onNavigateToTerm = onNavigateToTerm
-    )
+    Box(Modifier.fillMaxSize()) {
+        ProfileContent(
+            uiState = uiState,
+            snackHostState = snackHostState,
+            onShowLogoutSheet = { viewModel.handleShowLogoutSheet(true) },
+            onDarkMode = viewModel::onDarkMode,
+            onNavigateToCollection = onNavigateToCollection,
+            onNavigateToFavorite = onNavigateToFavorite,
+            onNavigateToVoucher = onNavigateToVoucher,
+            onNavigateToAddress = onNavigateToAddress,
+            onNavigateToCard = onNavigateToCard,
+            onNavigateToOrder = onNavigateToOrder,
+            onNavigateToEditProfile = onNavigateToEditProfile,
+            onNavigateToTerm = onNavigateToTerm
+        )
+
+        LoadingOverlay(
+            isLoading = uiState.isLoading,
+            text = stringResource(R.string.load)
+        )
+    }
 
     CustomBottomSheet(
         visible = uiState.isLogoutSheetVisible,
@@ -646,28 +657,28 @@ fun ProfileMenuSwitchItem(
 //}
 //
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun ProfileDarkPreview() {
-//    val snackHostState = remember { SnackbarHostState() }
-//    TasstyTheme (darkTheme = true){
-//        ProfileContent(
-//            uiState = ProfileUiState(
-//                name = "Atifa Fiorenza",
-//                email = "atifafiorenza24@gmail.com",
-//                imageUrl = "",
-//                isDarkMode = true
-//            ),
-//            onShowLogoutSheet = {},
-//            onDarkMode = {},
-//            snackHostState = snackHostState,
-//            onNavigateToCard = {},
-//            onNavigateToOrder = {},
-//            onNavigateToVoucher = {},
-//            onNavigateToAddress = {},
-//            onNavigateToFavorite = {},
-//            onNavigateToCollection = {},
-//            onNavigateToEditProfile = {},
-//            onNavigateToTerm = {}
-//        )
-//    }
-//}
+@Composable
+fun ProfileDarkPreview() {
+    val snackHostState = remember { SnackbarHostState() }
+    TasstyTheme (darkTheme = true){
+        ProfileContent(
+            uiState = ProfileUiState(
+                name = "Atifa Fiorenza",
+                email = "atifafiorenza24@gmail.com",
+                imageUrl = "",
+                isDarkMode = true
+            ),
+            onShowLogoutSheet = {},
+            onDarkMode = {},
+            snackHostState = snackHostState,
+            onNavigateToCard = {},
+            onNavigateToOrder = {},
+            onNavigateToVoucher = {},
+            onNavigateToAddress = {},
+            onNavigateToFavorite = {},
+            onNavigateToCollection = {},
+            onNavigateToEditProfile = {},
+            onNavigateToTerm = {}
+        )
+    }
+}

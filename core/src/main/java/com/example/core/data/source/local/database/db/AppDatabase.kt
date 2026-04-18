@@ -2,6 +2,8 @@ package com.example.core.data.source.local.database.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.core.data.source.local.database.converter.Converters
 import com.example.core.data.source.local.database.dao.CartDao
 import com.example.core.data.source.local.database.dao.CleanupDao
 import com.example.core.data.source.local.database.dao.CollectionDao
@@ -30,6 +32,7 @@ import com.example.core.data.source.local.database.entity.RestaurantEntity
     ],
     version = 1
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun restaurantDao(): RestaurantDao
     abstract fun menuDao(): MenuDao
