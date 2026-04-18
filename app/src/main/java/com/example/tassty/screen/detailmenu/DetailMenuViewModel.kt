@@ -249,6 +249,7 @@ class DetailMenuViewModel @Inject constructor(
             return@launch
         }
 
+        val ids = missingGroups.map { it.id }
         val selectedOptionsSummary = detail.optionGroups
             .filter { g -> g.options.any { it.isSelected } }
             .joinToString("\n") { g ->

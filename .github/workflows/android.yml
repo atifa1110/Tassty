@@ -25,14 +25,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Unit Tests & Coverage
-        # Kita panggil task koverXmlReport secara spesifik
         run: ./gradlew :app:testDebugUnitTest :app:koverXmlReportDebug
 
       - name: Upload Report to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # Kita kasih tau Codecov: "Cari semua file XML di folder build!"
-          directory: ./app/build/reports/kover/
+          slug: ${{ github.repository }}
+          files: ./app/build/reports/kover/reportDebug.xml
           fail_ci_if_error: true
           verbose: true

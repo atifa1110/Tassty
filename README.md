@@ -44,6 +44,11 @@ Aplikasi ini menerapkan **Clean Architecture** dengan pemisahan modul (**Multi-m
 
 ---
 
+**Security & Data Encryption:**
+    * **Local Database Encryption:** Mengamankan database **Room** menggunakan **SQLCipher**, memastikan data di dalam storage terenkripsi sepenuhnya.
+    * **Secure Preference Storage:** Mengganti `SharedPreferences` standar dengan **EncryptedSharedPreferences** (Jetpack Security) untuk menyimpan *sensitive tokens* (JWT) dan *user session* secara aman menggunakan enkripsi berbasis hardware (AES-256).
+---
+
 ## 🛠️ Tech Stack Ecosystem
 
 ### 📱 Mobile (Frontend)
