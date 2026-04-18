@@ -61,8 +61,11 @@ class RegisterViewModel @Inject constructor(
     val events: SharedFlow<RegisterEvent> = _events.asSharedFlow()
 
     fun onFullNameChange(newName: String) = _internalState.update { it.copy(fullName = newName, fullNameError = null) }
+
     fun onEmailChange(email: String) = _internalState.update { it.copy(email = email, emailError = null) }
+
     fun onPasswordChange(password: String) = _internalState.update { it.copy(password = password, passwordError = null) }
+
     fun onTermCheckChanged(isChecked: Boolean) = _internalState.update { it.copy(isTermSelected = isChecked) }
 
     fun onConfirmVerification() {
@@ -80,7 +83,7 @@ class RegisterViewModel @Inject constructor(
     }
 
     fun onRegister() {
-        val state = uiState.value
+        val state = _internalState.value
         val emailErrorRes = InputValidator.validateEmail(state.email)
         val passwordErrorRes = InputValidator.validatePassword(state.password)
         val nameErrorRes = InputValidator.validateNotEmpty(state.fullName)

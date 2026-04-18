@@ -238,6 +238,43 @@ class CartViewModelTest {
         }
     }
 
+    @Test
+    fun `onDecrementQuantity should update total correctly`() = runTest {
+        val initialCart = cartFlow.value
+        val targetMenu = initialCart.menus[0]
+        val targetCartId = targetMenu.cartId
+
+        val cartWithTwoItems = initialCart.copy(
+            menus = initialCart.menus.map {
+                if (it.cartId == targetCartId) it.copy(quantity = 2) else it
+            }
+        )
+        cartFlow.value = cartWithTwoItems
+
+        coEvery { updateCartQuantityUseCase(targetCartId, false) } coAnswers {
+            val currentCart = cartFlow.value
+            val updatedMenus = currentCart.menus.map {
+                if (it.cartId == targetCartId) it.copy(quantity = it.quantity - 1) else it
+            }
+            cartFlow.value = currentCart.copy(menus = updatedMenus)
+        }
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(CartUiEvent.OnCartSelectionChange(targetCartId))
+            viewModel.onEvent(CartUiEvent.OnDecrementQuantity(targetCartId))
+
+            val finalState = expectMostRecentItem()
+            val updatedMenu = finalState.carts?.menus?.find { it.cartId == targetCartId }
+
+            assertEquals(1, updatedMenu?.quantity)
+            assertEquals(targetMenu.price, finalState.subtotal) // Kembali ke harga 1 item
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `onIncrementQuantity should not update subtotal when menu is not selected`() = runTest {

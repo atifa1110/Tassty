@@ -87,4 +87,13 @@ object DataDummy {
         meta = Meta(code = 400, status = "error", message = "Logout Failed")
     )
 
+    val loginResponseSuccess = TasstyResponse.Success(
+        data = "Login Success",
+        meta = Meta(code = 200, status = "success", message = "")
+    )
+
+    val loginResponseFailed = TasstyResponse.Error(
+        meta = Meta(code = 400, status = "error", message = "Login Failed")
+    )
+
 }

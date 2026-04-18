@@ -5,13 +5,22 @@ import androidx.compose.ui.res.stringResource
 import com.example.tassty.R
 
 object InputValidator {
+    private val EMAIL_PATTERN = Regex(
+        "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
+                "\\@" +
+                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+                "(" +
+                "\\." +
+                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+                ")+"
+    )
 
     fun validateEmail(email: String): Int? {
-        return if (email.isBlank()) {
-            R.string.email_cannot_be_empty
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            R.string.email_is_not_valid
-        } else null
+        return when {
+            email.isBlank() -> R.string.email_cannot_be_empty
+            !EMAIL_PATTERN.matches(email) -> R.string.email_is_not_valid
+            else -> null
+        }
     }
 
     fun validatePassword(password: String, minLength: Int = 8): Int? {
