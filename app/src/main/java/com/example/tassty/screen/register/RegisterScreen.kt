@@ -156,21 +156,21 @@ fun RegisterScreen(
                     textError = uiState.fullNameError,
                     leadingIcon = R.drawable.person,
                     onTextChanged = onTextChange,
-                    enabled = uiState.isTextEditable
+                    enabled = !uiState.isLoading
                 )
 
                 EmailSection (
                     email = uiState.email,
                     emailError = uiState.emailError,
                     onEmailChanged = onEmailChange,
-                    enabled = uiState.isTextEditable
+                    enabled = !uiState.isLoading
                 )
 
                 PasswordSection(
                     password = uiState.password,
                     passwordError = uiState.passwordError,
                     onPasswordChanged = onPasswordChange,
-                    enabled = uiState.isTextEditable
+                    enabled = !uiState.isLoading
                 )
 
                 TermsOfServiceCheckbox(
@@ -207,7 +207,7 @@ fun RegisterScreen(
                     style = LocalCustomTypography.current.bodyMediumMedium,
                     modifier = Modifier.clickable(
                         onClick = onLoginClick,
-                        enabled = uiState.isTextEditable
+                        enabled = !uiState.isLoading
                     )
                 )
             }

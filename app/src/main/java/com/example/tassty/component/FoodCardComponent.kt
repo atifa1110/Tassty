@@ -19,16 +19,13 @@ import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.OptionUiModel
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.collectionMenuUiModel
-import com.example.tassty.util.menuItem
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
+import com.example.tassty.util.CollectionData
+import com.example.tassty.util.MenuPreviewData
 
 @Composable
 fun FoodTinyGridCard(
@@ -363,13 +360,13 @@ fun FoodGridCardPreview() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ){
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodTinyGridCard(menu = menuItem)
-            FoodGridCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
+            FoodTinyGridCard(menu = MenuPreviewData.menuUiList[0])
+            FoodGridCard(menu = MenuPreviewData.menuUiList[0], onFavoriteClick = {}, onAddToCart = {})
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FoodLargeGridCard(menu = menuItem,onFavoriteClick = {}, onAddToCart = {})
-            FoodGridSoldCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
+            FoodLargeGridCard(menu = MenuPreviewData.menuUiList[0],onFavoriteClick = {}, onAddToCart = {})
+            FoodGridSoldCard(menu = MenuPreviewData.menuUiList[0], onFavoriteClick = {}, onAddToCart = {})
         }
     }
 }
@@ -382,8 +379,8 @@ fun FoodListCardPreview() {
         .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        FoodListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
-        FoodWideListCard(menu = menuItem, onFavoriteClick = {}, onAddToCart = {})
-        FoodCollectionCard(collection = collectionMenuUiModel[0], onClick = {})
+        FoodListCard(menu = MenuPreviewData.menuUiList[0], onFavoriteClick = {}, onAddToCart = {})
+        FoodWideListCard(menu = MenuPreviewData.menuUiList[0], onFavoriteClick = {}, onAddToCart = {})
+        FoodCollectionCard(collection = CollectionData.collectionMenuUiModel[0], onClick = {})
     }
 }

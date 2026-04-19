@@ -53,15 +53,10 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.categories
-import com.example.tassty.util.defaultFilter
-import com.example.tassty.util.historyOptions
-import com.example.tassty.util.menusItem
-import com.example.tassty.util.popularOptions
-import com.example.tassty.util.restaurantMenuUiModel
-import com.example.tassty.util.restaurantUiModel
+import com.example.tassty.util.MenuPreviewData
+import com.example.tassty.util.RestaurantPreviewData
+import com.example.tassty.util.UserData
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun SearchScreen(
@@ -377,41 +372,15 @@ fun SearchLightPreview() {
         SearchRoute(
             context = LocalContext.current,
             uiState = SearchUiState(
-                history = Resource(data = historyOptions),
-                popular = Resource(data = popularOptions),
-                categories = Resource(data = categories.toImmutableList()),
-                restaurants = Resource(data = restaurantUiModel.toImmutableList()),
-                menus = Resource(data = menusItem.toImmutableList()),
-                activeFilters = defaultFilter,
+                history = Resource(data = UserData.historyOptions),
+                popular = Resource(data = UserData.popularOptions),
+                categories = Resource(data = RestaurantPreviewData.categoriesUiModel),
+                restaurants = Resource(data =  RestaurantPreviewData.restaurantUiList),
+                menus = Resource(data = MenuPreviewData.menuUiList),
+                activeFilters = UserData.defaultFilter,
                 isSearching = true,
                 query = "cafe",
-                queryResult = Resource(restaurantMenuUiModel)
-            ),
-            onQueryChange = {},
-            onFilterClick = {},
-            onSortClick = {},
-            onNavigateToDetail = {},
-            onNavigateBack = {}
-        )
-    }
-}
-
-//@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-fun SearchDarkPreview() {
-    TasstyTheme(darkTheme = true){
-        SearchRoute(
-            context = LocalContext.current,
-            uiState = SearchUiState(
-                history = Resource(data = historyOptions),
-                popular = Resource(data = popularOptions),
-                categories = Resource(data = categories.toImmutableList()),
-                restaurants = Resource(data = restaurantUiModel.toImmutableList()),
-                menus = Resource(data = menusItem.toImmutableList()),
-                activeFilters = defaultFilter,
-                isSearching = true,
-                query = "cafe",
-                queryResult = Resource(restaurantMenuUiModel, errorMessage = "error")
+                queryResult = Resource(emptyList())
             ),
             onQueryChange = {},
             onFilterClick = {},

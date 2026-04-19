@@ -30,8 +30,7 @@ import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.voucherVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.voucherUiModel
-import kotlinx.collections.immutable.toImmutableList
+import com.example.tassty.util.VoucherData
 
 @Composable
 fun VoucherScreen(
@@ -128,11 +127,7 @@ fun VoucherLightPreview(){
         VoucherContent(
             context = LocalContext.current,
             uiState = VoucherUiState(
-                vouchers = Resource(
-                    isLoading = false,
-                    data = voucherUiModel.toImmutableList(),
-                    errorMessage = null
-                )
+                vouchers = Resource(data = VoucherData.voucherUiModel)
             ),
             onNavigateBack = {}
         )
@@ -146,11 +141,7 @@ fun VoucherDarkPreview(){
         VoucherContent(
             context = LocalContext.current,
             uiState = VoucherUiState(
-                vouchers = Resource(
-                    isLoading = false,
-                    data = voucherUiModel.toImmutableList(),
-                    errorMessage = null
-                )
+                vouchers = Resource(data = VoucherData.voucherUiModel)
             ),
             onNavigateBack = {}
         )

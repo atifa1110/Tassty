@@ -33,7 +33,6 @@ class LoginViewModel @Inject constructor(
             emailError = state.emailError,
             passwordError = state.passwordError,
             isLoading = state.isLoading,
-            isTextEditable = !state.isLoading,
             isButtonEnabled = state.email.isNotBlank() && state.password.isNotBlank() && !state.isLoading,
             isBottomSheetVisible = state.isBottomSheetVisible,
             bottomSheetMessage = state.bottomSheetMessage

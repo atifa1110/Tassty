@@ -60,13 +60,11 @@ import com.example.tassty.component.VoucherLargeCard
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.component.ErrorListState
-import kotlinx.coroutines.launch
 import kotlin.collections.orEmpty
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
@@ -95,10 +93,9 @@ import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.cat
-import com.example.tassty.util.men
-import com.example.tassty.util.rest
-import com.example.tassty.util.voc
+import com.example.tassty.util.MenuPreviewData
+import com.example.tassty.util.RestaurantPreviewData
+import com.example.tassty.util.VoucherData
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -124,64 +121,49 @@ fun HomeScreen(
                         duration = SnackbarDuration.Short
                     )
                 }
-
-                is HomeEffect.NavigateToDetailMenu -> {
-                    onNavigateToDetailMenu(event.id)
-                }
             }
         }
     }
 
-    if (uiState.isTokenExpired) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            ErrorScreen(
-                onClick = { viewModel.onEvent(HomeEvent.OnRefreshToken) },
-            )
-        }
-    }else {
-        HomeContent(
-            snackHostState = snackHostState,
-            uiState = uiState,
-            onNavigateToSearch = onNavigateToSearch,
-            onNavigateToDetail = onNavigateToDetailRest,
-            onNavigateToCategory = onNavigateToCategory,
-            onNavigateToRecommended = onNavigateToRecommended,
-            onNavigateToVoucher = onNavigateToVoucher,
-            onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
-            onCartClick = { viewModel.onEvent(HomeEvent.OnShowDetailMenu(it)) },
-            onFavoriteClick = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) },
-            onRefresh = viewModel::onPullToRefresh
+    HomeContent(
+        snackHostState = snackHostState,
+        uiState = uiState,
+        onNavigateToSearch = onNavigateToSearch,
+        onNavigateToDetail = onNavigateToDetailRest,
+        onNavigateToCategory = onNavigateToCategory,
+        onNavigateToRecommended = onNavigateToRecommended,
+        onNavigateToVoucher = onNavigateToVoucher,
+        onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant,
+        onCartClick =  onNavigateToDetailMenu,
+        onFavoriteClick = { viewModel.onEvent(HomeEvent.OnFavoriteClick(it)) },
+        onRefresh = viewModel::onPullToRefresh
+    )
+
+    CustomBottomSheet(
+        visible = uiState.isCollectionSheetVisible,
+        onDismiss = { viewModel.onEvent(HomeEvent.OnDismissCollectionSheet) }
+    ) {
+        CollectionContent (
+            items = uiState.collections,
+            onCollectionSelected = { id, check ->
+                viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id, check))
+            },
+            onSaveCollectionClick = { viewModel.onEvent(HomeEvent.OnSaveToCollection) },
+            onAddCollectionClick = { viewModel.onEvent(HomeEvent.OnShowAddCollectionSheet) }
         )
+    }
 
-        CustomBottomSheet(
-            visible = uiState.isCollectionSheetVisible,
-            onDismiss = { viewModel.onEvent(HomeEvent.OnDismissCollectionSheet) }
-        ) {
-            CollectionContent (
-                items = uiState.collections,
-                onCollectionSelected = { id, check ->
-                    viewModel.onEvent(HomeEvent.OnCollectionCheckChange(id, check))
-                },
-                onSaveCollectionClick = { viewModel.onEvent(HomeEvent.OnSaveToCollection) },
-                onAddCollectionClick = { viewModel.onEvent(HomeEvent.OnShowAddCollectionSheet) }
-            )
-        }
-
-        CustomBottomSheet(
-            visible = uiState.isAddCollectionSheet,
-            dismissOnClickOutside = false,
-            onDismiss = {}
-        ) {
-            CollectionAddContent(
-                collectionName = uiState.newCollectionName,
-                onValueName = { viewModel.onEvent(HomeEvent.OnNewCollectionNameChange(it)) },
-                onDismissClick = { viewModel.onEvent(HomeEvent.OnDismissAddCollectionSheet) },
-                onAddCollection = { viewModel.onEvent(HomeEvent.OnCreateCollection) }
-            )
-        }
+    CustomBottomSheet(
+        visible = uiState.isAddCollectionSheet,
+        dismissOnClickOutside = false,
+        onDismiss = {}
+    ) {
+        CollectionAddContent(
+            collectionName = uiState.newCollectionName,
+            onValueName = { viewModel.onEvent(HomeEvent.OnNewCollectionNameChange(it)) },
+            onDismissClick = { viewModel.onEvent(HomeEvent.OnDismissAddCollectionSheet) },
+            onAddCollection = { viewModel.onEvent(HomeEvent.OnCreateCollection) }
+        )
     }
 }
 
@@ -200,13 +182,13 @@ fun HomeContent(
     onFavoriteClick: (MenuUiModel) -> Unit,
     onCartClick: (String) -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
     val refreshState = rememberPullToRefreshState()
 
     val scrollState = rememberLazyListState()
     val isScrolled by remember {
         derivedStateOf {
-            scrollState.firstVisibleItemIndex > 0 || scrollState.firstVisibleItemScrollOffset > 100
+            scrollState.firstVisibleItemIndex > 0 ||
+                    scrollState.firstVisibleItemScrollOffset > 100
         }
     }
 
@@ -223,70 +205,76 @@ fun HomeContent(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val screenHeight = maxHeight
 
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pullToRefresh(
-                        state = refreshState,
-                        isRefreshing = uiState.isRefreshing,
-                        onRefresh = {
-                            scope.launch { onRefresh() }
-                        }
-                    ),
-                contentPadding = PaddingValues(bottom = 32.dp)
-            ) {
-                item(key = "header_section"){
-                    HeaderSection(
-                        fixedHeight = screenHeight,
-                        userName = uiState.userName,
-                        onClick = onNavigateToSearch
-                    )
+            if(uiState.allCategories.errorMessage!=null){
+                Box(modifier = Modifier.fillMaxSize().matchParentSize(),
+                    contentAlignment = Alignment.Center
+                ){
+                    ErrorScreen(onClick = onRefresh)
                 }
-                item(key = "category_section") {
-                    Spacer(Modifier.height(24.dp))
-                    CategorySection(
-                        resource = uiState.allCategories,
-                        onNavigateToCategory = onNavigateToCategory
-                    )
-                    Divider32()
-                }
-                item(key = "recommend_menu_section") {
-                    RecommendationSection(
-                        resource = uiState.recommendedMenus,
-                        onFavoriteClicked = onFavoriteClick,
-                        onCartClick = onCartClick
-                    )
-                    Divider32()
-                }
-                item(key = "nearby_map_section") {
-                    RestaurantNearby(
-                        resource = uiState.nearbyRestaurants,
-                        onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant
-                    )
-                    Spacer(Modifier.height(32.dp))
-                }
-                item(key = "recommend_restaurant_section") {
-                    RecommendationRestaurant(
-                        resource = uiState.recommendedRestaurants,
-                        onNavigateToRecommended = onNavigateToRecommended,
-                        onNavigateToDetail = onNavigateToDetail
-                    )
-                    Spacer(Modifier.height(32.dp))
-                }
-                item(key = "voucher_section"){
-                    TodayDeal(
-                        resource = uiState.todayVouchers,
-                        onNavigateToVoucher = onNavigateToVoucher
-                    )
-                    Spacer(Modifier.height(32.dp))
-                }
-                item(key = "suggested_section"){
-                    SuggestedMenu(
-                        resource = uiState.suggestedMenus,
-                        onFavoriteClick = onFavoriteClick,
-                        onCartClick = onCartClick,
-                    )
+            }else {
+                LazyColumn(
+                    state = scrollState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pullToRefresh(
+                            state = refreshState,
+                            isRefreshing = uiState.isRefreshing,
+                            onRefresh = onRefresh
+                        ),
+                    contentPadding = PaddingValues(bottom = 32.dp)
+                ) {
+                    item(key = "header_section") {
+                        HeaderSection(
+                            fixedHeight = screenHeight,
+                            userName = uiState.userName,
+                            onClick = onNavigateToSearch
+                        )
+                    }
+                    item(key = "category_section") {
+                        Spacer(Modifier.height(24.dp))
+                        CategorySection(
+                            resource = uiState.allCategories,
+                            onNavigateToCategory = onNavigateToCategory
+                        )
+                        Divider32()
+                    }
+                    item(key = "recommend_menu_section") {
+                        RecommendationSection(
+                            resource = uiState.recommendedMenus,
+                            onFavoriteClicked = onFavoriteClick,
+                            onCartClick = onCartClick
+                        )
+                        Divider32()
+                    }
+                    item(key = "nearby_map_section") {
+                        RestaurantNearby(
+                            resource = uiState.nearbyRestaurants,
+                            onNavigateToNearbyRestaurant = onNavigateToNearbyRestaurant
+                        )
+                        Spacer(Modifier.height(32.dp))
+                    }
+                    item(key = "recommend_restaurant_section") {
+                        RecommendationRestaurant(
+                            resource = uiState.recommendedRestaurants,
+                            onNavigateToRecommended = onNavigateToRecommended,
+                            onNavigateToDetail = onNavigateToDetail
+                        )
+                        Spacer(Modifier.height(32.dp))
+                    }
+                    item(key = "voucher_section") {
+                        TodayDeal(
+                            resource = uiState.todayVouchers,
+                            onNavigateToVoucher = onNavigateToVoucher
+                        )
+                        Spacer(Modifier.height(32.dp))
+                    }
+                    item(key = "suggested_section") {
+                        SuggestedMenu(
+                            resource = uiState.suggestedMenus,
+                            onFavoriteClick = onFavoriteClick,
+                            onCartClick = onCartClick,
+                        )
+                    }
                 }
             }
 
@@ -320,15 +308,16 @@ fun TopAppBarSection(
     addressName: String,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 24.dp),
+    Box(modifier = modifier
+        .fillMaxWidth()
+        .padding(vertical = 12.dp, horizontal = 24.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier.align(Alignment.CenterStart),
             verticalAlignment = Alignment.CenterVertically
         ) {
-           HomeProfile(
+            HomeProfile(
                 imageUrl = profileImage,
                 name = userName
             )
@@ -410,10 +399,11 @@ fun HeaderSection(
         )
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.height(80.dp))
-            Column(modifier = Modifier.fillMaxWidth()
+            Column(modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 24.dp)) {
                 Text(
-                    text = "Hi $userName,",
+                    text = stringResource(R.string.hi, userName),
                     color = Neutral10,
                     style = LocalCustomTypography.current.h2Regular
                 )
@@ -606,13 +596,6 @@ fun RestaurantNearby(
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
                 NearbyMapBox(restaurant = items)
-
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .background(LocalCustomColors.current.cardBackground)
-//                        .height(200.dp)
-//                )
             }
         }
     }
@@ -683,7 +666,8 @@ fun TodayDeal(
         }
 
         else ->{
-            Column(modifier = Modifier.fillMaxWidth()
+            Column(modifier = Modifier
+                .fillMaxWidth()
                 .background(LocalCustomColors.current.cardBackground)
                 .padding(vertical = 24.dp)
             ) {
@@ -734,48 +718,18 @@ fun SuggestedMenu(
 @Composable
 fun HomeLightPreview() {
     val snackHostState = remember { SnackbarHostState() }
-    TasstyTheme(darkTheme = false){
+    TasstyTheme(darkTheme = true){
         HomeContent(
             snackHostState = snackHostState,
             uiState = HomeUiState(
                 userName = "Atifa",
                 addressName = "Guest",
-                allCategories = Resource(data = cat, isLoading = false),
-                recommendedRestaurants = Resource(data = rest, isLoading = false),
-                nearbyRestaurants = Resource(data = rest, isLoading = false),
-                todayVouchers = Resource(data = voc, isLoading = false),
-                recommendedMenus = Resource(data = men, isLoading = false),
-                suggestedMenus = Resource(data = men, isLoading = true),
-            ),
-            onRefresh = {},
-            onNavigateToDetail = {},
-            onNavigateToCategory = {_,_,_ ->},
-            onNavigateToSearch = {},
-            onNavigateToVoucher = {},
-            onNavigateToNearbyRestaurant = {},
-            onNavigateToRecommended = {},
-            onFavoriteClick = {},
-            onCartClick = {}
-        )
-    }
-}
- 
-//@Preview(showBackground = true, name = "DarkMode")
-@Composable
-fun HomeDarkPreview() {
-    val snackHostState = remember { SnackbarHostState() }
-    TasstyTheme(darkTheme = true){
-        HomeContent(
-            snackHostState = snackHostState,
-            uiState = HomeUiState(
-                userName = "Guest",
-                addressName = "Guest",
-                allCategories = Resource(data = cat, isLoading = false),
-                recommendedRestaurants = Resource(data = rest, isLoading = false),
-                nearbyRestaurants = Resource(data = rest, isLoading = false),
-                todayVouchers = Resource(data = voc, isLoading = false),
-                recommendedMenus = Resource(data = men, isLoading = false),
-                suggestedMenus = Resource(data = men, isLoading = true),
+                allCategories = Resource(data = RestaurantPreviewData.categoriesUiModel),
+                recommendedRestaurants = Resource(data = RestaurantPreviewData.restaurantUiList),
+                nearbyRestaurants = Resource(data = RestaurantPreviewData.restaurantUiList),
+                //todayVouchers = Resource(data = VoucherData.voucherUiModel),
+                recommendedMenus = Resource(data = MenuPreviewData.menuUiList),
+                suggestedMenus = Resource(data = MenuPreviewData.menuUiList),
             ),
             onRefresh = {},
             onNavigateToDetail = {},

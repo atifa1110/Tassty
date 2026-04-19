@@ -31,18 +31,14 @@ import com.example.core.ui.model.DetailRestaurantUiModel
 import com.example.core.ui.model.OperationalDayUi
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
-import com.example.tassty.util.restaurantUiModel
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
-import com.google.android.datatransport.cct.StringMerger
+import com.example.tassty.util.RestaurantPreviewData
 
 @Composable
 fun RestaurantSmallListCard (
@@ -627,11 +623,12 @@ fun SeeInfoButton(
 //    Column(
 //        verticalArrangement = Arrangement.spacedBy(10.dp)
 //    ) {
-//        RestaurantSmallListCard(restaurant = restaurantUiModel[0])
-//        RestaurantLargeListCard(restaurant = restaurantUiModel[0], onClick = {})
+//        RestaurantSmallListCard(restaurant = RestaurantPreviewData.restaurantUiList[0])
+//        RestaurantLargeListCard(restaurant = RestaurantPreviewData.restaurantUiList[0],
+//            onClick = {})
 //    }
 //}
-//
+
 //@Preview(showBackground = true)
 //@Composable
 //fun RestaurantGridCardPreview() {
@@ -639,9 +636,10 @@ fun SeeInfoButton(
 //        verticalArrangement = Arrangement.spacedBy(8.dp)
 //    ) {
 //        Row (horizontalArrangement = Arrangement.spacedBy(8.dp)){
-//            RestaurantTinyGridCard(restaurant = restaurantUiModel[0])
-//            RestaurantGridCard(restaurant = restaurantUiModel[0], onNavigateToDetail = {})
+//            RestaurantTinyGridCard(restaurant = RestaurantPreviewData.restaurantUiList[0])
+//            RestaurantGridCard(restaurant = RestaurantPreviewData.restaurantUiList[0],
+//                onNavigateToDetail = {})
 //        }
-//        RestaurantLargeGridCard(restaurant = restaurantUiModel[0], onClick = {})
+//        RestaurantLargeGridCard(restaurant = RestaurantPreviewData.restaurantUiList[0], onClick = {})
 //    }
 //}

@@ -31,7 +31,6 @@ class EmailInputViewModel @Inject constructor(
             email = state.email,
             emailError = state.emailError,
             isLoading = state.isLoading,
-            isTextEditable = !state.isLoading,
             isButtonEnabled = state.email.isNotBlank() && !state.isLoading,
         )
     }.stateIn(

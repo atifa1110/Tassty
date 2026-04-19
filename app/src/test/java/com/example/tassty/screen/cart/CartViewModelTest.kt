@@ -22,7 +22,7 @@ import app.cash.turbine.turbineScope
 import com.example.core.data.source.remote.network.Meta
 import com.example.core.data.source.remote.network.TasstyResponse
 import com.example.core.domain.usecase.GetUserAvailableVoucherUseCase
-import com.example.tassty.util.emptyRestaurant
+import com.example.tassty.util.RestaurantPreviewData
 import io.mockk.coEvery
 import io.mockk.coVerify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -101,7 +101,7 @@ class CartViewModelTest {
     fun `initial state should display empty view when no carts are available`() = runTest {
         val emptyCart = DataDummy.cartDomain.copy(
             menus = emptyList(),
-            restaurant = emptyRestaurant
+            restaurant = RestaurantPreviewData.emptyRestaurant
         )
 
         every { getCartsUseCase() } returns flowOf(emptyCart)

@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -24,19 +23,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CardUserUiModel
 import com.example.tassty.R
-import com.example.tassty.util.cardList
 import com.example.tassty.component.AddTopAppBar
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.EmptyCardContent
 import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HeaderTitleScreen
-import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.ShimmerDebitPaymentCard
 import com.example.tassty.component.cardUserVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.TasstyTheme
-import dagger.hilt.android.internal.Contexts
+import com.example.tassty.util.UserData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -155,7 +151,7 @@ fun CardLightPreview() {
     TasstyTheme{
         CardContent(
             uiState = CardUiState(
-                cardPayment = Resource(data = cardList.toImmutableList())
+                cardPayment = Resource(data = UserData.cardList)
             ),
             onNavigateBack = {},
             onAddClick = {},
@@ -173,7 +169,7 @@ fun CardDarkPreview(){
     TasstyTheme (darkTheme = true){
         CardContent(
             uiState = CardUiState(
-                cardPayment = Resource(data = cardList.toImmutableList())
+                cardPayment = Resource(data = UserData.cardList)
             ),
             onNavigateBack = {},
             onAddClick = {},

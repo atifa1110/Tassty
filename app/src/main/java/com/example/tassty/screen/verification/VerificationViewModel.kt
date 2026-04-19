@@ -12,7 +12,7 @@ import com.example.core.domain.usecase.VerifyResetOtpUseCase
 import com.example.tassty.VerificationType
 import com.example.tassty.navigation.VerifyDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,24 +40,47 @@ class VerificationViewModel @Inject constructor(
 
     private val args = VerifyDestination.getArgs(savedStateHandle)
 
-    private val _internalState = MutableStateFlow(VerificationInternalState(
-        timerSeconds = args.resendDelay
-    ))
+    private val _internalState = MutableStateFlow(VerificationInternalState())
+
+    private val _resendTrigger = MutableSharedFlow<Int>(replay = 1).apply {
+        tryEmit(1)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _timerSeconds = _resendTrigger.flatMapLatest { command ->
+        flow {
+            if (command == 0) {
+                emit(0)
+                return@flow
+            }
+
+            var timeLeft = args.resendDelay
+            while (timeLeft >= 0) {
+                emit(timeLeft)
+                if (timeLeft > 0) delay(1000)
+                timeLeft--
+            }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = args.resendDelay
+    )
 
     val uiState: StateFlow<VerificationUiState> = combine(
         getAuthStatusUseCase(),
-        _internalState
-    ) { auth, state->
+        _internalState,
+        _timerSeconds
+    ) { auth, state, timer ->
         val currentEmail = auth.email ?: ""
 
         VerificationUiState(
             otp = state.otp,
-            timerSeconds = state.timerSeconds,
-            isResendEnabled = state.timerSeconds == 0,
+            timerSeconds = timer,
+            isResendEnabled = timer == 0,
             isLoading = state.isLoading,
             isError = state.isError,
             email = currentEmail,
-            isTextEditable = !state.isLoading,
             isButtonEnabled = state.otp.length == 6 && currentEmail.isNotEmpty() && !state.isLoading,
             errorMessage = state.errorMessage,
             title = args.type.titleRes,
@@ -76,23 +101,8 @@ class VerificationViewModel @Inject constructor(
     private val _event = MutableSharedFlow<VerificationEvent>()
     val event: SharedFlow<VerificationEvent> = _event.asSharedFlow()
 
-    private var timerJob: Job? = null
-
-    init {
-        startTimer()
-    }
-
-
     fun startTimer() {
-        timerJob?.cancel()
-        _internalState.update { it.copy(timerSeconds = args.resendDelay) }
-
-        timerJob = viewModelScope.launch {
-            while (_internalState.value.timerSeconds > 0) {
-                delay(1000)
-                _internalState.update { it.copy(timerSeconds = it.timerSeconds - 1) }
-            }
-        }
+        _resendTrigger.tryEmit(1)
     }
 
     fun onOtpChange(otp: String) {
@@ -107,7 +117,11 @@ class VerificationViewModel @Inject constructor(
     fun onVerificationCode() {
         val currentEmail = uiState.value.email
         val otp = uiState.value.otp
-        if (currentEmail.isEmpty() || otp.length < 6) return
+
+        if (otp.length < 6) {
+            _internalState.update { it.copy(isError = true, errorMessage = "OTP harus 6 digit") }
+            return
+        }
 
         viewModelScope.launch {
             val flow = if (args.type == VerificationType.REGISTRATION) {
@@ -145,7 +159,7 @@ class VerificationViewModel @Inject constructor(
                 handleResponse(
                     result = result,
                     onError = {
-                        _internalState.update { it.copy(timerSeconds = 0) }
+                        _resendTrigger.tryEmit(0)
                     },
                     onSuccess = {
                         _event.emit(VerificationEvent.ShowMessage(it.meta.message))
@@ -157,7 +171,7 @@ class VerificationViewModel @Inject constructor(
 
     private suspend fun <T> handleResponse(
         result: TasstyResponse<T>,
-        onError: (String) -> Unit = {},
+        onError: suspend (String) -> Unit = {},
         onSuccess: suspend (TasstyResponse.Success<T>) -> Unit
     ) {
         when(result) {
@@ -170,11 +184,7 @@ class VerificationViewModel @Inject constructor(
             }
             is TasstyResponse.Error -> {
                 _internalState.update {
-                    it.copy(
-                        isLoading = false,
-                        isError = true,
-                        errorMessage = result.meta.message
-                    )
+                    it.copy(isLoading = false, isError = true, errorMessage = result.meta.message)
                 }
                 onError(result.meta.message)
             }

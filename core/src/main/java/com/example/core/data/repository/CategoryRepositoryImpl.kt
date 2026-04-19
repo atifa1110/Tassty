@@ -14,6 +14,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class CategoryRepositoryImpl @Inject constructor(
@@ -26,35 +28,30 @@ class CategoryRepositoryImpl @Inject constructor(
     }
 
     override fun getAllCategories(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Category>>> = flow {
-        emit(TasstyResponse.Loading())
-        // Cek cache
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_CATEGORY)
+
         if (cachedData.isNotEmpty()) {
-            emit(
-                TasstyResponse.Success(
-                    data = cachedData.map { it.toDomain() },
-                    meta = cachedMeta ?: Meta(0, "", "", null)
-                )
-            )
-            return@flow
+            emit(TasstyResponse.Success(
+                data = cachedData.map { it.toDomain() },
+                meta = cachedMeta ?: Meta(0, "", "", null)
+            ))
         }
 
-        // Take from remote
-        when (val result = dataSource.getAllCategories()) {
-            is TasstyResponse.Success -> {
-                // save to cache
-                cache.saveAll(META_KEY_CATEGORY, result.data?:emptyList())
-                cache.saveMeta(META_KEY_CATEGORY, result.meta)
+        val shouldFetch = cachedData.isEmpty() || fetchFromRemote
+        if (shouldFetch) {
+            emit(TasstyResponse.Loading())
 
-                emit(
-                    TasstyResponse.Success(
-                        data = result.data?.map { it.toDomain() },
-                        meta = result.meta
-                    )
-                )
+            when (val result = dataSource.getAllCategories()) {
+                is TasstyResponse.Success -> {
+                    cache.saveCategories(META_KEY_CATEGORY, result.data ?: emptyList())
+                    cache.saveMeta(META_KEY_CATEGORY, result.meta)
+                    emit(TasstyResponse.Success(result.data?.map { it.toDomain() }, result.meta))
+                }
+                is TasstyResponse.Error -> {
+                    emit(TasstyResponse.Error(result.meta))
+                }
+                else -> {}
             }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
         }
     }.flowOn(Dispatchers.IO)
 

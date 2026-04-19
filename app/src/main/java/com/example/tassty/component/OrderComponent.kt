@@ -54,8 +54,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.core.data.model.OrderData
 import com.example.core.ui.model.DriverUiModel
-import com.example.core.ui.model.MenuUiModel
 import com.example.core.ui.model.OrderItemUiModel
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.OrderUiModel
@@ -64,17 +64,11 @@ import com.example.core.ui.model.UserAddressUiModel
 import com.example.tassty.R
 import com.example.tassty.StatusUIConfig
 import com.example.tassty.getUIConfig
-import com.example.tassty.util.orderList
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.Blue600
-import com.example.tassty.ui.theme.Green300
-import com.example.tassty.ui.theme.Green50
-import com.example.tassty.ui.theme.Green600
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral60
@@ -85,8 +79,8 @@ import com.example.tassty.ui.theme.Orange600
 import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink600
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.dummyDetail
-import com.example.tassty.util.listOrder
+import com.example.tassty.util.OrderPreviewData
+import com.example.tassty.util.UserData
 
 @Composable
 fun OrderListCard(
@@ -822,18 +816,18 @@ fun DashedLine(
 }
 
 //@Preview(showBackground = true)
-//@Composable
-//fun OrderCardPreview(){
-//    TasstyTheme(darkTheme = true) {
-//        Column (Modifier.fillMaxSize()){
-//            OrderListCard(order = orderList[0]) { }
-//            OrderCard(order = orderList[0]) { }
-//            DeliveryDriverCard(driver = dummyDetail.driver, onMessageClick = {}, isProcess = false)
-//            OrderMenuListCard(item = listOrder[1]) { }
-//            DeliveryDetailCard(
-//                listOrder
-//            )
-//        }
-//    }
-//}
-//
+@Composable
+fun OrderCardPreview(){
+    TasstyTheme{
+        Column (Modifier.fillMaxSize()){
+            OrderListCard(order = OrderPreviewData.orderUiList[0]) { }
+            OrderCard(order =OrderPreviewData.orderUiList[0]) { }
+            ///DeliveryDriverCard(driver = , onMessageClick = {}, isProcess = false)
+            OrderMenuListCard(item = OrderPreviewData.listOrder[0]) { }
+            DeliveryDetailCard(
+                order = OrderPreviewData.listOrder
+            )
+        }
+    }
+}
+

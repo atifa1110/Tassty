@@ -27,24 +27,24 @@ class RestaurantRepositoryImpl @Inject constructor(
     }
 
     override fun getRecommendedRestaurants(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Restaurant>>> = flow {
-            emit(TasstyResponse.Loading())
-
             val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_RECOMMENDED)
-            if (!fetchFromRemote && cachedData.isNotEmpty()) {
+            if (cachedData.isNotEmpty()) {
                 emit(
                     TasstyResponse.Success(
                         data = cachedData.map { it.toDomain() },
                         meta = cachedMeta ?: Meta(0, "", "", null)
                     )
                 )
-                return@flow
             }
 
+        val shouldFetch = cachedData.isEmpty() || fetchFromRemote
+        if (shouldFetch) {
+            emit(TasstyResponse.Loading())
             // Take from remote
             when (val result = remoteDataSource.getRecommendedRestaurants()) {
                 is TasstyResponse.Success -> {
                     // save to cache
-                    cache.saveAll(META_KEY_RECOMMENDED, result.data ?: emptyList())
+                    cache.saveRestaurants(META_KEY_RECOMMENDED, result.data ?: emptyList())
                     cache.saveMeta(META_KEY_RECOMMENDED, result.meta)
 
                     emit(
@@ -58,6 +58,7 @@ class RestaurantRepositoryImpl @Inject constructor(
                 is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
                 else -> {}
             }
+        }
         }.flowOn(Dispatchers.IO)
 
     override fun getRecommendedCategoryRestaurants(categoryId:String): Flow<TasstyResponse<List<Restaurant>>> = flow {
@@ -77,34 +78,35 @@ class RestaurantRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     override fun getNearbyRestaurants(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Restaurant>>> = flow {
-        emit(TasstyResponse.Loading())
-
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_NEARBY)
-        if (!fetchFromRemote && cachedData.isNotEmpty()) {
+        if (cachedData.isNotEmpty()) {
             emit(
                 TasstyResponse.Success(
                     data = cachedData.map { it.toDomain() },
                     meta = cachedMeta ?: Meta(0, "", "", null)
                 )
             )
-            return@flow
         }
 
-        when (val result = remoteDataSource.getNearbyRestaurants()) {
-            is TasstyResponse.Success -> {
-                cache.saveAll(META_KEY_NEARBY, result.data ?: emptyList())
-                cache.saveMeta(META_KEY_NEARBY, result.meta)
+        val shouldFetch = cachedData.isEmpty() || fetchFromRemote
+        if (shouldFetch) {
+            emit(TasstyResponse.Loading())
+            when (val result = remoteDataSource.getNearbyRestaurants()) {
+                is TasstyResponse.Success -> {
+                    cache.saveRestaurants(META_KEY_NEARBY, result.data ?: emptyList())
+                    cache.saveMeta(META_KEY_NEARBY, result.meta)
 
-                emit(
-                    TasstyResponse.Success(
-                        data = result.data?.map { it.toDomain() },
-                        meta = result.meta
+                    emit(
+                        TasstyResponse.Success(
+                            data = result.data?.map { it.toDomain() },
+                            meta = result.meta
+                        )
                     )
-                )
-            }
+                }
 
-            is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
-            else -> {}
+                is TasstyResponse.Error -> emit(TasstyResponse.Error(result.meta))
+                else -> {}
+            }
         }
     }.flowOn(Dispatchers.IO)
 }

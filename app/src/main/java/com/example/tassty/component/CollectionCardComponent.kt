@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -26,14 +25,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CollectionUiModel
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.collectionUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.util.CollectionData
 
 @Composable
 fun CollectionCard(
@@ -131,7 +126,7 @@ fun PreviewCollectionCard() {
         modifier = Modifier.fillMaxWidth()
             .padding(24.dp)
     ) {
-        CollectionCard(collection = collectionUiModel[0], onCheckedChange = {})
-        CollectionVerticalCard(collectionUiModel[1], onClick = {})
+        CollectionCard(collection = CollectionData.collectionUiModel[0], onCheckedChange = {})
+        CollectionVerticalCard(CollectionData.collectionUiModel[0], onClick = {})
     }
 }

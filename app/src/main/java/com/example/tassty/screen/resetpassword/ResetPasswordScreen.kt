@@ -151,7 +151,7 @@ fun ResetNewPasswordContent(
                     password = uiState.password,
                     passwordError = uiState.passwordError,
                     onPasswordChanged = onPasswordChange,
-                    enabled = uiState.isTextEditable
+                    enabled = !uiState.isLoading
                 )
 
                 PasswordSection(
@@ -160,7 +160,7 @@ fun ResetNewPasswordContent(
                     password = uiState.confirmPassword,
                     passwordError = uiState.confirmPasswordError,
                     onPasswordChanged = onConfirmChange,
-                    enabled = uiState.isTextEditable
+                    enabled = !uiState.isLoading
                 )
             }
         }
@@ -169,37 +169,35 @@ fun ResetNewPasswordContent(
 
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun ResetLightPreview() {
-//    TasstyTheme(darkTheme = false) {
-//        ResetNewPasswordContent(
-//            uiState = ResetPasswordUiState(
-//                password = "12345678",
-//                confirmPassword = "12345678",
-//                isTextEditable = true
-//            ),
-//            onPasswordChange = {},
-//            onConfirmChange = {},
-//            onResetPassword = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun ResetLightPreview() {
+    TasstyTheme(darkTheme = false) {
+        ResetNewPasswordContent(
+            uiState = ResetPasswordUiState(
+                password = "12345678",
+                confirmPassword = "12345678",
+            ),
+            onPasswordChange = {},
+            onConfirmChange = {},
+            onResetPassword = {},
+            onNavigateBack = {}
+        )
+    }
+}
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun ResetDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        ResetNewPasswordContent(
-//            uiState = ResetPasswordUiState(
-//                password = "12345678",
-//                confirmPassword = "12345678",
-//                isTextEditable = true
-//            ),
-//            onPasswordChange = {},
-//            onConfirmChange = {},
-//            onResetPassword = {},
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun ResetDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        ResetNewPasswordContent(
+            uiState = ResetPasswordUiState(
+                password = "12345678",
+                confirmPassword = "12345678",
+            ),
+            onPasswordChange = {},
+            onConfirmChange = {},
+            onResetPassword = {},
+            onNavigateBack = {}
+        )
+    }
+}

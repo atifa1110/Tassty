@@ -1,14 +1,10 @@
 package com.example.core.ui.mapper
 
-import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.Voucher
-import com.example.core.domain.model.VoucherScope
 import com.example.core.domain.model.VoucherStatus
-import com.example.core.domain.model.VoucherType
 import com.example.core.ui.model.VoucherUiModel
 import com.example.core.utils.DateFormatter
 import org.threeten.bp.LocalDate
-import kotlin.String
 
 fun Voucher.toUiModel(): VoucherUiModel {
     val now = LocalDate.now()

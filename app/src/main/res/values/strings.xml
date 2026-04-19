@@ -339,5 +339,6 @@
     <string name="card_payment">Card Payment</string>
     <string name="add_more">Add more</string>
     <string name="menus">Menus</string>
+    <string name="hi">Hi %1$s,</string>
 
 </resources>

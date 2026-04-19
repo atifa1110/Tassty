@@ -11,7 +11,6 @@ data class LoginUiState(
     val emailError: UiText? = null,
     val passwordError: UiText? = null,
     val isLoading: Boolean = false,
-    val isTextEditable: Boolean = true,
     val isButtonEnabled: Boolean = false,
     val isBottomSheetVisible: Boolean = false,
     val bottomSheetMessage: String? = null

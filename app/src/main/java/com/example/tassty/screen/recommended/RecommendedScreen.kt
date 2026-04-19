@@ -32,7 +32,6 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CategoryUiModel
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
-import com.example.tassty.util.categories
 import com.example.tassty.component.CategoryCard
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorListState
@@ -45,10 +44,9 @@ import com.example.tassty.component.TitleTopAppBar
 import com.example.tassty.component.restaurantRecommendedSection
 import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.restaurantUiModel
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.RestaurantPreviewData
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun RecommendedRestaurantScreen(
@@ -226,24 +224,6 @@ fun RecommendedCategoryContent(
     }
 }
 
-//@Preview(showBackground = true, name = "Light Mode")
-@Composable
-fun RecommendedLightPreview() {
-    TasstyTheme {
-        RecommendedRestaurantContent(
-            uiState = RecommendedUiState(
-                selectedCategoryId = "CAT-001",
-                allCategories = Resource(data = categories.toImmutableList()),
-                recommendedRestaurant = Resource(data = restaurantUiModel.toImmutableList()),
-                recommendedRestaurantCategories = Resource(data = restaurantUiModel.toImmutableList())
-            ),
-            onCategoryClick = {},
-            onNavigateBack = {},
-            onNavigateToDetailRest = {}
-        )
-    }
-}
-
 //@Preview(showBackground = true, name = "Dark Mode")
 @Composable
 fun RecommendedDarkPreview() {
@@ -251,9 +231,9 @@ fun RecommendedDarkPreview() {
         RecommendedRestaurantContent(
             uiState = RecommendedUiState(
                 selectedCategoryId = "CAT-001",
-                allCategories = Resource(data = categories.toImmutableList()),
-                recommendedRestaurant = Resource(data = restaurantUiModel.toImmutableList()),
-                recommendedRestaurantCategories = Resource(data = restaurantUiModel.toImmutableList())
+                allCategories = Resource(data = RestaurantPreviewData.categoriesUiModel),
+                recommendedRestaurant = Resource(data = RestaurantPreviewData.restaurantUiList),
+                recommendedRestaurantCategories = Resource(data = RestaurantPreviewData.restaurantUiList)
             ),
             onCategoryClick = {},
             onNavigateBack = {},

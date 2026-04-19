@@ -10,13 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.ui.theme.Orange200
-import com.example.tassty.ui.theme.Orange50
-import com.example.tassty.util.categories
 import com.example.tassty.ui.theme.Orange500
 
 @Composable
@@ -62,13 +58,4 @@ fun CategoryCard(
             imageUrl = image
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCategoryScreen() {
-    CategoryCard(
-        category = categories[0],
-        onClick = {}
-    )
 }

@@ -16,7 +16,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import com.example.core.data.observer.AppLifecycleObserver
-import com.example.core.data.source.local.cache.LocationManager
+import com.example.core.data.provider.LocationManager
 import com.example.core.data.worker.DatabaseCleanupWorker
 import com.google.firebase.messaging.FirebaseMessaging
 import com.jakewharton.threetenabp.AndroidThreeTen

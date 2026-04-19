@@ -36,10 +36,6 @@ import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.ReviewUiModel
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.reviews
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral20

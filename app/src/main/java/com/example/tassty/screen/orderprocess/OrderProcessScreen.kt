@@ -42,7 +42,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.DetailOrderUiModel
-import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.RouteOrderUiModel
 import com.example.tassty.R
 import com.example.tassty.component.BackTopAppBar
@@ -67,9 +66,8 @@ import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.dummyDetail
+import com.example.tassty.util.OrderPreviewData
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
@@ -358,7 +356,7 @@ fun OrderProcessLightPreview(){
     TasstyTheme{
         OrderProcessContent(
             uiState = OrderProcessUiState(
-                detail = Resource(data = dummyDetail),
+                detail = Resource(data = OrderPreviewData.detailOrder),
                 route = Resource(
                     data = RouteOrderUiModel(
                         distance = "", duration = "", polylinePoints = emptyList(), status = ""

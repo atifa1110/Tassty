@@ -44,7 +44,6 @@ class RegisterViewModel @Inject constructor(
                     state.password.isNotBlank() &&
                     state.isTermSelected &&
                     !state.isLoading,
-            isTextEditable = !state.isLoading,
             isLoading = state.isLoading,
             isBottomSuccessVisible = state.isBottomSuccessVisible,
             isBottomFailedVisible = state.isBottomFailedVisible,
@@ -105,32 +104,15 @@ class RegisterViewModel @Inject constructor(
                 when(result){
                     is TasstyResponse.Error -> {
                         val serverMessage = result.meta.message
-
                         _internalState.update { state ->
-                            if (serverMessage.contains("email", ignoreCase = true)) {
-                                state.copy(
-                                    isLoading = false,
-                                    emailError = UiText.DynamicString(serverMessage),
-                                    isBottomFailedVisible = false
-                                )
-                            }
-                            else if (serverMessage.contains("password", ignoreCase = true)) {
-                                state.copy(
-                                    isLoading = false,
-                                    passwordError = UiText.DynamicString(serverMessage),
-                                    isBottomFailedVisible = false
-                                )
-                            }
-
-                            else {
-                                state.copy(
-                                    isLoading = false,
-                                    bottomSheetMessage = serverMessage,
-                                    isBottomFailedVisible = true
-                                )
-                            }
+                            state.copy(
+                                isLoading = false,
+                                bottomSheetMessage = serverMessage,
+                                isBottomFailedVisible = true
+                            )
                         }
                     }
+
                     is TasstyResponse.Loading -> {
                         _internalState.update { it.copy(isLoading = true) }
                     }

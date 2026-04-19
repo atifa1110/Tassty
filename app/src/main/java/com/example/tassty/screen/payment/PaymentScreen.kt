@@ -49,20 +49,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.CardUserUiModel
 import com.example.tassty.R
-import com.example.tassty.util.cardList
 import com.example.tassty.component.ErrorListState
 import com.example.tassty.component.FoodPriceText
 import com.example.tassty.component.HeaderListBlackTitle
-import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.PaymentChannelCard
 import com.example.tassty.component.PaymentSwipeButton
 import com.example.tassty.component.TopBarButton
 import com.example.tassty.component.cardUserSelectedVerticalListBlock
-import com.example.tassty.util.paymentChannel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Orange500
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
@@ -73,6 +69,8 @@ import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.OrderPreviewData
+import com.example.tassty.util.UserData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
@@ -359,28 +357,6 @@ fun PaymentSuccessOverlay(
     }
 }
 
-//@Preview(showBackground = true, name = "Light Mode")
-@Composable
-fun PaymentLightPreview() {
-    TasstyTheme {
-        PaymentContent(
-            total = "Rp150.0000",
-            uiState = PaymentUiState(
-                cardPayment = Resource(data = cardList.toImmutableList()),
-                paymentChannel = Resource(data = paymentChannel),
-                selectedCardId = "",
-                isButtonEnabled = true,
-                isLoading = true
-            ),
-            onCardSelected = {},
-            onChannelSelected = {},
-            onSwipePayment = {},
-            onNavigateBack = {},
-            context = LocalContext.current
-        )
-    }
-}
-
 //@Preview(showBackground = true, name = "Dark Mode")
 @Composable
 fun PaymentDarkPreview() {
@@ -388,8 +364,8 @@ fun PaymentDarkPreview() {
         PaymentContent(
             total = "Rp150.0000",
             uiState = PaymentUiState(
-                cardPayment = Resource(data = cardList.toImmutableList()),
-                paymentChannel = Resource(data = paymentChannel),
+                cardPayment = Resource(data = UserData.cardList),
+                paymentChannel = Resource(data = OrderPreviewData.paymentChannels),
                 selectedCardId = "",
                 isButtonEnabled = true,
                 isLoading = true

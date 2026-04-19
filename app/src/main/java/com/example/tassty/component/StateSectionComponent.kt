@@ -381,7 +381,8 @@ fun ErrorScreen(
 
 @Composable
 fun LoadingRowState(){
-    Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
+    Row (modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center){
         CircularProgressIndicator(color = Orange500)
     }
 }

@@ -56,11 +56,9 @@ import com.example.tassty.component.SelectVoucherCard
 import com.example.tassty.component.cartVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.cartUiModel
-import com.example.tassty.util.restaurantUiModel
+import com.example.tassty.util.OrderPreviewData
 
 @Composable
 fun CartScreen(
@@ -400,7 +398,7 @@ fun CartLightPreview() {
     TasstyTheme {
         CartContent(
             uiState = CartUiState(
-                carts = cartUiModel
+                carts = OrderPreviewData.cartUiModel
             ),
             onSelectLocationClicked = {},
             onSelectPromoClicked = {},
@@ -426,10 +424,7 @@ fun CartDarkPreview() {
     TasstyTheme(darkTheme = true) {
         CartContent(
             uiState = CartUiState(
-                carts =CartGroupUiModel(
-                    restaurantUiModel[0],
-                    emptyList()
-                )
+                carts = OrderPreviewData.cartUiModel
             ),
             onSelectLocationClicked = {},
             onSelectPromoClicked = {},

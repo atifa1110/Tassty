@@ -1,7 +1,6 @@
-package com.example.core.data.source.local.cache
+package com.example.core.data.provider
 
 import com.example.core.data.source.local.datasource.LocationLocalDataSource
-import com.example.core.data.source.local.datastore.LocationDataStore
 import com.example.core.domain.utils.calculateDistance
 import javax.inject.Inject
 import javax.inject.Singleton

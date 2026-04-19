@@ -11,7 +11,6 @@ data class RegisterUiState (
     val passwordError: UiText? = null,
     val isTermSelected: Boolean = false,
     val isButtonEnabled: Boolean = false,
-    val isTextEditable: Boolean = true,
     val isLoading: Boolean = false,
     val isBottomSuccessVisible: Boolean = false,
     val isBottomFailedVisible: Boolean = false,

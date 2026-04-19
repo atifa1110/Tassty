@@ -53,13 +53,12 @@ import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
 import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
-import com.example.tassty.util.cardList
-import com.example.tassty.util.paymentChannel
+import com.example.tassty.util.OrderPreviewData
+import com.example.tassty.util.UserData
 
 @Composable
 fun ShimmerDebitPaymentCard(
@@ -452,7 +451,7 @@ fun CardBackgroundItem(
 //        verticalArrangement = Arrangement.spacedBy(12.dp)
 //    ) {
 //        DebitPaymentCard(
-//            card = cardList[0],
+//            card = UserData.cardList[0],
 //            isSelected = true,
 //            onCheckChanged = {}
 //        )
@@ -460,7 +459,7 @@ fun CardBackgroundItem(
 //        ShimmerDebitPaymentCard()
 //
 //        PaymentChannelCard(
-//            channel = paymentChannel[0]
+//            channel = OrderPreviewData.paymentChannels[0]
 //        ) { }
 //    }
 //}

@@ -124,7 +124,7 @@ fun EmailInputContent(
                     email = uiState.email,
                     emailError = uiState.emailError,
                     onEmailChanged = onEmailChange,
-                    enabled = uiState.isTextEditable
+                    enabled = !uiState.isLoading
                 )
             }
         }
@@ -132,35 +132,34 @@ fun EmailInputContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun EmailInputLightPreview() {
-//    TasstyTheme {
-//        EmailInputContent(
-//            uiState = EmailInputUiState(
-//                email = "user@gmail.com",
-//                isTextEditable = false,
-//                isButtonEnabled = false
-//            ),
-//            onEmailChange = {},
-//            onSendOtpClick = {},
-//            onBackClick = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun EmailInputLightPreview() {
+    TasstyTheme {
+        EmailInputContent(
+            uiState = EmailInputUiState(
+                email = "user@gmail.com",
+                isLoading = false,
+                isButtonEnabled = false
+            ),
+            onEmailChange = {},
+            onSendOtpClick = {},
+            onBackClick = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun EmailInputDarkPreview() {
-//    TasstyTheme(darkTheme = true){
-//        EmailInputContent(
-//            uiState = EmailInputUiState(
-//                email = "user@gmail.com",
-//                isTextEditable = false,
-//                isButtonEnabled = true
-//            ),
-//            onEmailChange = {},
-//            onSendOtpClick = {},
-//            onBackClick = {}
-//        )
-//    }
-//}
+@Composable
+fun EmailInputDarkPreview() {
+    TasstyTheme(darkTheme = true){
+        EmailInputContent(
+            uiState = EmailInputUiState(
+                email = "user@gmail.com",
+                isButtonEnabled = true
+            ),
+            onEmailChange = {},
+            onSendOtpClick = {},
+            onBackClick = {}
+        )
+    }
+}

@@ -8,7 +8,7 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.example.core.data.provider.LocationTracker
-import com.example.core.data.source.local.cache.LocationManager
+import com.example.core.data.provider.LocationManager
 import com.example.core.domain.repository.LocationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope

@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.core.data.model.OrderData
 import com.example.core.ui.model.DetailOrderUiModel
 import com.example.core.ui.model.OrderItemUiModel
 import com.example.core.ui.model.OrderStatus
@@ -44,8 +45,8 @@ import com.example.tassty.component.OrderSummaryCard
 import com.example.tassty.navigation.RatingNavArg
 import com.example.tassty.screen.rating.HeaderRating
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.dummyDetail
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.OrderPreviewData
 
 @Composable
 fun DetailOrderScreen(
@@ -196,27 +197,27 @@ fun DetailOrderContent(
 
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun DetailOrderLightPreview() {
-//    TasstyTheme{
-//        DetailOrderContent(
-//            detail = dummyDetail,
-//            onNavigateBack = {},
-//            onRatingMenuClick = {},
-//            onRatingRestClick = {}
-//        )
-//    }
-//}
+@Composable
+fun DetailOrderLightPreview() {
+    TasstyTheme{
+        DetailOrderContent(
+            detail = OrderPreviewData.detailOrder,
+            onNavigateBack = {},
+            onRatingMenuClick = {},
+            onRatingRestClick = {}
+        )
+    }
+}
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun DetailOrderDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        DetailOrderContent(
-//            detail = dummyDetail,
-//            onNavigateBack = {},
-//            onRatingMenuClick = {},
-//            onRatingRestClick = {}
-//        )
-//    }
-//}
+@Composable
+fun DetailOrderDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        DetailOrderContent(
+            detail = OrderPreviewData.detailOrder,
+            onNavigateBack = {},
+            onRatingMenuClick = {},
+            onRatingRestClick = {}
+        )
+    }
+}

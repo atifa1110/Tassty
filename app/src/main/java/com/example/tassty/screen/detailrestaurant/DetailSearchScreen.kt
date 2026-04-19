@@ -39,12 +39,11 @@ import com.example.tassty.component.HeaderListItemCountTitle
 import com.example.tassty.component.LoadingScreen
 import com.example.tassty.component.SearchBar
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.menusItem
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Pink500
+import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.MenuPreviewData
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun DetailSearchScreen(
@@ -174,15 +173,17 @@ fun SearchResultList(
 }
 
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
-fun PreviewSearch(){
-    DetailSearchScreen(
-        query = "burger",
-        resource = Resource(
-            data = menusItem.toImmutableList()
-        ),
-        onQueryChange = {},
-        onClose = {}
-    )
+fun DetailSearchPreview(){
+    TasstyTheme {
+        DetailSearchScreen(
+            query = "burger",
+            resource = Resource(
+                data = MenuPreviewData.menuUiList
+            ),
+            onQueryChange = {},
+            onClose = {}
+        )
+    }
 }

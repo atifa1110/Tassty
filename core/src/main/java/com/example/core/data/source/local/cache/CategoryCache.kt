@@ -9,15 +9,7 @@ import kotlin.collections.forEach
 @Singleton
 class CategoryCache @Inject constructor() : BaseCache<CategoryDto>() {
 
-    private val globalMap = mutableMapOf<String, CategoryDto>()
-
-    suspend fun saveAll(key: String, categories: List<CategoryDto>) {
+    suspend fun saveCategories(key: String, categories: List<CategoryDto>) {
         super.saveAll(key, categories) { it.id }
-
-        mutex.withLock {
-            categories.forEach { category ->
-                globalMap[category.id] = category
-            }
-        }
     }
 }

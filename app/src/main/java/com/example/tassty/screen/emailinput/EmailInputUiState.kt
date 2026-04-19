@@ -7,7 +7,6 @@ data class EmailInputUiState(
     val emailError: UiText? = null,
     val isLoading: Boolean = false,
     val isButtonEnabled: Boolean = false,
-    val isTextEditable: Boolean = true,
     val errorMessage: String? = null,
 )
 

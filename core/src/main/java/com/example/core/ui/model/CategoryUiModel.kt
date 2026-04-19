@@ -4,5 +4,5 @@ data class CategoryUiModel (
     val id: String,
     val name : String,
     val imageUrl : String,
-    val isSelected: Boolean
+    val isSelected: Boolean = false
 )

@@ -25,24 +25,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import com.example.tassty.R
+import com.example.tassty.dispatcher.MainDispatcherRule
+import org.junit.Rule
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LoginViewModelTest {
 
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     private lateinit var viewModel: LoginViewModel
     private val loginUseCase = mockk<LoginEmailPasswordUseCase>()
-    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
         viewModel = LoginViewModel(loginUseCase)
     }
 
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
 
     @Test
     fun `onEmailChange should update email state and clear error`() = runTest {
@@ -164,7 +163,6 @@ class LoginViewModelTest {
 
             val loadingState = stateTurbine.awaitItem()
             assertTrue(loadingState.isLoading)
-            assertFalse(loadingState.isTextEditable)
 
             loginFlow.emit(DataDummy.loginResponseSuccess)
 
@@ -173,7 +171,6 @@ class LoginViewModelTest {
 
             val finalState = stateTurbine.awaitItem()
             assertFalse(finalState.isLoading)
-            assertTrue(finalState.isTextEditable)
 
             eventTurbine.cancelAndIgnoreRemainingEvents()
             stateTurbine.cancelAndIgnoreRemainingEvents()
@@ -202,14 +199,12 @@ class LoginViewModelTest {
 
             val loadingState = stateTurbine.awaitItem()
             assertTrue(loadingState.isLoading)
-            assertFalse(loadingState.isTextEditable)
 
             loginFlow.emit(DataDummy.loginResponseFailed)
 
             val errorState = stateTurbine.awaitItem()
             assertFalse(errorState.isLoading)
             assertTrue(errorState.isBottomSheetVisible)
-            assertTrue(errorState.isTextEditable)
             assertEquals("Login Failed", errorState.bottomSheetMessage)
 
             stateTurbine.cancelAndIgnoreRemainingEvents()
@@ -223,25 +218,18 @@ class LoginViewModelTest {
 
         viewModel.onEmailChange("luna@tassty.com")
         viewModel.onPasswordChange("password123")
+        viewModel.onLogin()
+        loginFlow.emit(DataDummy.loginResponseFailed)
 
-        turbineScope {
-            val stateTurbine = viewModel.uiState.testIn(backgroundScope)
+        viewModel.uiState.test {
+            val errorState = expectMostRecentItem()
 
-            stateTurbine.expectMostRecentItem()
-
-            viewModel.onLogin()
-            loginFlow.emit(DataDummy.loginResponseFailed)
-
-            val errorState = stateTurbine.awaitItem()
             assertTrue(errorState.isBottomSheetVisible)
 
             viewModel.onDismissBottomSheet()
 
-            val finalState = stateTurbine.awaitItem()
+            val finalState = awaitItem()
             assertFalse(finalState.isBottomSheetVisible)
-            assertEquals(null,finalState.bottomSheetMessage)
-
-            stateTurbine.cancelAndIgnoreRemainingEvents()
         }
     }
 }

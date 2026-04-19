@@ -37,13 +37,9 @@ import com.example.tassty.component.LocationSetUpCard
 import com.example.tassty.component.SetupTopAppBar
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral30
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.addresses
+import com.example.tassty.util.UserData
 
 @Composable
 fun SetupLocationRoute(
@@ -188,35 +184,18 @@ fun SetupLocationScreen(
 }
 
 
-
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun SetupLocationLightPreview() {
-//    TasstyTheme(darkTheme = false) {
-//        SetupLocationScreen(
-//            uiState = SetUpLocationUiState(
-//                userAddress = addresses[0]
-//            ),
-//            onBackClick = {},
-//            onSkipClick = {},
-//            onSubmitClick = {},
-//            onSetLocationClick = {}
-//        )
-//    }
-//}
-
-//@Preview(showBackground = true, name = "Dark mode")
-//@Composable
-//fun SetupLocationDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        SetupLocationScreen(
-//            uiState = SetUpLocationUiState(
-//                userAddress = addresses[0]
-//            ),
-//            onBackClick = {},
-//            onSkipClick = {},
-//            onSubmitClick = {},
-//            onSetLocationClick = {}
-//        )
-//    }
-//}
+@Composable
+fun SetupLocationLightPreview() {
+    TasstyTheme(darkTheme = false) {
+        SetupLocationScreen(
+            uiState = SetUpLocationUiState(
+                userAddress = UserData.addresses[0]
+            ),
+            onBackClick = {},
+            onSkipClick = {},
+            onSubmitClick = {},
+            onSetLocationClick = {}
+        )
+    }
+}

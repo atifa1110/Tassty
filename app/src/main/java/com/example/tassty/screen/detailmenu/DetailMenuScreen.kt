@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -68,15 +67,11 @@ import com.example.tassty.component.RestaurantMenuInfoCard
 import com.example.tassty.component.StatusItemImage
 import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.menuDetailItem
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral60
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.MenuPreviewData
 
 @Composable
 fun DetailMenuScreen(
@@ -513,7 +508,7 @@ fun DetailMenuLightPreview() {
             uiState = DetailMenuUiState(
                 isEditMode = true,
                 addToCartButtonText = "Update Order",
-                detail = Resource(data = menuDetailItem)
+                detail = Resource(data = MenuPreviewData.menuDetailItem)
             ),
             snackHostState = snackHostState,
             onOptionToggle = { _, _ -> },
@@ -536,7 +531,7 @@ fun DetailMenuDarkPreview() {
             uiState = DetailMenuUiState(
                 isEditMode = true,
                 addToCartButtonText = "Update Order",
-                detail = Resource(data = menuDetailItem)
+                detail = Resource(data = MenuPreviewData.menuDetailItem)
             ),
             snackHostState = snackHostState,
             onOptionToggle = { _, _ -> },

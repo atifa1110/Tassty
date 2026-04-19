@@ -39,13 +39,11 @@ import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.MyOrderTopAppBar
 import com.example.tassty.component.OrderListCard
 import com.example.tassty.component.SearchBar
+import com.example.tassty.getFilterIconRes
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.getFilterIconRes
-import com.example.tassty.util.orderFilters
-import com.example.tassty.util.orderList
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.OrderPreviewData
 import com.jakewharton.threetenabp.AndroidThreeTen
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun OrderScreen(
@@ -217,45 +215,17 @@ fun ChipOrderFilterSection(
     }
 }
 
-//@Preview(showBackground = true, name = "Light Mode")
-@Composable
-fun OrderLightPreview() {
-    AndroidThreeTen.init(LocalContext.current)
-    val activeFilter = OrderFilterCategory.ALL
-    val mockFilters = orderFilters.map {
-        it.copy(isSelected = it.category == activeFilter)
-    }
-
-    val uiState = OrderUiState(
-        orders = Resource(data = orderList.toImmutableList()),
-        filter = mockFilters,
-        selectedCategory = activeFilter,
-        isCalendarVisible = false,
-        startDateSelected = null,
-        endDateSelected = null
-    )
-    TasstyTheme {
-        OrderContent(
-            uiState = uiState,
-            onFilterClick = {},
-            onCalendarClick = {},
-            onCardClick = {},
-            onNavigateBack = {}
-        )
-    }
-}
-
 //@Preview(showBackground = true, name = "Dark Mode")
 @Composable
 fun OrderDarkPreview() {
     AndroidThreeTen.init(LocalContext.current)
     val activeFilter = OrderFilterCategory.ALL
-    val mockFilters = orderFilters.map {
+    val mockFilters = OrderPreviewData.orderFilters.map {
         it.copy(isSelected = it.category == activeFilter)
     }
 
     val uiState = OrderUiState(
-        orders = Resource(data = orderList.toImmutableList()),
+        orders = Resource(data = OrderPreviewData.orderUiList),
         filter = mockFilters,
         selectedCategory = activeFilter,
         isCalendarVisible = false,

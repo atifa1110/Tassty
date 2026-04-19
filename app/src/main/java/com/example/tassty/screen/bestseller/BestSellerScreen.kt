@@ -55,12 +55,12 @@ import com.example.tassty.component.ImageIcon
 import com.example.tassty.component.SearchBar
 import com.example.tassty.component.ShimmerFoodWideListCard
 import com.example.tassty.component.shimmerLoadingAnimation
-import com.example.tassty.util.menusItem
 import com.example.tassty.screen.detailrestaurant.ShoppingCartBottomBar
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.collectionUiModel
+import com.example.tassty.util.CollectionData
+import com.example.tassty.util.MenuPreviewData
 
 @Composable
 fun BestSellerScreen(
@@ -323,57 +323,20 @@ fun BestSellerNameHeader(){
         )
     }
 }
-//
-//@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun BestSellerLightPreview(){
-//    TasstyTheme {
-//        BestSellerContent(
-//            uiState = BestSellerUiState(
-//                menus = Resource(data = menusItem, isLoading = false, errorMessage = null),
-//                totalItems = 0,
-//                totalPrice = 120000
-//            ),
-//            onFavoriteClick = {}
-//        )
-//
-//        CustomBottomSheet(
-//            visible = true,
-//            onDismiss = {}
-//        ) {
-//            CollectionContent(
-//                resource = Resource(collectionUiModel),
-//                onCollectionSelected = {_,_->},
-//                onSaveCollectionClick = {},
-//                onAddCollectionClick = { }
-//            )
-//        }
-//    }
-//}
-//
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun BestSellerDarkPreview(){
-//    TasstyTheme(darkTheme = true) {
-//        BestSellerContent(
-//            uiState = BestSellerUiState(
-//                menus = Resource(data = menusItem),
-//                totalItems = 0,
-//                totalPrice = 120000
-//            ),
-//            onFavoriteClick = {}
-//        )
-//
-//        CustomBottomSheet(
-//            visible = true,
-//            onDismiss = {}
-//        ) {
-//            CollectionContent(
-//                resource = Resource(collectionUiModel),
-//                onCollectionSelected = {_,_->},
-//                onSaveCollectionClick = {},
-//                onAddCollectionClick = { }
-//            )
-//        }
-//    }
-//}
+@Composable
+fun BestSellerDarkPreview(){
+    TasstyTheme(darkTheme = true) {
+        BestSellerContent(
+            uiState = BestSellerUiState(
+                menus = Resource(data = MenuPreviewData.menuUiList),
+                totalItems = 0,
+                totalPrice = 120000
+            ),
+            onFavoriteClick = {},
+            onNavigateBack = {},
+            onNavigateToDetailMenu = {}
+        )
+    }
+}

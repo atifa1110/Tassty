@@ -160,7 +160,7 @@ fun VerificationScreen(
                 OtpInputField(
                     otp = uiState.otp,
                     isError = uiState.isError,
-                    isTextEditable = uiState.isTextEditable,
+                    isTextEditable = !uiState.isLoading,
                     onOtpChange = onOtpChange,
                     onVerifyClick = onVerifyClick
                 )

@@ -30,7 +30,6 @@ data class HomeUiState(
     val isAddCollectionSheet: Boolean = false,
     val newCollectionName: String = "",
     val quantity: Int = 0,
-    val isTokenExpired: Boolean = false
 )
 
 data class HomeContent(
@@ -43,11 +42,6 @@ data class HomeContent(
 data class HomeMenuSection(
     val recommendedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
     val suggestedMenus: Resource<ImmutableList<MenuUiModel>> = Resource(),
-)
-
-data class MenuInteractionData(
-    val sections: HomeMenuSection,
-    val collections: Resource<ImmutableList<CollectionUiModel>>
 )
 
 data class HomeUiFlags(
@@ -77,21 +71,16 @@ data class HomeInternalState(
 
 sealed class HomeEvent{
     data class OnFavoriteClick(val menu: MenuUiModel) : HomeEvent()
-    object OnShowCollectionSheet : HomeEvent()
     object OnDismissCollectionSheet: HomeEvent()
     data class OnCollectionCheckChange(val collectionId: String, val isChecked: Boolean) : HomeEvent()
-    object OnSaveToCollection : HomeEvent()
-
+    data object OnSaveToCollection : HomeEvent()
     object OnShowAddCollectionSheet : HomeEvent()
     object OnDismissAddCollectionSheet : HomeEvent()
     data class OnNewCollectionNameChange(val name: String) : HomeEvent()
     object OnCreateCollection : HomeEvent()
-
-    data class OnShowDetailMenu(val id: String) : HomeEvent()
-    data object OnRefreshToken: HomeEvent()
+    object OnRefreshToken: HomeEvent()
 }
 
 sealed class HomeEffect {
     data class ShowSnackbar(val message: String) : HomeEffect()
-    data class NavigateToDetailMenu(val id: String): HomeEffect()
 }

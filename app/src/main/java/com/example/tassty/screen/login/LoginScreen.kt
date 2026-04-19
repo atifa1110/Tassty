@@ -118,14 +118,14 @@ fun LoginScreen(
 
                 EmailSection(
                     email = uiState.email,
-                    enabled = uiState.isTextEditable,
+                    enabled = !uiState.isLoading,
                     emailError = uiState.emailError,
                     onEmailChanged = onEmailChanged
                 )
 
                 PasswordSection(
                     password = uiState.password,
-                    enabled = uiState.isTextEditable,
+                    enabled = !uiState.isLoading,
                     passwordError = uiState.passwordError,
                     onPasswordChanged = onPasswordChanged
                 )
@@ -137,7 +137,7 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .clickable(
                             onClick = onForgotClick,
-                            enabled = uiState.isTextEditable
+                            enabled = !uiState.isLoading
                         ),
                     textAlign = TextAlign.Right,
                     color = Orange500
@@ -173,7 +173,7 @@ fun LoginScreen(
                     style = LocalCustomTypography.current.bodyMediumMedium,
                     modifier = Modifier.clickable(
                         onClick = onRegisterClick,
-                        enabled = uiState.isTextEditable
+                        enabled = !uiState.isLoading
                     )
                 )
             }

@@ -37,25 +37,17 @@ import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.core.ui.model.UserAddressUiModel
 import com.example.tassty.R
-import com.example.tassty.util.addresses
 import com.example.tassty.getStaticMapUrl
-import com.example.tassty.screen.rating.HeaderIconText
 import com.example.tassty.ui.theme.Blue500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral40
-import com.example.tassty.ui.theme.Neutral70
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink100
-import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.Pink600
+import com.example.tassty.util.UserData
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMapOptions
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -419,14 +411,14 @@ fun PreviewLocationCard() {
     ) {
         LocationSetUpCard(
             selectedLatLng = LatLng(-6.2000, 106.8166),
-            address = addresses[0]
+            address = UserData.addresses[0]
         )
-        LocationCard(address = addresses[0])
+        LocationCard(address = UserData.addresses[0])
         LocationSelectorCard(
-            address = addresses[0],
+            address = UserData.addresses[0],
             onCheckedChange = {},
             isSelected = false
         )
-        LocationLardCard(addresses[0])
+        LocationLardCard(UserData.addresses[0])
     }
 }

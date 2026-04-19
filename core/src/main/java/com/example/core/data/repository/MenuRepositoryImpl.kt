@@ -27,71 +27,65 @@ class MenuRepositoryImpl @Inject constructor(
     }
 
     override fun getRecommendedMenus(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Menu>>> = flow {
-        emit(TasstyResponse.Loading())
-
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_RECOMMENDED)
-        if (!fetchFromRemote && cachedData.isNotEmpty()) {
-            val menus = cachedData.map { menuDto ->
-                menuDto.toDomain()
-            }
+        if (cachedData.isNotEmpty()) {
+            val menus = cachedData.map { menuDto -> menuDto.toDomain() }
             emit(
                 TasstyResponse.Success(
                     data = menus,
-                    meta = cachedMeta ?: Meta(0, "", "", null)
+                    meta = cachedMeta ?: Meta(400, "error", "Cache Empty", null)
                 )
             )
-            return@flow
         }
 
-        val result = remoteDataSource.getRecommendedMenus()
-        when (result) {
-            is TasstyResponse.Success -> {
-                // save to cache + meta
-                cache.saveAll(META_KEY_MENU_RECOMMENDED, result.data?: emptyList())
-                cache.saveMeta(META_KEY_MENU_RECOMMENDED, result.meta)
+        val shouldFetch = cachedData.isEmpty() || fetchFromRemote
+        if (shouldFetch) {
+            emit(TasstyResponse.Loading())
 
-                val menus = result.data?.map { menuDto ->
-                    menuDto.toDomain()
+            when (val result =  remoteDataSource.getRecommendedMenus()) {
+                is TasstyResponse.Success -> {
+                    cache.saveMenus(META_KEY_MENU_RECOMMENDED, result.data ?: emptyList())
+                    cache.saveMeta(META_KEY_MENU_RECOMMENDED, result.meta)
+
+                    val menus = result.data?.map { menuDto -> menuDto.toDomain() }
+
+                    emit(TasstyResponse.Success(menus, result.meta))
                 }
 
-                emit(TasstyResponse.Success(menus, result.meta))
+                is TasstyResponse.Error -> emit(result)
+                else -> {}
             }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
         }
     }.flowOn(Dispatchers.IO)
 
     override fun getSuggestedMenus(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Menu>>> = flow{
-        emit(TasstyResponse.Loading())
-
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_MENU_SUGGESTED)
-        if (!fetchFromRemote && cachedData.isNotEmpty()) {
-            val menus = cachedData.map { menuDto ->
-                menuDto.toDomain()
-            }
+        if (cachedData.isNotEmpty()) {
+            val menus = cachedData.map { menuDto -> menuDto.toDomain() }
             emit(
                 TasstyResponse.Success(
                     data = menus,
-                    meta = cachedMeta ?: Meta(0, "", "", null)
+                    meta = cachedMeta ?: Meta(400, "error", "Cache Empty", null)
                 )
             )
-            return@flow
         }
 
-        val result = remoteDataSource.getSuggestedMenus()
-        when (result) {
-            is TasstyResponse.Success -> {
-                cache.saveAll(META_KEY_MENU_SUGGESTED, result.data?: emptyList())
-                cache.saveMeta(META_KEY_MENU_SUGGESTED, result.meta)
+        val shouldFetch = cachedData.isEmpty() || fetchFromRemote
+        if (shouldFetch) {
+            emit(TasstyResponse.Loading())
 
-                val menus = result.data?.map { menuDto ->
-                    menuDto.toDomain()
+            when ( val result = remoteDataSource.getSuggestedMenus()) {
+                is TasstyResponse.Success -> {
+                    cache.saveMenus(META_KEY_MENU_SUGGESTED, result.data ?: emptyList())
+                    cache.saveMeta(META_KEY_MENU_SUGGESTED, result.meta)
+
+                    val menus = result.data?.map { menuDto -> menuDto.toDomain() }
+                    emit(TasstyResponse.Success(menus, result.meta))
                 }
 
-                emit(TasstyResponse.Success(menus, result.meta))
+                is TasstyResponse.Error -> emit(result)
+                else -> {}
             }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
         }
     }.flowOn(Dispatchers.IO)
 

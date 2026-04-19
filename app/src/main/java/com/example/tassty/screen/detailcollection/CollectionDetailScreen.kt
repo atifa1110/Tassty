@@ -44,7 +44,7 @@ import com.example.tassty.component.collectionList
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.collection
+import com.example.tassty.util.CollectionData
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -235,7 +235,7 @@ fun CollectionDetailLightPreview() {
         CollectionDetailContent(
             name = "Favorite Salad",
             image = "",
-            collections = collection,
+            collections = CollectionData.collectionRestaurantMenuUiModel,
             onEditClick = {},
             onDeleteClick = {},
             onNavigateBack = {},
@@ -254,7 +254,7 @@ fun CollectionDetailDarkPreview() {
         CollectionDetailContent(
             name = "Favorite Salad",
             image = "",
-            collections = collection,
+            collections = CollectionData.collectionRestaurantMenuUiModel,
             onEditClick = {},
             onDeleteClick = {},
             onNavigateBack = {},

@@ -50,16 +50,11 @@ import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
 import com.example.tassty.ui.theme.Neutral40
-import com.example.tassty.ui.theme.Neutral70
-import com.example.tassty.ui.theme.Orange50
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Orange900
 import com.example.tassty.ui.theme.Pink500
-import com.example.tassty.util.voucherUiModel
 
 @Composable
 fun SpecialCardOffer(){
@@ -438,21 +433,21 @@ fun VoucherDiscount(
 }
 
 //@Preview(showBackground = true)
-@Composable
-fun PreviewVoucherScreen() {
-    Column (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        VoucherCard(voucher = voucherUiModel[0], status = RestaurantStatus.CLOSED)
-        VoucherLargeCard(voucher = voucherUiModel[0])
-        VoucherExtraLargeCard(voucher = voucherUiModel[0])
-        VoucherSelectorCard(
-            voucher = voucherUiModel[0] ,
-            onCheckedChange = {},
-            isSelected = true
-        )
-    }
-}
+//@Composable
+//fun PreviewVoucherScreen() {
+//    Column (
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(24.dp),
+//        verticalArrangement = Arrangement.spacedBy(16.dp)
+//    ) {
+//        VoucherCard(voucher = VoucherData.voucherUiModel[0], status = RestaurantStatus.CLOSED)
+//        VoucherLargeCard(voucher = VoucherData.voucherUiModel[0])
+//        VoucherExtraLargeCard(voucher = VoucherData.voucherUiModel[0])
+//        VoucherSelectorCard(
+//            voucher = VoucherData.voucherUiModel[0],
+//            onCheckedChange = {},
+//            isSelected = true
+//        )
+//    }
+//}

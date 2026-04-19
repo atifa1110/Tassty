@@ -3,13 +3,12 @@ package com.example.tassty.screen.orders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.core.domain.usecase.GetUserOrderUseCase
-import com.example.core.utils.toListState
 import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.mapper.toUiModel
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.OrderUiModel
 import com.example.core.utils.toImmutableListState
-import com.example.tassty.util.orderFilters
+import com.example.tassty.util.OrderPreviewData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -75,7 +74,7 @@ class OrderViewModel @Inject constructor(
                 ?.toImmutableMap()
                 ?: persistentMapOf()
 
-        val updatedFilters = orderFilters.map {
+        val updatedFilters = OrderPreviewData.orderFilters.map {
             it.copy(isSelected = it.category == internal.activeCategory)
         }
 

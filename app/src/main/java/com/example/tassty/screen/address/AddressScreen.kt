@@ -30,7 +30,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.core.data.source.remote.network.Resource
 import com.example.tassty.R
-import com.example.tassty.util.addresses
 import com.example.tassty.component.AddTopAppBar
 import com.example.tassty.component.EmptyAddressContent
 import com.example.tassty.component.ErrorScreen
@@ -40,11 +39,9 @@ import com.example.tassty.component.addressVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import kotlinx.collections.immutable.toImmutableList
+import com.example.tassty.util.UserData
 
 @Composable
 fun AddressScreen(
@@ -196,7 +193,7 @@ fun AddressLightPreview() {
             context = LocalContext.current,
             uiState = AddressUiState(
                 selectedTab = AddressTab.ALL,
-                addressResource = Resource(data = addresses.toImmutableList())
+                addressResource = Resource(data = UserData.addresses)
             ),
             onTabSelected = {},
             onNavigateBack = {},
@@ -215,7 +212,7 @@ fun AddressDarkPreview() {
             context = LocalContext.current,
             uiState = AddressUiState(
                 selectedTab = AddressTab.ALL,
-                addressResource = Resource(data = addresses.toImmutableList())
+                addressResource = Resource(data = UserData.addresses)
             ),
             onTabSelected = {},
             onNavigateBack = {},

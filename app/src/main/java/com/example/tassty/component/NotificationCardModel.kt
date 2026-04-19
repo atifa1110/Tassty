@@ -41,7 +41,7 @@ import com.example.tassty.ui.theme.Pink100
 import com.example.tassty.ui.theme.Pink600
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.dummyNotifications
+import com.example.tassty.util.ChatData
 
 @Composable
 fun NotificationCard(
@@ -219,12 +219,12 @@ fun ShimmerNotificationCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun NotificationCardPreview(){
-    NotificationCard(
-        notification = dummyNotifications[0],
-        onClick = {}
-    )
-    ShimmerNotificationCard()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun NotificationCardPreview(){
+//    NotificationCard(
+//        notification = ChatData.dummyNotifications[0],
+//        onClick = {}
+//    )
+//    ShimmerNotificationCard()
+//}

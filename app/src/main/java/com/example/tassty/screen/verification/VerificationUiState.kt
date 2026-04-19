@@ -5,7 +5,6 @@ data class VerificationUiState(
     val email: String = "",
     val isLoading: Boolean = false,
     val isError: Boolean = false,
-    val isTextEditable: Boolean = true,
     val isButtonEnabled: Boolean = false,
     val errorMessage: String = "",
     val timerSeconds: Int = 60,
@@ -17,7 +16,6 @@ data class VerificationUiState(
 
 data class VerificationInternalState(
     val otp: String = "",
-    val timerSeconds: Int = 0,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val isError: Boolean = false,

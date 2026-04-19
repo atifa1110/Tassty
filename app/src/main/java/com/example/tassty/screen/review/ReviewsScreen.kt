@@ -2,7 +2,6 @@ package com.example.tassty.screen.review
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,29 +43,20 @@ import com.example.core.domain.model.RatingSummary
 import com.example.core.domain.model.StarDistribution
 import com.example.core.ui.model.RestaurantReviewUiModel
 import com.example.tassty.R
-import com.example.tassty.component.AllReviewChip
 import com.example.tassty.component.BackTopAppBar
 import com.example.tassty.component.Divider32
 import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.HeaderTitleScreen
-import com.example.tassty.component.LoadingRowState
-import com.example.tassty.component.Personal30Chip
-import com.example.tassty.component.Personal50Chip
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
 import com.example.tassty.ui.theme.Neutral30
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.component.ReviewLargeCard
 import com.example.tassty.component.ShimmerRatingSummaryCard
 import com.example.tassty.component.ShimmerReviewLargeCard
 import com.example.tassty.component.StarRow
-import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.reviews
-import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.RestaurantPreviewData
 
 @Composable
 fun ReviewScreen(
@@ -310,27 +298,27 @@ private fun RatingBarRow(
 
 
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun ReviewDarkPreview(){
-//    TasstyTheme (darkTheme = true){
-//        ReviewContent(
-//            uiState = ReviewUiState(
-//                resource = Resource(
-//                    data = RestaurantReviewUiModel(
-//                        summary = RatingSummary(
-//                            averageRating = 4.0, totalReviews = 200, distribution =
-//                                listOf(
-//                                    StarDistribution(5, 100, 70),
-//                                    StarDistribution(4, 60, 50),
-//                                    StarDistribution(3, 80, 40),
-//                                    StarDistribution(2, 10, 20),
-//                                    StarDistribution(1, 100, 70)
-//                                )
-//                        ), reviews = reviews
-//                    )
-//                )
-//            ),
-//            onNavigateBack = {}
-//        )
-//    }
-//}
+@Composable
+fun ReviewDarkPreview(){
+    TasstyTheme (darkTheme = true){
+        ReviewContent(
+            uiState = ReviewUiState(
+                resource = Resource(
+                    data = RestaurantReviewUiModel(
+                        summary = RatingSummary(
+                            averageRating = 4.0, totalReviews = 200, distribution =
+                                listOf(
+                                    StarDistribution(5, 100, 70),
+                                    StarDistribution(4, 60, 50),
+                                    StarDistribution(3, 80, 40),
+                                    StarDistribution(2, 10, 20),
+                                    StarDistribution(1, 100, 70)
+                                )
+                        ), reviews = RestaurantPreviewData.reviews
+                    )
+                )
+            ),
+            onNavigateBack = {}
+        )
+    }
+}

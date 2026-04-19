@@ -9,13 +9,16 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,107 +29,51 @@ class SetupCuisineViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SetupCuisineUiState())
-    val uiState: StateFlow<SetupCuisineUiState> = _uiState.asStateFlow()
-
-    private val _searchQuery = MutableStateFlow("")
-    val searchQueryText: StateFlow<String> = _searchQuery
+    val uiState = _uiState.asStateFlow()
 
     private val _event = MutableSharedFlow<SetupCuisineEvent>()
     val event = _event.asSharedFlow()
 
     init {
-        loadDummyCategories()
-        observeSearchQueryWithDebounce()
+        loadCategories()
     }
 
-    private fun loadDummyCategories() {
+    private fun loadCategories() {
         viewModelScope.launch {
-            getAllCategoriesUseCase.invoke().collect { result ->
-                when(result) {
+            getAllCategoriesUseCase().collect { result ->
+                when (result) {
+                    is TasstyResponse.Loading -> _uiState.update { it.copy(isLoading = true) }
                     is TasstyResponse.Error -> {
                         _uiState.update { it.copy(isLoading = false) }
                         _event.emit(SetupCuisineEvent.ShowError(result.meta.message))
                     }
-                    is TasstyResponse.Loading -> _uiState.update { it.copy(isLoading = true) }
                     is TasstyResponse.Success -> {
-                        val list = result.data?.map { it.toUiModel() }?:emptyList()
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                categories = list,
-                                filteredCategories = list
-                            )
-                        }
+                        val list = result.data?.map { it.toUiModel() } ?: emptyList()
+                        _uiState.update { it.copy(isLoading = false, categories = list) }
                     }
                 }
             }
+        }
+    }
+
+    fun onSearchTextChanged(newText: String) {
+        _uiState.update { it.copy(currentSearchQuery = newText) }
+    }
+
+    fun toggleCategorySelection(categoryId: String) {
+        _uiState.update { state ->
+            val newSelection = if (state.selectedCategoryIds.contains(categoryId)) {
+                state.selectedCategoryIds - categoryId
+            } else {
+                state.selectedCategoryIds + categoryId
+            }
+            state.copy(selectedCategoryIds = newSelection)
         }
     }
 
     fun onNextClick() {
         viewModelScope.launch {
-            _event.emit(SetupCuisineEvent.NavigateToSetUpLocation(uiState.value.selectedCategoryIds))
+            _event.emit(SetupCuisineEvent.NavigateToSetUpLocation(_uiState.value.selectedCategoryIds))
         }
-    }
-
-    /** Observe search query dengan debounce */
-    @OptIn(FlowPreview::class)
-    private fun observeSearchQueryWithDebounce() {
-        _searchQuery
-            .debounce(500)
-            .distinctUntilChanged()
-            .onEach { query ->
-                val filtered = if (query.isBlank()) {
-                    uiState.value.categories
-                } else {
-                    uiState.value.categories.filter {
-                        it.name.contains(query, ignoreCase = true)
-                    }
-                }
-
-                _uiState.update { current ->
-                    current.copy(
-                        filteredCategories = filtered,
-                        currentSearchQuery = query,
-                        isLoading = false
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
-    }
-
-    fun onSearchTextChanged(newText: String) {
-        _searchQuery.value = newText
-
-        _uiState.update { current ->
-            if (newText.isBlank()) {
-                current.copy(
-                    filteredCategories = current.categories,
-                    isLoading = false,
-                    currentSearchQuery = ""
-                )
-            } else {
-                current.copy(isLoading = true)
-            }
-        }
-    }
-
-
-    fun toggleCategorySelection(categoryId: String) {
-        val current = uiState.value.selectedCategoryIds.toMutableList()
-        if (current.contains(categoryId)) {
-            current.remove(categoryId)
-        } else {
-            current.add(categoryId)
-        }
-        _uiState.update {  it.copy(selectedCategoryIds = current) }
-    }
-
-    fun setError(message: String?) {
-        _uiState.update { it.copy(errorMessage = message) }
-    }
-
-    fun clearSelection() {
-        _uiState.update { it.copy(selectedCategoryIds = emptyList()) }
     }
 }

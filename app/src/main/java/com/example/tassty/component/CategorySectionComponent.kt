@@ -20,9 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.R
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.categories
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral100
+import com.example.tassty.util.RestaurantPreviewData
 
 @Composable
 fun CategoryList(
@@ -116,12 +115,10 @@ fun ShimmerCategoryStaggeredList() {
 }
 
 
-
-
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun PreviewCategoryList() {
     CategoryList(
-        categories = categories
+        categories = RestaurantPreviewData.categoriesUiModel
     )
 }

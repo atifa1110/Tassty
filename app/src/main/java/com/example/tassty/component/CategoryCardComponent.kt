@@ -16,12 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.categories
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral100
 import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Orange50
-import com.example.tassty.ui.theme.Orange500
+import com.example.tassty.util.RestaurantPreviewData
 
 @Composable
 fun ShimmerFoodCategoryCard(
@@ -113,19 +110,13 @@ fun FoodCategoryCard(
     }
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun PreviewFoodCategoryCard() {
     Row(Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         FoodCategoryCard(
-            category = categories[0],
-            isSelected = false,
-            onCardClick = {}
-        )
-
-        FoodCategoryCard(
-            category = categories[0],
+            category = RestaurantPreviewData.categoriesUiModel[0],
             isSelected = true,
             onCardClick = {}
         )

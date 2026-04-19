@@ -27,9 +27,8 @@ import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.HorizontalTitleItemCountSection
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.collectionUiModel
+import com.example.tassty.util.CollectionData
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun CollectionScreen (
@@ -138,7 +137,7 @@ fun CollectionLightPreview() {
     TasstyTheme {
         CollectionContent(
             uiState = CollectionUiState(
-                collections = collectionUiModel.toImmutableList()
+                collections = CollectionData.collectionUiModel
             ),
             onNavigateToDetailCollection = { _, _, _ -> },
             onAddClick = {},
@@ -155,7 +154,7 @@ fun CollectionDarkPreview() {
     TasstyTheme(darkTheme = true){
         CollectionContent(
             uiState = CollectionUiState(
-                collections = collectionUiModel.toImmutableList()
+                collections = CollectionData.collectionUiModel
             ),
             onNavigateToDetailCollection = { _, _, _ -> },
             onAddClick = {},

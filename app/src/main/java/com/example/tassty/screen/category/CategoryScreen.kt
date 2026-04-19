@@ -7,8 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -16,27 +14,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.core.data.source.remote.network.Resource
-import com.example.core.domain.model.RestaurantStatus
 import com.example.tassty.component.*
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.util.defaultFilter
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral70
-import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.restaurantMenuUiModel
+import com.example.tassty.util.RestaurantPreviewData
+import com.example.tassty.util.UserData
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
@@ -262,7 +252,7 @@ fun CategoryHeader(
 }
 
 
-@Preview(showBackground = true, name = "Light Mode")
+//@Preview(showBackground = true, name = "Light Mode")
 @Composable
 fun CategoryLightPreview() {
     TasstyTheme {
@@ -270,8 +260,8 @@ fun CategoryLightPreview() {
             categoryName = "Ramen",
             imageUrl = "",
             uiState = CategoryUiState(
-                restaurants = Resource(data = restaurantMenuUiModel.toImmutableList()),
-                activeFilters = defaultFilter
+                restaurants = Resource(data = RestaurantPreviewData.restaurantMenuUiModel),
+                activeFilters = UserData.defaultFilter
             ),
             onFilterClick = {},
             onSortClick = {},
@@ -290,8 +280,8 @@ fun CategoryDarkPreview() {
             categoryName = "Ramen",
             imageUrl = "",
             uiState = CategoryUiState(
-                restaurants = Resource(data = restaurantMenuUiModel.toImmutableList()),
-                activeFilters = defaultFilter
+                restaurants = Resource(data = RestaurantPreviewData.restaurantMenuUiModel),
+                activeFilters = UserData.defaultFilter
             ),
             onFilterClick = {},
             onSortClick = {},

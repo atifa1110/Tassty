@@ -7,12 +7,15 @@ data class SetupCuisineUiState(
     val categories: List<CategoryUiModel> = emptyList(),
     val selectedCategoryIds: List<String> = emptyList(),
     val currentSearchQuery: String = "",
-    val filteredCategories: List<CategoryUiModel> = emptyList(),
     val errorMessage: String? = null,
     val isEmptyResult : Boolean = false
 ) {
-    val canProceed: Boolean
-        get() = selectedCategoryIds.isNotEmpty()
+    val filteredCategories: List<CategoryUiModel>
+        get() = if (currentSearchQuery.isBlank()) {
+            categories
+        } else {
+            categories.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+        }
 }
 
 sealed class SetupCuisineEvent {

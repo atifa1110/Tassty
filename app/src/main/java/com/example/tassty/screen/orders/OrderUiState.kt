@@ -4,7 +4,7 @@ import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.OrderUiModel
-import com.example.tassty.util.orderFilters
+import com.example.tassty.util.OrderPreviewData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
@@ -13,7 +13,7 @@ import org.threeten.bp.LocalDate
 data class OrderUiState (
     val orders: Resource<ImmutableList<OrderUiModel>> = Resource(),
     val groupedOrders: ImmutableMap<String, ImmutableList<OrderUiModel>> = persistentMapOf(),
-    val filter : List<FilterOptionUi<OrderFilterCategory>> = orderFilters,
+    val filter : List<FilterOptionUi<OrderFilterCategory>> = OrderPreviewData.orderFilters,
     val selectedCategory: OrderFilterCategory = OrderFilterCategory.ALL,
     val isCalendarVisible: Boolean = false,
     val startDateSelected: LocalDate? = LocalDate.now(),

@@ -36,22 +36,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.RestaurantUiModel
 import com.example.tassty.R
 import com.example.tassty.component.CommonImage
 import com.example.tassty.component.EmptyFavoriteContent
 import com.example.tassty.component.FavoriteTopAppBar
-import com.example.tassty.component.HeaderListItemCountTitle
-import com.example.tassty.component.LoadingRowState
 import com.example.tassty.component.TopBarButton
 import com.example.tassty.component.restaurantVerticalListBlock
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.restaurantUiModel
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.RestaurantPreviewData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -220,21 +217,7 @@ fun FavoriteLightReview() {
     val snackHostState = remember { SnackbarHostState() }
     TasstyTheme {
         FavoriteContent(
-            items = restaurantUiModel.toImmutableList(),
-            snackHostState = snackHostState,
-            onNavigateBack = {},
-            onNavigateToRecommended = {}
-        )
-    }
-}
-
-//@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-fun FavoriteDarkReview() {
-    val snackHostState = remember { SnackbarHostState() }
-    TasstyTheme (darkTheme = true){
-        FavoriteContent(
-            items = restaurantUiModel.toImmutableList(),
+            items = RestaurantPreviewData.restaurantUiList,
             snackHostState = snackHostState,
             onNavigateBack = {},
             onNavigateToRecommended = {}

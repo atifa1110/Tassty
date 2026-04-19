@@ -59,13 +59,13 @@ import com.example.tassty.component.ShimmerChatCard
 import com.example.tassty.component.ShimmerNotificationCard
 import com.example.tassty.component.SwipeableItemWithActions
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.dummyChats
-import com.example.tassty.util.dummyNotifications
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.Neutral10
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Pink500
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.ChatData
+import com.example.tassty.util.UserData
 
 @Composable
 fun ChatScreen(
@@ -371,41 +371,41 @@ fun ChatTabContent(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun ChatLightPreview() {
-//    TasstyTheme {
-//        ChatContent(
-//            uiState = ChatUiState(
-//                chats = Resource(data = dummyChats),
-//                notifications = Resource(data = dummyNotifications),
-//                selectedTab = ChatTab.CHAT
-//            ),
-//            onNavigateToMessage = {},
-//            onTabSelected = {},
-//            onRevealChange = { _, _ -> },
-//            onSelectedDeleteChat = {},
-//            onNotificationClick = {},
-//            onDeleteNotification = {}
-//        )
-//    }
-//}
-//
+@Composable
+fun ChatLightPreview() {
+    TasstyTheme {
+        ChatContent(
+            uiState = ChatUiState(
+                chats = Resource(data = ChatData.dummyChats),
+                notifications = Resource(data = ChatData.dummyNotifications),
+                selectedTab = ChatTab.CHAT
+            ),
+            onNavigateToMessage = {},
+            onTabSelected = {},
+            onRevealChange = { _, _ -> },
+            onSelectedDeleteChat = {},
+            onNotificationClick = {},
+            onDeleteNotification = {}
+        )
+    }
+}
+
 //@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun ChatDarkPreview() {
-//    TasstyTheme(darkTheme = true) {
-//        ChatContent(
-//            uiState = ChatUiState(
-//                chats = Resource(data = dummyChats),
-//                notifications = Resource(data = dummyNotifications),
-//                selectedTab = ChatTab.NOTIFICATION
-//            ),
-//            onNavigateToMessage = {},
-//            onTabSelected = {},
-//            onRevealChange = { _, _ -> },
-//            onSelectedDeleteChat = {},
-//            onNotificationClick = {},
-//            onDeleteNotification = {}
-//        )
-//    }
-//}
+@Composable
+fun ChatDarkPreview() {
+    TasstyTheme(darkTheme = true) {
+        ChatContent(
+            uiState = ChatUiState(
+                chats = Resource(data = ChatData.dummyChats),
+                notifications = Resource(data = ChatData.dummyNotifications),
+                selectedTab = ChatTab.CHAT
+            ),
+            onNavigateToMessage = {},
+            onTabSelected = {},
+            onRevealChange = { _, _ -> },
+            onSelectedDeleteChat = {},
+            onNotificationClick = {},
+            onDeleteNotification = {}
+        )
+    }
+}

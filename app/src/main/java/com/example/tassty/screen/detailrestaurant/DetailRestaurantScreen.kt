@@ -85,14 +85,13 @@ import com.example.tassty.component.VoucherCard
 import com.example.tassty.component.menuItemCountVerticalListBlock
 import com.example.tassty.component.shimmerLoadingAnimation
 import com.example.tassty.ui.theme.LocalCustomColors
-import com.example.tassty.util.menusItem
-import com.example.tassty.util.restaurantDetailItem
-import com.example.tassty.util.reviews
 import com.example.tassty.ui.theme.LocalCustomTypography
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.voucherUiModel
+import com.example.tassty.util.MenuPreviewData
+import com.example.tassty.util.RestaurantPreviewData
+import com.example.tassty.util.VoucherData
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.collections.orEmpty
 
 @Composable
@@ -770,12 +769,12 @@ fun DetailRestLightPreview() {
         DetailRestaurantContent(
             snackHostState = snackHostState,
             uiState = DetailRestaurantUiState(
-                restaurantResource = Resource(data = restaurantDetailItem),
-                reviewsResource = Resource(data = reviews.toImmutableList(), isLoading = false),
-                vouchersResource = Resource(data = voucherUiModel.toImmutableList(), isLoading = false),
-                bestSellerMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
-                recommendedMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
-                allMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
+                restaurantResource = Resource(data = RestaurantPreviewData.restaurantDetail),
+                reviewsResource = Resource(data = RestaurantPreviewData.reviews),
+                vouchersResource = Resource(data = VoucherData.voucherUiModel),
+                bestSellerMenusResource = Resource(data = persistentListOf()),
+                recommendedMenusResource = Resource(data = MenuPreviewData.menuUiList),
+                allMenusResource = Resource(data = persistentListOf()),
                 totalItems = 0,
                 totalPrice = 0,
             ),
@@ -792,35 +791,3 @@ fun DetailRestLightPreview() {
         )
     }
 }
-
-//@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-fun DetailRestDarkPreview() {
-    val snackHostState = remember { SnackbarHostState() }
-    TasstyTheme(darkTheme = true) {
-        DetailRestaurantContent(
-            snackHostState = snackHostState,
-            uiState = DetailRestaurantUiState(
-                restaurantResource = Resource(data = restaurantDetailItem),
-                reviewsResource = Resource(data = reviews.toImmutableList(), isLoading = false),
-                vouchersResource = Resource(data = voucherUiModel.toImmutableList(), isLoading = false),
-                bestSellerMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
-                recommendedMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
-                allMenusResource = Resource(data = menusItem.toImmutableList(), isLoading = false),
-                totalItems = 0,
-                totalPrice = 0,
-            ),
-            onRestaurantFavoriteClick = {},
-            onShowSearchSheet = {},
-            onShowSchedule = {},
-            onMenuFavoriteClick = {},
-            onNavigateToDetailMenu = {},
-            onNavigateToBestSeller = {},
-            onNavigateToReview = {},
-            onNavigateBack = {},
-            onNavigateToVoucher = {},
-            onLocationClick = {}
-        )
-    }
-}
-

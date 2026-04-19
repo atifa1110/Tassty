@@ -5,7 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.example.core.domain.model.DiscountType
 import com.example.core.domain.model.VoucherType
+import com.example.core.ui.mapper.OrderFilterCategory
 import com.example.core.ui.model.CartItemUiModel
+import com.example.core.ui.model.FilterOptionUi
 import com.example.core.ui.model.OrderStatus
 import com.example.core.ui.model.VoucherUiModel
 import com.example.tassty.ui.theme.Blue200
@@ -234,5 +236,15 @@ private fun getGreetingMessage(): String {
         in 12..15 -> "Good Afternoon! ☀️"
         in 16..18 -> "Good Evening! 🌆"
         else -> "Good Night! 🌙"
+    }
+}
+
+@Composable
+fun getFilterIconRes(filter: FilterOptionUi<OrderFilterCategory>): Int {
+    return when (filter.key) {
+        "all" -> R.drawable.collection
+        "ongoing" -> R.drawable.delivery
+        "completed" -> R.drawable.category
+        else -> R.drawable.flag
     }
 }

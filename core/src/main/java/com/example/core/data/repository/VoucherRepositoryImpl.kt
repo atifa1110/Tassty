@@ -24,8 +24,6 @@ class VoucherRepositoryImpl @Inject constructor(
     }
 
     override fun getTodayVouchers(fetchFromRemote: Boolean): Flow<TasstyResponse<List<Voucher>>> = flow {
-        emit(TasstyResponse.Loading())
-
         val (cachedData, cachedMeta) = cache.getWithMeta(META_KEY_TODAY)
         if (cachedData.isNotEmpty()) {
             emit(
@@ -34,25 +32,28 @@ class VoucherRepositoryImpl @Inject constructor(
                     meta = cachedMeta ?: Meta(0, "", "", null)
                 )
             )
-            return@flow
         }
 
-        // Take from remote
-        when (val result = remoteDataSource.getTodayVouchers()) {
-            is TasstyResponse.Success -> {
-                // save to cache
-                cache.saveAll(META_KEY_TODAY, result.data?:emptyList())
-                cache.saveMeta(META_KEY_TODAY, result.meta)
+        val shouldFetch = cachedData.isEmpty() || fetchFromRemote
 
-                emit(
-                    TasstyResponse.Success(
-                        data = result.data?.map { it.toDomain() },
-                        meta = result.meta
+        if(shouldFetch){
+            emit(TasstyResponse.Loading())
+            when (val result = remoteDataSource.getTodayVouchers()) {
+                is TasstyResponse.Success -> {
+
+                    cache.saveVouchers(META_KEY_TODAY, result.data?:emptyList())
+                    cache.saveMeta(META_KEY_TODAY, result.meta)
+
+                    emit(
+                        TasstyResponse.Success(
+                            data = result.data?.map { it.toDomain() },
+                            meta = result.meta
+                        )
                     )
-                )
+                }
+                is TasstyResponse.Error -> emit(result)
+                else -> {}
             }
-            is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
         }
     }.flowOn(Dispatchers.IO)
 
@@ -70,7 +71,7 @@ class VoucherRepositoryImpl @Inject constructor(
             }
 
             is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
+            else -> {}
         }
     }.flowOn(Dispatchers.IO)
 
@@ -88,7 +89,7 @@ class VoucherRepositoryImpl @Inject constructor(
             }
 
             is TasstyResponse.Error -> emit(result)
-            is TasstyResponse.Loading -> emit(result)
+            else -> {}
         }
     }.flowOn(Dispatchers.IO)
 

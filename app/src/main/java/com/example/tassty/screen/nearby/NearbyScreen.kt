@@ -44,10 +44,8 @@ import com.example.tassty.component.ShimmerRestaurantLargeListCard
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.defaultFilter
-import com.example.tassty.util.restaurantUiModel
+import com.example.tassty.util.RestaurantPreviewData
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
@@ -55,7 +53,6 @@ import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlin.collections.orEmpty
 
 @Composable
@@ -206,7 +203,7 @@ fun RestaurantContent(
             exit = fadeOut() + shrinkVertically()
         ) {
             FilterSection(
-                option = defaultFilter,
+                option = emptyList(),
                 onSortClick = {}
             )
         }
@@ -364,20 +361,7 @@ fun NearbyLightPreview() {
     TasstyTheme {
         NearbyRestaurantContent(
             uiState = NearbyUiState(
-                resource = Resource(restaurantUiModel.toImmutableList())
-            ),
-            onNavigateBack = {}
-        )
-    }
-}
-
-//@Preview(showBackground = true, name= "Light Mode")
-@Composable
-fun NearbyDarkPreview() {
-    TasstyTheme(darkTheme = true){
-        NearbyRestaurantContent(
-            uiState = NearbyUiState(
-                resource = Resource(restaurantUiModel.toImmutableList())
+                resource = Resource(RestaurantPreviewData.restaurantUiList)
             ),
             onNavigateBack = {}
         )

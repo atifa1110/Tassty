@@ -12,47 +12,37 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.core.ui.model.ChatUiModel
 import com.example.core.ui.model.SenderType
 import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral20
-import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.Orange600
 import com.example.tassty.R
-import com.example.tassty.util.dummyChats
 import com.example.tassty.ui.theme.Blue600
 import com.example.tassty.ui.theme.Green500
 import com.example.tassty.ui.theme.Neutral10
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import com.example.core.ui.model.MessageUiModel
-import com.example.tassty.util.dummyMessages
 import com.example.tassty.ui.theme.Green400
 import com.example.tassty.ui.theme.LocalCustomColors
+import com.example.tassty.util.ChatData
 
 
 @Composable
@@ -368,23 +358,18 @@ fun ChatStatus(isSeen: Boolean, time: String, isMine: Boolean){
     )
 }
 
-@Preview(showBackground = true)
+//@Preview(showBackground = true)
 @Composable
 fun ChatListPreview() {
-    Column(Modifier.padding(24.dp)) {
+    Column(Modifier.padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
         ChatCard(
-            chat = dummyChats[0],
+            chat = ChatData.dummyChats[0],
             onClick = {}
         )
         ShimmerChatCard()
-        Spacer(Modifier.height(12.dp))
         ChatBubble(
-            message = dummyMessages[1],
-            onImageClick = {}
-        )
-
-        ChatBubble(
-            message = dummyMessages[0],
+            message = ChatData.dummyMessages[0],
             onImageClick = {}
         )
     }

@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.core.data.model.OrderData
 import com.example.core.data.source.remote.network.Resource
 import com.example.core.ui.model.MessageUiModel
 import com.example.core.ui.model.OrderStatus
@@ -71,8 +72,8 @@ import com.example.tassty.ui.theme.Neutral60
 import com.example.tassty.ui.theme.Neutral70
 import com.example.tassty.ui.theme.Orange500
 import com.example.tassty.ui.theme.TasstyTheme
-import com.example.tassty.util.dummyMessages
-import com.example.tassty.util.orderList
+import com.example.tassty.util.ChatData
+import com.example.tassty.util.OrderPreviewData
 import io.getstream.chat.android.models.User
 
 @Composable
@@ -306,51 +307,26 @@ fun ImagePreviewCard(
 }
 
 //@Preview(showBackground = true, name = "Light Mode")
-//@Composable
-//fun MessageLightPreview(){
-//    TasstyTheme {
-//        MessageContent(
-//            uiState = MessageUiState(
-//                groupedMessages = dummyMessages.groupBy{it.date},
-//                isLoading = false,
-//                sendMessage = "",
-//                order = Resource(data = orderList[1]),
-//                selectedImageUri = null,
-//                isImagePreviewVisible = false,
-//                placeholder = "Add a caption...",
-//                user = User(name = "Lucas", image = "", online = false)
-//            ),
-//            onTextChanged = {},
-//            onSendMessage = {},
-//            onNavigateBack = {},
-//            onAttachClick = {},
-//            onCancelClick = {},
-//            onImageClick = {}
-//        )
-//    }
-//}
-
-//@Preview(showBackground = true, name = "Dark Mode")
-//@Composable
-//fun MessageDarkPreview(){
-//    TasstyTheme (darkTheme = true){
-//        MessageContent(
-//            uiState = MessageUiState(
-//                groupedMessages = dummyMessages.groupBy{it.date},
-//                isLoading = false,
-//                sendMessage = "",
-//                order = Resource(data = orderList[0]),
-//                selectedImageUri = null,
-//                isImagePreviewVisible = false,
-//                placeholder = "Add a caption...",
-//                user = User(name = "Lucas", image = "", online = false)
-//            ),
-//            onTextChanged = {},
-//            onSendMessage = {},
-//            onNavigateBack = {},
-//            onAttachClick = {},
-//            onCancelClick = {},
-//            onImageClick = {}
-//        )
-//    }
-//}
+@Composable
+fun MessageLightPreview(){
+    TasstyTheme {
+        MessageContent(
+            uiState = MessageUiState(
+                //groupedMessages = ChatData.dummyMessages.groupBy { it.date },
+                isLoading = false,
+                sendMessage = "",
+                order = Resource(data = OrderPreviewData.orderUiList[0]),
+                selectedImageUri = null,
+                isImagePreviewVisible = false,
+                placeholder = "Add a caption...",
+                user = User(name = "Lucas", image = "", online = false)
+            ),
+            onTextChanged = {},
+            onSendMessage = {},
+            onNavigateBack = {},
+            onAttachClick = {},
+            onCancelClick = {},
+            onImageClick = {}
+        )
+    }
+}

@@ -6,7 +6,7 @@ import android.location.Geocoder
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import com.example.core.data.provider.LocationTracker
-import com.example.core.data.source.local.cache.LocationManager
+import com.example.core.data.provider.LocationManager
 import com.example.core.di.ApplicationScope
 import com.example.core.domain.model.LocationDetail
 import com.example.core.domain.repository.LocationRepository

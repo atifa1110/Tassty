@@ -15,25 +15,18 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tassty.R
-import com.example.tassty.util.categories
 import com.example.tassty.component.SetupTopAppBar
-import com.example.tassty.ui.theme.LocalCustomTypography
-import com.example.tassty.ui.theme.Neutral10
-import com.example.tassty.ui.theme.Neutral100
-import com.example.tassty.ui.theme.Neutral70
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,13 +34,16 @@ import com.example.core.ui.model.CategoryUiModel
 import com.example.tassty.component.ButtonComponent
 import com.example.tassty.component.CategoryFoundHeader
 import com.example.tassty.component.Divider32
+import com.example.tassty.component.EmptySearchContent
+import com.example.tassty.component.ErrorScreen
 import com.example.tassty.component.FoodCategoryCard
-import com.example.tassty.component.Header
-import com.example.tassty.component.HeaderTitleScreen
 import com.example.tassty.component.HeaderTitleSubtitleScreen
+import com.example.tassty.component.LoadingRowState
+import com.example.tassty.component.LoadingScreen
 import com.example.tassty.component.SearchBar
 import com.example.tassty.ui.theme.LocalCustomColors
 import com.example.tassty.ui.theme.TasstyTheme
+import com.example.tassty.util.RestaurantPreviewData
 
 @Composable
 fun SetupCuisineRoute(
@@ -57,7 +53,6 @@ fun SetupCuisineRoute(
     viewModel: SetupCuisineViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val searchText by viewModel.searchQueryText.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -80,7 +75,6 @@ fun SetupCuisineRoute(
 
     SetupCuisineScreen(
         uiState = uiState,
-        searchText = searchText,
         onSearchText = viewModel::onSearchTextChanged,
         onSelectedCategory = viewModel::toggleCategorySelection,
         onNextClick = viewModel::onNextClick,
@@ -92,7 +86,6 @@ fun SetupCuisineRoute(
 @Composable
 fun SetupCuisineScreen(
     uiState: SetupCuisineUiState,
-    searchText: String,
     onSearchText : (String) -> Unit,
     onSelectedCategory: (String) -> Unit,
     onNextClick: () -> Unit,
@@ -120,14 +113,14 @@ fun SetupCuisineScreen(
             ) {
                 ButtonComponent(
                     modifier = Modifier.width(220.dp),
-                    enabled = uiState.canProceed,
+                    enabled = uiState.selectedCategoryIds.isNotEmpty(),
                     labelResId = R.string.next,
                     onClick = onNextClick
                 )
             }
         }
     ) { innerPadding ->
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier.padding(innerPadding).fillMaxSize(),
             contentPadding = PaddingValues(top = 24.dp, bottom = 32.dp)
         ) {
@@ -140,90 +133,95 @@ fun SetupCuisineScreen(
                         title = R.string.choose_your_preferred_cuisine,
                         subtitle = R.string.dozens_food
                     )
-
                     SearchBar(
-                        value = searchText,
-                        onValueChange = onSearchText
-                    )
+                        value = uiState.currentSearchQuery,
+                        onValueChange = onSearchText)
                 }
-
                 Divider32()
             }
 
-            item(key = "content"){
-                if (uiState.isLoading || uiState.categories.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }else {
-                    CategoriesContent(
-                        searchText = searchText,
-                        selectedCategoryIds = uiState.selectedCategoryIds,
-                        filteredCategories = uiState.filteredCategories,
-                        onSelectedCategory = onSelectedCategory
+            if (uiState.isLoading) {
+                item(key = "loading_content") {
+                    LoadingRowState()
+                }
+            } else if(uiState.errorMessage!= null){
+                item(key = "error_content") {
+                    ErrorScreen()
+                }
+            } else {
+                categoriesContent(
+                    uiState = uiState,
+                    onSelectedCategory = onSelectedCategory
+                )
+            }
+        }
+    }
+}
+
+fun LazyListScope.categoriesContent(
+    uiState: SetupCuisineUiState,
+    onSelectedCategory: (String) -> Unit
+) {
+    item(key = "search_header") {
+        Column(Modifier.padding(horizontal = 24.dp)) {
+            CategoryFoundHeader(
+                searchQuery = uiState.currentSearchQuery,
+                filteredCategories = uiState.filteredCategories
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+
+    if(uiState.filteredCategories.isEmpty()){
+        item {
+            EmptySearchContent()
+        }
+    }
+
+    val rows = uiState.filteredCategories.chunked(3)
+    items(
+        count = rows.size,
+        key = { index -> "row_$index" }
+    ) { rowIndex ->
+        val rowItems = rows[rowIndex]
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            rowItems.forEach { item ->
+                Box(modifier = Modifier.weight(1f)) {
+                    FoodCategoryCard(
+                        isSelected = uiState.selectedCategoryIds.contains(item.id),
+                        category = item,
+                        onCardClick = { onSelectedCategory(item.id) }
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun CategoriesContent(
-    searchText: String,
-    selectedCategoryIds: List<String>,
-    filteredCategories: List<CategoryUiModel>,
-    onSelectedCategory: (String) -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        CategoryFoundHeader(
-            searchQuery = searchText,
-            filteredCategories = filteredCategories
-        )
-
-        Column(
-            modifier = Modifier
-        ) {
-            filteredCategories.chunked(3).forEachIndexed { rowIndex, rowItems ->
-                if (rowIndex > 0) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    rowItems.forEachIndexed { itemIndexInRow, item ->
-                        FoodCategoryCard(
-                            isSelected = selectedCategoryIds.contains(item.id),
-                            category = item,
-                            onCardClick = { onSelectedCategory(item.id) }
-                        )
-                    }
-                }
+            repeat(3 - rowItems.size) {
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
 }
 
-//@Preview(showBackground = true, name = "Light Mode")
+
+@Preview(showBackground = true, name = "Light Mode")
 @Composable
 fun SetupCuisineLightPreview() {
+    val dummyCategories = listOf(
+        CategoryUiModel("CAT-001", "Bakery", ""),
+        CategoryUiModel("CAT-002", "Martabak", "")
+    )
     TasstyTheme(darkTheme = false) {
         SetupCuisineScreen(
             uiState = SetupCuisineUiState(
-                categories = categories,
-                selectedCategoryIds = listOf("CAT-001"),
+                categories = dummyCategories,
+                selectedCategoryIds = listOf(),
                 currentSearchQuery = "bakery",
-                filteredCategories = categories
+                isLoading = false
             ),
-            searchText = "",
             onSearchText = {},
             onSelectedCategory = {},
             onNextClick = {},
@@ -239,12 +237,10 @@ fun SetupCuisineDarkPreview() {
     TasstyTheme(darkTheme = true) {
         SetupCuisineScreen(
             uiState = SetupCuisineUiState(
-                categories = categories,
+                categories = RestaurantPreviewData.categoriesUiModel,
                 selectedCategoryIds = listOf("CAT-001"),
-                currentSearchQuery = "bakery",
-                filteredCategories = categories
+                currentSearchQuery = "bakery"
             ),
-            searchText = "",
             onSearchText = {},
             onSelectedCategory = {},
             onNextClick = {},

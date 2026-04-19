@@ -1,6 +1,6 @@
 package com.example.core.di
 
-import com.example.core.data.source.local.cache.LocationManager
+import com.example.core.data.provider.LocationManager
 import com.example.core.data.source.local.datastore.LocationDataStore
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor

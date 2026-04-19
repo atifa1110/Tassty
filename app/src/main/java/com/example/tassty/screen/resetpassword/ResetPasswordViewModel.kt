@@ -33,7 +33,6 @@ class ResetPasswordViewModel @Inject constructor(
             passwordError = state.passwordError,
             confirmPasswordError = state.confirmPasswordError,
             isLoading = state.isLoading,
-            isTextEditable = !state.isLoading,
             isBottomSheetVisible = state.isBottomSheetVisible,
             isButtonEnabled = state.password.isNotBlank() && state.confirmPassword.isNotBlank() && !state.isLoading,
         )
