@@ -1,6 +1,7 @@
 package com.example.core.data.source.local.datastore
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -16,7 +17,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthDataStore @Inject constructor(
-    @AuthDataStore private val dataStore: DataStore<Preferences>
+    @AuthDataStore private val dataStore: DataStore<Preferences>,
+    private val securePrefs: SecurePreferences
 ) {
     private object PreferencesKeys {
         val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
@@ -38,7 +40,26 @@ class AuthDataStore @Inject constructor(
         val FIREBASE_TOKEN = stringPreferencesKey("firebase_token")
     }
 
+    private fun Preferences.getSecure(key: Preferences.Key<String>): String? {
+        val encryptedValue = this[key]
+        return if (!encryptedValue.isNullOrEmpty()) {
+            securePrefs.decrypt(encryptedValue)
+        } else null
+    }
+
+    private fun MutablePreferences.setSecure(key: Preferences.Key<String>, value: String?) {
+        if (value != null) {
+            this[key] = securePrefs.encrypt(value)
+        } else {
+            this.remove(key)
+        }
+    }
+
     val authStatus: Flow<AuthStatus> = dataStore.data.map { preferences ->
+        mapToAuthStatus(preferences)
+    }
+
+    private fun mapToAuthStatus(preferences: Preferences): AuthStatus {
         val stepString = preferences[PreferencesKeys.REGISTRATION_STEP] ?: RegistrationStep.NONE.name
         val step = try {
             RegistrationStep.valueOf(stepString)
@@ -46,31 +67,33 @@ class AuthDataStore @Inject constructor(
             RegistrationStep.NONE
         }
 
-        AuthStatus(
-            isDarkMode =  preferences[PreferencesKeys.IS_DARK_MODE] ?: false,
+        return AuthStatus(
+            isDarkMode = preferences[PreferencesKeys.IS_DARK_MODE] ?: false,
             isBoardingCompleted = preferences[PreferencesKeys.IS_BOARDING] ?: false,
             isLoggedIn = preferences[PreferencesKeys.IS_LOGGED_IN] ?: false,
             registrationStep = step,
-            isVerified = preferences[PreferencesKeys.IS_VERIFIED]?:false,
+            isVerified = preferences[PreferencesKeys.IS_VERIFIED] ?: false,
             hasCompletedSetup = preferences[PreferencesKeys.HAS_COMPLETED_SETUP] ?: false,
-            userId = preferences[PreferencesKeys.USER_ID],
+
             role = preferences[PreferencesKeys.ROLE],
             email = preferences[PreferencesKeys.EMAIL],
-            profileImage = preferences[PreferencesKeys.PROFILE_IMAGE],
             name = preferences[PreferencesKeys.NAME],
+            profileImage = preferences[PreferencesKeys.PROFILE_IMAGE],
             addressName = preferences[PreferencesKeys.ADDRESS_NAME],
-            accessToken = preferences[PreferencesKeys.ACCESS_TOKEN],
-            refreshToken = preferences[PreferencesKeys.REFRESH_TOKEN],
-            streamToken = preferences[PreferencesKeys.STREAM_TOKEN],
-            firebaseToken = preferences[PreferencesKeys.FIREBASE_TOKEN]
+
+            userId = preferences.getSecure(PreferencesKeys.USER_ID),
+            accessToken = preferences.getSecure(PreferencesKeys.ACCESS_TOKEN),
+            refreshToken = preferences.getSecure(PreferencesKeys.REFRESH_TOKEN),
+            streamToken =preferences.getSecure(PreferencesKeys.STREAM_TOKEN),
+            firebaseToken = preferences.getSecure(PreferencesKeys.FIREBASE_TOKEN),
         )
     }
 
     suspend fun updateAuthStatus(transform: (AuthStatus) -> AuthStatus) {
-        val currentStatus = authStatus.first()
-        val newStatus = transform(currentStatus)
-
         dataStore.edit { preferences ->
+            val currentStatus = mapToAuthStatus(preferences)
+            val newStatus = transform(currentStatus)
+
             preferences[PreferencesKeys.IS_DARK_MODE] = newStatus.isDarkMode
             preferences[PreferencesKeys.IS_BOARDING] = newStatus.isBoardingCompleted
             preferences[PreferencesKeys.IS_LOGGED_IN] = newStatus.isLoggedIn
@@ -78,19 +101,19 @@ class AuthDataStore @Inject constructor(
             preferences[PreferencesKeys.REGISTRATION_STEP] = newStatus.registrationStep.name
             preferences[PreferencesKeys.HAS_COMPLETED_SETUP] = newStatus.hasCompletedSetup
 
-            newStatus.userId?.let { preferences[PreferencesKeys.USER_ID] = it }
-            newStatus.role?.let { preferences[PreferencesKeys.ROLE] = it }
-            newStatus.email?.let { preferences[PreferencesKeys.EMAIL] = it }
-            newStatus.name?.let { preferences[PreferencesKeys.NAME] = it }
-            newStatus.profileImage?.let { preferences[PreferencesKeys.PROFILE_IMAGE] = it }
-            newStatus.addressName?.let { preferences[PreferencesKeys.ADDRESS_NAME] = it }
-            newStatus.accessToken?.let { preferences[PreferencesKeys.ACCESS_TOKEN] = it }
-            newStatus.refreshToken?.let { preferences[PreferencesKeys.REFRESH_TOKEN] = it }
-            newStatus.streamToken?.let { preferences[PreferencesKeys.STREAM_TOKEN] = it }
-            newStatus.firebaseToken?.let { preferences[PreferencesKeys.FIREBASE_TOKEN] = it }
+            preferences[PreferencesKeys.ROLE] = newStatus.role ?: ""
+            preferences[PreferencesKeys.EMAIL] = newStatus.email ?: ""
+            preferences[PreferencesKeys.NAME] = newStatus.name ?: ""
+            preferences[PreferencesKeys.PROFILE_IMAGE] = newStatus.profileImage ?: ""
+            preferences[PreferencesKeys.ADDRESS_NAME] = newStatus.addressName ?: ""
+
+            preferences.setSecure(PreferencesKeys.USER_ID, newStatus.userId)
+            preferences.setSecure(PreferencesKeys.ACCESS_TOKEN, newStatus.accessToken)
+            preferences.setSecure(PreferencesKeys.REFRESH_TOKEN, newStatus.refreshToken)
+            preferences.setSecure(PreferencesKeys.STREAM_TOKEN, newStatus.streamToken)
+            preferences.setSecure(PreferencesKeys.FIREBASE_TOKEN, newStatus.firebaseToken)
         }
     }
-
 
     suspend fun logout() {
         dataStore.edit { preferences ->

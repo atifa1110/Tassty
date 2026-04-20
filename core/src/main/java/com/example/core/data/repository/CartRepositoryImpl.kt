@@ -33,6 +33,7 @@ class CartRepositoryImpl @Inject constructor(
     ) {
         val menuEntity = menu.toDatabase(restaurant.id)
         val restaurantEntity = restaurant.toDatabase()
+
         return dataSource.addToCart(
             menu = menuEntity, restaurant = restaurantEntity,
             quantity = quantity, price = price, options = options,

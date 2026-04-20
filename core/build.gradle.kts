@@ -104,7 +104,6 @@ dependencies {
     implementation(libs.supabase.realtime)
     implementation(libs.supabase.postgrest)
 
-    //implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.plugins)
@@ -114,4 +113,15 @@ dependencies {
     implementation(libs.android.database.sqlcipher)
     implementation(libs.androidx.sqlite.ktx)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.tink.android)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk.agent)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.threeten.bp) {
+        exclude(group = "com.jakewharton.threetenabp", module = "threetenabp")
+    }
+
+    androidTestImplementation(libs.mockk.android)
 }

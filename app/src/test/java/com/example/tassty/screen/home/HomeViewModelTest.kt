@@ -3,6 +3,7 @@ package com.example.tassty.screen.home
 import app.cash.turbine.test
 import com.example.core.data.model.AuthStatus
 import com.example.core.data.source.remote.network.TasstyResponse
+import com.example.core.domain.model.Category
 import com.example.core.domain.model.Collection
 import com.example.core.domain.usecase.CreateNewCollectionUseCase
 import com.example.core.domain.usecase.GetAllCategoriesUseCase
@@ -346,4 +347,58 @@ class HomeViewModelTest {
         }
     }
 
+    @Test
+    fun `when refreshToken is success, should emit refresh trigger`() = runTest {
+        every { getAllCategoriesUseCase(any()) } returns flowOf(TasstyResponse.Loading())
+
+        val refreshFlow = MutableStateFlow<TasstyResponse<String>>(TasstyResponse.Loading())
+        every { getRefreshTokenUseCase() } returns refreshFlow
+
+        viewModel.uiState.test {
+            awaitItem()
+
+            viewModel.onEvent(HomeEvent.OnRefreshToken)
+
+            refreshFlow.value = DataDummy.refreshResponseSuccess
+
+            val finalState = awaitState { it.isRefreshing }
+            assertTrue(finalState.isRefreshing)
+
+            verify { getAllCategoriesUseCase(true) }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `when refreshToken success, categories should transition to loading`() = runTest {
+        // 1. Setup Awal: Categories sudah Success
+        val categoryFlow = MutableStateFlow<TasstyResponse<List<Category>>>(DataDummy.categoryResponseSuccess)
+        every { getAllCategoriesUseCase(any()) } returns categoryFlow
+
+        val refreshFlow = MutableStateFlow<TasstyResponse<String>>(TasstyResponse.Loading())
+        every { getRefreshTokenUseCase() } returns refreshFlow
+
+        viewModel.uiState.test {
+            val initialState = awaitState { it.allCategories.data != null }
+            assertFalse(initialState.allCategories.isLoading)
+
+            viewModel.onEvent(HomeEvent.OnRefreshToken)
+            categoryFlow.value = TasstyResponse.Loading()
+
+            // 4. Emit Success di Refresh Token
+            refreshFlow.value = DataDummy.refreshResponseSuccess
+
+            // Kasih waktu biar coroutine internal ViewModel jalan
+            runCurrent()
+
+            // 5. Gunakan awaitState agar Turbine menunggu sampai kondisi terpenuhi
+            val finalState = awaitState { it.allCategories.isLoading && it.isRefreshing }
+
+            assertTrue(finalState.allCategories.isLoading)
+            assertTrue(finalState.isRefreshing)
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

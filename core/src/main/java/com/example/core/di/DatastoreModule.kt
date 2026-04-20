@@ -17,15 +17,12 @@ import java.util.UUID
 import javax.inject.Singleton
 import androidx.core.content.edit
 
-private const val AUTH_PREFERENCES_NAME = "auth_preferences"
 private const val AUTH_PREFERENCES_SECURE_NAME = "secure_auth_preferences"
 private const val LOCATION_PREFERENCES_NAME = "secure_location_preferences"
 
-private const val PASS_PREFERENCES_NAME = "secure_pass_preferences"
-
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModule {
+object DatastoreModule {
 
     @Provides
     @Singleton
@@ -38,28 +35,9 @@ object DataModule {
     @Singleton
     fun provideAuthDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return PreferenceDataStoreFactory.create(
-            produceFile = { context.preferencesDataStoreFile(AUTH_PREFERENCES_NAME) }
+            produceFile = { context.preferencesDataStoreFile(AUTH_PREFERENCES_SECURE_NAME) }
         )
     }
-
-//    @AuthDataStore
-//    @Provides
-//    @Singleton
-//    fun provideAuthPath(
-//        @ApplicationContext context: Context
-//    ): SharedPreferences {
-//        val masterKey = MasterKey.Builder(context)
-//            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-//            .build()
-//
-//        return EncryptedSharedPreferences.create(
-//            context,
-//            AUTH_PREFERENCES_SECURE_NAME,
-//            masterKey,
-//            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-//            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-//        )
-//    }
 
     @LocationDataStore
     @Provides
@@ -68,30 +46,5 @@ object DataModule {
         return PreferenceDataStoreFactory.create(
             produceFile = { context.preferencesDataStoreFile(LOCATION_PREFERENCES_NAME) }
         )
-    }
-
-    @DatabasePassphrase
-    @Provides
-    @Singleton
-    fun provideDatabasePassphrase(@ApplicationContext context: Context): ByteArray {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-
-        val sharedPreferences = EncryptedSharedPreferences.create(
-            context,
-            PASS_PREFERENCES_NAME,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        var password = sharedPreferences.getString("db_passphrase", null)
-        if (password == null) {
-            password = UUID.randomUUID().toString()
-            sharedPreferences.edit { putString("db_passphrase", password) }
-        }
-
-        return password.toByteArray()
     }
 }

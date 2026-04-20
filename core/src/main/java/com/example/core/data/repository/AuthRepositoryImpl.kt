@@ -25,7 +25,6 @@ class AuthRepositoryImpl @Inject constructor(
     private val authDataStore: AuthDataStore,
 ) : AuthRepository{
 
-    val tag = "AuthRepositoryImpl"
     override val authStatus: Flow<AuthStatus> = authDataStore.authStatus
 
     override suspend fun updateAuthStatus(transform: (AuthStatus) -> AuthStatus) {

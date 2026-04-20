@@ -56,6 +56,8 @@ mockk = "1.13.13"
 turbine = "1.1.0"
 kotlinxCoroutinesTest = "1.9.0"
 kover = "0.7.5"
+tinkAndroid = "1.7.0"
+datastoreCrypto = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -156,6 +158,7 @@ android-database-sqlcipher = { group = "net.zetetic", name = "android-database-s
 # SQLite Kotlin Extensions
 androidx-sqlite-ktx = { group = "androidx.sqlite", name = "sqlite-ktx", version.ref = "sqliteKtx" }
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tinkAndroid" }
 
 # Unit Testing
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
